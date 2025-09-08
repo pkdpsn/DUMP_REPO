@@ -1,0 +1,46 @@
+# Kaggle & Text-ML Resource Collection
+
+A categorized checklist of useful resources for text classification, Kaggle competitions, and related ML topics.
+
+---
+
+## Repositories
+
+* [ ] [PyTorch NLP examples](https://github.com/delip/PyTorchNLPBook)
+* [ ] [Kaggle text classification examples](https://github.com/StephenWeiXu/Kaggle-Text-Classification)
+
+---
+
+## Competitions
+
+* [ ] [Kaggle competition leaderboard (example)](https://www.kaggle.com/competitions/kaggle-competition-2/leaderboard)
+* [ ] [DBLP classification competition overview](https://www.kaggle.com/competitions/dblpclassification/overview)
+
+---
+
+## Articles & Blogs
+
+* [ ] [SOM applied to TSP (blog/demo)](https://diego.codes/post/som-tsp/)
+* [ ] [Tips & tricks for text categorization (Hackernoon)](https://hackernoon.com/how-to-run-text-categorization-all-tips-and-tricks-from-5-kaggle-competitions-7e1h3uyh)
+* [ ] [Medium summary of Kaggle text competitions](https://medium.com/@sblaizer/a-journey-through-kaggle-text-data-competitions-from-2021-to-2023-631a79f96312)
+* [ ] [Neptune.ai tips for text classification on Kaggle](https://neptune.ai/blog/text-classification-tips-and-tricks-kaggle-competitions)
+
+---
+
+## Notebooks
+
+* [ ] [Time-series anomaly detection Colab notebook](https://colab.research.google.com/github/kmkarakaya/ML_tutorials/blob/master/Anomaly_Detection_in_Time_Series.ipynb#scrollTo=OMshroGk_wqF)
+
+---
+
+## Raw Links
+
+* [https://github.com/delip/PyTorchNLPBook](https://github.com/delip/PyTorchNLPBook)
+* [https://diego.codes/post/som-tsp/](https://diego.codes/post/som-tsp/)
+* [https://github.com/StephenWeiXu/Kaggle-Text-Classification](https://github.com/StephenWeiXu/Kaggle-Text-Classification)
+* [https://hackernoon.com/how-to-run-text-categorization-all-tips-and-tricks-from-5-kaggle-competitions-7e1h3uyh](https://hackernoon.com/how-to-run-text-categorization-all-tips-and-tricks-from-5-kaggle-competitions-7e1h3uyh)
+* [https://www.kaggle.com/competitions/kaggle-competition-2/leaderboard](https://www.kaggle.com/competitions/kaggle-competition-2/leaderboard)
+* [https://www.kaggle.com/competitions/dblpclassification/overview](https://www.kaggle.com/competitions/dblpclassification/overview)
+* [https://medium.com/@sblaizer/a-journey-through-kaggle-text-data-competitions-from-2021-to-2023-631a79f96312](https://medium.com/@sblaizer/a-journey-through-kaggle-text-data-competitions-from-2021-to-2023-631a79f96312)
+* [https://neptune.ai/blog/text-classification-tips-and-tricks-kaggle-competitions](https://neptune.ai/blog/text-classification-tips-and-tricks-kaggle-competitions)
+* [https://colab.research.google.com/github/kmkarakaya/ML\_tutorials/blob/master/Anomaly\_Detection\_in\_Time\_Series.ipynb#scrollTo=OMshroGk\_wqF](https://colab.research.google.com/github/kmkarakaya/ML_tutorials/blob/master/Anomaly_Detection_in_Time_Series.ipynb#scrollTo=OMshroGk_wqF)
