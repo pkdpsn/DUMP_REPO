@@ -31,6 +31,8 @@ A categorized checklist of useful resources for text classification, Kaggle comp
 
 * [ ] [Time-series anomaly detection Colab notebook](https://colab.research.google.com/github/kmkarakaya/ML_tutorials/blob/master/Anomaly_Detection_in_Time_Series.ipynb#scrollTo=OMshroGk_wqF)
 
+https://arxiv.org/pdf/2506.10943
+
 ---
 
 ## Raw Links
