@@ -10,6 +10,9 @@ A categorized checklist of useful resources for text classification, Kaggle comp
 * [ ] [Kaggle text classification examples](https://github.com/StephenWeiXu/Kaggle-Text-Classification)
 * [ ] https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/113204/13751849/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1758301404&Signature=ik99tgeWd9Jq1LbbuT1eRfxpbVICmwoNym5z1Coz7Vek97%2FmKtaP8iosvHvMgwe4rAOW45Y439P3UrDU%2FsgsQWr%2ByWQh%2B6418EC3eySrTeDIc8w2BwfprAHnWIfY45VHgJnqtOFV0c578SsRWyagSYgAcEPf8gji6N2v0tUFY6lfaer5ycU7NejMjqrFQrD3StoqSGbiL64%2B1Y6taK%2FA14L8T29QjypCyEd%2BG9zp3%2FQQmqTt4fhzYgYnDLfKntj%2F4Ver1dLcNEF2hbPGNv3s9QmQB5qEDJlQx65rKwTgK1m1C%2BmLOnzV45cP5csY9fOiQYrWscFiSbqqqFzRyMZHDQ%3D%3D&response-content-disposition=attachment%3B+filename%3Dacm-icaif-25-ai-agentic-retrieval-grand-challenge.zip
 
+* [ ] https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/94635/13121456/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1758312228&Signature=hmu80aBCj%2F%2FGY22KaQegDS8RkGnQDNrZto4gG32DYh%2FT3D8SZx2sD6No19k8QvORFZUNK0MxQS56CDWhnqrLrHFlO0Y5PL24K3JvavSVeoKZ%2B1DUTEOEvxpSn88A%2F%2BgH9zxh42c6TMJgcmC4cuWvoIbO9Ky453pqHEwWS6wSm70X7EVw54t4UZeKkHWp2bb3G2IizOJM9aDa2yjQoapa2iqRSDfx1wL%2FMTPS88riXkAQBH%2BUvvOaxUGwTSPX9ES9JmJW3%2B8klCjEsmrzly2%2BEdR7AKJ0fb9d3I0QwF4fvkAf%2BtCDCaPO%2FkyBJqc4UFUvQ%2BiqTg3T3gI2sa9UctCMeg%3D%3D&response-content-disposition=attachment%3B+filename%3Djigsaw-agile-community-rules.zip
+      
+
 ---
 
 ## Competitions
