@@ -8,6 +8,7 @@ A categorized checklist of useful resources for text classification, Kaggle comp
 
 * [ ] [PyTorch NLP examples](https://github.com/delip/PyTorchNLPBook)
 * [ ] [Kaggle text classification examples](https://github.com/StephenWeiXu/Kaggle-Text-Classification)
+* [ ] https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/113204/13751849/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1758301404&Signature=ik99tgeWd9Jq1LbbuT1eRfxpbVICmwoNym5z1Coz7Vek97%2FmKtaP8iosvHvMgwe4rAOW45Y439P3UrDU%2FsgsQWr%2ByWQh%2B6418EC3eySrTeDIc8w2BwfprAHnWIfY45VHgJnqtOFV0c578SsRWyagSYgAcEPf8gji6N2v0tUFY6lfaer5ycU7NejMjqrFQrD3StoqSGbiL64%2B1Y6taK%2FA14L8T29QjypCyEd%2BG9zp3%2FQQmqTt4fhzYgYnDLfKntj%2F4Ver1dLcNEF2hbPGNv3s9QmQB5qEDJlQx65rKwTgK1m1C%2BmLOnzV45cP5csY9fOiQYrWscFiSbqqqFzRyMZHDQ%3D%3D&response-content-disposition=attachment%3B+filename%3Dacm-icaif-25-ai-agentic-retrieval-grand-challenge.zip
 
 ---
 
