@@ -20,6 +20,12 @@ A categorized checklist of useful resources for text classification, Kaggle comp
 * [ ] [Kaggle competition leaderboard (example)](https://www.kaggle.com/competitions/kaggle-competition-2/leaderboard)
 * [ ] [DBLP classification competition overview](https://www.kaggle.com/competitions/dblpclassification/overview)
 
+* [ ] https://www.kaggle.com/code/junjitakeshima/jigsaw-try-to-gradually-improve-eng
+* [ ] https://www.kaggle.com/code/jackeygle/close-t0-0-9
+* [ ]  https://www.kaggle.com/code/muhammaddanyalmalik/rules-on-through-smart-classification
+* [ ]  https://www.kaggle.com/code/barnobarno/test-time-training-tt
+* [ ]  https://openreview.net/pdf?id=cu7IUiOhujH
+
 ---
 
 ## Articles & Blogs
@@ -40,6 +46,8 @@ https://arxiv.org/pdf/2506.10943
 ---
 
 ## Raw Links
+
+
 
 * [https://github.com/delip/PyTorchNLPBook](https://github.com/delip/PyTorchNLPBook)
 * [https://diego.codes/post/som-tsp/](https://diego.codes/post/som-tsp/)
