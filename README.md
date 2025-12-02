@@ -12,6 +12,10 @@ A categorized checklist of useful resources for text classification, Kaggle comp
 ](https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/112509/14254895/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1763303578&Signature=vUY%2B%2B%2FB1CSQGKyicEutH5eYz1xw7fNrVFGrrQujc7vIpgzJkonDZCp58tZkqcRVxQ7ZzBuz5ghQJUv68z4N4OwR6iTNSqHdp%2BDazku5HrNuL7719y3tAHlyM8Vro2AWfEfJEhc1uH%2FHmOnPHpK%2Bq7egEq1goNRMS%2BB3SztP3Z1javrwUPGGn1o2Wp6vV3BLgMxrJDEBd5B%2FvqZsoDsosDF25%2FeBFz6jjwPevUwGQO1JbEwIsGTcu2cc%2BGOlDkxaePU%2Bc6yEJ5oTIDxmT2zewPmpq0pT3qJud%2F6D1l4fkIXAU%2B05Ksq21zJeBl1JbjMG5S3LBhgATvacswjxbq2ycOg%3D%3D&response-content-disposition=attachment%3B+filename%3Dcsiro-biomass.zip)
 
 
+https://www.kaggle.com/code/vishakha10/ner-using-bert-model
+https://www.kaggle.com/code/marwaelshafeay/entity-recognition-with-bert
+https://www.kaggle.com/code/eneszvo/ner-named-entity-recognition-tutorial
+
 ## Competitions
 
 * [ ] [Kaggle competition leaderboard (example)](https://www.kaggle.com/competitions/kaggle-competition-2/leaderboard)
