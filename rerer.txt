@@ -1,0 +1,15 @@
+import re
+
+LEGAL_SUFFIXES = {
+    "inc", "inc.", "corp", "corp.", "co", "co.", "company",
+    "ltd", "ltd.", "llc", "plc", "sa", "ag", "nv", "gmbh",
+    "limited", "holdings", "holding", "group"
+}
+
+def normalize_company(s: str) -> str:
+    s = s.lower()
+    s = s.replace("&", " and ")
+    s = re.sub(r"[^a-z0-9\s]", " ", s)         # remove punctuation
+    tokens = s.split()
+    tokens = [t for t in tokens if t not in LEGAL_SUFFIXES]
+    return " ".join(tokens)
