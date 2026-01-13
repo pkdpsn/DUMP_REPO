@@ -49,6 +49,15 @@ https://arxiv.org/pdf/2506.10943
 
 ## Raw Links
 
+bert prep traing anf deep bi directional 
+scaling lawsa for neura; ;aanguage mdodel
+transformer xl 
+step deep resaech technical report
+cs149 
+cuda 
+tidar
+lerobotics
+sustum
 
 
 * [https://github.com/delip/PyTorchNLPBook](https://github.com/delip/PyTorchNLPBook)
