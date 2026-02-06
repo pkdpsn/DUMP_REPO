@@ -1,0 +1,199 @@
+Short answer: your tokenizer is already CPU-bound and hitting a scalability wall, so throwing more cores/workers at it doesn’t help—and sometimes makes it worse.
+
+Let’s unpack what’s going on, because your table actually tells a very clear story.
+
+⸻
+
+What your results are saying (reading the tea leaves ☕)
+
+A few patterns jump out:
+
+1. Tokenization time barely improves past 2–4 workers
+
+Example (TokBS=16):
+	•	1 worker → 3.8s
+	•	2 workers → 2.7s
+	•	4 workers → 2.78s
+	•	8–90 workers → ~2.8–2.9s
+
+This means:
+	•	You get some parallel benefit initially
+	•	Then you hit hard diminishing returns
+
+That’s classic Amdahl’s Law + overhead.
+
+⸻
+
+2. Bigger batch size doesn’t save you
+
+Across TokBS = 16 → 128:
+	•	Best times are still clustered around ~2.6–3.1s
+	•	Larger batches actually increase cache pressure and memory stalls
+
+So batching is not your bottleneck anymore.
+
+⸻
+
+3. More workers = more overhead
+
+When workers > physical cores:
+	•	Context switching increases
+	•	Memory bandwidth becomes the limiter
+	•	Lock contention inside the tokenizer increases
+
+That’s why 32, 64, 90 workers do not scale and sometimes regress.
+
+⸻
+
+Why tokenization is slow even on “high-intensity CPU”
+
+🔴 1. Tokenization is memory-bound, not compute-bound
+
+Modern tokenizers:
+	•	Do tons of string ops
+	•	Walk trie / hash tables
+	•	Jump all over memory
+
+Result:
+	•	CPU is waiting on RAM, not doing math
+	•	More cores ≠ faster execution
+
+You’re saturating memory bandwidth, not CPU ALUs.
+
+⸻
+
+🔴 2. Python tokenizer overhead (even with “fast” tokenizers)
+
+Even “fast” tokenizers:
+	•	Still cross Python ↔ native boundaries
+	•	Still allocate Python objects
+	•	Still hit the GIL at coordination points
+
+Multiprocessing helps a bit, but:
+	•	Serialization cost
+	•	IPC overhead
+	•	Shared vocabulary contention
+
+…eat up the gains.
+
+⸻
+
+🔴 3. Your workload is too small for massive parallelism
+
+You’re processing:
+	•	10,000 pairs
+	•	Likely short MS MARCO texts
+
+That’s tiny by tokenizer standards.
+
+Parallelism only helps when:
+	•	Inputs are long
+	•	Or dataset is massive (millions)
+
+Right now:
+
+Startup + coordination time ≈ actual work time
+
+⸻
+
+🔴 4. Tokenizer warmup & cache effects
+
+Even though you “warm up”:
+	•	Vocabulary still evicts from L3 cache
+	•	Multiple workers thrash the same memory pages
+	•	NUMA effects kick in on multi-socket machines
+
+This explains why:
+	•	2 workers is often fastest
+	•	8+ workers stall
+
+⸻
+
+Why MiniLM + MS MARCO is especially sensitive
+
+MiniLM tokenizers:
+	•	WordPiece/BPE → lots of small branching lookups
+	•	Short text pairs → poor amortization
+	•	Very high tokenizer-to-model compute ratio
+
+So tokenization becomes the dominant cost.
+
+⸻
+
+What actually helps (practical fixes)
+
+✅ 1. Stop scaling workers past 2–4
+
+Your data proves this already.
+
+Recommended:
+
+num_workers = 2 or 4
+
+Anything more is just burning electricity 🔥
+
+⸻
+
+✅ 2. Pre-tokenize once, save to disk
+
+This is the biggest win.
+	•	Tokenize MS MARCO offline
+	•	Save input_ids, attention_mask
+	•	Load tensors directly during training
+
+This alone can:
+	•	Cut epoch time by 2–4×
+
+⸻
+
+✅ 3. Use larger effective batches
+
+Instead of:
+	•	TokBS = 16 × many workers
+
+Try:
+	•	TokBS = 64–128
+	•	Fewer workers
+
+This improves:
+	•	Cache locality
+	•	Python overhead amortization
+
+⸻
+
+✅ 4. Pin tokenizer to fewer cores
+
+On Linux:
+
+taskset -c 0-3 python train.py
+
+This reduces:
+	•	NUMA hops
+	•	Cache invalidation
+
+Surprisingly effective.
+
+⸻
+
+✅ 5. If possible: tokenize on GPU (rare but real)
+
+Some pipelines:
+	•	Move tokenization into CUDA kernels
+	•	Or fuse tokenization with embedding lookup
+
+Not trivial—but huge if you can do it.
+
+⸻
+
+TL;DR (the brutal truth)
+	•	Your tokenizer is memory-bound
+	•	More CPU cores won’t help
+	•	You already found the sweet spot (~2 workers)
+	•	The real fix is pre-tokenization, not more hardware
+
+If you want, tell me:
+	•	CPU model
+	•	OS
+	•	Tokenizer implementation (HF fast / slow / custom)
+
+…and I can give you exact tuning values for your setup.
