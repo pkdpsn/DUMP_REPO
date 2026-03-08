@@ -1,8 +1,43 @@
-I found a lot of data analyst roles, a decision analyst role and a role called "product owner":
-1. Product Owner : https://search.jobs.barclays/job/pune/product-owner/13015/92088915104
-2. Decision Analyst:
-https://search.jobs.barclays/job/noida/decision-analyst/13015/90917996192
-3. Data analyst(pune):
-https://search.jobs.barclays/job/pune/data-analyst/13015/91190338912
-4. Data analyst(bangalore):
-https://search.jobs.barclays/job/bengaluru/data-analyst/13015/89825244208
+
+#### General Late Interaction Models (Adaptable to Finance)
+
+|Model|Base|Notes|
+|---|---|---|
+|**ColBERT v2**|BERT|Original, strong baseline; fine-tune on financial data|
+|**ColBERTv2 + PLAID**|BERT|Efficient indexing via PLAID engine|
+|**Col-DeBERTa**|DeBERTa-v3|Better contextual understanding|
+|**ColPali**|PaliGemma|Multimodal — useful for PDF-heavy financial docs|
+|**XTR** (Google)|T5|Token retrieval variant, strong zero-shot|
+|**PLAID-X**|mBERT|Multilingual, useful for global finance|
+|**ColT5**|T5|Longer context handling|
+
+#### Finance-Specific or Finance-Adapted Models
+
+|Model|Description|
+|---|---|
+|**FinColBERT**|ColBERT fine-tuned on SEC/financial corpora (research prototypes)|
+|**ColBERT + FinBERT init**|Initialize ColBERT encoder with FinBERT weights, fine-tune on financial QA|
+|**FLANG-BERT**|Financial domain pre-trained; can serve as ColBERT backbone|
+|**FIN-E5**|E5 variant for finance — adaptable to late interaction|
+![[Pasted image 20260223113556.png]]
+
+
+
+COLBERT PAGE KA GYAN 
+
+## The Three-Phase Training Pipeline
+
+The development followed a three-phase pipeline, each providing a different type of learning signal:
+
+### [](https://huggingface.co/lightonai/ColBERT-Zero#phase-1---unsupervised-contrastive-pre-training)Phase 1 - Unsupervised Contrastive Pre-training
+
+We began with the [nomic-embed-unsupervised-data](https://huggingface.co/datasets/nomic-ai/nomic-embed-unsupervised-data) dataset. Using [PyLate](https://lightonai.github.io/pylate/)'s **GradCache** implementation to scale per-GPU batch size without VRAM constraints, combined with **cross-GPU gathering** of representations, we reached effective batch sizes of **~16k**, required for unsupervised training to produce plausible in-batch hard negatives. Unlike dense training, the multi-vector objective allows the encoder to learn fine-grained token importance from the very first phase.
+
+### [](https://huggingface.co/lightonai/ColBERT-Zero#phase-2---supervised-contrastive-fine-tuning)Phase 2 - Supervised Contrastive Fine-tuning
+
+We refined the model using the [nomic-embed-supervised-data](https://huggingface.co/datasets/nomic-ai/nomic-embed-supervised-data). This stage introduced mined hard negatives: documents that are superficially similar to the query but not actually relevant. This allows teaching the model to handle nuance by prioritizing specific keywords and contextual tokens most indicative of a true match.
+
+### [](https://huggingface.co/lightonai/ColBERT-Zero#phase-3---knowledge-distillation-kd)Phase 3 - Knowledge Distillation (KD)
+
+The final stage used the [ms-marco-en-bge](https://huggingface.co/datasets/lightonai/ms-marco-en-bge) dataset. We leveraged a powerful Gemma-based model as a teacher, allowing our student models to learn to replicate complex reasoning scores via the efficient MaxSim operator.
+
