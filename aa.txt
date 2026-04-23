@@ -1,0 +1,44 @@
+
+###src/App.js
+import React, { useEffect, useState } from "react";
+import Streamdown from "streamdown";
+
+function App() {
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    const evtSource = new EventSource("http://localhost:3001/stream");
+
+    evtSource.onmessage = (event) => {
+      setText((prev) => prev + event.data);
+    };
+
+    evtSource.addEventListener("end", () => {
+      evtSource.close();
+    });
+
+    return () => {
+      evtSource.close();
+    };
+  }, []);
+
+  return (
+    <div style={{ maxWidth: 800, margin: "40px auto", padding: 20 }}>
+      <h1>Streaming Markdown Demo</h1>
+
+      <div
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: 12,
+          padding: 20,
+        }}
+      >
+        <Streamdown>{text}</Streamdown>
+        <span style={{ opacity: 0.5 }}>▌</span>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
