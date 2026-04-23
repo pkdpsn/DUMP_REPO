@@ -256,3 +256,49 @@ Three dashes create a horizontal rule:
 ## HTML Entities
 
 &copy; 2025 &mdash; Streamdown &bull; Built with &hearts;
+
+
+
+
+
+100% prop compatibility — All react-markdown props are supported, including allowElement, allowedElements, disallowedElements, skipHtml, unwrapDisallowed, and urlTransform. Types like Components, AllowElement, UrlTransform, and ExtraProps are exported directly.
+Built-in plugins — GFM, math (KaTeX), raw HTML, and CJK support are included by default. No need for remark-gfm, remark-math, rehype-katex, rehype-raw, rehype-harden, remark-cjk-friendly, or remark-cjk-friendly-gfm-strikethrough.
+Code highlighting — Syntax highlighting with Shiki is built in. You can remove shiki, react-syntax-highlighter, or any custom code block components.
+Mermaid diagrams — Rendered automatically. No custom mermaid component needed.
+Prestyled typography — All HTML elements are styled out of the box. No prose classes or custom component overrides for basic elements like p, li, h1, etc.
+
+One of Streamdown's most powerful features is its ability to intelligently parse and style incomplete Markdown blocks using the remend package. This feature, called unterminated block parsing, ensures that your streaming content looks polished even before the AI finishes its response.
+
+Performance optimizations built-in
+
+Under the hood:
+
+avoids full re-parsing
+minimizes DOM updates
+handles tail updates efficiently
+
+3. No flickering UI (huge UX win)
+
+Without Streamdown:
+
+headings jump
+lists reflow
+code blocks break mid-stream
+
+With Streamdown:
+
+stable rendering
+minimal layout shifts
+
+👉 This is why ChatGPT-like UIs feel “smooth”
+
+🧩 4. Smart handling of tricky structures
+
+It correctly deals with:
+
+partially open code blocks
+nested lists mid-stream
+tables forming gradually
+inline vs block transitions
+
+👉 You don’t have to write custom logic
