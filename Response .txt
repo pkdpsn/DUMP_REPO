@@ -1,0 +1,394 @@
+Then don’t animate the tokens themselves.
+
+The closest to ChatGPT is actually:
+
+New text appears immediately
+↓
+Browser paints smoothly at 60fps
+↓
+Blinking caret
+↓
+Very subtle opacity transition on newly created blocks
+
+Not:
+
+token -> fade
+token -> fade
+token -> fade
+
+which feels laggy.
+
+What I’d run
+
+<Streamdown
+  mode="streaming"
+  parseIncompleteMarkdown
+  parseMarkdownIntoBlocksFn={(s) => [s]}
+  animated={false}
+>
+  {content}
+</Streamdown>
+
+Custom Caret
+
+<div className="chat-stream">
+  <Streamdown ...>
+    {content}
+  </Streamdown>
+  {isStreaming && <span className="chat-caret" />}
+</div>
+.chat-stream {
+  position: relative;
+}
+.chat-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+⸻
+
+Small smoothing animation
+
+Instead of fading tokens, animate the container:
+
+.streaming-message {
+  transition:
+    opacity 80ms ease-out,
+    transform 80ms ease-out;
+}
+
+or
+
+.streaming-message {
+  animation: streamAppear 120ms ease-out;
+}
+@keyframes streamAppear {
+  from {
+    opacity: 0.98;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+Very subtle.
+
+⸻
+
+Even closer to ChatGPT
+
+Throttle UI updates slightly.
+
+Backend:
+
+token
+token
+token
+token
+token
+
+Frontend:
+
+requestAnimationFrame(() => {
+  setContent(buffer);
+});
+
+or
+
+setInterval(flushBuffer, 16);
+
+This gives:
+
+LLM = 100 updates/sec
+UI = 60 updates/sec
+
+which feels extremely smooth.
+
+⸻
+
+For your setup I’d do:
+
+parseMarkdownIntoBlocksFn={(s) => [s]}
+animated={false}
+custom blinking caret
+flush updates with requestAnimationFrame
+
+That combination is usually much closer to the ChatGPT/Claude feel than any fade-in animation.
+Yes. In fact, if you’re chasing a ChatGPT-like feel, I’d recommend turning off Streamdown animations completely.
+
+Right now you have something like:
+
+animated={{
+  animation: "fadeIn",
+  duration: 200,
+  easing: "ease-out"
+}}
+isAnimating={isStreaming}
+
+Every token update causes:
+
+new content
+↓
+React render
+↓
+Streamdown animation logic
+↓
+DOM update
+
+At 20–100 token updates/sec, animation overhead accumulates and the UI starts falling behind the stream.
+
+Turn Streamdown animations off
+
+<Streamdown
+  mode="streaming"
+  parseIncompleteMarkdown
+  parseMarkdownIntoBlocksFn={(s) => [s]}
+  animated={false}
+  isAnimating={false}
+>
+  {content}
+</Streamdown>
+
+⸻
+
+Then add your own lightweight fade
+
+Instead of animating every token, animate only the message container once:
+
+<div
+  className={cn(
+    "streaming-message",
+    isStreaming && "streaming"
+  )}
+>
+  <Streamdown ...>
+    {content}
+  </Streamdown>
+</div>
+.streaming-message {
+  opacity: 1;
+}
+.streaming-message.streaming {
+  animation: messageAppear 120ms ease-out;
+}
+@keyframes messageAppear {
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+This runs once, not per token.
+
+⸻
+
+Even better: Animate only newly created blocks
+
+Custom component:
+
+function AnimatedParagraph({ children }) {
+  return (
+    <p className="paragraph-fade">
+      {children}
+    </p>
+  );
+}
+<Streamdown
+  components={{
+    p: AnimatedParagraph,
+  }}
+>
+  {content}
+</Streamdown>
+.paragraph-fade {
+  animation: paraFade 120ms ease-out;
+}
+@keyframes paraFade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+Now:
+
+Paragraph 1 appears → fade
+Paragraph 2 appears → fade
+Paragraph 3 appears → fade
+
+while tokens inside the paragraph render instantly.
+
+That’s much cheaper.
+
+⸻
+
+The real optimization
+
+If your backend sends 50–100 updates/sec, don’t render 50–100 times/sec.
+
+Buffer to animation frames:
+
+const pendingRef = useRef("");
+useEffect(() => {
+  let raf;
+  const flush = () => {
+    if (pendingRef.current) {
+      setContent(pendingRef.current);
+    }
+    raf = requestAnimationFrame(flush);
+  };
+  raf = requestAnimationFrame(flush);
+  return () => cancelAnimationFrame(raf);
+}, []);
+
+This caps rendering at:
+
+60 FPS
+
+instead of:
+
+100+ renders/sec
+
+and usually eliminates the “frontend lagging behind backend” feeling.
+
+What I would do
+
+parseMarkdownIntoBlocksFn={(s) => [s]}
+animated={false}
+isAnimating={false}
+custom blinking caret
+requestAnimationFrame batching
+
+and if you want visual polish, fade paragraphs or the whole message once, not individual tokens. That’s much closer to how ChatGPT and Claude achieve smooth streaming.
+Not buffer by time, buffer by animation frame.
+
+A common mistake is:
+
+Token arrives
+→ render
+Token arrives
+→ render
+Token arrives
+→ render
+
+If your model emits 80-150 chunks/sec, React can’t keep up smoothly.
+
+Instead:
+
+Token arrives
+Token arrives
+Token arrives
+Token arrives
+↓
+Next animation frame (~16ms)
+↓
+One render
+
+What I recommend
+
+Option 1: requestAnimationFrame (best)
+
+const pending = useRef("");
+const [display, setDisplay] = useState("");
+onToken(token => {
+  pending.current += token;
+});
+useEffect(() => {
+  let raf;
+  const flush = () => {
+    if (pending.current !== displayRef.current) {
+      setDisplay(pending.current);
+    }
+    raf = requestAnimationFrame(flush);
+  };
+  raf = requestAnimationFrame(flush);
+  return () => cancelAnimationFrame(raf);
+}, []);
+
+This naturally renders at:
+
+60 FPS
+≈ every 16.6ms
+
+which is what the browser can actually display.
+
+⸻
+
+Option 2: Fixed interval
+
+setInterval(flush, 30);
+
+30ms → ~33 FPS
+
+or
+
+setInterval(flush, 50);
+
+50ms → ~20 FPS
+
+⸻
+
+What feels best?
+
+For chat streaming:
+
+Flush interval	Feel
+0ms (every token)	Can lag/jitter
+16ms	Excellent
+30ms	Very good
+50ms	Still good
+100ms	Starts feeling chunky
+200ms	Noticeable batching
+
+I’d start with:
+
+16ms (requestAnimationFrame)
+
+or
+
+30ms
+
+⸻
+
+ChatGPT / Claude style
+
+They are almost certainly not rendering every token.
+
+Think:
+
+Model:
+120 token updates/sec
+UI:
+60 renders/sec
+
+So each render contains:
+
+1-5 new tokens
+
+which looks smooth to humans and prevents the UI from falling behind.
+
+For your setup:
+
+parseMarkdownIntoBlocksFn={(s) => [s]}
+animated={false}
+isAnimating={false}
+caret="block"
+requestAnimationFrame batching
+
+is probably the sweet spot. You’ll get smoother streaming than trying to animate every token.
+
