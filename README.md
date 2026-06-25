@@ -1,5 +1,5 @@
 # Kaggle & Text-ML Resource Collection
-
+https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/113204/13751849/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1782465474&Signature=J%2BnEStUk5d3A0hf3P3nBjFrjtWESaHJ5VNjOWBkMnbmTUHQOuQWvN0etrEudM17Por95Bqz6adAqmERwYcRyJi0MK3k7pA%2BYv6OESX%2BO7RAQEOYZEejOM7q5KOhNlqeLMByOXGRKy0LYmc4b%2FCIYjY3sYq0d4r4G07tV48FmgWrb6kLuiFijK5aucBi9sCw6K7BL%2BnsGB7yCkM67Bj%2FmbaoLD2OlstxwofKu9RJVbM6qCg%2Ba6yMX9w3hdITuXkgoUFHcy4kmKLNrHlBv%2BPFjqc0%2F0z7IFanc43mAAE%2FEeGuFZs3dbd%2Bb4cjhdsJgMKSb74aKJ7ENgZ%2BAf%2B82yhoK9A%3D%3D&response-content-disposition=attachment%3B+filename%3Dacm-icaif-25-ai-agentic-retrieval-grand-challenge.zip
 A categorized checklist of useful resources for text classification, Kaggle competitions, and related ML topics.
 
 ## Repositories
