@@ -1,4 +1,5 @@
 # Kaggle & Text-ML Resource Collection
+
 https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/113204/13751849/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1782465474&Signature=J%2BnEStUk5d3A0hf3P3nBjFrjtWESaHJ5VNjOWBkMnbmTUHQOuQWvN0etrEudM17Por95Bqz6adAqmERwYcRyJi0MK3k7pA%2BYv6OESX%2BO7RAQEOYZEejOM7q5KOhNlqeLMByOXGRKy0LYmc4b%2FCIYjY3sYq0d4r4G07tV48FmgWrb6kLuiFijK5aucBi9sCw6K7BL%2BnsGB7yCkM67Bj%2FmbaoLD2OlstxwofKu9RJVbM6qCg%2Ba6yMX9w3hdITuXkgoUFHcy4kmKLNrHlBv%2BPFjqc0%2F0z7IFanc43mAAE%2FEeGuFZs3dbd%2Bb4cjhdsJgMKSb74aKJ7ENgZ%2BAf%2B82yhoK9A%3D%3D&response-content-disposition=attachment%3B+filename%3Dacm-icaif-25-ai-agentic-retrieval-grand-challenge.zip
 A categorized checklist of useful resources for text classification, Kaggle competitions, and related ML topics.
 
@@ -6,8 +7,7 @@ A categorized checklist of useful resources for text classification, Kaggle comp
 brew install --cask https://raw.githubusercontent.com/Homebrew/homebrew-cask/1b6d13c3b1f1f0b7d7a4f7f9f64d90f87f8c3f2d/Casks/v/visual-studio-code.rb
 * [ ] [PyTorch NLP examples](https://github.com/delip/PyTorchNLPBook)
 * [ ] [Kaggle text classification examples](https://github.com/StephenWeiXu/Kaggle-Text-Classification)
-* [ ] [https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/113204/13751849/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1758301404&Signature=ik99tgeWd9Jq1LbbuT1eRfxpbVICmwoNym5z1Coz7Vek97%2FmKtaP8iosvHvMgwe4rAOW45Y439P3UrDU%2FsgsQWr%2ByWQh%2B6418EC3eySrTeDIc8w2BwfprAHnWIfY45VHgJnqtOFV0c578SsRWyagSYgAcEPf8gji6N2v0tUFY6lfaer5ycU7NejMjqrFQrD3StoqSGbiL64%2B1Y6taK%2FA14L8T29QjypCyEd%2BG9zp3%2FQQmqTt4fhzYgYnDLfKntj%2F4Ver1dLcNEF2hbPGNv3s9QmQB5qEDJlQx65rKwTgK1m1C%2BmLOnzV45cP5csY9fOiQYrWscFiSbqqqFzRyMZHDQ%3D%3D&response-content-disposition=attachment%3B+filename%3Dacm-icaif-25-ai-agentic-retrieval-grand-challenge.zip
-](https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/112509/14254895/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1763303578&Signature=vUY%2B%2B%2FB1CSQGKyicEutH5eYz1xw7fNrVFGrrQujc7vIpgzJkonDZCp58tZkqcRVxQ7ZzBuz5ghQJUv68z4N4OwR6iTNSqHdp%2BDazku5HrNuL7719y3tAHlyM8Vro2AWfEfJEhc1uH%2FHmOnPHpK%2Bq7egEq1goNRMS%2BB3SztP3Z1javrwUPGGn1o2Wp6vV3BLgMxrJDEBd5B%2FvqZsoDsosDF25%2FeBFz6jjwPevUwGQO1JbEwIsGTcu2cc%2BGOlDkxaePU%2Bc6yEJ5oTIDxmT2zewPmpq0pT3qJud%2F6D1l4fkIXAU%2B05Ksq21zJeBl1JbjMG5S3LBhgATvacswjxbq2ycOg%3D%3D&response-content-disposition=attachment%3B+filename%3Dcsiro-biomass.zip)
+
 
 https://www.kaggle.com/code/vishakha10/ner-using-bert-model
 https://www.kaggle.com/code/marwaelshafeay/entity-recognition-with-bert
