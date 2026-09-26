@@ -1,0 +1,400 @@
+{
+  "modelId": "nvidia/Cosmos3-Nano-Policy-DROID",
+  "author": "nvidia",
+  "sha": "805c0d6d46196ecdc789213a6de72303c383895b",
+  "lastModified": "2026-09-16 19:00:38+00:00",
+  "tags": [
+    "cosmos",
+    "diffusers",
+    "safetensors",
+    "cosmos3_omni",
+    "nvidia",
+    "cosmos3",
+    "world action model",
+    "policy model",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "cosmos",
+  "likes": 36,
+  "downloads": 3916,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "cosmos",
+    "license": "other",
+    "license_name": "openmdw1.1-license",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "nvidia",
+      "cosmos",
+      "cosmos3",
+      "world action model",
+      "policy model"
+    ],
+    "countDownloads": [
+      "checkpoint.json",
+      "config.json",
+      "generation_config.json",
+      "model.safetensors.index.json",
+      "model_index.json",
+      "tokenizer.json",
+      "tokenizer_config.json",
+      "sound_tokenizer/config.json",
+      "sound_tokenizer/diffusion_pytorch_model.safetensors",
+      "text_tokenizer/tokenizer.json",
+      "text_tokenizer/tokenizer_config.json",
+      "transformer/config.json",
+      "transformer/diffusion_pytorch_model-00001-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00002-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00003-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00004-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00005-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00006-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00007-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "vae/config.json",
+      "vae/diffusion_pytorch_model.safetensors",
+      "vision_encoder/config.json",
+      "vision_encoder/model.safetensors"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Cosmos3ForConditionalGeneration"
+    ],
+    "model_type": "cosmos3_omni",
+    "processor_config": {
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1694,
+      "lfs": null
+    },
+    {
+      "rfilename": "BIAS.md",
+      "size": 4720,
+      "lfs": null
+    },
+    {
+      "rfilename": "EXPLAINABILITY.md",
+      "size": 3189,
+      "lfs": null
+    },
+    {
+      "rfilename": "PRIVACY.md",
+      "size": 1215,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 22855,
+      "lfs": null
+    },
+    {
+      "rfilename": "SAFETY.md",
+      "size": 3677,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/Pick_up_the_banana_and_place_it_in_the_bowl_0_env0_viewport.mp4",
+      "size": 864271,
+      "lfs": {
+        "size": 864271,
+        "sha256": "e4586cbcbdf7fea30facc1b04a48924f1505234000b04a0877287c812913ebeb",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 5499,
+      "lfs": null
+    },
+    {
+      "rfilename": "checkpoint.json",
+      "size": 2,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 7735,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 269,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/benchmark-action-2.png",
+      "size": 85391,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/benchmark-roboarena.png",
+      "size": 282424,
+      "lfs": {
+        "size": 282424,
+        "sha256": "099861aa042783769dab30e6a28e52cfd40224e739eddc68f9ceef124d6b2012",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 112501,
+      "lfs": null
+    },
+    {
+      "rfilename": "model_index.json",
+      "size": 425,
+      "lfs": null
+    },
+    {
+      "rfilename": "modular_model_index.json",
+      "size": 1396,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 390,
+      "lfs": null
+    },
+    {
+      "rfilename": "scheduler/scheduler_config.json",
+      "size": 884,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/chat_template.jinja",
+      "size": 5292,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "text_tokenizer/tokenizer_config.json",
+      "size": 5404,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/vocab.json",
+      "size": 2776833,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7032403,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 10868,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformer/config.json",
+      "size": 1386,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00001-of-00007.safetensors",
+      "size": 4902249008,
+      "lfs": {
+        "size": 4902249008,
+        "sha256": "f260af4e9c877c22ba9a44246767ff4a0bc9cd8f62fd6d683bedfcac75378ddd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00002-of-00007.safetensors",
+      "size": 4999863656,
+      "lfs": {
+        "size": 4999863656,
+        "sha256": "bce7ee18cc05ad291f57095d2705cb5ed26d6eca4469a44a0c40f8d507d724e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00003-of-00007.safetensors",
+      "size": 4932719448,
+      "lfs": {
+        "size": 4932719448,
+        "sha256": "885c1fc451c28ca34809df3b975b63f58adbaad29da53d6c4ad33613135526c2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00004-of-00007.safetensors",
+      "size": 4983084656,
+      "lfs": {
+        "size": 4983084656,
+        "sha256": "3a2639189fb96cdf40fba25be3ecee60a42a27431daccdd40f049bbd37ff7244",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00005-of-00007.safetensors",
+      "size": 4949498576,
+      "lfs": {
+        "size": 4949498576,
+        "sha256": "067fca5fbee766cd6828c96478a7ab93ac4bd9595662cae71787420ba4f27f14",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00006-of-00007.safetensors",
+      "size": 4261644464,
+      "lfs": {
+        "size": 4261644464,
+        "sha256": "c3e56f83740a353e44f8342c997fe3cffdcb5cc801d7e54c9bd17c7c016f8a7c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00007-of-00007.safetensors",
+      "size": 1317303952,
+      "lfs": {
+        "size": 1317303952,
+        "sha256": "5e23d7dbafab591bce1543b55f3ade34231085261d8a1754dfc26822bc691566",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "size": 78446,
+      "lfs": null
+    },
+    {
+      "rfilename": "vae/config.json",
+      "size": 1750,
+      "lfs": null
+    },
+    {
+      "rfilename": "vae/diffusion_pytorch_model.safetensors",
+      "size": 1409400600,
+      "lfs": {
+        "size": 1409400600,
+        "sha256": "230496cb59ff85bc9c040487737c4062480cb61c71e697b197b4c30142f2a0da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 385,
+      "lfs": null
+    },
+    {
+      "rfilename": "vision_encoder/config.json",
+      "size": 509,
+      "lfs": null
+    },
+    {
+      "rfilename": "vision_encoder/model.safetensors",
+      "size": 1152811416,
+      "lfs": {
+        "size": 1152811416,
+        "sha256": "b76056ebf9067cdb36e77554b2c1855aa1b662a9265c8ed26468b490e40b4adb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: openmdw1.1-license\nlicense_link: https://openmdw.ai/license/1-1/\nlibrary_name: cosmos\ntags:\n- nvidia\n- cosmos\n- cosmos3\n- world action model\n- policy model\ncountDownloads:\n- checkpoint.json\n- config.json\n- generation_config.json\n- model.safetensors.index.json\n- model_index.json\n- tokenizer.json\n- tokenizer_config.json\n- sound_tokenizer/config.json\n- sound_tokenizer/diffusion_pytorch_model.safetensors\n- text_tokenizer/tokenizer.json\n- text_tokenizer/tokenizer_config.json\n- transformer/config.json\n- transformer/diffusion_pytorch_model-00001-of-00007.safetensors\n- transformer/diffusion_pytorch_model-00002-of-00007.safetensors\n- transformer/diffusion_pytorch_model-00003-of-00007.safetensors\n- transformer/diffusion_pytorch_model-00004-of-00007.safetensors\n- transformer/diffusion_pytorch_model-00005-of-00007.safetensors\n- transformer/diffusion_pytorch_model-00006-of-00007.safetensors\n- transformer/diffusion_pytorch_model-00007-of-00007.safetensors\n- transformer/diffusion_pytorch_model.safetensors.index.json\n- vae/config.json\n- vae/diffusion_pytorch_model.safetensors\n- vision_encoder/config.json\n- vision_encoder/model.safetensors\n---\n\n# **Cosmos 3: Omnimodal World Models for Physical AI**\n**[Model Collection](https://huggingface.co/collections/nvidia/cosmos3)** | **[Code](https://github.com/nvidia/cosmos)** | **[White Paper](https://research.nvidia.com/labs/cosmos-lab/cosmos3/technical-report.pdf)** | **[Website](https://research.nvidia.com/labs/cosmos-lab/cosmos3/)**\n\n[NVIDIA Cosmos\u2122](https://github.com/nvidia/cosmos) is a world foundation model platform designed to accelerate the development of Physical AI by enabling machines to understand, simulate, and interact with the physical world across robotics, autonomous driving, and smart space environments, including industrial and factory-scale applications.\n\n# Model Overview: Cosmos3-Nano-Policy-DROID\n\n## Description\n\nCosmos3 is a collection of Omnimodal world models capable of generating dynamic, high-quality video, image, audio, and action commands from combinations of text, image, video, and action trajectory inputs. It serves as a foundational building block for a broad range of Physical AI applications and research spanning world understanding, world generation, simulation, and embodied policy learning.\n\nThis model is ready for commercial and non-commercial use.\n\n**Model Developer:** NVIDIA\n\n### Model Versions\n- Cosmos3-Nano-Policy-DROID:\n  - Given language instructions and visual observations from the DROID robot platform, generate robot action trajectories for manipulation and control tasks.\n\n### License\n\nThis model is released under the [OpenMDW1.1](https://openmdw.ai/license/1-1/)\n\n### Deployment Geography\n\nGlobal\n\n### Use Case\n\nPhysical AI: Encompassing robotics, autonomous vehicles (AV), and smart space environments, including industrial and factory-scale applications.\n\n### Release Date\n\nHugging Face 05/31/2026 via [https://huggingface.co/collections/nvidia/cosmos3](https://huggingface.co/collections/nvidia/cosmos3)\nGitHub 05/31/2026 via [https://github.com/nvidia/cosmos](https://github.com/nvidia/cosmos)\n\n## Model Architecture\n\n**Architecture Type:** Transformer\n\n**Network Architecture:** Mixture-of-Transformers (MoT)\n\nCosmos3 is an Omni-modal foundation model built on a Mixture-of-Transformers (MoT) architecture consisting of two complementary transformer towers: an autoregressive transformer for discrete token generation and a diffusion transformer for continuous multimodal generation. During inference, text is generated through standard next-token autoregressive decoding, while non-text modalities, such as images, video, audio, and actions, are synthesized through iterative denoising. This unified architecture enables Cosmos3 to model heterogeneous modalities within a single framework while preserving generation mechanisms best suited to each modality.\n\n**This model was developed based on:**  [Cosmos Framework](https://github.com/nvidia/cosmos-framework)\n\n**Number of trainable model parameters:**\n\n- Cosmos3-Nano-Policy-DROID: 16B\n\n## Input/Output Specifications\n\n- **Generator Input**\n  - **Input Type(s)**: Text, Image, Video (with audio or without audio), Action Trajectory\n  - **Input Format(s)**:\n    - Text: String\n    - Image: jpg, png, jpeg, webp\n    - Video (with or without audio): mp4\n    - Action: json (1D list)\n  - **Input Parameters**:\n    - Text: One-dimensional (1D)\n    - Image: Two-dimensional (2D)\n    - Video: Three-dimensional (3D)\n    - Audio: One-dimensional (1D)\n    - Action trajectory: One-dimensional (1D)\n  - **Other Properties Related to Input**:\n    - For video inputs, we accept various resolutions, including 720p, 480p, and 256p.\n    - When using input video with audio muxed into the video MP4 file, the audio should have 2 channels (stereo) and a 48 kHz sample rate.\n    - Image and video inputs are RGB color (8 bits per channel, sRGB color space); grayscale inputs are not supported.\n    - Action input is a per-frame sequence of robot/agent state or control values (e.g., joint positions, gripper state, camera pose). The full input is a 2D array shaped (T, D), where T is the number of frames and D is the embodiment-specific dimensionality listed below.\n    - Input action is only supported for compatible embodiments, including general camera motion (9D), autonomous vehicle (9D), egocentric motion (57D), single Franka Panda arm with RobotiQ gripper (10D), dual Franka Panda arm with RobotiQ gripper (20D), Agibot (29D), UR (10D), Google robot (10D), WidowX 250 (10D), UMI (9D).\n  - **Input Size and Length limits:**\n    - **Text:** 4096 tokens\n    - **Image:** 256p, 480p, and 720p resolution at one of these aspect ratios (16:9, 4:3, 1:1, 3:4, 9:16)\n    - **Video:** 256p, 480p, and 720p resolution at one of these aspect ratios (16:9, 4:3, 1:1, 3:4, 9:16). Max number of frames = 5.\n    - **Audio:** Max 0.5 second\n    - **Action:** 16 \u2013 400 video frames\n- **Generator Output**\n  - **Output Type(s)**: Image, video, audio, action, text\n  - **Output Format(s)**:\n    - Image: JPG\n    - Video: MP4\n    - Audio: Advanced Audio Coding (AAC) stream (muxed within the MP4)\n    - Action: 1D list (.json)\n    - Text: string\n  - **Output Parameters**:\n    - Image: Two-dimensional (2D)\n    - Video: Three-dimensional (3D)\n    - Audio: One-dimensional (1D)\n    - Action: One-dimensional (1D)\n    - Text: One-dimensional (1D)\n  - **Other Properties Related to Output**:\n    - The generated video is an MP4 file, with the resolution, frame rate, and duration specified in the input. The generated audio is encoded in AAC format, muxed into the video MP4 file with 2 channels (stereo) and a 48 kHz sample rate.\n    - Video generation supports durations from 5 to 400 frames, with 189 frames as the default generation duration.\n    - The generated action is only supported for compatible embodiments, including general camera motion (9D), autonomous vehicle (9D), egocentric motion (57D), single Franka Panda arm with RobotiQ gripper (10D), dual Franka Panda arm with RobotiQ gripper (20D), Agibot (29D), UR (10D), Google robot (10D), WidowX 250 (10D), UMI (9D).\n    - Audio: 48 kHz stereo AAC stream muxed into video mp4\n    - Video: mp4 at the FPS specified in input\n    - Image: JPEG\n- **Reasoner Input**\n  - **Input Type(s)**: Text, Text+Image, Text+Video\n  - **Input Format(s)**:\n    - Text: String\n    - Image: jpg, png, jpeg, webp\n    - Video: mp4\n  - **Input Parameters**:\n    - Text: One-dimensional (1D)\n    - Image: Two-dimensional (2D)\n    - Video: Three-dimensional (3D)\n  - **Other Properties Related to Input**:\n    - Video inputs are recommended at a frame rate of 4 fps.\n    - Long-context inputs supported up to 256K tokens.\n  - **Input Size and Length limits:**\n    - **Text:** Up to 256K tokens (context window).\n    - **Image:** Standard input image formats; passed as file or URL.\n    - **Video:** mp4 at the recommended 4 fps.\n- **Reasoner Output**\n  - **Output Type(s)**: Text\n  - **Output Format(s)**:\n    - Text: string\n  - **Output Parameters**:\n    - Text: One-dimensional (1D)\n  - **Other Properties Related to Output**:\n    - Default `max_tokens=4096+` is recommended for reasoning outputs; longer outputs may be requested.\n    - Reasoning outputs may include structured chain-of-thought, 2D/3D point localization, and bounding-box coordinates for vision-based tasks.\n\nThe video content visualizes the input text description as a short animated scene, capturing key elements within the specified time constraints.\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (e.g., GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n## Software Integration\n\n**Runtime Engine(s):**\n\n- [PyTorch](https://github.com/nvidia/cosmos3)\n- [vLLM-Omni](https://github.com/vllm-project/vllm-omni)\n- [Hugging Face Diffusers](https://huggingface.co/docs/diffusers/en/index)\n\n**Supported Hardware Microarchitecture Compatibility:**\n\n- NVIDIA Ampere\n- NVIDIA Blackwell\n- NVIDIA Hopper\n\n**Operating System(s):**\n\n- Linux (We have not tested on other operating systems.)\n\n**Note:** Only BF16 precision is tested. Other precisions like FP4, FP8, and FP16 are not officially supported.\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Training, Testing, and Evaluation Datasets\n\n### Dataset Overview\n\n- **Total Size:** 1.3B data points\n- **Total Number of Datasets:** 393 dataset entries\n- **Dataset partition:** Training [100%], Testing [N/A \u2014 evaluation benchmarks used separately], Validation [N/A \u2014 evaluation benchmarks used separately]\n- **Time period for training data collection:** 2024\u20132026\n- **Time period for testing data collection:** N/A (standard public benchmarks)\n- **Time period for validation data collection:** N/A (standard public benchmarks)\n\nRaw data from internal and external sources is transformed into training-ready data through multiple stages of curation, filtering, and quality review. Data acquisition spans diverse multimodal sources \u2014 robotics, autonomous driving, industrial environments, indoor and outdoor scenes, varied lighting and weather conditions, camera viewpoints, object categories, and human activities \u2014 to broaden coverage across Physical AI operating environments. Automated filtering pipelines remove corrupted, duplicate, low-quality, and restricted content. Metadata analysis, heuristic rules, and model-assisted classifiers are applied during preprocessing to flag anomalous distributions and low-diversity subsets. Human review supplements automated filtering for selected datasets, benchmark construction, and targeted quality analysis. Datasets are balanced across modalities and task categories \u2014 visual reasoning, text-to-image, text-to-video, image-to-video, audio generation, video transfer, action-conditioned generation, and action command generation \u2014 to reduce overrepresentation of narrow domains. Synthetic and simulation-based augmentation supplements coverage of rare physical interactions and edge-case scenarios. Deduplication and provenance tracking are applied across the corpus. The resulting processed data is converted into model-ready tokenized or encoded representations through modality-specific preprocessors before training begins.\n\nTraining datasets passed through multiple layers of automated and manual safeguards designed to reduce the presence of harmful or policy-violating content across categories including weapons and weapons-related instructional content, criminal planning, child sexual abuse material (CSAM), non-consensual intimate imagery (NCII), sexual content involving minors, harassment, hate speech, profanity, threats and incitement to violence, self-harm or suicide-related content, and graphic violence. Data sources are reviewed for licensing compatibility, provenance, and alignment with internal data governance and safety policies before admission into training corpora. Automated filtering pipelines combine multiple detection strategies: hash-matching against known CSAM and NCII reference databases; classifier-based moderation models trained for explicit sexual content, hate speech, violence, weapons imagery, and other restricted categories; keyword and regex-based screening for criminal-planning, threats, and self-harm phrases in text data; metadata and provenance heuristics for source-level risk signals; and embedding-based anomaly detection to surface samples that fall outside expected distributions. Human review and targeted audits supplement automated filtering for selected datasets, benchmark construction, and safety-sensitive evaluation. For multimodal Physical AI data (robotics, autonomous driving, industrial scenes), additional filtering targets invalid action trajectories, physically implausible interactions, and unsafe control sequences. Synthetic and simulation-generated data are evaluated through internal validation before inclusion. Benchmark evaluations and red-team testing are applied post-training to surface remaining safety gaps across world generation, reasoning, audio, and action tasks. No large-scale data-filtering process can guarantee complete removal of all harmful content; residual risks may remain, particularly in rare edge cases or open-world deployment settings. Ongoing monitoring and dataset review continue post-release.\n\n- For more information about the datasets used to train this model, please see the [Public Summary of Training Content](https://docs.nvidia.com/cosmos/latest/_downloads/e482b7114ce8dbfbb07d2d4b42cafe4e/training-content-Cosmos-3.pdf).\n\n**Data Modality and Training Data Size**\n\n| Modality | Reasoning Data Sample Count | Generation Data Sample Count |\n| -------- | ------------------- | -------------------- |\n| Text     | 22M                 | Not Applicable       |\n| Image    | 19M                 | 767M                 |\n| Video    | 1M                  | 348M                 |\n| Audio    | Not Applicable      | 139M                 |\n| Action   | Not Applicable      | 8M                   |\n\n**Data Collection Method by dataset**\n\n- Hybrid: Automatic/Sensors, Synthetic, Automated\n\n**Labeling Method by dataset**\n\n- Hybrid: Human, Automated\n\n**Properties:** The training, testing, and evaluation datasets consist of diverse multimodal video, image, audio, action, synthetic, and sensor-conditioned data sourced from NVIDIA-owned data and publicly available, commercially permissive datasets. These datasets are curated to exclude known restricted content and to support building an Omni model that learns to generate and reason about dynamic physical environments across world reasoning and generation tasks.\n\n### Public Datasets\n\n| Dataset&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Samples&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |\n|---|---|\n| OpenImage | 1.2M |\n| Coyo700M | 100M |\n| YouTube Video | 340M |\n| UMI | 4.5M |\n\n### Private Datasets\n\n| Dataset&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Samples&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |\n|---|---|\n| Egocentric | 7M |\n| Nexar | 0.6M |\n| AgiBot | 0.2M |\n| HOI | 0.3M |\n\n### Synthetic Datasets\n\n| Dataset | Samples |\n|---|---|\n| synthetic images generated using HiDream-I1 | 15M |\n| synthetic images generated using Qwen-Image-2512 | 14M |\n| synthetic captions generated using Qwen3-VL | 1115M |\n\n## Evaluation Datasets\n\n**Data Collection Method by dataset**\n\n- Hybrid: Automatic/Sensors, Synthetic, Automated\n\n**Labeling Method by dataset**\n\n- Hybrid: Human, Automated\n\n**Properties:** The training, testing, and evaluation datasets consist of diverse multimodal video, image, audio, action, synthetic, and sensor-conditioned data sourced from NVIDIA-owned data and publicly available, commercially permissive datasets. These datasets are curated to exclude known restricted content and to support building an Omni model that learns to generate and reason about dynamic physical environments across world reasoning and generation tasks.\n\n## Benchmarks\n\nPlease see our [technical paper](https://research.nvidia.com/labs/cosmos-lab/cosmos3/technical-report.pdf) for detailed evaluations of the base model.\n\n### Action\n\n#### RoboLab\n\n![RoboLab \u2014 task success rates across language specificity and difficulty levels](images/benchmark-action-2.png)\n\n#### RoboArena\n\n<p align=\"center\"><img src=\"images/benchmark-roboarena.png\" alt=\"RoboArena Policy Leaderboard \u2014 Cosmos3-Nano-Policy ranked #1\"></p>\n\n## Usage\n\n- See [Cosmos](https://github.com/nvidia/cosmos) for details.\n\n### Quickstart\n\nCosmos3-Nano-Policy-DROID is served by a policy **Server** that streams actions to a **Client** driving a simulated or real robot. This example uses [`RoboLab`](https://github.com/NVlabs/RoboLab), a simulation benchmark for task-generalist policies, as the client. Start the server first, then connect the client.\n\n#### Server\n\nFirst, clone [`cosmos-framework`](https://github.com/NVIDIA/cosmos-framework):\n\n```bash\ngit clone https://github.com/NVIDIA/cosmos-framework.git\ncd cosmos-framework\n```\n\nBuild the Docker image:\n\n```bash\ndocker build \\\n  -t cosmos-framework:latest \\\n  .\n```\n\nSet your Hugging Face token and launch the container, which installs the dependencies:\n\n```bash\n# Set your Hugging Face token (https://huggingface.co/settings/tokens):\nexport HF_TOKEN=<your_hf_token>\n\ndocker run \\\n  -it \\\n  -e HF_HOME=/workspace/.cache/huggingface \\\n  -e HF_TOKEN=$HF_TOKEN \\\n  --net host \\\n  --rm \\\n  --runtime nvidia \\\n  -v .:/workspace \\\n  -v /workspace/.venv \\\n  -v $HOME/.cache/huggingface:/root/.cache/huggingface \\\n  cosmos-framework:latest \\\n  bash -c '\\\n    uv sync \\\n      --all-extras \\\n      --group=cu130-train \\\n      --group=policy-server && \\\n    exec bash; \\\n  '\n```\n\nInside the container, start the policy server:\n\n```\npython -m cosmos_framework.scripts.action_policy_server_robolab \\\n  --port 8000\n```\n\n#### Client\n\nClone [`RoboLab`](https://github.com/NVlabs/RoboLab):\n\n```bash\ngit clone https://github.com/NVlabs/RoboLab.git\ncd RoboLab\n```\n\nBuild the Docker image:\n\n```bash\n./docker/build_docker.sh latest\n```\n\nLaunch the container:\n\n```bash\n./docker/run_docker.sh latest\n```\n\nRun a task against the policy server. This opens a viewer window for real-time visualization of the simulation:\n\n```bash\npython policies/cosmos3/run.py \\\n  --task BananaInBowlTask\n```\n\nTo evaluate across multiple sub-environments in parallel in headless mode:\n\n```bash\npython policies/cosmos3/run.py \\\n  --task BananaInBowlTask \\\n  --num-envs 10 \\\n  --headless\n```\n\nExample output:\n\n<video controls width=\"864\" height=\"480\" src=\"\nhttps://huggingface.co/nvidia/Cosmos3-Nano-Policy-DROID/resolve/main/assets/Pick_up_the_banana_and_place_it_in_the_bowl_0_env0_viewport.mp4\"></video>\n\n## Limitations\n\nCosmos3 may produce imperfect outputs in challenging scenarios. Generation artifacts include temporal inconsistency, unstable camera or object motion, imprecise physical interactions, inaccurate audio-video synchronization, and action-state drift \u2014 especially in long-horizon or high-resolution outputs. Reasoning may also be incorrect: object states, causal relationships, spatial geometry, temporal ordering, agent intent, and future outcomes can be misinferred, and complex or long-context inputs may yield hallucinated entities, inconsistent interpretations, or implausible predictions. Because the model lacks an explicit physics simulator, 3D geometry, 4D space-time evolution, object permanence, contact dynamics, and physical laws are only approximated \u2014 producing artifacts such as disappearing or morphing objects, unrealistic collisions, and physically implausible motions. Quality further degrades in out-of-distribution environments, safety-critical edge cases, and domains underrepresented in training.\n\nCosmos3 outputs should not be treated as physically accurate simulation, reliable ground-truth reasoning, or safety-certified decision making. Applications involving robotics control, autonomous systems, scientific simulation, or safety-critical planning require additional validation, external constraints, system-level safety analysis, and domain-specific guardrails before deployment.\n\n## Inference\n\n**Acceleration Engine:** [PyTorch](https://pytorch.org/), [vLLM](https://github.com/vllm-project/vllm), [vLLM-Omni](https://github.com/vllm-project/vllm-omni), [Hugging Face Diffusers](https://github.com/huggingface/diffusers)\n\n**Test Hardware:** H100\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  Developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nPlease make sure you have proper rights and permissions for all input image and video content; if image or video includes people, personal health information, or intellectual property, the image or video generated will not blur or maintain proportions of image subjects included.\n\nUsers are responsible for model inputs and outputs. Users are responsible for ensuring safe integration of this model, including implementing guardrails as well as other safety mechanisms, prior to deployment.\n\nFor more detailed information on ethical considerations for this model, please see the Model Card++ [Explainability](EXPLAINABILITY.md), [Bias](BIAS.md), [Safety & Security](SAFETY.md), and [Privacy](PRIVACY.md) subcards. Please report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "openmdw1.1-license",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "library_name": "cosmos",
+    "tags": [
+      "nvidia",
+      "cosmos",
+      "cosmos3",
+      "world action model",
+      "policy model"
+    ],
+    "countDownloads": [
+      "checkpoint.json",
+      "config.json",
+      "generation_config.json",
+      "model.safetensors.index.json",
+      "model_index.json",
+      "tokenizer.json",
+      "tokenizer_config.json",
+      "sound_tokenizer/config.json",
+      "sound_tokenizer/diffusion_pytorch_model.safetensors",
+      "text_tokenizer/tokenizer.json",
+      "text_tokenizer/tokenizer_config.json",
+      "transformer/config.json",
+      "transformer/diffusion_pytorch_model-00001-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00002-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00003-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00004-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00005-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00006-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model-00007-of-00007.safetensors",
+      "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "vae/config.json",
+      "vae/diffusion_pytorch_model.safetensors",
+      "vision_encoder/config.json",
+      "vision_encoder/model.safetensors"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

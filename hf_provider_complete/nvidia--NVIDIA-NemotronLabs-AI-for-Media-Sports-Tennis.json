@@ -1,0 +1,397 @@
+{
+  "modelId": "nvidia/NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis",
+  "author": "nvidia",
+  "sha": "44107c341fe6647f5481a260a8c9923f0d3d7671",
+  "lastModified": "2026-09-11 20:06:04+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "NemotronH_Nano_Omni_Reasoning_V3",
+    "feature-extraction",
+    "nvidia",
+    "pytorch",
+    "multimodal",
+    "any-to-any",
+    "custom_code",
+    "base_model:nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16",
+    "base_model:finetune:nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "any-to-any",
+  "library_name": "transformers",
+  "likes": 11,
+  "downloads": 497,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "any-to-any",
+    "tags": [
+      "nvidia",
+      "pytorch",
+      "multimodal"
+    ],
+    "base_model_relation": "finetune",
+    "track_downloads": true
+  },
+  "config": {
+    "architectures": [
+      "NemotronH_Nano_Omni_Reasoning_V3"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration.NemotronH_Nano_Omni_Reasoning_V3_Config",
+      "AutoModel": "modeling.NemotronH_Nano_Omni_Reasoning_V3",
+      "AutoModelForCausalLM": "modeling.NemotronH_Nano_Omni_Reasoning_V3"
+    },
+    "model_type": "NemotronH_Nano_Omni_Reasoning_V3",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|im_end|>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved. #}\n{# SPDX-License-Identifier: OpenMDW-1.1 #}\n{% macro render_extra_keys(json_dict, handled_keys) %}\n    {%- if json_dict is mapping %}\n        {%- for json_key in json_dict if json_key not in handled_keys %}\n            {%- if json_dict[json_key] is mapping or (json_dict[json_key] is sequence and json_dict[json_key] is not string) %}\n                {{- '\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | tojson | safe) ~ '</' ~ json_key ~ '>' }}\n            {%- else %}\n                {{- '\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | string) ~ '</' ~ json_key ~ '>' }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{%- endmacro -%}\n{%- set enable_thinking = enable_thinking if enable_thinking is defined else True %}\n{%- set reasoning_budget = reasoning_budget if reasoning_budget is defined else None %}\n{%- set truncate_history_thinking = truncate_history_thinking if truncate_history_thinking is defined else True %}\n\n{#- Scan messages for VLM thinking toggles to override enable_thinking -#}\n{%- set toggle = namespace(enable=enable_thinking) %}\n{%- for m in messages %}\n    {%- if m['role'] == 'user' or m['role'] == 'system' -%}\n        {%- if m['content'] is string -%}\n            {%- set c = m['content'] %}\n            {%- if '/think' in c.replace('</think>', '') -%}\n                {%- set toggle.enable = true -%}\n            {%- elif '/no_think' in c -%}\n                {%- set toggle.enable = false -%}\n            {%- endif -%}\n        {%- else -%}\n            {%- for part in m['content'] -%}\n                {%- if part['type'] == 'text' -%}\n                    {%- set c = part['text'] %}\n                    {%- if '/think' in c.replace('</think>', '') -%}\n                        {%- set toggle.enable = true -%}\n                    {%- elif '/no_think' in c -%}\n                        {%- set toggle.enable = false -%}\n                    {%- endif -%}\n                {%- endif -%}\n            {%- endfor -%}\n        {%- endif -%}\n    {%- endif -%}\n{%- endfor -%}\n{#- Prepare message iteration similar to LM template -#}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- set loop_messages = messages %}\n{%- for m in loop_messages %}\n    {%- if m[\"role\"] == \"user\" %}\n        {%- set ns.last_user_idx = loop.index0 %}\n    {%- endif %}\n{%- endfor -%}\n\n{%- if messages[0][\"role\"] == \"system\" %}\n    {%- set system_message = messages[0][\"content\"] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = [] %}\n{%- endif %}\n{#- Recompute last_user_idx relative to loop_messages after handling system -#}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- for m in loop_messages %}\n    {%- if m[\"role\"] == \"user\" %}\n        {%- set ns.last_user_idx = loop.index0 %}\n    {%- endif %}\n{%- endfor -%}\n{#- System preamble with LM formatting, sanitize thinking toggles -#}\n{%- if system_message is defined %}\n    {%- set sys_content = system_message | string %}\n    {%- set sys_content = sys_content.replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>') %}\n    {{- \"<|im_start|>system\\n\" + sys_content }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- \"<|im_start|>system\\n\" }}\n    {%- endif %}\n{%- endif %}\n{%- if tools is iterable and tools | length > 0 %}\n    {%- if system_message is defined and system_message | length > 0 %}\n        {{- \"\\n\\n\" }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n\" }}\n    {{- \"<tools>\" }}\n    {%- for tool in tools %}\n        {%- if tool.function is defined %}\n            {%- set tool = tool.function %}\n        {%- endif %}\n        {{- \"\\n<function>\\n<name>\" ~ tool.name ~ \"</name>\" }}\n        {%- if tool.description is defined %}\n            {{- '\\n<description>' ~ (tool.description | trim) ~ '</description>' }}\n        {%- endif %}\n        {{- '\\n<parameters>' }}\n        {%- if tool.parameters is defined and tool.parameters is mapping and tool.parameters.properties is defined and tool.parameters.properties is mapping %}\n            {%- for param_name, param_fields in tool.parameters.properties|items %}\n                {{- '\\n<parameter>' }}\n                {{- '\\n<name>' ~ param_name ~ '</name>' }}\n                {%- if param_fields.type is defined %}\n                    {{- '\\n<type>' ~ (param_fields.type | string) ~ '</type>' }}\n                {%- endif %}\n                {%- if param_fields.description is defined %}\n                    {{- '\\n<description>' ~ (param_fields.description | trim) ~ '</description>' }}\n                {%- endif %}\n                {%- if param_fields.enum is defined %}\n                    {{- '\\n<enum>' ~ (param_fields.enum | tojson | safe) ~ '</enum>' }}\n                {%- endif %}\n                {%- set handled_keys = ['name', 'type', 'description', 'enum'] %}\n                {{- render_extra_keys(param_fields, handled_keys) }}\n                {{- '\\n</parameter>' }}\n            {%- endfor %}\n        {%- endif %}\n        {%- set handled_keys = ['type', 'properties', 'required'] %}\n        {{- render_extra_keys(tool.parameters, handled_keys) }}\n        {%- if tool.parameters is defined and tool.parameters.required is defined %}\n            {{- '\\n<required>' ~ (tool.parameters.required | tojson | safe) ~ '</required>' }}\n        {%- endif %}\n        {{- '\\n</parameters>' }}\n        {%- set handled_keys = ['type', 'name', 'description', 'parameters'] %}\n        {{- render_extra_keys(tool, handled_keys) }}\n        {{- '\\n</function>' }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n{%- endif -%}\n{%- if system_message is defined %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif -%}\n{#- Iterate conversation -#}\n{%- for message in loop_messages %}\n    {%- if message.role == \"assistant\" %}\n        {#- Use LM assistant handling -#}\n        {%- if message.reasoning_content is defined and message.reasoning_content is string and message.reasoning_content | trim | length > 0 %}\n            {%- set content = \"<think>\\n\" ~ message.reasoning_content ~ \"\\n</think>\\n\" ~ (message.content | default('', true)) %}\n        {%- else %}\n            {%- set content = message.content | default('', true) %}\n            {%- if content is string -%}\n                {%- if '<think>' not in content and '</think>' not in content -%}\n                    {%- set content = \"<think></think>\" ~ content -%}\n                {%- endif -%}\n            {%- else -%}\n                {%- set content = content -%}\n            {%- endif -%}\n        {%- endif %}\n        {%- if message.tool_calls is defined and message.tool_calls is iterable and message.tool_calls | length > 0 %}\n            {{- '<|im_start|>assistant\\n' }}\n                {%- set include_content = not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {%- if content is string and content | trim | length > 0 %}\n                    {%- if include_content %}\n                        {{- (content | trim) ~ '\\n' -}}\n                    {%- else %}\n                        {%- set c = (content | string) %}\n                        {%- if '</think>' in c %}\n                            {%- set c = c.split('</think>')[-1] %}\n                        {%- elif '<think>' in c %}\n                            {%- set c = c.split('<think>')[0] %}\n                        {%- endif %}\n                        {%- set c = \"<think></think>\" ~ c | trim %}\n                        {%- if c | length > 0 %}\n                            {{- c ~ '\\n' -}}\n                        {%- endif %}\n                    {%- endif %}\n                {%- else %}\n                    {{- \"<think></think>\" -}}\n                {%- endif %}\n                {%- for tool_call in message.tool_calls %}\n                    {%- if tool_call.function is defined %}\n                        {%- set tool_call = tool_call.function %}\n                    {%- endif %}\n                    {{- '<tool_call>\\n<function=' ~ tool_call.name ~ '>\\n' -}}\n                        {%- if tool_call.arguments is defined %}\n                            {%- for args_name, args_value in tool_call.arguments|items %}\n                                {{- '<parameter=' ~ args_name ~ '>\\n' -}}\n                                    {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                                {{- args_value ~ '\\n</parameter>\\n' -}}\n                            {%- endfor %}\n                        {%- endif %}\n                    {{- '</function>\\n</tool_call>\\n' -}}\n                {%- endfor %}\n                {{- '<|im_end|>\\n' }}\n        {%- else %}\n            {%- if not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {{- '<|im_start|>assistant\\n' ~ (content | default('', true) | string | trim) ~ '<|im_end|>\\n' }}\n            {%- else %}\n                {%- set c = (content | default('', true) | string) %}\n                {%- if '<think>' in c and '</think>' in c %}\n                    {%- set c = \"<think></think>\" ~ c.split('</think>')[-1] %}\n                {%- endif %}\n                {%- set c = c | trim %}\n                {%- if c | length > 0 %}\n                    {{- '<|im_start|>assistant\\n' ~ c ~ '<|im_end|>\\n' }}\n                {%- else %}\n                    {{- '<|im_start|>assistant\\n<|im_end|>\\n' }}\n                {%- endif %}\n            {%- endif %}\n        {%- endif %}\n    {%- elif message.role == \"user\" or message.role == \"system\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {#- Build VLM multimodal content when content is a sequence -#}\n        {%- if message.content is string -%}\n            {%- set content = (message.content | string) %}\n        {%- else -%}\n            {%- set text_ns = namespace(val='') -%}\n            {%- set mm_content = '' -%}\n            {%- set counters = namespace(images=0, videos=0, audios=0) -%}\n            {%- for part in message['content'] -%}\n                {%- if part['type'] == 'image' or part['type'] == 'image_url' -%}\n                    {%- set counters.images = counters.images + 1 -%}\n                {%- elif part['type'] == 'video' or part['type'] == 'video_url' -%}\n                    {%- set counters.videos = counters.videos + 1 -%}\n                {%- elif part['type'] == 'audio' or part['type'] == 'audio_url' -%}\n                    {%- set counters.audios = counters.audios + 1 -%}\n                {%- elif part['type'] == 'text' -%}\n                    {%- set text_ns.val = text_ns.val + part['text'] -%}\n                {%- endif -%}\n            {%- endfor -%}\n            {%- if '<image>' in text_ns.val -%}\n                {%- set counters.images = 0 -%}\n            {%- endif -%}\n            {%- if '<video>' in text_ns.val -%}\n                {%- set counters.videos = 0 -%}\n            {%- endif -%}\n            {%- if '<so_embedding>' in text_ns.val -%}\n                {%- set counters.audios = 0 -%}\n            {%- endif -%}\n            {%- if counters.images > 1 -%}\n                {%- set image_tags = namespace(tags=[]) -%}\n                {%- for i in range(counters.images) -%}\n                    {%- set image_tags.tags = image_tags.tags + ['<image ' + (i + 1)|string + '><image>'] -%}\n                {%- endfor -%}\n                {%- set mm_content = ' '.join(image_tags.tags) + '\\n' -%}\n            {%- elif counters.images == 1 -%}\n                {%- set mm_content = '<image>\\n' -%}\n            {%- endif -%}\n            {%- set mm_content = mm_content + '<video>\\n' * counters.videos -%}\n            {%- set mm_content = mm_content + '<so_embedding>\\n' * counters.audios -%}\n            {%- set content = mm_content + text_ns.val.lstrip('\\n') -%}\n        {%- endif -%}\n        {#- Sanitize thinking toggle directives from user/system content -#}\n        {%- set content = content.replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>') -%}\n        {%- set content = content | trim -%}\n        {%- if message.role == \"user\" and loop.index0 == ns.last_user_idx and reasoning_budget is not none -%}\n            {{- content + '\\n\\n{thinking token budget: ' + (reasoning_budget | string) + '}' -}}\n        {%- else -%}\n            {{- content -}}\n        {%- endif -%}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user\\n' }}\n        {%- endif %}\n        {{- '<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>\\n' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endfor -%}\n{#- Generation prompt using computed thinking toggle -#}\n{%- if add_generation_prompt %}\n    {%- if toggle.enable %}\n        {{- '<|im_start|>assistant\\n<think>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>assistant\\n<think></think>' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1794,
+      "lfs": null
+    },
+    {
+      "rfilename": "Apache-2.0.txt",
+      "size": 10173,
+      "lfs": null
+    },
+    {
+      "rfilename": "CONTRIBUTING.md",
+      "size": 55,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 2694,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 17737,
+      "lfs": null
+    },
+    {
+      "rfilename": "THIRD_PARTY_NOTICES.md",
+      "size": 4432,
+      "lfs": null
+    },
+    {
+      "rfilename": "audio_model.py",
+      "size": 6416,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 954,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 14423,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 12940,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration.py",
+      "size": 4400,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nemotron_h.py",
+      "size": 14022,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_radio.py",
+      "size": 8694,
+      "lfs": null
+    },
+    {
+      "rfilename": "evs.py",
+      "size": 3056,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 4110,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processing.py",
+      "size": 11022,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00017.safetensors",
+      "size": 3996855087,
+      "lfs": {
+        "size": 3996855087,
+        "sha256": "883f906ea4fb5a5377ebde71f82319d009261d3e91d280687d8ab6cae62450e3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00017.safetensors",
+      "size": 3999542415,
+      "lfs": {
+        "size": 3999542415,
+        "sha256": "e01b3fc637c841e8b38668e36725deeffe0a9e87b154c9ba2dfd3032da379cf8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00017.safetensors",
+      "size": 3994812277,
+      "lfs": {
+        "size": 3994812277,
+        "sha256": "16cfb4df02b97fe88dad3a11b4e27cfbb20ce7c0c1200f6e2a3546736cd2016e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00017.safetensors",
+      "size": 3999542571,
+      "lfs": {
+        "size": 3999542571,
+        "sha256": "84f11d9eaef9f05445b2f19c56bc7088733d041f762e2e0d04d804d4dfbf8d23",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00017.safetensors",
+      "size": 3994812700,
+      "lfs": {
+        "size": 3994812700,
+        "sha256": "636d8028574846c61f86e726ea8c207751f14469916211f63a4b589ac5a6cfd1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00017.safetensors",
+      "size": 3999542788,
+      "lfs": {
+        "size": 3999542788,
+        "sha256": "00e8db2d3338563f6662c98e69628620cfe10b10e8b34bab8b36df6672af058c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00017.safetensors",
+      "size": 3994812712,
+      "lfs": {
+        "size": 3994812712,
+        "sha256": "1c02786a2c7597f9d707ff5f6092068875e42c775539732976ad07b52a821b9c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00017.safetensors",
+      "size": 3999542778,
+      "lfs": {
+        "size": 3999542778,
+        "sha256": "a583c06c5ae2aaadd0fd2a7295dd269c0aef52f75aa2f7d691d418ddb2737353",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00017.safetensors",
+      "size": 3994812738,
+      "lfs": {
+        "size": 3994812738,
+        "sha256": "cb6ec67865002ebe08e438d1d2ac2aa1c44f5d58e44353da7bf3a81713f2d1be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00017.safetensors",
+      "size": 3999542758,
+      "lfs": {
+        "size": 3999542758,
+        "sha256": "f051116a1d08de604a264139171502bdaac82cbc3b0dd58d580c17e5cad32086",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00017.safetensors",
+      "size": 3982770536,
+      "lfs": {
+        "size": 3982770536,
+        "sha256": "599701c30e49673349f1fb26f8fd1c95f2c8a9fdf6c4440a3079dfd5aa8e46e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00017.safetensors",
+      "size": 3991628950,
+      "lfs": {
+        "size": 3991628950,
+        "sha256": "9fa7d288d5d63ef9d19ad5e60263b9ed6c95addad0dcf96da8e76e52323e0420",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00017.safetensors",
+      "size": 3970317693,
+      "lfs": {
+        "size": 3970317693,
+        "sha256": "1c52cec012e3eca4c2b2f3a17cf09a82f69dfd03cce3295e95c979944674916d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00017.safetensors",
+      "size": 3994103782,
+      "lfs": {
+        "size": 3994103782,
+        "sha256": "e3fae5f4a68be63051a1ff4477daecb740eb8653ee898c68345ebce541a1177f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00017.safetensors",
+      "size": 3999542999,
+      "lfs": {
+        "size": 3999542999,
+        "sha256": "1b2fe4e1ccd7830b404912b29ffb8d4ec113a7d4bc7b1a81a2eb65076bde3460",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00017.safetensors",
+      "size": 3997903781,
+      "lfs": {
+        "size": 3997903781,
+        "sha256": "266f38a71e4b73911087aa07a4b8d90112139e077d5d6666556952dd3a74e363",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00017.safetensors",
+      "size": 2122220262,
+      "lfs": {
+        "size": 2122220262,
+        "sha256": "612baf5523057b5bfdf89b6bb11e4c99de43608f20cb9ad7b6d47f6e88b988af",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 789295,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling.py",
+      "size": 28241,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_nemotron_h.py",
+      "size": 64337,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 846,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing.py",
+      "size": 25812,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_utils.py",
+      "size": 3157,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 1163,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 764,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077366,
+      "lfs": {
+        "size": 17077366,
+        "sha256": "d0432ad8b1c2984a2e2dca82e1933e3fd5628df6e95c51fba4c3ee9950dce299",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 582,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_inference.py",
+      "size": 12355,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_io.py",
+      "size": 6662,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_processing.py",
+      "size": 6530,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nbase_model: nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16\nbase_model_relation: finetune\nlibrary_name: transformers\nlicense: other\nlicense_name: openmdw-1.1\nlicense_link: https://openmdw.ai/license/1-1/\npipeline_tag: any-to-any\ntags:\n- nvidia\n- pytorch\n- multimodal\ntrack_downloads: true\n---\n\n# Model Overview\n\n## NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis\n\n## At a Glance\n\n| | |\n|---|---|\n| **Total parameters** | 31B (Mamba2-Transformer hybrid Mixture of Experts (MoE)) |\n| **Active parameters** | ~3B per token |\n| **Max context** | 256k tokens |\n| **Modalities (in)** | Video, Audio, Image, Text |\n| **Modality (out)** | Text |\n| **Best for** | Point-level tennis Q&A, shot and court understanding, match-state reasoning, rules knowledge, and audio-aware point analysis |\n| **Fine-tuning data** | 1.31M Q&A pairs over 43k point clips (239 matches) |\n| **Minimum GPU (BF16)** | 1\u00d7 A100 80GB or 1\u00d7 H100 80GB (single-GPU); 1\u00d7 B200 / 1\u00d7 H200 recommended |\n| **Precisions** | bfloat16 (BF16) (`NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis`, ~62 GB) \u2014 TBD |\n\n### Description:\nNVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis is a fine-tuned multimodal large language model derived from Nemotron 3 Nano Omni. It was further trained on an in-house NVIDIA tennis dataset of manually labeled point-level video clips to specialize in tennis match understanding. The model supports structured multiple-choice and open-ended Q&A over point clips, covering shot mechanics, court positioning, player movement, match facts, rules knowledge, and audio cues. It works best when a full tennis point clip is passed as input. <br>\n\n\nThis model is fine-tuned from Nemotron 3 Nano Omni on an in-house NVIDIA tennis dataset of tennis point video clips using the [NVIDIA Sports Intelligence playbooks](https://github.com/NVIDIA/sports-intelligence-playbooks). For base model details, see the [base model card](https://huggingface.co/nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16). <br>\n\nThis model is ready for commercial or non-commercial use. <br>\n\n### License/Terms of Use\n\nGoverning Terms: Use of this model is governed by the [OpenMDW License Agreement v1.1 (OpenMDW-1.1)](https://openmdw.ai/license/1-1/)<br>\n\n### Deployment Geography:\nGlobal <br>\n\n### Use Case: <br>\nThis model is designed for tennis-specific multimodal understanding over point-level video. Expected users include:\n- Tennis broadcast and media workflows \u2014 point-level Q&A, shot and outcome understanding, and audio cue interpretation over match footage\n- Coaching and performance analysis \u2014 structured and open-ended questions about shots, positioning, movement, and rally structure on point clips\n- Sports analytics and production \u2014 match-fact and score-state reasoning aligned with point-level annotations\n- Enterprise tennis applications \u2014 searchable point-level understanding and tennis-domain assistants over archived match video\n\n\n### Release Date: <br>\nHugging Face 09/10/2026 via [Hugging Face](https://huggingface.co/nvidia/NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis) <br>\n\n## Model Architecture:\n**Architecture Type:** Other (Mamba2-Transformer hybrid Mixture of Experts backbone with multimodal encoders) <br>\n\n**Network Architecture:**\n- [Nemotron 3 Nano LLM (30B A3B)](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16) \u2014 31B-parameter Mamba2-Transformer hybrid MoE backbone with ~3B active parameters per token.\n- [CRADIO v4-H](https://huggingface.co/nvidia/C-RADIOv4-H) \u2014 vision encoder for image and video frames.\n- [Parakeet](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) \u2014 speech encoder for audio inputs.\n\n**Number of model parameters:** 3.1 x 10^10 (31B A3B) <br>\n\n**How the model was developed:** Weights are initialized from the pretrained Nemotron 3 Nano Omni BF16 checkpoint. Fine-tuning trains only the language-model parameters; the vision and audio encoders remain frozen. Optimization uses AdamW (learning rate 5\u00d710\u207b\u2075, \u03b2=(0.9, 0.999)) with warmup and cosine decay, regularized by weight decay 0.05 and gradient clipping at max-norm 1.0, with no additional damping. Training is BF16 packed supervised fine-tuning over point-level tennis clips. Hyperparameters follow the published NeMo AutoModel recipe rather than a dedicated search. <br>\n\n\n## Input(s): <br>\n**Input Type(s):** Video, Audio, Image, Text <br>\n\n**Input Format(s):** <br> \n- Video: mp4, up to 2 minutes. For tennis tasks, pass a full tennis point clip as input for best results. For 1080p videos, sample up to 1 FPS (frames per second) / 128 frames. For lower-resolution videos such as 720p, higher temporal sampling such as 2 FPS / 256 frames may be used.\n- Audio: wav, mp3 files (up to 1 hour), 8kHz and higher sampling rates\n- Image: Red, Green, Blue (RGB) (jpeg, png)\n- Text: String <br>\n\n**Input Parameters:** <br>\n- Video: Three-Dimensional (3D)\n- Audio: One-Dimensional (1D)\n- Image: Two-Dimensional (2D)\n- Text: One-Dimensional (1D) <br>\n\n**Other Properties Related to Input:** <br>\n- Recommended input: a full tennis point (video clip, with audio when available), matching the point-level clips used during fine-tuning\n- Maximum context length up to 256k tokens \n- Language support: English only  <br>\n\n\n## Output(s)\n\n**Output Type(s):** Text <br>\n\n**Output Format(s):** <br>\n- Text: String <br>\n\n**Output Parameters:** <br>\n- Text: One-Dimensional (1D) <br>\n\n**Other Properties Related to Output:** <br>\n- Maximum context length up to 256k tokens. <br>\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to central processing unit (CPU)-only solutions. <br>\n\n## Software Integration:\n**Runtime Engine(s):**\n* NeMo <br>\n* Megatron <br>\n\n**Supported Hardware Microarchitecture Compatibility:** <br>\n* NVIDIA Ampere (A100 80GB SXM/NVLink) <br>\n* NVIDIA Blackwell (B200 SXM/NVLink, RTX Pro 6000 SE, DGX Spark, Jetson Thor, RTX 5090) <br>\n* NVIDIA Hopper (H100 SXM/NVLink, H200 SXM/NVLink) <br>\n* NVIDIA Lovelace (L40S) <br>\n\n**Preferred/Supported Operating System(s):**\n* Linux <br>\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment. <br>\n\n---\n\n## Quick Start\n\n### Video inference\n\nProvide a full tennis point as an MP4, from serve through the end of the point, with audio when available. Frames are sampled with [`video_io.py`](video_io.py), included with this model.\n\n#### Convenience script\n\nFor a ready-to-run CLI (download, load, sample frames, and generate), use [`video_inference.py`](video_inference.py) in this repo:\n\n```bash\npip install torch transformers accelerate huggingface_hub safetensors pillow \\\n  librosa soundfile decord imageio-ffmpeg\n\npython video_inference.py \\\n  --video /path/to/tennis_point.mp4 \\\n  --question 'What happened in this point? Provide a detailed caption. (Jil Teichmann - \"Jil Teichmann\" is the player wearing a white cap, a black top, a black skirt, and white and tan shoes; Victoria Mboko - \"Victoria Mboko\" is the player wearing a white cap, white top, a green skirt, and white shoes.)'\n```\n\nAdd `--local-files-only` after weights are cached. If librosa cannot decode MP4 audio, `video_inference.py` extracts a WAV with ffmpeg (`imageio-ffmpeg` or a system `ffmpeg`); pass `--extract-audio-wav` to force that path, or `--no-audio` to skip audio.\n\nThe first `AutoModel.from_pretrained(..., trust_remote_code=True)` also downloads RADIO vision code from [`nvidia/C-RADIOv4-H`](https://huggingface.co/nvidia/C-RADIOv4-H).\n\nDefault inference policy (same as [`video_inference.py`](video_inference.py)): **2 frames per second (FPS)**, up to **128 frames**, **256** new tokens, **video + audio** from the MP4, greedy decode, `video_pruning_rate=0.0`.\n\n#### Python snippet\n\nThe core inference steps (functionally equivalent to `video_inference.py`):\n\n```python\nimport importlib.util\nimport os\nimport shutil\nimport subprocess\nimport tempfile\nfrom pathlib import Path\n\nimport torch\nfrom huggingface_hub import snapshot_download\nfrom transformers import AutoConfig, AutoModel, AutoProcessor\nfrom transformers.video_utils import VideoMetadata\n\nrepo_id = \"nvidia/NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis\"\nvideo_path = \"/path/to/tennis_point.mp4\"\nquestion = (\n    \"What happened in this point? Provide a detailed caption. \"\n    '(Jil Teichmann - \"Jil Teichmann\" is the player wearing a white cap, a black top, '\n    \"a black skirt, and white and tan shoes; Victoria Mboko - \\\"Victoria Mboko\\\" is the \"\n    \"player wearing a white cap, white top, a green skirt, and white shoes.)\"\n)\nvideo_fps, max_video_frames, max_new_tokens = 2, 128, 256\nrevision, local_files_only = None, False  # optional: pin Hub commit; cache-only load\n\ncache_dir = os.environ.get(\"HF_HOME\") or os.environ.get(\"HF_HUB_CACHE\")\nhub = {\"trust_remote_code\": True, \"local_files_only\": local_files_only}\nif cache_dir:\n    hub[\"cache_dir\"] = cache_dir\nif revision:\n    hub[\"revision\"] = revision\nsnapshot_dir = snapshot_download(\n    repo_id=repo_id, repo_type=\"model\", **{k: v for k, v in hub.items() if k != \"trust_remote_code\"}\n)\n\nspec = importlib.util.spec_from_file_location(\"checkpoint_video_io\", Path(snapshot_dir) / \"video_io.py\")\nvideo_io = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(video_io)\nframe_urls, metadata = video_io.sample_video_frames_to_data_urls(\n    video_path, fps=max(0, int(video_fps)), nframe_max=max_video_frames,\n)\nframes = [video_io.pil_image_from_base64(url) for url in frame_urls]\nvideo_metadata = VideoMetadata(\n    total_num_frames=metadata.total_num_frames, fps=metadata.fps, frames_indices=metadata.frames_indices,\n)\n\nffmpeg = shutil.which(\"ffmpeg\")\nif ffmpeg is None:\n    import imageio_ffmpeg\n    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()\naudio_wav = tempfile.NamedTemporaryFile(suffix=\".wav\", delete=False).name\nsubprocess.run(\n    [ffmpeg, \"-nostdin\", \"-y\", \"-i\", video_path, \"-vn\", \"-acodec\", \"pcm_s16le\",\n     \"-ar\", \"16000\", \"-ac\", \"1\", audio_wav],\n    check=True, capture_output=True,\n)\n\nprocessor = AutoProcessor.from_pretrained(repo_id, **hub)\nconfig = AutoConfig.from_pretrained(repo_id, **hub)\nconfig.video_pruning_rate = 0.0\nmodel = AutoModel.from_pretrained(\n    repo_id, config=config, torch_dtype=torch.bfloat16,\n    device_map={\"\": 0} if torch.cuda.is_available() else None, low_cpu_mem_usage=True, **hub,\n)\nif hasattr(model, \"vision_model\") and hasattr(model.vision_model, \"radio_model\"):\n    model.vision_model.radio_model.summary_idxs = None\nmodel.eval()\n\nprompt = processor.tokenizer.apply_chat_template(\n    [{\"role\": \"user\", \"content\": f\"{processor.video_token}\\n{processor.audio_token}\\n{question}\"}],\n    tokenize=False, add_generation_prompt=True, enable_thinking=False,\n)\ninputs = processor(\n    text=[prompt], videos=frames, audio=[audio_wav], return_tensors=\"pt\", do_sample_frames=False,\n    videos_kwargs={\"video_metadata\": video_metadata}, audio_kwargs={\"sampling_rate\": 16000},\n)\nfor key in (\"num_patches\", \"num_tokens\", \"imgs_sizes\"):\n    inputs.pop(key, None)\ndevice = next(model.parameters()).device\ninputs = {k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in inputs.items()}\n\ndef trim_generated_ids(input_ids, generated_ids):\n    if hasattr(generated_ids, \"sequences\"):\n        generated_ids = generated_ids.sequences\n    if generated_ids.dim() == 1:\n        return [generated_ids[input_ids.shape[-1]:]]\n    if input_ids.dim() == 1:\n        input_ids = input_ids.unsqueeze(0)\n    return [out_ids[len(in_ids):] for in_ids, out_ids in zip(input_ids, generated_ids)]\n\nwith torch.no_grad():\n    generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False, output_hidden_states=False)\nprint(processor.batch_decode(\n    trim_generated_ids(inputs[\"input_ids\"], generated_ids), skip_special_tokens=True, clean_up_tokenization_spaces=False,\n)[0].strip())\n```\n\nRequires one GPU with ~80 GB memory (BF16). Authenticate with `hf auth login` before downloading a private repo. Frame sampling uses `decord`. MP4 audio is decoded by extracting a 16 kHz WAV with ffmpeg (`imageio-ffmpeg` or a system `ffmpeg`); librosa/soundfile cannot open many MP4s directly. `summary_idxs | MISSING` on load is expected.\n\n\n---\n\n## Training, Testing, and Evaluation Datasets:\n\n### Base Model\nThis model is a fine-tuned variant of [Nemotron 3 Nano Omni 30B-A3B-Reasoning](https://huggingface.co/nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16), retaining the same Mamba2-Transformer hybrid MoE architecture and multimodal encoders (CRADIO v4-H vision encoder and Parakeet speech encoder). <br>\n\n### Training Dataset\n\n**Dataset Name:** NVIDIA In-House Tennis Dataset (proprietary) <br>\n**Data Modality:** Video, Text <br>\n**Video Training Data Size:** Less than 10,000 Hours (43,084 point-level video clips) <br>\n**Text Training Data Size:** Less than 1 Billion Tokens (1,312,129 training Q&A examples) <br>\n**Dataset Size:** 1,312,129 training examples <br>\n**Data Collection Method:** Manually-Collected <br>\n**Labeling Method:** Manually-Labeled <br>\n**Time period for training data collection:** 2025 <br>\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** 1,312,129 tennis point video Q&A examples (1,226,081 multiple-choice and 86,048 open-ended) from 43,084 point-level clips across 239 matches and 38 annotation categories. Content is proprietary broadcast and court-capture tennis footage with manually authored English questions and answers. No sensor-derived metadata beyond standard video/audio capture. **Linguistic characteristics:** English-only tennis-domain questions and answers in multiple-choice and open-ended formats covering shot mechanics, court positioning, player movement, rally structure, score state, rules knowledge, audio cues, and cross-field reasoning. <br>\n\n### Testing Dataset\n\n**Dataset Name:** NVIDIA In-House Tennis Dataset \u2014 Test (unseen matches) partition (proprietary) <br>\n**Dataset Size:** 80,872 test examples from 12 fully held-out matches (2,689 point-level clips; no training match overlap) <br>\n**Data Collection Method:** Manually-Collected <br>\n**Labeling Method:** Manually-Labeled <br>\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** Q&A pairs from **12 fully held-out matches** (no training match overlap) \u2014 2,689 point-level clips, 80,872 examples. English tennis-domain labels aligned with the training taxonomy. The corpus also includes a validation split (68,931 examples) and a separate Test (seen matches) partition (69,091 examples from 238 matches represented in training, with match-level overlap only); **only Test (unseen matches) was used for reported model testing.** <br>\n\n### Evaluation Dataset\n\n**Dataset Name:** NVIDIA In-House Tennis Test (unseen matches) evaluation benchmark (proprietary) <br>\n**Dataset Size:** 80,872 test examples from the Test (unseen matches) partition (12 fully held-out matches) used for MCQ accuracy and open-ended judge scoring <br>\n**Data Collection Method:** Manually-Collected <br>\n**Labeling Method:** Manually-Labeled <br>\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** **Test (unseen matches)** \u2014 12 fully held-out matches with no training match overlap (2,689 point-level clips, 80,872 Q&A examples). Evaluated with automated MCQ scoring and LLM-as-judge pass@9 metrics on open-ended responses. English tennis-domain questions across 38 fine-grained categories. Test (seen matches) was not used for reported metrics. <br>\n\nFine-tuning was performed on top of the base Nemotron 3 Nano Omni weights using the in-house tennis dataset. Pre-training dataset details for the base model are documented in the [base Nemotron 3 Nano Omni model card](https://huggingface.co/nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16). <br>\n\n\n# Inference:\n**Acceleration Engine:** PyTorch, Hugging Face Transformers, NeMo AutoModel <br>\n**Test Hardware:** <br>\n* NVIDIA Hopper H100 SXM <br>\n* NVIDIA Hopper H200 SXM <br>\n* NVIDIA Blackwell B200 SXM <br>\n* NVIDIA Ampere A100 80GB SXM <br>\n* NVIDIA Blackwell GB200 NVL72 <br>\n* NVIDIA Blackwell RTX PRO 6000 SE <br>\n* NVIDIA Lovelace L40S PCIe 48GB <br>\n* NVIDIA Blackwell DGX Spark <br>\n* NVIDIA Blackwell Jetson Thor <br>\n* NVIDIA Blackwell RTX 5090\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>\n\nPlease make sure you have proper rights and permissions for all input image and video content; if image or video includes people, personal health information, or intellectual property, the image or video generated will not blur or maintain proportions of image subjects included. <br>\n\nFor more detailed information on ethical considerations for this model, please see the Model Card++ [Bias](bias.md), [Explainability](explainability.md), [Safety & Security](safety.md), and [Privacy](privacy.md) Subcards. <br>\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/). <br>\n",
+  "cardDataParsed": {
+    "base_model": "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16",
+    "base_model_relation": "finetune",
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "pipeline_tag": "any-to-any",
+    "tags": [
+      "nvidia",
+      "pytorch",
+      "multimodal"
+    ],
+    "track_downloads": true,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling.NemotronH_Nano_Omni_Reasoning_V3",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

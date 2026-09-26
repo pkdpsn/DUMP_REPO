@@ -1,0 +1,183 @@
+{
+  "modelId": "mistralai/Magistral-Small-2507-GGUF",
+  "author": "mistralai",
+  "sha": "129d7a005ec2180c7b6a56b8f175032d48ff78d9",
+  "lastModified": "2025-07-25 15:44:31+00:00",
+  "tags": [
+    "llama.cpp",
+    "gguf",
+    "text-generation",
+    "en",
+    "fr",
+    "de",
+    "es",
+    "pt",
+    "it",
+    "ja",
+    "ko",
+    "ru",
+    "zh",
+    "ar",
+    "fa",
+    "id",
+    "ms",
+    "ne",
+    "pl",
+    "ro",
+    "sr",
+    "sv",
+    "tr",
+    "uk",
+    "vi",
+    "hi",
+    "bn",
+    "base_model:mistralai/Magistral-Small-2507",
+    "base_model:quantized:mistralai/Magistral-Small-2507",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "llama.cpp",
+  "likes": 14,
+  "downloads": 231,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "mistralai/Magistral-Small-2507"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "pt",
+      "it",
+      "ja",
+      "ko",
+      "ru",
+      "zh",
+      "ar",
+      "fa",
+      "id",
+      "ms",
+      "ne",
+      "pl",
+      "ro",
+      "sr",
+      "sv",
+      "tr",
+      "uk",
+      "vi",
+      "hi",
+      "bn"
+    ],
+    "library_name": "llama.cpp",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null,
+    "inference": false,
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>."
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1858,
+      "lfs": null
+    },
+    {
+      "rfilename": "Magistral-Small-2507-BF16.gguf",
+      "size": 47154041792,
+      "lfs": {
+        "size": 47154041792,
+        "sha256": "df62af95072e1db16a9aed4d125df543a72676b23fed8acbe1e701985980ff5f",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "Magistral-Small-2507-Q4_K_M.gguf",
+      "size": 14334432192,
+      "lfs": {
+        "size": 14334432192,
+        "sha256": "23a7a20e664389931dbff1c9d3b34ec59e6a38255cc2c91135a67a18454c8e48",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "Magistral-Small-2507-Q5_K_M.gguf",
+      "size": 16764507072,
+      "lfs": {
+        "size": 16764507072,
+        "sha256": "87a2a57af0cd985f1e92699d1de1bfa26d7f91ac60a62928aea2479becd064e9",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "Magistral-Small-2507-Q8_0.gguf",
+      "size": 25055302592,
+      "lfs": {
+        "size": 25055302592,
+        "sha256": "78bfc64c72de6540cbcf7597dc2dac5d37e79764a24aa1172157e7d76b008da3",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7265,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\n- fr\n- de\n- es\n- pt\n- it\n- ja\n- ko\n- ru\n- zh\n- ar\n- fa\n- id\n- ms\n- ne\n- pl\n- ro\n- sr\n- sv\n- tr\n- uk\n- vi\n- hi\n- bn\nlicense: apache-2.0\nlibrary_name: llama.cpp\ninference: false\nbase_model:\n- mistralai/Magistral-Small-2507\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.\npipeline_tag: text-generation\n---\n\n> [!Note]\n> At Mistral, we don't yet have too much experience with providing GGUF-quantized checkpoints\n> to the community, but want to help improving the ecosystem going forward.\n> If you encounter any problems with the provided checkpoints here, please open a discussion or pull request\n\n\n# Magistral Small 1.1 (GGUF)\n\nBuilding upon Mistral Small 3.1 (2503), **with added reasoning capabilities**, undergoing SFT from Magistral Medium traces and RL on top, it's a small, efficient reasoning model with 24B parameters.\n\nMagistral Small can be deployed locally, fitting within a single RTX 4090 or a 32GB RAM MacBook once quantized.\n\nThis is the GGUF version of the [Magistral-Small-2507](https://huggingface.co/mistralai/Magistral-Small-2507) model. We released the BF16 weights as well as the following quantized format:\n- Q8_0\n- Q5_K_M\n- Q4_K_M\nOur format **does not have a chat template** and instead we recommend to use [`mistral-common`](#usage).\n\n## Updates compared with [Magistral Small 1.0](https://huggingface.co/mistralai/Magistral-Small-2506)\n\nMagistral Small 1.1 should give you about the same performance as Magistral Small 1.0 as seen in the [benchmark results](#benchmark-results).\n\nThe update involves the following features:\n- Better tone and model behaviour. You should experiment better LaTeX and Markdown formatting, and shorter answers on easy general prompts.\n- The model is less likely to enter infinite generation loops.\n- `[THINK]` and `[/THINK]` special tokens encapsulate the reasoning content in a thinking chunk. This makes it easier to parse the reasoning trace and prevents confusion when the '[THINK]' token is given as a string in the prompt.\n- The reasoning prompt is now given in the system prompt.\n\n## Key Features\n- **Reasoning:** Capable of long chains of reasoning traces before providing an answer.\n- **Multilingual:** Supports dozens of languages, including English, French, German, Greek, Hindi, Indonesian, Italian, Japanese, Korean, Malay, Nepali, Polish, Portuguese, Romanian, Russian, Serbian, Spanish, Turkish, Ukrainian, Vietnamese, Arabic, Bengali, Chinese, and Farsi.\n- **Apache 2.0 License:** Open license allowing usage and modification for both commercial and non-commercial purposes.\n- **Context Window:** A 128k context window, **but** performance might degrade past **40k**. Hence we recommend setting the maximum model length to 40k.\n\n## Usage\n\nWe recommend to use Magistral with [llama.cpp](https://github.com/ggml-org/llama.cpp/tree/master) along with [mistral-common >= 1.8.3](https://mistralai.github.io/mistral-common/) server. See [here](https://mistralai.github.io/mistral-common/usage/experimental/) for the documentation of `mistral-common` server.\n\n### Install\n\n1. Install `llama.cpp` following their [guidelines](https://github.com/ggml-org/llama.cpp/blob/master/README.md#quick-start).\n\n2. Install `mistral-common` with its dependencies.\n\n```sh\npip install mistral-common[server]\n```\n\n3. Download the weights from huggingface.\n\n```sh\npip install -U \"huggingface_hub[cli]\"\n\nhuggingface-cli download \\\n\"mistralai/Magistral-Small-2507-GGUF\" \\\n--include \"Magistral-Small-2507-Q4_K_M.gguf\" \\\n--local-dir \"mistralai/Magistral-Small-2507-GGUF/\"\n```\n\n### Launch the servers\n\n1. Launch the `llama.cpp` server\n\n```sh\nllama-server -m mistralai/Magistral-Small-2507-GGUF/Magistral-Small-2507-Q4_K_M.gguf -c 0\n```\n\n2. Launch the `mistral-common` server and pass the url of the `llama.cpp` server.\n\nThis is the server that will handle tokenization and detokenization and call the `llama.cpp` server for generations.\n\n```sh\nmistral_common serve mistralai/Magistral-Small-2507 \\\n--host localhost --port 6000 \\\n--engine-url http://localhost:8080 --engine-backend llama_cpp \\\n--timeout 300\n```\n\n### Use the model\n\n1. let's define the function to call the servers:\n\n**generate**: call `mistral-common` that will tokenizer, call the `llama.cpp` server to generate new tokens and detokenize the output to an [`AssistantMessage`](https://mistralai.github.io/mistral-common/code_reference/mistral_common/protocol/instruct/messages/#mistral_common.protocol.instruct.messages.AssistantMessage) with think chunk and tool calls parsed.\n\n```python\nfrom mistral_common.protocol.instruct.messages import AssistantMessage\nfrom mistral_common.protocol.instruct.request import ChatCompletionRequest\nfrom mistral_common.experimental.app.models import OpenAIChatCompletionRequest\nfrom fastapi.encoders import jsonable_encoder\nimport requests\n\nmistral_common_url = \"http://127.0.0.1:6000\"\n\ndef generate(\n    request: dict | ChatCompletionRequest | OpenAIChatCompletionRequest, url: str\n) -> AssistantMessage:\n    response = requests.post(\n        f\"{url}/v1/chat/completions\", json=jsonable_encoder(request)\n    )\n    if response.status_code != 200:\n        raise ValueError(f\"Error: {response.status_code} - {response.text}\")\n    return AssistantMessage(**response.json())\n```\n\n2. Tokenize the input, call the model and detokenize\n\n```python\nfrom typing import Any\nfrom huggingface_hub import hf_hub_download\n\n\nTEMP = 0.7\nTOP_P = 0.95\nMAX_TOK = 40_960\n\ndef load_system_prompt(repo_id: str, filename: str) -> dict[str, Any]:\n    file_path = hf_hub_download(repo_id=repo_id, filename=filename)\n    with open(file_path, \"r\") as file:\n        system_prompt = file.read()\n\n    index_begin_think = system_prompt.find(\"[THINK]\")\n    index_end_think = system_prompt.find(\"[/THINK]\")\n\n    return {\n        \"role\": \"system\",\n        \"content\": [\n            {\"type\": \"text\", \"text\": system_prompt[:index_begin_think]},\n            {\n                \"type\": \"thinking\",\n                \"thinking\": system_prompt[\n                    index_begin_think + len(\"[THINK]\") : index_end_think\n                ],\n                \"closed\": True,\n            },\n            {\n                \"type\": \"text\",\n                \"text\": system_prompt[index_end_think + len(\"[/THINK]\") :],\n            },\n        ],\n    }\n\nSYSTEM_PROMPT = load_system_prompt(\"mistralai/Magistral-Small-2507\", \"SYSTEM_PROMPT.txt\")\n\nquery = \"Write 4 sentences, each with at least 8 words. Now make absolutely sure that every sentence has exactly one word less than the previous sentence.\"\n# or try out other queries\n# query = \"Exactly how many days ago did the French Revolution start? Today is June 4th, 2025.\"\n# query = \"Think about 5 random numbers. Verify if you can combine them with addition, multiplication, subtraction or division to 133\"\n# query = \"If it takes 30 minutes to dry 12 T-shirts in the sun, how long does it take to dry 33 T-shirts?\"\nmessages = [SYSTEM_PROMPT, {\"role\": \"user\", \"content\": [{\"type\": \"text\", \"text\": query}]}]\n\nrequest = {\"messages\": messages, \"temperature\": TEMP, \"top_p\": TOP_P, \"max_tokens\": MAX_TOK}\n\ngenerated_message = generate(request, mistral_common_url)\nprint(generated_message)\n```\n\n",
+  "cardDataParsed": {
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "pt",
+      "it",
+      "ja",
+      "ko",
+      "ru",
+      "zh",
+      "ar",
+      "fa",
+      "id",
+      "ms",
+      "ne",
+      "pl",
+      "ro",
+      "sr",
+      "sv",
+      "tr",
+      "uk",
+      "vi",
+      "hi",
+      "bn"
+    ],
+    "license": "apache-2.0",
+    "library_name": "llama.cpp",
+    "inference": false,
+    "base_model": [
+      "mistralai/Magistral-Small-2507"
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "pipeline_tag": "text-generation",
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

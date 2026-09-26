@@ -1,0 +1,183 @@
+{
+  "modelId": "microsoft/kosmos-2-patch14-224",
+  "author": "microsoft",
+  "sha": "e91cfbcb4ce051b6a55bfb5f96165a3bbf5eb82c",
+  "lastModified": "2023-11-28 09:31:26+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "safetensors",
+    "kosmos-2",
+    "image-text-to-text",
+    "image-captioning",
+    "image-to-text",
+    "license:mit",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-to-text",
+  "library_name": "transformers",
+  "likes": 183,
+  "downloads": 97201,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-to-text",
+    "tags": [
+      "image-captioning"
+    ],
+    "languages": [
+      "en"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Kosmos2ForConditionalGeneration"
+    ],
+    "model_type": "kosmos-2",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "cls_token": "<s>",
+      "eos_token": "</s>",
+      "mask_token": "<mask>",
+      "pad_token": "<pad>",
+      "sep_token": "</s>",
+      "unk_token": "<unk>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1567,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 15773,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 32001,
+      "lfs": null
+    },
+    {
+      "rfilename": "annotated_snowman.jpg",
+      "size": 123955,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 4452,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 137,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 6658052808,
+      "lfs": {
+        "size": 6658052808,
+        "sha256": "051bf4b62a25429f4d542d11ec0c07a4ac1aac91003d3bf301133c6913008cbf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 534,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 6658242717,
+      "lfs": {
+        "size": 6658242717,
+        "sha256": "47e771fe58dd4de2d814655e67ec034b3637b09114869415f071486c4a1c2ec0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "sentencepiece.bpe.model",
+      "size": 1363614,
+      "lfs": {
+        "size": 1363614,
+        "sha256": "3a60b4d1d1d8f70c8b2569c94540d4d9b7c694fd32e7a428ad0dcffaafaa3beb",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "snowman.jpg",
+      "size": 103645,
+      "lfs": null
+    },
+    {
+      "rfilename": "snowman.png",
+      "size": 1357598,
+      "lfs": {
+        "size": 1357598,
+        "sha256": "b97825997df04bd823207fd145331ffc3c3b62ec4e3a3adaac83c93debe87bdf",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 1064,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4698210,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 190658,
+      "lfs": null
+    },
+    {
+      "rfilename": "two_dogs.jpg",
+      "size": 80024,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\npipeline_tag: image-to-text\ntags:\n- image-captioning\nlanguages:\n- en\nlicense: mit\n---\n# Kosmos-2: Grounding Multimodal Large Language Models to the World\n\n<a href=\"https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/annotated_snowman.jpg\" target=\"_blank\"><figure><img src=\"https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/annotated_snowman.jpg\" width=\"384\"><figcaption><b>[An image of a snowman warming himself by a fire.]</b></figcaption></figure></a>\n\n\nThis Hub repository contains a HuggingFace's `transformers` implementation of [the original Kosmos-2 model](https://github.com/microsoft/unilm/tree/master/kosmos-2) from Microsoft.\n\n## How to Get Started with the Model\n\nUse the code below to get started with the model.\n\n```python\nimport requests\n\nfrom PIL import Image\nfrom transformers import AutoProcessor, AutoModelForVision2Seq\n\n\nmodel = AutoModelForVision2Seq.from_pretrained(\"microsoft/kosmos-2-patch14-224\")\nprocessor = AutoProcessor.from_pretrained(\"microsoft/kosmos-2-patch14-224\")\n\nprompt = \"<grounding>An image of\"\n\nurl = \"https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/snowman.png\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\n# The original Kosmos-2 demo saves the image first then reload it. For some images, this will give slightly different image input and change the generation outputs.\nimage.save(\"new_image.jpg\")\nimage = Image.open(\"new_image.jpg\")\n\ninputs = processor(text=prompt, images=image, return_tensors=\"pt\")\n\ngenerated_ids = model.generate(\n    pixel_values=inputs[\"pixel_values\"],\n    input_ids=inputs[\"input_ids\"],\n    attention_mask=inputs[\"attention_mask\"],\n    image_embeds=None,\n    image_embeds_position_mask=inputs[\"image_embeds_position_mask\"],\n    use_cache=True,\n    max_new_tokens=128,\n)\ngenerated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]\n\n# Specify `cleanup_and_extract=False` in order to see the raw model generation.\nprocessed_text = processor.post_process_generation(generated_text, cleanup_and_extract=False)\n\nprint(processed_text)\n# `<grounding> An image of<phrase> a snowman</phrase><object><patch_index_0044><patch_index_0863></object> warming himself by<phrase> a fire</phrase><object><patch_index_0005><patch_index_0911></object>.`\n\n# By default, the generated  text is cleanup and the entities are extracted.\nprocessed_text, entities = processor.post_process_generation(generated_text)\n\nprint(processed_text)\n# `An image of a snowman warming himself by a fire.`\n\nprint(entities)\n# `[('a snowman', (12, 21), [(0.390625, 0.046875, 0.984375, 0.828125)]), ('a fire', (41, 47), [(0.171875, 0.015625, 0.484375, 0.890625)])]`\n\n```\n\n\n## Tasks\n\nThis model is capable of performing different tasks through changing the prompts.\n\nFirst, let's define a function to run a prompt.\n\n<details>\n<summary> Click to expand </summary>\n\n```python\nimport requests\n\nfrom PIL import Image\nfrom transformers import AutoProcessor, AutoModelForVision2Seq\n\n\nmodel = AutoModelForVision2Seq.from_pretrained(\"microsoft/kosmos-2-patch14-224\")\nprocessor = AutoProcessor.from_pretrained(\"microsoft/kosmos-2-patch14-224\")\n\nurl = \"https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/snowman.png\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\ndef run_example(prompt):\n\n    inputs = processor(text=prompt, images=image, return_tensors=\"pt\")\n    generated_ids = model.generate(\n      pixel_values=inputs[\"pixel_values\"],\n      input_ids=inputs[\"input_ids\"],\n      attention_mask=inputs[\"attention_mask\"],\n      image_embeds=None,\n      image_embeds_position_mask=inputs[\"image_embeds_position_mask\"],\n      use_cache=True,\n      max_new_tokens=128,\n    )\n    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]\n    _processed_text = processor.post_process_generation(generated_text, cleanup_and_extract=False)\n    processed_text, entities = processor.post_process_generation(generated_text)\n\n    print(processed_text)\n    print(entities)\n    print(_processed_text)\n```\n</details>\n\nHere are the tasks `Kosmos-2` could perform:\n\n<details>\n<summary> Click to expand </summary>\n\n### Multimodal Grounding\n\n#### \u2022 Phrase Grounding\n```python\nprompt = \"<grounding><phrase> a snowman</phrase>\"\nrun_example(prompt)\n\n# a snowman is warming himself by the fire\n# [('a snowman', (0, 9), [(0.390625, 0.046875, 0.984375, 0.828125)]), ('the fire', (32, 40), [(0.203125, 0.015625, 0.453125, 0.859375)])]\n\n# <grounding><phrase> a snowman</phrase><object><patch_index_0044><patch_index_0863></object> is warming himself by<phrase> the fire</phrase><object><patch_index_0006><patch_index_0878></object>\n```\n\n#### \u2022 Referring Expression Comprehension\n```python\nprompt = \"<grounding><phrase> a snowman next to a fire</phrase>\"\nrun_example(prompt)\n\n# a snowman next to a fire\n# [('a snowman next to a fire', (0, 24), [(0.390625, 0.046875, 0.984375, 0.828125)])]\n\n# <grounding><phrase> a snowman next to a fire</phrase><object><patch_index_0044><patch_index_0863></object>\n```\n\n### Multimodal Referring\n\n#### \u2022 Referring expression generation\n```python\nprompt = \"<grounding><phrase> It</phrase><object><patch_index_0044><patch_index_0863></object> is\"\nrun_example(prompt)\n\n# It is snowman in a hat and scarf\n# [('It', (0, 2), [(0.390625, 0.046875, 0.984375, 0.828125)])]\n\n# <grounding><phrase> It</phrase><object><patch_index_0044><patch_index_0863></object> is snowman in a hat and scarf\n```\n\n### Perception-Language Tasks\n\n#### \u2022 Grounded VQA\n```python\nprompt = \"<grounding> Question: What is special about this image? Answer:\"\nrun_example(prompt)\n\n# Question: What is special about this image? Answer: The image features a snowman sitting by a campfire in the snow.\n# [('a snowman', (71, 80), [(0.390625, 0.046875, 0.984375, 0.828125)]), ('a campfire', (92, 102), [(0.109375, 0.640625, 0.546875, 0.984375)])]\n\n# <grounding> Question: What is special about this image? Answer: The image features<phrase> a snowman</phrase><object><patch_index_0044><patch_index_0863></object> sitting by<phrase> a campfire</phrase><object><patch_index_0643><patch_index_1009></object> in the snow.\n```\n\n#### \u2022 Grounded VQA with multimodal referring via bounding boxes\n```python\nprompt = \"<grounding> Question: Where is<phrase> the fire</phrase><object><patch_index_0005><patch_index_0911></object> next to? Answer:\"\nrun_example(prompt)\n\n# Question: Where is the fire next to? Answer: Near the snowman.\n# [('the fire', (19, 27), [(0.171875, 0.015625, 0.484375, 0.890625)]), ('the snowman', (50, 61), [(0.390625, 0.046875, 0.984375, 0.828125)])]\n\n# <grounding> Question: Where is<phrase> the fire</phrase><object><patch_index_0005><patch_index_0911></object> next to? Answer: Near<phrase> the snowman</phrase><object><patch_index_0044><patch_index_0863></object>.\n```\n\n### Grounded Image captioning\n\n#### \u2022 Brief\n\n```python\nprompt = \"<grounding> An image of\"\nrun_example(prompt)\n\n# An image of a snowman warming himself by a campfire.\n# [('a snowman', (12, 21), [(0.390625, 0.046875, 0.984375, 0.828125)]), ('a campfire', (41, 51), [(0.109375, 0.640625, 0.546875, 0.984375)])]\n\n# <grounding> An image of<phrase> a snowman</phrase><object><patch_index_0044><patch_index_0863></object> warming himself by<phrase> a campfire</phrase><object><patch_index_0643><patch_index_1009></object>.\n```\n\n#### \u2022 Detailed\n\n```python\nprompt = \"<grounding> Describe this image in detail:\"\nrun_example(prompt)\n\n# Describe this image in detail: The image features a snowman sitting by a campfire in the snow. He is wearing a hat, scarf, and gloves, with a pot nearby and a cup nearby. The snowman appears to be enjoying the warmth of the fire, and it appears to have a warm and cozy atmosphere.\n# [('a campfire', (71, 81), [(0.171875, 0.015625, 0.484375, 0.984375)]), ('a hat', (109, 114), [(0.515625, 0.046875, 0.828125, 0.234375)]), ('scarf', (116, 121), [(0.515625, 0.234375, 0.890625, 0.578125)]), ('gloves', (127, 133), [(0.515625, 0.390625, 0.640625, 0.515625)]), ('a pot', (140, 145), [(0.078125, 0.609375, 0.265625, 0.859375)]), ('a cup', (157, 162), [(0.890625, 0.765625, 0.984375, 0.984375)])]\n\n# <grounding> Describe this image in detail: The image features a snowman sitting by<phrase> a campfire</phrase><object><patch_index_0005><patch_index_1007></object> in the snow. He is wearing<phrase> a hat</phrase><object><patch_index_0048><patch_index_0250></object>,<phrase> scarf</phrase><object><patch_index_0240><patch_index_0604></object>, and<phrase> gloves</phrase><object><patch_index_0400><patch_index_0532></object>, with<phrase> a pot</phrase><object><patch_index_0610><patch_index_0872></object> nearby and<phrase> a cup</phrase><object><patch_index_0796><patch_index_1023></object> nearby. The snowman appears to be enjoying the warmth of the fire, and it appears to have a warm and cozy atmosphere.\n```\n</details>\n\n## Draw the bounding bboxes of the entities on the image\n\nOnce you have the `entities`, you can use the following helper function to draw their bounding bboxes on the image:\n\n<details>\n<summary> Click to expand </summary>\n\n```python\nimport cv2\nimport numpy as np\nimport os\nimport requests\nimport torch\nimport torchvision.transforms as T\n\nfrom PIL import Image\n\n\ndef is_overlapping(rect1, rect2):\n    x1, y1, x2, y2 = rect1\n    x3, y3, x4, y4 = rect2\n    return not (x2 < x3 or x1 > x4 or y2 < y3 or y1 > y4)\n\n\ndef draw_entity_boxes_on_image(image, entities, show=False, save_path=None):\n    \"\"\"_summary_\n    Args:\n        image (_type_): image or image path\n        collect_entity_location (_type_): _description_\n    \"\"\"\n    if isinstance(image, Image.Image):\n        image_h = image.height\n        image_w = image.width\n        image = np.array(image)[:, :, [2, 1, 0]]\n    elif isinstance(image, str):\n        if os.path.exists(image):\n            pil_img = Image.open(image).convert(\"RGB\")\n            image = np.array(pil_img)[:, :, [2, 1, 0]]\n            image_h = pil_img.height\n            image_w = pil_img.width\n        else:\n            raise ValueError(f\"invaild image path, {image}\")\n    elif isinstance(image, torch.Tensor):\n        image_tensor = image.cpu()\n        reverse_norm_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073])[:, None, None]\n        reverse_norm_std = torch.tensor([0.26862954, 0.26130258, 0.27577711])[:, None, None]\n        image_tensor = image_tensor * reverse_norm_std + reverse_norm_mean\n        pil_img = T.ToPILImage()(image_tensor)\n        image_h = pil_img.height\n        image_w = pil_img.width\n        image = np.array(pil_img)[:, :, [2, 1, 0]]\n    else:\n        raise ValueError(f\"invaild image format, {type(image)} for {image}\")\n\n    if len(entities) == 0:\n        return image\n\n    new_image = image.copy()\n    previous_bboxes = []\n    # size of text\n    text_size = 1\n    # thickness of text\n    text_line = 1  # int(max(1 * min(image_h, image_w) / 512, 1))\n    box_line = 3\n    (c_width, text_height), _ = cv2.getTextSize(\"F\", cv2.FONT_HERSHEY_COMPLEX, text_size, text_line)\n    base_height = int(text_height * 0.675)\n    text_offset_original = text_height - base_height\n    text_spaces = 3\n\n    for entity_name, (start, end), bboxes in entities:\n        for (x1_norm, y1_norm, x2_norm, y2_norm) in bboxes:\n            orig_x1, orig_y1, orig_x2, orig_y2 = int(x1_norm * image_w), int(y1_norm * image_h), int(x2_norm * image_w), int(y2_norm * image_h)\n            # draw bbox\n            # random color\n            color = tuple(np.random.randint(0, 255, size=3).tolist())\n            new_image = cv2.rectangle(new_image, (orig_x1, orig_y1), (orig_x2, orig_y2), color, box_line)\n\n            l_o, r_o = box_line // 2 + box_line % 2, box_line // 2 + box_line % 2 + 1\n\n            x1 = orig_x1 - l_o\n            y1 = orig_y1 - l_o\n\n            if y1 < text_height + text_offset_original + 2 * text_spaces:\n                y1 = orig_y1 + r_o + text_height + text_offset_original + 2 * text_spaces\n                x1 = orig_x1 + r_o\n\n            # add text background\n            (text_width, text_height), _ = cv2.getTextSize(f\"  {entity_name}\", cv2.FONT_HERSHEY_COMPLEX, text_size, text_line)\n            text_bg_x1, text_bg_y1, text_bg_x2, text_bg_y2 = x1, y1 - (text_height + text_offset_original + 2 * text_spaces), x1 + text_width, y1\n\n            for prev_bbox in previous_bboxes:\n                while is_overlapping((text_bg_x1, text_bg_y1, text_bg_x2, text_bg_y2), prev_bbox):\n                    text_bg_y1 += (text_height + text_offset_original + 2 * text_spaces)\n                    text_bg_y2 += (text_height + text_offset_original + 2 * text_spaces)\n                    y1 += (text_height + text_offset_original + 2 * text_spaces)\n\n                    if text_bg_y2 >= image_h:\n                        text_bg_y1 = max(0, image_h - (text_height + text_offset_original + 2 * text_spaces))\n                        text_bg_y2 = image_h\n                        y1 = image_h\n                        break\n\n            alpha = 0.5\n            for i in range(text_bg_y1, text_bg_y2):\n                for j in range(text_bg_x1, text_bg_x2):\n                    if i < image_h and j < image_w:\n                        if j < text_bg_x1 + 1.35 * c_width:\n                            # original color\n                            bg_color = color\n                        else:\n                            # white\n                            bg_color = [255, 255, 255]\n                        new_image[i, j] = (alpha * new_image[i, j] + (1 - alpha) * np.array(bg_color)).astype(np.uint8)\n\n            cv2.putText(\n                new_image, f\"  {entity_name}\", (x1, y1 - text_offset_original - 1 * text_spaces), cv2.FONT_HERSHEY_COMPLEX, text_size, (0, 0, 0), text_line, cv2.LINE_AA\n            )\n            # previous_locations.append((x1, y1))\n            previous_bboxes.append((text_bg_x1, text_bg_y1, text_bg_x2, text_bg_y2))\n\n    pil_image = Image.fromarray(new_image[:, :, [2, 1, 0]])\n    if save_path:\n        pil_image.save(save_path)\n    if show:\n        pil_image.show()\n\n    return new_image\n\n\n# (The same image from the previous code example)\nurl = \"https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/snowman.png\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\n# From the previous code example\nentities = [('a snowman', (12, 21), [(0.390625, 0.046875, 0.984375, 0.828125)]), ('a fire', (41, 47), [(0.171875, 0.015625, 0.484375, 0.890625)])]\n\n# Draw the bounding bboxes\ndraw_entity_boxes_on_image(image, entities, show=True)\n```\n</details>\n\nHere is the annotated image:\n\n<a href=\"https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/annotated_snowman.jpg\" target=\"_blank\"><img src=\"https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/annotated_snowman.jpg\" width=\"500\"></a>\n\n## BibTex and citation info\n\n```\n@article{kosmos-2,\n  title={Kosmos-2: Grounding Multimodal Large Language Models to the World},\n  author={Zhiliang Peng and Wenhui Wang and Li Dong and Yaru Hao and Shaohan Huang and Shuming Ma and Furu Wei},\n  journal={ArXiv},\n  year={2023},\n  volume={abs/2306}\n}\n\n@article{kosmos-1,\n  title={Language Is Not All You Need: Aligning Perception with Language Models},\n  author={Shaohan Huang and Li Dong and Wenhui Wang and Yaru Hao and Saksham Singhal and Shuming Ma and Tengchao Lv and Lei Cui and Owais Khan Mohammed and Qiang Liu and Kriti Aggarwal and Zewen Chi and Johan Bjorck and Vishrav Chaudhary and Subhojit Som and Xia Song and Furu Wei},\n  journal={ArXiv},\n  year={2023},\n  volume={abs/2302.14045}\n}\n\n@article{metalm,\n  title={Language Models are General-Purpose Interfaces},\n  author={Yaru Hao and Haoyu Song and Li Dong and Shaohan Huang and Zewen Chi and Wenhui Wang and Shuming Ma and Furu Wei},\n  journal={ArXiv},\n  year={2022},\n  volume={abs/2206.06336}\n}\n```",
+  "cardDataParsed": {
+    "pipeline_tag": "image-to-text",
+    "tags": [
+      "image-captioning"
+    ],
+    "languages": [
+      "en"
+    ],
+    "license": "mit",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,267 @@
+{
+  "modelId": "nvidia/audio-flamingo-3-hf",
+  "author": "nvidia",
+  "sha": "7d4bae64ee29878af6504ae6f6bb3e40492838ad",
+  "lastModified": "2026-04-13 08:08:11+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "audioflamingo3",
+    "text2text-generation",
+    "audio",
+    "reasoning",
+    "audio understanding",
+    "ASR",
+    "audio-text-to-text",
+    "en",
+    "dataset:nvidia/AudioSkills",
+    "dataset:nvidia/AF-Chat",
+    "dataset:nvidia/AF-Think",
+    "dataset:nvidia/LongAudio",
+    "arxiv:2507.08128",
+    "arxiv:2505.13032",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "audio-text-to-text",
+  "library_name": "transformers",
+  "likes": 195,
+  "downloads": 58162,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "nvidia/AudioSkills",
+      "nvidia/AF-Chat",
+      "nvidia/AF-Think",
+      "nvidia/LongAudio"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "audio-text-to-text",
+    "tags": [
+      "audio",
+      "reasoning",
+      "audio understanding",
+      "ASR"
+    ],
+    "arxiv": 2507.08128
+  },
+  "config": {
+    "architectures": [
+      "AudioFlamingo3ForConditionalGeneration"
+    ],
+    "model_type": "audioflamingo3",
+    "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "<|im_end|>",
+      "pad_token": "[PAD]",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% if messages[0]['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}{% for m in messages if m['content'] is not none %}<|im_start|>{{ m['role'] }}\n{% if m['content'] is string %}{{ m['content'] }}{% else %}{% set audio = namespace(found=False) %}{% set text_buf = namespace(v='') %}{% for c in m['content'] %}{% if c.get('type') == 'audio' or 'audio' in c %}{% set audio.found = True %}{% elif c.get('type') == 'text' or 'text' in c %}{% set text_buf.v = text_buf.v + c['text'] %}{% endif %}{% endfor %}{% if audio.found %}{{ '<sound>' }}{% endif %}{{ text_buf.v }}{% endif %}<|im_end|>\n{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1810,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 25758,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 762,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 703,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2093,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 145,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4886285784,
+      "lfs": {
+        "size": 4886285784,
+        "sha256": "df42e51f121d243a7bbfb253ba2d388046b6b9abb33b7770c789d431c04d21bf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4991497784,
+      "lfs": {
+        "size": 4991497784,
+        "sha256": "36f6299c1e3137d431cf61044537c4dda0627d7092a5a44b5ce72eca4dcc56da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4932752872,
+      "lfs": {
+        "size": 4932752872,
+        "sha256": "1e0c90ec3232d5a54c8722b19487fa2a117463fcd662ff6e93bab9970d0fe2f7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1723994720,
+      "lfs": {
+        "size": 1723994720,
+        "sha256": "4050632946b7c60cf2855d9d7628589639bd06bc2d5d45a58988fe97c7d98af2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 16534531504,
+      "lfs": {
+        "size": 16534531504,
+        "sha256": "74e31be176c4691982818c10f958f9a183df88da2bad65625fa25d30c6fd5e79",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 74525,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 494,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 743,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/NVIDIA_OneWay_Noncommercial_License.docx",
+      "size": 20620,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/af3_main_diagram-1.png",
+      "size": 229099,
+      "lfs": {
+        "size": 229099,
+        "sha256": "3908e928f7df50f1860d05d4e31343c44d46550c46bfaff4bb2cf93cea48fd14",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "static/af3_radial-1.png",
+      "size": 144906,
+      "lfs": {
+        "size": 144906,
+        "sha256": "5c4f1ede2dd47b45c40996a2827cb34312662f81d92c85d71eec596f9f06631e",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "static/af3_sota.png",
+      "size": 266220,
+      "lfs": {
+        "size": 266220,
+        "sha256": "1dce527eb4625a47f2819388a0d9d05978a3d9287b839c85a41058e3b0c1208f",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "static/logo-no-bg.png",
+      "size": 464155,
+      "lfs": {
+        "size": 464155,
+        "sha256": "b4868114d109a9939114016c32691405f6d8dfdcdccb29dfce63e52f0b6e9540",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "think/adapter_config.json",
+      "size": 4147,
+      "lfs": null
+    },
+    {
+      "rfilename": "think/adapter_model.safetensors",
+      "size": 323020408,
+      "lfs": {
+        "size": 323020408,
+        "sha256": "d680dd51b647dad0dd0c1b48399274b4936f5a926f0010fd702b1e00a959fff4",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "think/config.json",
+      "size": 10485,
+      "lfs": null
+    },
+    {
+      "rfilename": "think/non_lora_trainables.bin",
+      "size": 1087186621,
+      "lfs": {
+        "size": 1087186621,
+        "sha256": "e858f7cc439285d42948737e413fceac35fd0eea0a050195337bc8593c0b2736",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11423182,
+      "lfs": {
+        "size": 11423182,
+        "sha256": "1f14d54ac619b8d778bec7ddcc5d247a2148ffd16d1ee43a07d2d350bb4bec72",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 789,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoProcessor"
+  }
+}

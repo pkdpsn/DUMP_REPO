@@ -1,0 +1,576 @@
+{
+  "modelId": "nvidia/Qwen3-235B-A22B-FP8",
+  "author": "nvidia",
+  "sha": "de5e21de92224fc03193bb87675cd5d3b5852f04",
+  "lastModified": "2025-07-08 00:46:42+00:00",
+  "tags": [
+    "Model Optimizer",
+    "safetensors",
+    "qwen3_moe",
+    "nvidia",
+    "ModelOpt",
+    "Qwen3",
+    "quantized",
+    "FP8",
+    "text-generation",
+    "conversational",
+    "base_model:Qwen/Qwen3-235B-A22B",
+    "base_model:finetune:Qwen/Qwen3-235B-A22B",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "Model Optimizer",
+  "likes": 5,
+  "downloads": 1231,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-235B-A22B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "Model Optimizer",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "ModelOpt",
+      "Qwen3",
+      "quantized",
+      "FP8"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3MoeForCausalLM"
+    ],
+    "model_type": "qwen3_moe",
+    "num_experts": 128,
+    "num_experts_per_tok": 8,
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set content = message.content %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is not none %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in message.content %}\n                {%- set content = message.content.split('</think>')[-1].lstrip('\\n') %}\n                {%- set reasoning_content = message.content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11574,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6091,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 966,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 3990,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00048.safetensors",
+      "size": 4994589600,
+      "lfs": {
+        "size": 4994589600,
+        "sha256": "5321461e324fe4b70eb3cc3ddc08c1a14be5cd50f2fe0fac17599ffefd080fea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00048.safetensors",
+      "size": 4995724016,
+      "lfs": {
+        "size": 4995724016,
+        "sha256": "529f3f0df57ba5c0f5674afd0aadc5e950b2f9b004291f7dbd074f8a5a534aca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00048.safetensors",
+      "size": 4995724016,
+      "lfs": {
+        "size": 4995724016,
+        "sha256": "f3d1a24ce4d5ddb9fc39598d3603f6efcc229fc8394c2f0ee0d38b1434da58a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00048.safetensors",
+      "size": 4995724016,
+      "lfs": {
+        "size": 4995724016,
+        "sha256": "ebae88a196d7759d9dad03e6da701dbd822ed25231fc529ec281c3ad5bd3f16c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00048.safetensors",
+      "size": 4995724016,
+      "lfs": {
+        "size": 4995724016,
+        "sha256": "9dfbee946dc4fd0a99aff18dde4604b614dd41369ae4d15b591e86004651f543",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00048.safetensors",
+      "size": 4995725824,
+      "lfs": {
+        "size": 4995725824,
+        "sha256": "d84b86d8a1b8d29d8fd4d02800e8e3cb2a00380017a33241304f2915be66eb4d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "a76e04600306f2f5f926e652cd21e9467bf1b4e8208adb1f9a52ce566e6bafee",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "32d17898838da64aabcbcc26b47968900a82568d3a912e12389b341298d91cdc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "f62170f7a23b19341c71716b52268bb47b44b7cea98813b5cf24f8022a0d9323",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "46ee61289cf3424fe85e8086a1379d9fbc29e55a1b10ab7c1a035ae2fb264d23",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "e6d29e50d377427fc5ac59a939a328e4a71ed48af0e226db44d883fc526b01b1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "54610b4bfa6169e56bc9827346aeea7db4fd8bc9ea3409605f1fe68b498d9eec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "2d640645f618b32a541221079be5365f7109c9ef140a8b181766d669f3e1597a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "5fa2ac2bc69193e6cf48ccc649820ada68be7b962e65e2bcc246fef136b0860f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "48ed145377137aff82ae280c2a0e6b14f616ea9af56d4dde136b1571abbd9bcc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "a4015d6c43e508efa384e3f8e6c984c0bdc9d4d1c18aec2dbdfd888b8b27c458",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "ac813e01dbe43ff71ccb519995a28c9a5e85c284142f98bbd71281d9f11e03bf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "e7e975761bb8c1c0b4ef4b1ccff63a452532736ec4f8a814434a373fe8233820",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "83bd7c3a9dd1ab4ef8718dbb497d413197834f11c98b1c5df11648cd88381b7b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "3d89eb3affba5cb0c81cc5cba3e1138f10d79bffde8d2737d9807e94961bb527",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "11174a63e8631384f12572ccb105146aa4af755810351766a987fea3b2387f33",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "f75e5daa1dfb34c53c51cb00383fad53f40e68064cfad207257233b66f5a0867",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "d05aa43238194e57e1ed370d6a15c35de7412589fe2963225e3201723d4dd117",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "e0ef92e07e6281b9b8c413f1ffb67369304dedbd81501bb214e4dd6b288b88e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "f81c28f78cb7971cb894094fecdf8f34b1f8f539db0f598bc2fe176ef5733d23",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "592ba77d03e5204ff5e876ad339976b19d21ccc1bc8eb94a74b7eb531e94fb80",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "1d06f1c1f8e91e934a2426acb6044b83d31530cd2cc2c87955d8521107ef8e46",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "064ed8eabbe3449480056bb2f01f67bce450c71cfb5c8a78f7f4ebc994b412b2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "2bfdbe49c7dd9c33b6457989ae10d0c86c6738674a33a0024c9f759b86de55f5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "88bd154f0e6583932df5052a995d8f1921ba6fcd24a62a2038bd019ff653ed58",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "2f0580afe8e6883bfb51bb3906b72f008101cdc9aad1adabd877aa5468e4cc88",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "c0affccb326614ecb48f06ffec4848b0dda59bd9b05f08fec61c9493c4a67bb1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "a674907bf870ffeb57e73bbadb080210d205809bf5a4a8431f7d0cbca1f6ad81",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "9e04db39e175ca6a66ec5e1c65ede6a52d4f242e4f12c70c6524092a982c6201",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "f74c2c45769e78db0805f00f721147d38ae695d60f5f5331c6c858ba49ad9274",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "a0d4394a9373be3be4e34c47c374bb758db9ad14c2d6b48e53be09f9602f8451",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "09b1e1ab5397a03e6922c66a83f539020e6b69f4241bfec01f97592225cdeaef",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00048.safetensors",
+      "size": 4995726368,
+      "lfs": {
+        "size": 4995726368,
+        "sha256": "596f8b1731f7e4fd0a7da0c39127941803c27fec90f09bd3e7c997bed0abcd09",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "0a6152a5d7d76dea520ad1a11a6bc75f7545242710431b5adefe7ebd273e7777",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "27a4dc853149ecc5b9c0f01c761f9b07f22026c5de3c5ea1a986f4fdb2948b49",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00041-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "dd7aba26a85fd434b62a4352e0141567eafb6ad1b76c94efb9010da72bbf683d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00042-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "3dd0b034aa33425363405a9b37673bda8a74a4d3a112ea762f7eca2f341fe61f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "83d8790882e679a207a281f80d9e05a4de1ad576264ed08ccb529872b15891c4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "d7b4351b9890d4b0607e8e0844cb9c2d404989d99f0df8cbbe9f49653903a0b6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "8cda1476c25530eeb7a0c91ab085d3a14bd3e44766d1d430fba597c3c3634753",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "b312de3da2cb21339b1c998e6fcda6969e83a0fa0ff9ef96e8fb421b95451802",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-00048.safetensors",
+      "size": 4995726376,
+      "lfs": {
+        "size": 4995726376,
+        "sha256": "1ddce6f7af80aa376a79c2407cc998bd22023fcc77d76b0cbf02503f67fd736b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-00048.safetensors",
+      "size": 1603317800,
+      "lfs": {
+        "size": 1603317800,
+        "sha256": "d94d88afdc398ec9d10f8721b61be08734a614593d0bce51090c23a3447e45d7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 10335323,
+      "lfs": {
+        "size": 10335323,
+        "sha256": "4276e766c38da9f30ae1ba26781b4a3c0f94feefab0f73f3da90ac29b9b4d9b3",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 388,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9709,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}

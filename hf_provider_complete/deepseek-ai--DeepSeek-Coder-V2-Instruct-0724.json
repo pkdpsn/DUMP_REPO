@@ -1,0 +1,650 @@
+{
+  "modelId": "deepseek-ai/DeepSeek-Coder-V2-Instruct-0724",
+  "author": "deepseek-ai",
+  "sha": "80378f79777fd4d713ecc3e387de5512d84f1b87",
+  "lastModified": "2024-10-08 03:21:52+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "deepseek_v2",
+    "text-generation",
+    "conversational",
+    "custom_code",
+    "arxiv:2401.06066",
+    "base_model:deepseek-ai/DeepSeek-Coder-V2-Base",
+    "base_model:finetune:deepseek-ai/DeepSeek-Coder-V2-Base",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 120,
+  "downloads": 668,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "deepseek-ai/DeepSeek-Coder-V2-Base",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "deepseek-license",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "DeepseekV2ForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_deepseek.DeepseekV2Config",
+      "AutoModel": "modeling_deepseek.DeepseekV2Model",
+      "AutoModelForCausalLM": "modeling_deepseek.DeepseekV2ForCausalLM"
+    },
+    "model_type": "deepseek_v2",
+    "num_experts_per_tok": 6,
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "unk_token": null,
+      "chat_template": "{% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% set ns = namespace(is_first=false, is_tool=false, is_output_first=true, system_prompt='') %}{%- for message in messages %}    {%- if message['role'] == 'system' %}        {% set ns.system_prompt = message['content'] %}    {%- endif %}{%- endfor %}{{bos_token}}{{ns.system_prompt}}{%- for message in messages %}    {%- if message['role'] == 'user' %}    {%- set ns.is_tool = false -%}{{'<\uff5cUser\uff5c>' + message['content']}}    {%- endif %}    {%- if message['role'] == 'assistant' and message['content'] is none %}        {%- set ns.is_tool = false -%}        {%- for tool in message['tool_calls']%}            {%- if not ns.is_first %}{{'<\uff5cAssistant\uff5c><\uff5ctool\u2581calls\u2581begin\uff5c><\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\\n' + '```json' + '\\n' + tool['function']['arguments'] + '\\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}            {%- set ns.is_first = true -%}            {%- else %}{{'\\n' + '<\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\\n' + '```json' + '\\n' + tool['function']['arguments'] + '\\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{{'<\uff5ctool\u2581calls\u2581end\uff5c><\uff5cend\u2581of\u2581sentence\uff5c>'}}                   {%- endif %}        {%- endfor %}    {%- endif %}    {%- if message['role'] == 'assistant' and message['content'] is not none %}        {%- if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>' + message['content'] + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}        {%- set ns.is_tool = false -%}        {%- else %}{{'<\uff5cAssistant\uff5c>' + message['content'] + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}        {%- endif %}    {%- endif %}    {%- if message['role'] == 'tool' %}        {%- set ns.is_tool = true -%}        {%- if ns.is_output_first %}{{'<\uff5ctool\u2581outputs\u2581begin\uff5c><\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}        {%- set ns.is_output_first = false %}        {%- else %}{{'\\n<\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}        {%- endif %}    {%- endif %}{%- endfor -%}{% if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>'}}{% endif %}{% if add_generation_prompt and not ns.is_tool %}{{'<\uff5cAssistant\uff5c>'}}{% endif %}"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 13759,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 16145,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1552,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_deepseek.py",
+      "size": 10338,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 181,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-000055.safetensors",
+      "size": 8594017186,
+      "lfs": {
+        "size": 8594017186,
+        "sha256": "4723867c1acc59f4dd8c214120fd709c9f491f5c4c4412ebefb74732ba0c4f0a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-000055.safetensors",
+      "size": 8604902394,
+      "lfs": {
+        "size": 8604902394,
+        "sha256": "42e8ac12df89334465bd95c3267607d2a5db3150027f26fa512fa8e77dfa797e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-000055.safetensors",
+      "size": 8604902394,
+      "lfs": {
+        "size": 8604902394,
+        "sha256": "5de1b30eb92a59f8fed8250a0950b7b4390b4006c4f4e64a141b0117703f53a8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-000055.safetensors",
+      "size": 8604902402,
+      "lfs": {
+        "size": 8604902402,
+        "sha256": "1864c275b9daebe0c6636acb641eff0c27acbe0da3c71909aa6a744d5c5898c0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-000055.safetensors",
+      "size": 8590441833,
+      "lfs": {
+        "size": 8590441833,
+        "sha256": "0e58072f5daf8a865873e233564f63d67214d7e577c4656e893b380963a32dee",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-000055.safetensors",
+      "size": 8604902329,
+      "lfs": {
+        "size": 8604902329,
+        "sha256": "f36cf626f3a6da8192b0be625f4216dd8d89021b338e5116e2d2d1bd4809bae8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-000055.safetensors",
+      "size": 8604902352,
+      "lfs": {
+        "size": 8604902352,
+        "sha256": "1192a6ea17ad9126360d4ac97d4cdcde4a25f4f473d51592ea50e95bc179a2a6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-000055.safetensors",
+      "size": 8604902352,
+      "lfs": {
+        "size": 8604902352,
+        "sha256": "0395c3063e0d3e59760ff11ffada1e5679801410d6793f0faacb31454d64d808",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-000055.safetensors",
+      "size": 8604902538,
+      "lfs": {
+        "size": 8604902538,
+        "sha256": "53bc441b10cdd050ffc1b3bfec27323dcd27ff94bfa88cc97b2c7312054e5645",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "7002be0ad87c9052e0fbb17d93aedf49ac4849bf1e8fb05c3a97e9207ce365fd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "adfb20589b117f35708030fdc9b6324a0fedab5fd4c6fd38e14b5c34e46f98e1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-000055.safetensors",
+      "size": 8604902888,
+      "lfs": {
+        "size": 8604902888,
+        "sha256": "4997e41ad29b0347c3e6ef456c152f2ab9ad303754963cc9d2d0ec9859c76539",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "532021a45bee567d14486fc17f1cd2c80fb0911394c1cd712c02931ff0301488",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "603005cc554d7186d0ee21e25636e1be61a58d1d61c79467d811b8fe41105f9d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "c8189a596ebaa1e826354e2144222f7d332ce1be0f9fa9f41053004b6d43ba68",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-000055.safetensors",
+      "size": 8604902933,
+      "lfs": {
+        "size": 8604902933,
+        "sha256": "8dd27103727281b7d68354eb4af30cd98e5122e7dafe9fde4e2175027c0d00a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-000055.safetensors",
+      "size": 8590442357,
+      "lfs": {
+        "size": 8590442357,
+        "sha256": "0a6cb288d9e7cc2cea096c4e0a5af92af088a06fd6c79b1dec18a06b9b2b0960",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-000055.safetensors",
+      "size": 8604902862,
+      "lfs": {
+        "size": 8604902862,
+        "sha256": "7ff9411dc89507b114f3777cebf46b68ae9115f18d9740242d74d5a56f8ed061",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "36028bb9964f50b687eead5183bf9bbcd452eb55e884520e3e6f6cb9c2e363fd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "c523866605146433aa42ea87f6575d4f5ba9b24fd281a70a5467927e673d193b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "a5f63037bdcf3fab91b7d6578adfa4d962789a4eefbe5c81fddad2d2ff76d221",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "66b2bbf34d8378f211749a24d25405679c2c3bd98934900c80faefef7fc2a1a7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "e3c3cbca08de856f7027f9b8800a29641527460b46fe695049412a2ea8b21a8e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "bb8e2d62cda76c923814c6cfc477eaee41c39bda24fa12b8679ee698b607d062",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-000055.safetensors",
+      "size": 8604902928,
+      "lfs": {
+        "size": 8604902928,
+        "sha256": "085f0d106e0bf243e4b4de0321bf543b5f7819721740f8c5f28c1210cae9466e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "df0b0a602fbc052c61fdb7f321e5314443daac4045095dd0acd360980ef5d989",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "9d4efcbd2cfa096b6479db22034b7c4b5b6397df2796eb38dc5a911838c996f6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "41d1eb892403fb13f8f376b63a3aa5d817b5ab682d48c777f1b5f609b422489c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-000055.safetensors",
+      "size": 8590442363,
+      "lfs": {
+        "size": 8590442363,
+        "sha256": "cab9f7950c4454c41319fbbbd85f6f82429cd347f22a5508755a6a71379a448c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-000055.safetensors",
+      "size": 8604902860,
+      "lfs": {
+        "size": 8604902860,
+        "sha256": "4e25fb281c6208ddf09dc203b94f2b7cd3d5723f7521130686aa8cf52b6083b3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "7890c1ef6f2297ebe9f7b12f9d451d6128445dbafea7b2634834bd78d5d51be2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "1445276e505591c701102e1b2eef95a6726b7c48314c584b2b1013e29d79bffc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "68ef5a8e25da48704e2d19613c26540f4cc2b4fc11c038b7f08d5665ac9f6813",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "fd00974ad9603f8af075dc2dd5ce72e91398953c0f0fc24d4ce5def422d28ad2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "67ba0def2b3ca293015a51fb7ddefb5690acaae7227abdb9fb3aa72cee91d783",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "bcc62dd95f53275d96720ea6da7ecfa05188b86bbb7a18f364cd282c66271bb2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-000055.safetensors",
+      "size": 8604902926,
+      "lfs": {
+        "size": 8604902926,
+        "sha256": "31f999e9c5875288e323cf717b0bb3c34ca363e0951024a432c750480ef10621",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "433f65f96f8f13db6522dabb7f0e6425f986427c9d2870585ee840536a911618",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "3161a2b5f22d8422101886d6e1f85e84c5db82d63e3fbd52e5c0f6ab17363486",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-000055.safetensors",
+      "size": 8604902927,
+      "lfs": {
+        "size": 8604902927,
+        "sha256": "5a33e07c5f1e8dadd4eb9b7392ad735015c395e7a8c940d7a68927082d3f1368",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00041-of-000055.safetensors",
+      "size": 8590442367,
+      "lfs": {
+        "size": 8590442367,
+        "sha256": "351b6916d5ce36445ef22b30b265913acc7caf2e8fb5a86c28c163d9c12c3932",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00042-of-000055.safetensors",
+      "size": 8604902858,
+      "lfs": {
+        "size": 8604902858,
+        "sha256": "bfe70d0667a0f09c8c95860fd95026456fa04f8bf64bfeb889a1fd03ac187268",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "a0d644951c2f95dd8761552d4ff3ca241c99f302852a300c7371ca8b83d40854",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "311c6e91304fd6b25a6a33c4ba9bb1a816e64e898db2d3ed4a2352c80e876119",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "98c0bd1806482cf024daf8d4ca61c1f2e8b24dec42d47facc8c11be95081bba7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "ac5758d83ba9972dba89846d37645cb46aff7b6a6d8bc84191643a8bc53fb112",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "f1d752099b74b5e2a1cd958ca3c5d9c99386c7085a0d24478bd906939712a252",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-000055.safetensors",
+      "size": 8604902887,
+      "lfs": {
+        "size": 8604902887,
+        "sha256": "cac460b11885c5a6a179c19787a5aeb430398af6317e5bc938d2285e53027cb3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00049-of-000055.safetensors",
+      "size": 8604902924,
+      "lfs": {
+        "size": 8604902924,
+        "sha256": "faad9a717022b39be1da069f528fc14e363a4a1c88153c9fbe660cd689a39bc7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00050-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "296b7bb240e8c398f39252729c563e7192b21b5db32cdd2c35abc3b8d1875664",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00051-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "7213ae9ca463ef5ad7b7dfee2fa9a060b54895563c3789a8350816c9194838c9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00052-of-000055.safetensors",
+      "size": 8604902929,
+      "lfs": {
+        "size": 8604902929,
+        "sha256": "d05571212b08d2083dd5e32db28b81a36c49ab81ac5fc574e7f87ce74b684394",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00053-of-000055.safetensors",
+      "size": 8606171134,
+      "lfs": {
+        "size": 8606171134,
+        "sha256": "cc1f71cffe4f46c7c55d6040572941157c913a0d622376169a538801c10ea7dd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00054-of-000055.safetensors",
+      "size": 8604902857,
+      "lfs": {
+        "size": 8604902857,
+        "sha256": "2870aa0867f9d0275e0e72e30ab58d340435ab10dbc0a8c67fbe0655e6291259",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00055-of-000055.safetensors",
+      "size": 6889220002,
+      "lfs": {
+        "size": 6889220002,
+        "sha256": "c24c913f51454e4a984ed1c4717a191f02d87621300934bae6881973e436685d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 2660647,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_deepseek.py",
+      "size": 78672,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4610628,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 3147,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: deepseek-license\nlicense_link: LICENSE\nbase_model: deepseek-ai/DeepSeek-Coder-V2-Base\nlibrary_name: transformers\n---\n<!-- markdownlint-disable first-line-h1 -->\n<!-- markdownlint-disable html -->\n<!-- markdownlint-disable no-duplicate-header -->\n\n<div align=\"center\">\n  <img src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/logo.svg?raw=true\" width=\"60%\" alt=\"DeepSeek-V2\" />\n</div>\n<hr>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://www.deepseek.com/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Homepage\" src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/badge.svg?raw=true\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://chat.deepseek.com/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/\ud83e\udd16%20Chat-DeepSeek%20V2-536af5?color=536af5&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://huggingface.co/deepseek-ai\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Hugging Face\" src=\"https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-DeepSeek%20AI-ffc107?color=ffc107&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://discord.gg/Tc7c45Zzu5\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Discord\" src=\"https://img.shields.io/badge/Discord-DeepSeek%20AI-7289da?logo=discord&logoColor=white&color=7289da\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/qr.jpeg?raw=true\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Wechat\" src=\"https://img.shields.io/badge/WeChat-DeepSeek%20AI-brightgreen?logo=wechat&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://twitter.com/deepseek_ai\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Twitter Follow\" src=\"https://img.shields.io/badge/Twitter-deepseek_ai-white?logo=x&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/LICENSE-CODE\" style=\"margin: 2px;\">\n    <img alt=\"Code License\" src=\"https://img.shields.io/badge/Code_License-MIT-f5de53?&color=f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/LICENSE-MODEL\" style=\"margin: 2px;\">\n    <img alt=\"Model License\" src=\"https://img.shields.io/badge/Model_License-Model_Agreement-f5de53?&color=f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n<p align=\"center\">\n  <a href=\"#4-api-platform\">API Platform</a> |\n  <a href=\"#5-how-to-run-locally\">How to Use</a> |\n  <a href=\"#6-license\">License</a> |\n</p>\n\n\n<p align=\"center\">\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-Coder-V2/blob/main/paper.pdf\"><b>Paper Link</b>\ud83d\udc41\ufe0f</a>\n</p>\n\n# DeepSeek-Coder-V2: Breaking the Barrier of Closed-Source Models in Code Intelligence\n\n## 1. Introduction\nWe present DeepSeek-Coder-V2, an open-source Mixture-of-Experts (MoE) code language model that achieves performance comparable to GPT4-Turbo in code-specific tasks. Specifically, DeepSeek-Coder-V2 is further pre-trained from an intermediate checkpoint of DeepSeek-V2 with additional 6 trillion tokens. Through this continued pre-training, DeepSeek-Coder-V2 substantially enhances the coding and mathematical reasoning capabilities of DeepSeek-V2, while maintaining comparable performance in general language tasks. Compared to DeepSeek-Coder-33B, DeepSeek-Coder-V2 demonstrates significant advancements in various aspects of code-related tasks, as well as reasoning and general capabilities. Additionally, DeepSeek-Coder-V2 expands its support for programming languages from 86 to 338, while extending the context length from 16K to 128K. \n\n<p align=\"center\">\n  <img width=\"100%\" src=\"https://github.com/deepseek-ai/DeepSeek-Coder-V2/blob/main/figures/performance.png?raw=true\">\n</p>\n\n\nIn standard benchmark evaluations, DeepSeek-Coder-V2 achieves superior performance compared to closed-source models such as GPT4-Turbo, Claude 3 Opus, and Gemini 1.5 Pro in coding and math benchmarks.  The list of supported programming languages can be found [here](https://github.com/deepseek-ai/DeepSeek-Coder-V2/blob/main/supported_langs.txt).\n\n## 2. Model Downloads\n\nWe release the DeepSeek-Coder-V2 with 16B and 236B parameters based on the [DeepSeekMoE](https://arxiv.org/pdf/2401.06066) framework, which has actived parameters of only 2.4B and 21B , including base and instruct models, to the public. \n\n<div align=\"center\">\n\n|            **Model**            | **#Total Params** | **#Active Params** | **Context Length** |                         **Download**                         |\n| :-----------------------------: | :---------------: | :----------------: | :----------------: | :----------------------------------------------------------: |\n|   DeepSeek-Coder-V2-Lite-Base   |        16B        |        2.4B        |        128k        | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Base) |\n| DeepSeek-Coder-V2-Lite-Instruct |        16B        |        2.4B        |        128k        | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct) |\n|     DeepSeek-Coder-V2-Base      |       236B        |        21B         |        128k        | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Base) |\n|   DeepSeek-Coder-V2-Instruct    |       236B        |        21B         |        128k        | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Instruct) |\n|   DeepSeek-Coder-V2-Instruct-0724    |       236B        |        21B         |        128k        | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Instruct-0724) |\n</div>\n\n\n## 3. Chat Website\n\nYou can chat with the DeepSeek-Coder-V2 on DeepSeek's official website: [coder.deepseek.com](https://coder.deepseek.com/sign_in)\n\n## 4. API Platform\nWe also provide OpenAI-Compatible API at DeepSeek Platform: [platform.deepseek.com](https://platform.deepseek.com/), and you can also pay-as-you-go at an unbeatable price.\n<p align=\"center\">\n  <img width=\"40%\" src=\"https://github.com/deepseek-ai/DeepSeek-Coder-V2/blob/main/figures/model_price.jpg?raw=true\">\n</p>\n\n\n## 5. How to run locally\n**Here, we provide some examples of how to use DeepSeek-Coder-V2-Lite model. If you want to utilize DeepSeek-Coder-V2 in BF16 format for inference, 80GB*8 GPUs are required.**\n\n### Inference with Huggingface's Transformers\nYou can directly employ [Huggingface's Transformers](https://github.com/huggingface/transformers) for model inference.\n\n#### Code Completion\n```python\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\nimport torch\ntokenizer = AutoTokenizer.from_pretrained(\"deepseek-ai/DeepSeek-Coder-V2-Lite-Base\", trust_remote_code=True)\nmodel = AutoModelForCausalLM.from_pretrained(\"deepseek-ai/DeepSeek-Coder-V2-Lite-Base\", trust_remote_code=True, torch_dtype=torch.bfloat16).cuda()\ninput_text = \"#write a quick sort algorithm\"\ninputs = tokenizer(input_text, return_tensors=\"pt\").to(model.device)\noutputs = model.generate(**inputs, max_length=128)\nprint(tokenizer.decode(outputs[0], skip_special_tokens=True))\n```\n\n#### Code Insertion\n```python\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\nimport torch\ntokenizer = AutoTokenizer.from_pretrained(\"deepseek-ai/DeepSeek-Coder-V2-Lite-Base\", trust_remote_code=True)\nmodel = AutoModelForCausalLM.from_pretrained(\"deepseek-ai/DeepSeek-Coder-V2-Lite-Base\", trust_remote_code=True, torch_dtype=torch.bfloat16).cuda()\ninput_text = \"\"\"<\uff5cfim\u2581begin\uff5c>def quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[0]\n    left = []\n    right = []\n<\uff5cfim\u2581hole\uff5c>\n        if arr[i] < pivot:\n            left.append(arr[i])\n        else:\n            right.append(arr[i])\n    return quick_sort(left) + [pivot] + quick_sort(right)<\uff5cfim\u2581end\uff5c>\"\"\"\ninputs = tokenizer(input_text, return_tensors=\"pt\").to(model.device)\noutputs = model.generate(**inputs, max_length=128)\nprint(tokenizer.decode(outputs[0], skip_special_tokens=True)[len(input_text):])\n```\n\n#### Chat Completion\n\n```python\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\nimport torch\ntokenizer = AutoTokenizer.from_pretrained(\"deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct\", trust_remote_code=True)\nmodel = AutoModelForCausalLM.from_pretrained(\"deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct\", trust_remote_code=True, torch_dtype=torch.bfloat16).cuda()\nmessages=[\n    { 'role': 'user', 'content': \"write a quick sort algorithm in python.\"}\n]\ninputs = tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors=\"pt\").to(model.device)\n# tokenizer.eos_token_id is the id of <\uff5cend\u2581of\u2581sentence\uff5c>  token\noutputs = model.generate(inputs, max_new_tokens=512, do_sample=False, top_k=50, top_p=0.95, num_return_sequences=1, eos_token_id=tokenizer.eos_token_id)\nprint(tokenizer.decode(outputs[0][len(inputs[0]):], skip_special_tokens=True))\n```\n\n\n\nThe complete chat template can be found within `tokenizer_config.json` located in the huggingface model repository.\n\nAn example of chat template is as belows:\n\n```bash\n<\uff5cbegin\u2581of\u2581sentence\uff5c>User: {user_message_1}\n\nAssistant: {assistant_message_1}<\uff5cend\u2581of\u2581sentence\uff5c>User: {user_message_2}\n\nAssistant:\n```\n\nYou can also add an optional system message:\n\n```bash\n<\uff5cbegin\u2581of\u2581sentence\uff5c>{system_message}\n\nUser: {user_message_1}\n\nAssistant: {assistant_message_1}<\uff5cend\u2581of\u2581sentence\uff5c>User: {user_message_2}\n\nAssistant:\n```\n\n### Inference with vLLM (recommended)\nTo utilize [vLLM](https://github.com/vllm-project/vllm) for model inference, please merge this Pull Request into your vLLM codebase: https://github.com/vllm-project/vllm/pull/4650.\n\n```python\nfrom transformers import AutoTokenizer\nfrom vllm import LLM, SamplingParams\n\nmax_model_len, tp_size = 8192, 1\nmodel_name = \"deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct\"\ntokenizer = AutoTokenizer.from_pretrained(model_name)\nllm = LLM(model=model_name, tensor_parallel_size=tp_size, max_model_len=max_model_len, trust_remote_code=True, enforce_eager=True)\nsampling_params = SamplingParams(temperature=0.3, max_tokens=256, stop_token_ids=[tokenizer.eos_token_id])\n\nmessages_list = [\n    [{\"role\": \"user\", \"content\": \"Who are you?\"}],\n    [{\"role\": \"user\", \"content\": \"write a quick sort algorithm in python.\"}],\n    [{\"role\": \"user\", \"content\": \"Write a piece of quicksort code in C++.\"}],\n]\n\nprompt_token_ids = [tokenizer.apply_chat_template(messages, add_generation_prompt=True) for messages in messages_list]\n\noutputs = llm.generate(prompt_token_ids=prompt_token_ids, sampling_params=sampling_params)\n\ngenerated_text = [output.outputs[0].text for output in outputs]\nprint(generated_text)\n```\n## 5. New Features \ud83c\udf89\ud83c\udf89\ud83c\udf89\n\n### Function calling\n\nFunction calling allows the model to call external tools to enhance its capabilities.\n\nHere is an example:\n\n```python\n# Assume that `model` and `tokenizer` are loaded\nmodel.generation_config = GenerationConfig(do_sample=False, max_new_tokens=128, eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.eos_token_id)\n\ntool_system_prompt = \"\"\"You are a helpful Assistant.\n\n## Tools\n\n### Function\n\nYou have the following functions available:\n\n- `get_current_weather`:\n```json\n{\n    \"name\": \"get_current_weather\",\n    \"description\": \"Get the current weather in a given location\",\n    \"parameters\": {\n        \"type\": \"object\",\n        \"properties\": {\n            \"location\": {\n                \"type\": \"string\",\n                \"description\": \"The city and state, e.g. San Francisco, CA\"\n            },\n            \"unit\": {\n                \"type\": \"string\",\n                \"enum\": [\n                    \"celsius\",\n                    \"fahrenheit\"\n                ]\n            }\n        },\n        \"required\": [\n            \"location\"\n        ]\n    }\n}\n```\"\"\"\n\ntool_call_messages = [{\"role\": \"system\", \"content\": tool_system_prompt}, {\"role\": \"user\", \"content\": \"What's the weather like in Tokyo and Paris?\"}]\ntool_call_inputs = tokenizer.apply_chat_template(tool_call_messages, add_generation_prompt=True, return_tensors=\"pt\")\ntool_call_outputs = model.generate(tool_call_inputs.to(model.device))\n# Generated text: '<\uff5ctool\u2581calls\u2581begin\uff5c><\uff5ctool\u2581call\u2581begin\uff5c>function<\uff5ctool\u2581sep\uff5c>get_current_weather\\n```json\\n{\"location\": \"Tokyo\"}\\n```<\uff5ctool\u2581call\u2581end\uff5c>\\n<\uff5ctool\u2581call\u2581begin\uff5c>function<\uff5ctool\u2581sep\uff5c>get_current_weather\\n```json\\n{\"location\": \"Paris\"}\\n```<\uff5ctool\u2581call\u2581end\uff5c><\uff5ctool\u2581calls\u2581end\uff5c><\uff5cend\u2581of\u2581sentence\uff5c>'\n\n# Mock response of calling `get_current_weather`\ntool_messages = [{\"role\": \"tool\", \"content\": '{\"location\": \"Tokyo\", \"temperature\": \"10\", \"unit\": null}'}, {\"role\": \"tool\", \"content\": '{\"location\": \"Paris\", \"temperature\": \"22\", \"unit\": null}'}]\ntool_inputs = tokenizer.apply_chat_template(tool_messages, add_generation_prompt=False, return_tensors=\"pt\")[:, 1:]\ntool_inputs = torch.cat([tool_call_outputs, tool_inputs.to(model.device)], dim=1)\ntool_outputs = model.generate(tool_inputs)\n# Generated text: The current weather in Tokyo is 10 degrees, and in Paris, it is 22 degrees.<\uff5cend\u2581of\u2581sentence\uff5c>\n```\n\n### JSON output\n\nYou can use JSON Output Mode to ensure the model generates a valid JSON object. To active this mode, a special instruction should be appended to your system prompt.\n\n```python\n# Assume that `model` and `tokenizer` are loaded\nmodel.generation_config = GenerationConfig(do_sample=False, max_new_tokens=128, eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.eos_token_id)\n\nuser_system_prompt = 'The user will provide some exam text. Please parse the \"question\" and \"answer\" and output them in JSON format.'\njson_system_prompt = f\"\"\"{user_system_prompt}\n\n## Response Format\n\nReply with JSON object ONLY.\"\"\"\n\njson_messages = [{\"role\": \"system\", \"content\": json_system_prompt}, {\"role\": \"user\", \"content\": \"Which is the highest mountain in the world? Mount Everest.\"}]\njson_inputs = tokenizer.apply_chat_template(json_messages, add_generation_prompt=True, return_tensors=\"pt\")\njson_outpus = model.generate(json_inputs.to(model.device))\n# Generated text: '```json\\n{\\n  \"question\": \"Which is the highest mountain in the world?\",\\n  \"answer\": \"Mount Everest.\"\\n}\\n```<\uff5cend\u2581of\u2581sentence\uff5c>'\n```\n\n### FIM completion\n\nIn FIM (Fill In the Middle) completion, you can provide a prefix and an optional suffix, and the model will complete the content in between.\n\n```python\n# Assume that `model` and `tokenizer` are loaded\nmodel.generation_config = GenerationConfig(do_sample=False, max_new_tokens=128, eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.eos_token_id)\n\nprefix = \"\"\"def quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[0]\n    left = []\n    right = []\n\"\"\"\n\nsuffix = \"\"\"\n        if arr[i] < pivot:\n            left.append(arr[i])\n        else:\n            right.append(arr[i])\n    return quick_sort(left) + [pivot] + quick_sort(right)\"\"\"\n\nfim_prompt = f\"<\uff5cfim\u2581begin\uff5c>{prefix}<\uff5cfim\u2581hole\uff5c>{suffix}<\uff5cfim\u2581end\uff5c>\"\nfim_inputs = tokenizer(fim_prompt, add_special_tokens=True, return_tensors=\"pt\").input_ids\nfim_outputs = model.generate(fim_inputs.to(model.device))\n# Generated text: \"    for i in range(1, len(arr)):<\uff5cend\u2581of\u2581sentence\uff5c>\"\n```\n\n## 6. License\n\nThis code repository is licensed under [the MIT License](https://github.com/deepseek-ai/DeepSeek-Coder-V2/blob/main/LICENSE-CODE). The use of DeepSeek-Coder-V2 Base/Instruct models is subject to [the Model License](https://github.com/deepseek-ai/DeepSeek-Coder-V2/blob/main/LICENSE-MODEL). DeepSeek-Coder-V2 series (including Base and Instruct) supports commercial use.\n\n\n## 7. Contact\nIf you have any questions, please raise an issue or contact us at [service@deepseek.com](service@deepseek.com).\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "deepseek-license",
+    "license_link": "LICENSE",
+    "base_model": "deepseek-ai/DeepSeek-Coder-V2-Base",
+    "library_name": "transformers",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

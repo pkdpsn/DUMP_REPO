@@ -1,0 +1,390 @@
+{
+  "modelId": "nvidia/Qwen3-235B-A22B-NVFP4",
+  "author": "nvidia",
+  "sha": "21cfa2c9e152032eb60647ee7b46a2bbcd8d76d2",
+  "lastModified": "2025-07-08 00:47:06+00:00",
+  "tags": [
+    "Model Optimizer",
+    "safetensors",
+    "qwen3_moe",
+    "nvidia",
+    "ModelOpt",
+    "Qwen3",
+    "quantized",
+    "FP4",
+    "fp4",
+    "text-generation",
+    "conversational",
+    "base_model:Qwen/Qwen3-235B-A22B",
+    "base_model:finetune:Qwen/Qwen3-235B-A22B",
+    "license:apache-2.0",
+    "8-bit",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "Model Optimizer",
+  "likes": 22,
+  "downloads": 10664,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-235B-A22B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "Model Optimizer",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "ModelOpt",
+      "Qwen3",
+      "quantized",
+      "FP4",
+      "fp4"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3MoeForCausalLM"
+    ],
+    "model_type": "qwen3_moe",
+    "num_experts": 128,
+    "num_experts_per_tok": 8,
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set content = message.content %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is not none %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in message.content %}\n                {%- set content = message.content.split('</think>')[-1].lstrip('\\n') %}\n                {%- set reasoning_content = message.content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1634,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11574,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6040,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 966,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 4018,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00027.safetensors",
+      "size": 4999619880,
+      "lfs": {
+        "size": 4999619880,
+        "sha256": "2749205e6aab3ed45e20b3c12fc8d0538655b1c407c9a96395607c09b4bd806e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00027.safetensors",
+      "size": 4999554200,
+      "lfs": {
+        "size": 4999554200,
+        "sha256": "8777a44b02ce7b95f21a1012e341763924ca7e38252b3ce6bd5c493b5d821f68",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00027.safetensors",
+      "size": 5000457620,
+      "lfs": {
+        "size": 5000457620,
+        "sha256": "ff38c8485509442baf2c0e0e6216574f32d253a9dffd1a69bfee4ccc33c7d7dc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00027.safetensors",
+      "size": 4999952884,
+      "lfs": {
+        "size": 4999952884,
+        "sha256": "5b7ef0335b4be1cf5fa7c07223c7fcaf1cfab2c842d2cfd9714cfb085d97a73a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00027.safetensors",
+      "size": 5000463428,
+      "lfs": {
+        "size": 5000463428,
+        "sha256": "7f6703f077fa2211d0b9517f3c77c36add27b1faf9ca32d236a61cf2b99f80f6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00027.safetensors",
+      "size": 4999952932,
+      "lfs": {
+        "size": 4999952932,
+        "sha256": "4ce5dbd0c6f5e4ef609e1ea7d0af2dd62a61874b922af2800bf6ea5ff6064811",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00027.safetensors",
+      "size": 4999559752,
+      "lfs": {
+        "size": 4999559752,
+        "sha256": "11ca3ebd307b2ba7eddaf4cc38dac2692b557af60b19445f615fde1ff4d0a3e6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00027.safetensors",
+      "size": 5000463148,
+      "lfs": {
+        "size": 5000463148,
+        "sha256": "02e4d44f0d75230ff0e842b9243e778d046d9e175cd70e169db85bd0d4cf27b3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00027.safetensors",
+      "size": 4999953212,
+      "lfs": {
+        "size": 4999953212,
+        "sha256": "3ec87a5e875152d8c5f86661e49c88dbfd57aa3638d035d8d4c7f4b906f05dab",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00027.safetensors",
+      "size": 5000463196,
+      "lfs": {
+        "size": 5000463196,
+        "sha256": "b263380ff3013d9a8850b47e1d017bb9c67eb24a0ae8b1e8a6cde6613ef6c700",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00027.safetensors",
+      "size": 4999953172,
+      "lfs": {
+        "size": 4999953172,
+        "sha256": "5a90cc578b09f1c1cc6f08d0bdeea6ef86c683109a7a805ba0e017b525683d4b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00027.safetensors",
+      "size": 5000463412,
+      "lfs": {
+        "size": 5000463412,
+        "sha256": "d54a80aebea95b0a1ced1c6776b608f4b68df26498cd30624b9f5e04b13ac725",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00027.safetensors",
+      "size": 4999952940,
+      "lfs": {
+        "size": 4999952940,
+        "sha256": "cb2b08700594c0f9906c2400d56b3f61373248ac2c83ac04e8c47138ebbaf8bb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00027.safetensors",
+      "size": 4999559760,
+      "lfs": {
+        "size": 4999559760,
+        "sha256": "46fb33a57f93ed222e9b6baf002d32b863d9c6b2c5fc57def9fc6cd1fb7089d9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00027.safetensors",
+      "size": 5000463132,
+      "lfs": {
+        "size": 5000463132,
+        "sha256": "3005ec4b5864ddf39fa74e37f1883854730af5820df9f4136bd347964930f98e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00027.safetensors",
+      "size": 4999953212,
+      "lfs": {
+        "size": 4999953212,
+        "sha256": "dd6c03c02283b3b29d27f8703a00d5c707484d2b8a480ba4ee99c6d902247e51",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00027.safetensors",
+      "size": 5000463188,
+      "lfs": {
+        "size": 5000463188,
+        "sha256": "d5168ae13255fa5f2c9af147304dd8759e12fcca4d0270cf011b06c5a2d99644",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00027.safetensors",
+      "size": 4999953172,
+      "lfs": {
+        "size": 4999953172,
+        "sha256": "974d3120b0c702ec3cbede30bbc79d2c8169ee7dadcbb8c872cb6b0a69eee652",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00027.safetensors",
+      "size": 5000463412,
+      "lfs": {
+        "size": 5000463412,
+        "sha256": "3818e38e033a384964f85e59352f9254f79615b8f88c98ae9d516d2097059297",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00027.safetensors",
+      "size": 4999952956,
+      "lfs": {
+        "size": 4999952956,
+        "sha256": "005a583b0d8ebc069d1b8013ffaecfbae0144b404312cd02b370528b72df05a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00027.safetensors",
+      "size": 4999559760,
+      "lfs": {
+        "size": 4999559760,
+        "sha256": "e57e4e8e84f9f351344799d2a2b8eb9a2c278aa9473c8613586635092568fe76",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00027.safetensors",
+      "size": 5000463132,
+      "lfs": {
+        "size": 5000463132,
+        "sha256": "0407d2873efc8b2936788c41c75e9da53c300b8fa6cd16599d0e74d672661afe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00027.safetensors",
+      "size": 4999953220,
+      "lfs": {
+        "size": 4999953220,
+        "sha256": "4a87113d6f9605b2e1ce43db2a6c53978c7b43fe7267df22d116c5079045f67d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00027.safetensors",
+      "size": 5000463172,
+      "lfs": {
+        "size": 5000463172,
+        "sha256": "c4932031bcf1455658a06b954436d1c2dbf88f6041efedff5242e99d0a6bfca4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00027.safetensors",
+      "size": 4999953180,
+      "lfs": {
+        "size": 4999953180,
+        "sha256": "55ae45e3cbbc97ef31ce2758538a8e1c717e2d73a6fb8373ce219c413bd2252a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00027.safetensors",
+      "size": 5000463404,
+      "lfs": {
+        "size": 5000463404,
+        "sha256": "e3e86a69dbf6202799d3d5b1a35eea4de3ef892d65302abea73d39ceedb1d87e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00027.safetensors",
+      "size": 4116499340,
+      "lfs": {
+        "size": 4116499340,
+        "sha256": "dbcccd9f01f34c2840b73f0cce9c4f786b43c62f53d56793722b30821979df4d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 13920175,
+      "lfs": {
+        "size": 13920175,
+        "sha256": "593af4d5bae0b67f7edcd16195a27131c82cf5ae1f775b3ee68872be06bccfac",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 388,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9709,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}

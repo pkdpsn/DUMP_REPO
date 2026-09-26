@@ -1,0 +1,141 @@
+{
+  "modelId": "microsoft/kosmos-2.5-chat",
+  "author": "microsoft",
+  "sha": "edf7d312d213f1a4a4645b0a46cffea3575ea016",
+  "lastModified": "2025-08-28 14:14:43+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "kosmos-2.5",
+    "image-text-to-text",
+    "en",
+    "arxiv:2309.11419",
+    "license:mit",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 26,
+  "downloads": 223,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": "en",
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Kosmos2_5ForConditionalGeneration"
+    ],
+    "model_type": "kosmos-2.5",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4323,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat.py",
+      "size": 1581,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 4365,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 161,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4995252144,
+      "lfs": {
+        "size": 4995252144,
+        "sha256": "ea32f178375c21412ee2829b2389682544ecd6f990a6120b219e065b1500d085",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 503408384,
+      "lfs": {
+        "size": 503408384,
+        "sha256": "5b642fe2ce0ad3ff30838a3daebb6d26252770c65d29306a809e05598fc0e393",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 56481,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 107,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 629,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 8859691,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1434622,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\nlicense: mit\nlibrary_name: transformers\npipeline_tag: image-text-to-text\n---\n# Kosmos-2.5-chat\n\n[Microsoft Document AI](https://www.microsoft.com/en-us/research/project/document-ai/) | [GitHub](https://github.com/microsoft/unilm/tree/master/kosmos-2.5)\n\n## Model description\nKosmos-2.5 is a multimodal literate model for machine reading of text-intensive images. Pre-trained on large-scale text-intensive images, Kosmos-2.5 excels in two distinct yet cooperative transcription tasks: (1) generating spatially-aware text blocks, where each block of text is assigned its spatial coordinates within the image, and (2) producing structured text output that captures styles and structures into the markdown format. This unified multimodal literate capability is achieved through a shared decoder-only auto-regressive Transformer architecture, task-specific prompts, and flexible text representations. We evaluate Kosmos-2.5 on end-to-end document-level text recognition and image-to-markdown text generation. Furthermore, the model can be readily adapted for any text-intensive image understanding task with different prompts through supervised fine-tuning, making it a general-purpose tool for real-world applications involving text-rich images. This work also paves the way for the future scaling of multimodal large language models.\n\nKosmos-2.5-chat is a model specifically trained for Visual Question Answering (VQA) tasks, based on further training of Kosmos-2.5. For more details about Kosmos-2.5-chat, please refer to the paper.\n\n[Kosmos-2.5: A Multimodal Literate Model](https://arxiv.org/abs/2309.11419)\n\n## Usage\n\nKOSMOS-2.5 is supported from Transformers >= 4.56. Find the docs [here](https://huggingface.co/docs/transformers/main/en/model_doc/kosmos2_5).\n\n```python\nimport re\nimport torch\nimport requests\nfrom PIL import Image, ImageDraw\nfrom transformers import AutoProcessor, Kosmos2_5ForConditionalGeneration\n\nrepo = \"microsoft/kosmos-2.5-chat\"\ndevice = \"cuda:0\"\ndtype = torch.bfloat16\n\nmodel = Kosmos2_5ForConditionalGeneration.from_pretrained(repo,\n                                                          device_map=device,\n                                                          torch_dtype=dtype,\n                                                          attn_implementation=\"flash_attention_2\")\nprocessor = AutoProcessor.from_pretrained(repo)\n\n# sample image\nurl = \"https://huggingface.co/microsoft/kosmos-2.5/resolve/main/receipt_00008.png\"\n\nimage = Image.open(requests.get(url, stream=True).raw)\n\nquestion = \"What is the sub total of the receipt?\"\ntemplate = \"<md>A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: {} ASSISTANT:\"\nprompt = template.format(question)\ninputs = processor(text=prompt, images=image, return_tensors=\"pt\")\n\nheight, width = inputs.pop(\"height\"), inputs.pop(\"width\")\nraw_width, raw_height = image.size\nscale_height = raw_height / height\nscale_width = raw_width / width\n\ninputs = {k: v.to(device) if v is not None else None for k, v in inputs.items()}\ninputs[\"flattened_patches\"] = inputs[\"flattened_patches\"].to(dtype)\ngenerated_ids = model.generate(\n    **inputs,\n    max_new_tokens=1024,\n)\n\ngenerated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)\nprint(generated_text[0])\n```\n\n## NOTE:\nSince this is a generative model, there is a risk of **hallucination** during the generation process, and it **CAN NOT** guarantee the accuracy of all results in the images.\n\n## Inference\n**Document Understanding Task:** For usage instructions, please refer to [chat.py](chat.py).\n\n## Citation\n\nIf you find Kosmos-2.5-chat useful in your research, please cite the following paper:\n\n```\n@article{lv2023kosmos,\n  title={Kosmos-2.5: A multimodal literate model},\n  author={Lv, Tengchao and Huang, Yupan and Chen, Jingye and Cui, Lei and Ma, Shuming and Chang, Yaoyao and Huang, Shaohan and Wang, Wenhui and Dong, Li and Luo, Weiyao and others},\n  journal={arXiv preprint arXiv:2309.11419},\n  year={2023}\n}\n```\n\n## License\nThe content of this project itself is licensed under the [MIT](https://github.com/microsoft/unilm/blob/master/kosmos-2.5/LICENSE)\n\n[Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct)\n",
+  "cardDataParsed": {
+    "language": "en",
+    "license": "mit",
+    "library_name": "transformers",
+    "pipeline_tag": "image-text-to-text",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoImageProcessor"
+  }
+}

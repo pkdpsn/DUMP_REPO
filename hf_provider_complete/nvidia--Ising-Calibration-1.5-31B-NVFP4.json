@@ -1,0 +1,235 @@
+{
+  "modelId": "nvidia/Ising-Calibration-1.5-31B-NVFP4",
+  "author": "nvidia",
+  "sha": "e0032103be2f10080a728187aea6aa7259552f27",
+  "lastModified": "2026-08-27 01:34:36+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "gemma4",
+    "image-text-to-text",
+    "Ising Calibration",
+    "quantum",
+    "calibration",
+    "vision-language",
+    "nvidia",
+    "nvfp4",
+    "conversational",
+    "arxiv:2604.25884",
+    "license:other",
+    "endpoints_compatible",
+    "8-bit",
+    "modelopt",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 2,
+  "downloads": 651,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "google/gemma-4-31b",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "Ising Calibration",
+      "quantum",
+      "calibration",
+      "vision-language",
+      "nvidia",
+      "nvfp4"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Gemma4ForConditionalGeneration"
+    ],
+    "model_type": "gemma4",
+    "quantization_config": {
+      "config_groups": {
+        "group_0": {
+          "weights": {
+            "num_bits": 4
+          },
+          "targets": [
+            "Linear"
+          ]
+        }
+      },
+      "ignore": [
+        "lm_head",
+        "model.embed_vision*",
+        "model.vision_tower*"
+      ],
+      "quant_method": "modelopt"
+    },
+    "tokenizer_config": {
+      "bos_token": "<bos>",
+      "eos_token": "<turn|>",
+      "mask_token": "<mask>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{%- macro strip_thinking(text) -%}\n    {%- set ns = namespace(result='') -%}\n    {%- for part in text.split('<channel|>') -%}\n        {%- if '<|channel>' in part -%}\n            {%- set ns.result = ns.result + part.split('<|channel>')[0] -%}\n        {%- else -%}\n            {%- set ns.result = ns.result + part -%}\n        {%- endif -%}\n    {%- endfor -%}\n    {{- ns.result | trim -}}\n{%- endmacro -%}\n\n{%- set ns = namespace(prev_role=None, prev_message_type=None) -%}\n{%- set loop_messages = messages -%}\n{{- bos_token -}}\n\n{#- Open the optional system turn. -#}\n{%- if (enable_thinking is defined and enable_thinking) or (messages and messages[0]['role'] in ['system', 'developer']) -%}\n    {{- '<|turn>system\\n' -}}\n    {%- if enable_thinking is defined and enable_thinking -%}\n        {{- '<|think|>\\n' -}}\n        {%- set ns.prev_message_type = 'think' -%}\n    {%- endif -%}\n    {%- if messages and messages[0]['role'] in ['system', 'developer'] -%}\n        {%- if messages[0]['content'] is string -%}\n            {{- messages[0]['content'] | trim -}}\n        {%- elif messages[0]['content'] is sequence -%}\n            {%- for item in messages[0]['content'] -%}\n                {%- if item.get('type') == 'text' -%}\n                    {{- item.get('text', '') | trim -}}\n                {%- endif -%}\n            {%- endfor -%}\n        {%- endif -%}\n        {%- set loop_messages = messages[1:] -%}\n    {%- endif -%}\n    {{- '<turn|>\\n' -}}\n{%- endif -%}\n\n{#- Render text and images. -#}\n{%- for message in loop_messages -%}\n    {%- set ns.prev_message_type = None -%}\n    {%- set role = 'model' if message['role'] == 'assistant' else message['role'] -%}\n    {%- set continue_same_model_turn = role == 'model' and ns.prev_role == 'assistant' -%}\n    {%- if not continue_same_model_turn -%}\n        {{- '<|turn>' + role + '\\n' -}}\n    {%- endif -%}\n\n    {%- set captured_content -%}\n        {%- if message.get('content') is string -%}\n            {%- if role == 'model' -%}\n                {{- strip_thinking(message['content']) -}}\n            {%- else -%}\n                {{- message['content'] | trim -}}\n            {%- endif -%}\n        {%- elif message.get('content') is sequence -%}\n            {%- for item in message['content'] -%}\n                {%- if item.get('type') == 'text' -%}\n                    {%- if role == 'model' -%}\n                        {{- strip_thinking(item.get('text', '')) -}}\n                    {%- else -%}\n                        {{- item.get('text', '') | trim -}}\n                    {%- endif -%}\n                {%- elif item.get('type') in ['image', 'image_url'] -%}\n                    {{- '<|image|>' -}}\n                    {%- set ns.prev_message_type = 'image' -%}\n                {%- endif -%}\n            {%- endfor -%}\n        {%- endif -%}\n    {%- endset -%}\n\n    {{- captured_content -}}\n    {{- '<turn|>\\n' -}}\n    {%- set ns.prev_role = message['role'] -%}\n{%- endfor -%}\n\n{%- if add_generation_prompt -%}\n    {{- '<|turn>model\\n' -}}\n    {%- if not enable_thinking | default(false) -%}\n        {{- '<|channel>thought\\n<channel|>' -}}\n    {%- endif -%}\n{%- endif -%}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1696,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 2693,
+      "lfs": null
+    },
+    {
+      "rfilename": "NOTICE",
+      "size": 11979,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 10661,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 547,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 3130,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 6524,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 1963,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 195,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 353,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 9978534806,
+      "lfs": {
+        "size": 9978534806,
+        "sha256": "f2cb4d6c742aad454257d7be45f314df0f4d795fc78bd9d61ac115a38d932942",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 9960338216,
+      "lfs": {
+        "size": 9960338216,
+        "sha256": "0f31369ec2330227e2aabaca9bd9e713eaae507e3c04e6a13fc1334049d315f4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 507943370,
+      "lfs": {
+        "size": 507943370,
+        "sha256": "002bc9367c5fe92398b555ff86e8c2a2a51645ef771d91ee09ddbb7b21efe608",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 246389,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 720,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 1689,
+      "lfs": null
+    },
+    {
+      "rfilename": "qcaleval_leaderboard_2026_07.png",
+      "size": 469934,
+      "lfs": {
+        "size": 469934,
+        "sha256": "62cc50889202374ebba1d6232d6ce7a89754ebe8ca012e577f126c038760b13d",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 836,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 32170070,
+      "lfs": {
+        "size": 32170070,
+        "sha256": "12bac982b793c44b03d52a250a9f0d0b666813da566b910c24a6da0695fd11e6",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1562,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: openmdw-1.1\nlibrary_name: transformers\nbase_model: google/gemma-4-31b\ntags:\n- Ising Calibration\n- quantum\n- calibration\n- vision-language\n- nvidia\n- nvfp4\n---\n\n# NVIDIA-Ising-Calibration-1.5-31B-NVFP4 Overview\n\n<div align=\"center\" style=\"line-height: 1;\">\n<a href=\"https://research.nvidia.com/publication/2026-04_qcaleval-benchmarking-vision-language-models-quantum-calibration-plot\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Paper\" src=\"https://img.shields.io/badge/Paper-QCalEval-536af5?color=76B900&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://huggingface.co/datasets/nvidia/QCalEval\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Benchmark Dataset\" src=\"https://img.shields.io/badge/Benchmark_Dataset-QCalEval-76B900?logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://github.com/NVIDIA/QCalEval\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"QCalEval GitHub\" src=\"https://img.shields.io/badge/QCalEval-GitHub-76B900?logo=github&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n</div>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://developer.nvidia.com/ising\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Homepage\" src=\"https://img.shields.io/badge/Ising Developer Page-Learn More Here!-536af5?color=76B900&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://openmdw.ai/license/1-1/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"License\" src=\"https://img.shields.io/badge/License-OpenMDW_1.1-f5de53?color=f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n![QCalEval zero-shot and MM-ICL leaderboards, with Ising Calibration 1.5 highlighted](./qcaleval_leaderboard_2026_07.png)\n\n## Description:  \nNVIDIA-Ising-Calibration-1.5-31B-NVFP4 is a dense multimodal vision-language model built on Gemma 4 31B. It analyzes quantum computing calibration experiment plots and generates structured technical text across six analysis categories: technical description, experimental conclusion, experimental significance, fit quality assessment, parameter extraction, and experiment success classification.  \nNVIDIA-Ising-Calibration-1.5-31B-NVFP4 was developed by NVIDIA for quantum calibration plot understanding.  \n_This model is ready for commercial use._\n\n## License/Terms of Use\n\nGOVERNING TERMS: Use of this model is governed by the [OpenMDW License Agreement, version 1.1](https://openmdw.ai/license/1-1/). ADDITIONAL INFORMATION: Apache License, Version 2.0.\n\n### Deployment Geography:  \nGlobal\n\n### Use Case:  \nQuantum computing researchers, calibration engineers, and developers can use this model to analyze experiment plot images and generate technical descriptions, experimental conclusions, significance assessments, fit quality evaluations, parameter extractions, and experiment success classifications. The model assists automated or assisted calibration workflows, and outputs should be validated by domain experts before acting on experimental conclusions.  \n  \n\n### Release Date:\n**NGC:** 07/23/2026 via https://catalog.ngc.nvidia.com/orgs/nim/teams/nvidia/models/nvidia-ising-calibration-1-5-31b\n\n  \n\n## Reference(s):\n[Gemma](https://ai.google.dev/gemma)  \n[QCalEval Benchmark](https://huggingface.co/datasets/nvidia/QCalEval)  \n[QCalEval: Benchmarking Vision-Language Models for Quantum Calibration Plot Understanding](https://arxiv.org/abs/2604.25884)  \n\n## Model Architecture:   \n**Architecture Type:** Dense multimodal vision-language model   \n**Network Architecture:** Integrated vision processing for experiment plot images combined with a Gemma 4 31B dense language model for autoregressive text generation.  \n**This model was developed based on google/gemma-4-31b.**  \n**Number of model parameters:** Approximately 31B  \n\n  \n \n## Input:  \n**Input Type(s):** Text, Image  \n**Input Format(s):** String, Other: RGB (.png, .jpeg, .jpg)  \n**Input Parameters:** One-Dimensional (1D), Two-Dimensional (2D)  \n**Other Properties Related to Input:** Single-image or multi-image quantum calibration experiment plots with text prompts delivered through an OpenAI-compatible API. Suggested inference settings use temperature=0.2, zero-shot max_tokens=8192, and ICL max_tokens=32767.  \n  \n\n## Output:  \n**Output Type(s):** Text  \n**Output Format:** String  \n**Output Parameters:** One-Dimensional (1D)  \n**Other Properties Related to Output:** Natural language technical analysis, experimental conclusions, significance assessments, fit quality evaluations, parameter extractions, and experiment success classifications. Output length is controlled by max_tokens, and output is delivered through an OpenAI-compatible API served by NVIDIA NIM with a vLLM backend.  \n   \n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n## Software Integration:\n**Runtime Engine(s):** NVIDIA NIM with vLLM backend, NVFP4 serving precision    \n**Supported Hardware Microarchitecture Compatibility:**\n* NVIDIA Blackwell\n* NVIDIA Hopper\n\n**Supported Operating System(s):** Linux  \n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.  \n\nThis AI model can be embedded as an Application Programming Interface (API) call into the software environment described above.\n\n## Model Version(s): \nNVIDIA-Ising-Calibration-1.5-31B-NVFP4 v1.5.0  \n\nTo integrate the model, follow the NVIDIA NIM or Gemma 4 31B serving guidance, substituting the model path with nvidia/NVIDIA-Ising-Calibration-1.5-31B-NVFP4. The model is served through NVIDIA NIM with a vLLM backend. Suggested inference settings are temperature=0.2, zero-shot max_tokens=8192, and ICL max_tokens=32767.  \n \n## Training, Testing, and Evaluation Datasets:  \n\n\n## Training Dataset:\n\n**Data Modality:**\n* Image  \n* Text  \n\n\n**Image Training Data Size:** Less than a Million Images  \n**Text Training Data Size:** Less than a Billion Tokens  \n**Data Collection Method by dataset:** Synthetic\n**Labeling Method by dataset:** Synthetic  \n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** The training corpus contains 72.5K total supervised entries: 23.8K ICL-formatted entries for multi-image demonstrations and 48.7K zero-shot entries augmented using Qwen3.5-397B-A17B. The data comes from internal quantum-calibration/QCal-style synthetic data generation and focuses on calibration plot interpretation. The dataset was assembled for the 2026 Ising Calibration 1.5 release cycle.\n\n### Testing Dataset:\n\n**Data Collection Method by dataset:** Synthetic\n**Labeling Method by dataset:** Synthetic\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** QCalEval was used as the primary external release validation benchmark for Ising Calibration 1.5. It is a quantum-calibration evaluation suite with multimodal plot-plus-text tasks covering zero-shot and ICL/few-shot settings across calibration interpretation, parameter extraction, diagnostic reasoning, and calibration-status classification. The release candidate was evaluated on 243 zero-shot examples with 1,458 response slots and 236 ICL examples with 708 response slots; raw outputs were checked for completeness and server errors, then judged with both GPT and Gemini judges to produce aggregate scores. The benchmark uses curated quantum-calibration plot tasks rather than raw sensor telemetry, and should be interpreted as domain validation rather than a broad general-purpose capability benchmark.\n\n### Evaluation Dataset:\n**Benchmark Score:** QCalEval benchmark scores. Scores are the simple average of GPT-5.4 and Gemini-3.1-Pro judges.  \n\nZero-shot scores:  \n\n| Model | Mean | Q1 | Q2 | Q3 | Q4 | Q5 | Q6 |\n| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| NVIDIA-Ising-Calibration-1.5-31B-NVFP4 | 71.0 | 86.1 | 57.6 | 57.4 | 85.6 | 67.4 | 71.6 |\n| Gemma-4-31B-IT | 68.8 | 85.6 | 54.3 | 59.8 | 82.7 | 68.3 | 62.1 |\n\nMM-ICL scores:  \n\n| Model | Mean | Q3 | Q5 | Q6 |\n| --- | ---: | ---: | ---: | ---: |\n| NVIDIA-Ising-Calibration-1.5-31B-NVFP4 | 80.3 | 69.9 | 86.1 | 84.7 |\n| Gemma-4-31B-IT | 81.2 | 80.6 | 76.9 | 86.0 |\n\n**Data Collection Method by dataset:** Synthetic  \n**Labeling Method by dataset:** Synthetic  \n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** The evaluation dataset is QCalEval, a synthetic vision-language benchmark for quantum calibration plots containing 243 entries across 87 scenario types from 22 experiment families, covering superconducting qubits and neutral atoms. It assesses six question types: technical description, experimental conclusion, experimental significance, fit quality assessment, parameter extraction, and experiment success classification. Ground-truth labels are derived from simulation parameters, providing curated quantum calibration experiments.\n\n\n\n## Inference:\n**Acceleration Engine:** NVIDIA NIM with vLLM backend, NVFP4 precision <br>\n**Test Hardware:** NVIDIA Ada Lovelace (L40S), NVIDIA Hopper (H200 SXM), NVIDIA Grace Hopper (GH200), NVIDIA Blackwell (B200), NVIDIA Grace Blackwell (GB200), NVIDIA Grace Blackwell Ultra (GB300), and NVIDIA Grace Blackwell (DGX Spark with GB10)\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. Developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\nPlease make sure you have proper rights and permissions for all input image content; if image inputs include people, personal health information, or intellectual property, developers are responsible for appropriate handling.  \nFor more detailed information on ethical considerations for this model, please see the Model Card++ Explainability, Bias, Safety & Security, and Privacy Subcards.  \nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "library_name": "transformers",
+    "base_model": "google/gemma-4-31b",
+    "tags": [
+      "Ising Calibration",
+      "quantum",
+      "calibration",
+      "vision-language",
+      "nvidia",
+      "nvfp4"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

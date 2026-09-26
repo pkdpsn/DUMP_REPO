@@ -1,0 +1,243 @@
+{
+  "modelId": "nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-NVFP4",
+  "author": "nvidia",
+  "sha": "f0caaafd5152e07527c7a14e04aa67823107529f",
+  "lastModified": "2025-11-27 09:17:31+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron-nas",
+    "text-generation",
+    "nvidia",
+    "llama-3",
+    "pytorch",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2411.19146",
+    "arxiv:2505.00949",
+    "arxiv:2502.00203",
+    "license:other",
+    "8-bit",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 21,
+  "downloads": 20507,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "DeciLMForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_decilm.DeciLMConfig",
+      "AutoModelForCausalLM": "modeling_decilm.DeciLMForCausalLM"
+    },
+    "model_type": "nemotron-nas",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{% set bos = \"<|begin_of_text|>\" %}{%- set enable_thinking = true -%}{% set system_start_header = \"<|start_header_id|>\" %}{% set system_end_header = \"<|end_header_id|>\n\n\" %}{% set start_header = \"<|start_header_id|>\" %}{% set end_header = \"<|end_header_id|>\n\n\" %}{% set eot = \"<|eot_id|>\" %}{% set system_token = \"system\" %}{% set user_token = \"user\" %}{% set assistant_token = \"assistant\" %}{% set tool_token = \"tool\" %}{{- bos ~ system_start_header ~ system_token ~ system_end_header -}}{%- if messages[0].role == 'system' and messages[0].content != '' -%}{%- set system_content = messages[0].content -%}{%- if '/no_think' in system_content -%}{%- set system_content = system_content.replace('/no_think', '')|trim -%}{%- set enable_thinking = false -%}{%- elif '/think' in system_content -%}{%- set system_content = system_content.replace('/think', '')|trim -%}{%- set enable_thinking = true -%}{%- endif -%}{{- system_content + '\n\n' -}}{%- endif -%}{%- if tools -%}{{- 'You can use the following tools to assist the user if required:\n<AVAILABLE_TOOLS>[' -}}{%- for tool in tools -%}{{- (tool.function if tool.function is defined else tool) | tojson -}}{{- ', ' if not loop.last else '' -}}{%- endfor -%}{{- ']</AVAILABLE_TOOLS>\n\nIf you decide to call any tool(s), use the following format:\n<TOOLCALL>[{{\"name\": \"tool_name1\", \"arguments\": \"tool_args1\"}}, {{\"name\": \"tool_name2\", \"arguments\": \"tool_args2\"}}]</TOOLCALL>\n\nResponse from tool(s) will be returned in this format:\n<TOOL_RESPONSE>[{{\"response\": \"tool_response1\"}}, {{\"response\": \"tool_response2\"}}]</TOOL_RESPONSE>\n\nBased on the results returned by the tool(s), you can call additional tools if needed, correct tool calls if any errors are found, or just respond with the answer to the user.' -}}{%- endif -%}{{- eot -}}{%- for message in messages -%}{%- if message.role == user_token -%}{{- start_header ~ user_token ~ end_header -}}{{ message.content -}}{{ eot -}}{%- elif message.role == assistant_token -%}{%- if '</think>' in message.content -%}{%- set content = message.content.split('</think>')[-1].lstrip() -%}{%- else -%}{%- set content = message.content -%}{%- endif -%}{{- start_header ~ assistant_token ~ end_header -}}{{ content -}}{%- if message.tool_calls -%}{{- '<TOOLCALL>[' -}}{%- for call in message.tool_calls -%}{%- set fn = call.function if call.function is defined else call -%}{{- '{\"name\": \"' + fn.name + '\", \"arguments\": ' -}}{%- if fn.arguments is string -%}{{- fn.arguments -}}{%- else -%}{{- fn.arguments | tojson -}}{%- endif -%}{{- '}' + (', ' if not loop.last else '') -}}{%- endfor -%}{{- ']</TOOLCALL>' -}}{%- endif -%}{{- eot -}}{%- elif message.role == tool_token -%}{%- if loop.first or (messages[loop.index0 - 1].role != tool_token) -%}{{- start_header ~ tool_token ~ end_header -}}{{ '<TOOL_RESPONSE>[' -}}{%- endif -%}{{- message.content -}}{{- ', ' if not loop.last and (messages[loop.index0 + 1].role == tool_token) else '' -}}{%- if loop.last or (messages[loop.index0 + 1].role != tool_token) -%}{{- ']</TOOL_RESPONSE>' -}}{{ eot -}}{%- endif -%}{%- endif -%}{%- endfor -%}{%- if add_generation_prompt -%}{{- start_header ~ assistant_token ~ end_header -}}{%- if not enable_thinking -%}{{- '<think>\n\n</think>\n\n' -}}{%- endif -%}{%- endif -%}",
+      "eos_token": "<|eot_id|>",
+      "pad_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1625,
+      "lfs": null
+    },
+    {
+      "rfilename": "BIAS.md",
+      "size": 1134,
+      "lfs": null
+    },
+    {
+      "rfilename": "EXPLAINABILITY.md",
+      "size": 3016,
+      "lfs": null
+    },
+    {
+      "rfilename": "PRIVACY.md",
+      "size": 1464,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 18005,
+      "lfs": null
+    },
+    {
+      "rfilename": "SAFETY&SECURITY.md",
+      "size": 920,
+      "lfs": null
+    },
+    {
+      "rfilename": "accuracy_chart.png",
+      "size": 182877,
+      "lfs": {
+        "size": 182877,
+        "sha256": "8e143b9ca5694d56de76de5ccab81c255dc93c6e7ffc3ad1e51f6ceaeca84b46",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "block_config.py",
+      "size": 4347,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 37076,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_decilm.py",
+      "size": 2573,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 176,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 294,
+      "lfs": null
+    },
+    {
+      "rfilename": "llama_nemotron_toolcall_parser_no_streaming.py",
+      "size": 21342,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00007.safetensors",
+      "size": 4989376720,
+      "lfs": {
+        "size": 4989376720,
+        "sha256": "d683ffd8165fa4196267d392b6e8e543a8b7fb2a6b636c089bce59822a8670b1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00007.safetensors",
+      "size": 4995010616,
+      "lfs": {
+        "size": 4995010616,
+        "sha256": "509e91ef49e3ecd2da4c44e28defd4445d3eea068cd806be6414965d27935275",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00007.safetensors",
+      "size": 4945447672,
+      "lfs": {
+        "size": 4945447672,
+        "sha256": "5a1ab8465b94f6b0a560092883d50db47b08c3e8204040f81ab5481bf562c7e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00007.safetensors",
+      "size": 4992651432,
+      "lfs": {
+        "size": 4992651432,
+        "sha256": "42a968a66f5f76e85411c15588af37ed85723ba06dd353b0c7e202b5db9d9ea5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00007.safetensors",
+      "size": 4933949032,
+      "lfs": {
+        "size": 4933949032,
+        "sha256": "305cd764ebf0ce923cb7112b2324f4b5b9a44efc80a8f6a83b2245b1f9f8e159",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00007.safetensors",
+      "size": 4114919808,
+      "lfs": {
+        "size": 4114919808,
+        "sha256": "72e036459fd431c670780b122df0a8c605eceb8fa404b5d32ca279537d62f492",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00007.safetensors",
+      "size": 2101346432,
+      "lfs": {
+        "size": 2101346432,
+        "sha256": "d524e2bba13f690010f3c09e2b55b095ff048fba29f7a379d59eb21bc9aa62e4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 169065,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 439,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17209920,
+      "lfs": {
+        "size": 17209920,
+        "sha256": "6b9e4e7fb171f92fd137b777cc2714bf87d11576700a1dcd7a399e7bbe39537b",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 53893,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__configuration_llama.py",
+      "size": 11066,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_rope_utils.py",
+      "size": 28067,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_decilm.DeciLMForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

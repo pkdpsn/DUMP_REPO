@@ -1,0 +1,104 @@
+{
+  "modelId": "nvidia/GR00T-N1-2B",
+  "author": "nvidia",
+  "sha": "fc879581ca32f4f6d6e02cf0cc80452f6b0c3873",
+  "lastModified": "2025-09-02 22:25:27+00:00",
+  "tags": [
+    "safetensors",
+    "gr00t_n1",
+    "robotics",
+    "dataset:nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim",
+    "arxiv:2503.14734",
+    "arxiv:2501.14818",
+    "arxiv:2410.24164",
+    "eval-results",
+    "region:us"
+  ],
+  "pipeline_tag": "robotics",
+  "library_name": null,
+  "likes": 356,
+  "downloads": 463,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "robotics"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "GR00T_N1"
+    ],
+    "model_type": "gr00t_n1"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 4062,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7668,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1668,
+      "lfs": null
+    },
+    {
+      "rfilename": "experiment_cfg/metadata.json",
+      "size": 31520,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 4380155836,
+      "lfs": {
+        "size": 4380155836,
+        "sha256": "a7ec1577ed360bf73eae06c1cc7fdaccd0c7df2c9b99515354d5ab6d7b4f7d56",
+        "pointer_size": 135
+      }
+    }
+  ],
+  "cardContent": "---\ndatasets:\n- nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim\ntags:\n- robotics\n---\n\n# GR00T-N1-2B\n\n\n![image/png](https://cdn-uploads.huggingface.co/production/uploads/67b8da81d01134f89899b4a7/8bFQa2ZIGCsOQQ2ho2N_U.png)\n\nGithub page: https://github.com/NVIDIA/Isaac-GR00T/\n\n## Description:\nNVIDIA Isaac GR00T N1 is the world\u2019s first open foundation model for generalized humanoid robot reasoning and skills. This cross-embodiment model takes multimodal input, including language and images, to perform manipulation tasks in diverse environments. Developers and researchers can post-train GR00T N1 with real or synthetic data for their specific humanoid robot or task.\n\nIsaac GR00T N1-1B is the lightweight version of our model built using pre-trained vision and language encoders, and uses a flow matching action transformer to model a chunk of actions conditioned on vision, language and proprioception. \n\nA detailed description of Isaac GR00T N1-1B architecture is provided in the [Whitepaper](https://arxiv.org/abs/2503.14734)\n\n\n## License/Terms of Use\n[Nvidia License](https://developer.download.nvidia.com/licenses/NVIDIA-OneWay-Noncommercial-License-22Mar2022.pdf?t=eyJscyI6ImdzZW8iLCJsc2QiOiJodHRwczovL3d3dy5nb29nbGUuY29tLyIsIm5jaWQiOiJzby15b3V0LTg3MTcwMS12dDQ4In0=)<br>\nYou are responsible for ensuring that your use of NVIDIA AI Foundation Models complies with all applicable laws. <br>\n\n### Deployment Geography:\nGlobal\n\n### Use Case:\nResearchers, Academics, Open-Source Community: AI-driven robotics research and algorithm development.\nDevelopers: Integrate and customize AI for various robotic applications.\nStartups & Companies: Accelerate robotics development and reduce training costs.\n\n### Release Date:\nGithub [Insert 03/17/2025] via [URL] \nHuggingface [Insert 03/17/2025] via [URL]\n\n## Reference(s):\nNVIDIA-EAGLE:\nLi, Zhiqi, et al. \"Eagle 2: Building Post-Training Data Strategies from Scratch for Frontier Vision-Language Models.\" arXiv preprint arXiv:2501.14818 (2025).\nRectified Flow:\nLiu, Xingchao, and Chengyue Gong. \"Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow.\" The Eleventh International Conference on Learning Representations\u201d [link].\nFlow Matching Policy:\nBlack, Kevin, et al. \"\u03c00: A Vision-Language-Action Flow Model for General Robot Control.\" arXiv preprint arXiv:2410.24164 (2024).\n\n## Model Architecture:\n**Architecture Type:** Vision Transformer, Multilayer Perceptron, Flow matching Transformer\n\nIsaac GR00T N1 uses vision and text transformers to encode the robot's image observations and text instructions. The architecture handles a varying number of views per embodiment by concatenating image token embeddings from all frames into a sequence, followed by language token embeddings.\n\nTo model proprioception and a sequence of actions conditioned on observations, Isaac GR00T N1-1B uses a flow matching transformer. The flow matching transformer interleaves self-attention over proprioception and actions with cross-attention to the vision and language embeddings. During training, the input actions are corrupted by randomly interpolating between the clean action vector and a gaussian noise vector. At inference time, the policy first samples a gaussian noise vector and iteratively reconstructs a continuous-value action using its velocity prediction.\n\n**Network Architecture:** \nIllustrated in [Whitepaper](https://arxiv.org/abs/2503.14734) Figure 2\nRGB camera frames are processed through a pre-trained vision transformer (SigLip2).\nText is encoded by a pre-trained transformer (T5)\nRobot proprioception is encoded using a multi-layer perceptron (MLP) indexed by the embodiment ID. To handle variable-dimension proprio, inputs are padded to a configurable max length before feeding into the MLP.\nActions are encoded and velocity predictions decoded by an MLP, one per unique embodiment.\nThe flow matching transformer is implemented as a diffusion transformer (DiT), in which the diffusion step conditioning is implemented using adaptive layernorm (AdaLN).\n\n## Input:\nInput Type:\n-Vision: Image Frames\n-State: Robot Proprioception\n-Language Instruction: Text\n-Embodiment ID: Integer\n\nInput Format:\n-Vision: Variable number of 224x224 uint8 image frames, coming from robot cameras\n-State: Floating Point\n-Language Instruction: String\n-Embodiment ID: Integer indicating which of the training embodiments is observed\n\nInput Parameters:\n-Vision: 2D - RGB image, square\n-State: 1D - Floating number vector\n-Language Instruction: 1D - String\n-Embodiment ID: 1D - Integer\n\n## Output:\n**Output Type(s):** Actions\n**Output Format** Continuous-value vectors that correspond to different motor controls on a robot.\n\n## Software Integration:\n**Runtime Engine(s):** PyTorch\n\n**Supported Hardware Microarchitecture Compatibility:** \nAll of the below:\n* NVIDIA Ampere\n* NVIDIA Blackwell\n* NVIDIA Jetson\n* NVIDIA Hopper\n* NVIDIA Lovelace\n\n**[Preferred/Supported] Operating System(s):**\n* Linux\n\n## Model Version(s):\nThis is the initial version of the model, version 1.0.\n\n# Training and Evaluation Datasets:\n\n## Training Dataset:\nGR00T Pretraining Data\n**Link:** <Dataset link>\n**Data Collection Method by dataset:** Hybrid: Human, Synthetic.\n**Labeling Method by dataset:** Hybrid: Human, Automated.\n**Properties:** \nCross-embodiment: Data collected on various robot embodiments \nSensor types: RGB camera, robot proprioception, robot actuator data\n**Dataset License(s):** Release Legal Tracker (GR00T-N1)\n\n## Evaluation:\nWe evaluate in both simulation and real robot benchmarks, as defined in the [Whitepaper](https://arxiv.org/abs/2503.14734)\n\nSim evaluation benchmarks for upper body control: (nspect NSPECT-5WZF-67VI)\n9 DexMG [Whitepaper](https://arxiv.org/abs/2503.14734) tasks\n24 RoboCasa simulated mobile manipulator tasks\n24 Digital Cousin simulated GR-1 humanoid manipulation tasks \nFor sim, we automatically measure the success rate in each manipulation behavior.\nFor real robot (nspect NSPECT-IDAT-9M9L):\nGrocery packing task\nIndustrial multi-robot coordination with handoffs\nEvaluated by human observers in the lab\n\n## Inference:\n**Engine:** PyTorch\n**Test Hardware:** A6000\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.  \n\nFor more detailed information on ethical considerations for this model, please see the Model Card++ Explainability, Bias, Safety & Security, and Privacy Subcards.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n## Model Limitations:\n\nThis model is not tested or intended for use in mission critical applications that require functional safety. The use of the model in those applications is at the user's own risk and sole responsibility, including taking the necessary steps to add needed guardrails or safety mechanisms.\n\nRisk: Model underperformance in highly dynamic environments.\nMitigation: Enhance dataset with dynamic obstacle scenarios and fine-tune models accordingly.\n\nRisk: Integration challenges in specific customer environments.\nMitigation: Provide detailed integration guides and support, leveraging NVIDIA's ecosystem.\n\nRisk: Limited initial support for certain robot embodiments.\nMitigation: Expand testing and validation across a wider range of robot platforms.\n\n",
+  "cardDataParsed": {
+    "datasets": [
+      "nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim"
+    ],
+    "tags": [
+      "robotics"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

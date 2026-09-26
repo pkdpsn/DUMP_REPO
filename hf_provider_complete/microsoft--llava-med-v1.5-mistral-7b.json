@@ -1,0 +1,171 @@
+{
+  "modelId": "microsoft/llava-med-v1.5-mistral-7b",
+  "author": "microsoft",
+  "sha": "91bb16c122001ddc9cf1fd36ce1dae09448943a2",
+  "lastModified": "2025-11-24 17:31:13+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "llava_mistral",
+    "text-generation",
+    "image-text-to-text",
+    "medical",
+    "vision",
+    "conversational",
+    "arxiv:2306.00890",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 129,
+  "downloads": 12254,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "image-text-to-text",
+      "medical",
+      "vision"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "LlavaMistralForCausalLM"
+    ],
+    "model_type": "llava_mistral",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{{ bos_token }}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if message['role'] == 'user' %}{{ '[INST] ' + message['content'] + ' [/INST]' }}{% elif message['role'] == 'assistant' %}{{ message['content'] + eos_token}}{% else %}{{ raise_exception('Only user and assistant roles are supported!') }}{% endif %}{% endfor %}",
+      "eos_token": "</s>",
+      "pad_token": "<unk>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4612,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1407,
+      "lfs": null
+    },
+    {
+      "rfilename": "data_summary_card.md",
+      "size": 4163,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 111,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4943162336,
+      "lfs": {
+        "size": 4943162336,
+        "sha256": "ef2190dc6c2a940e60f03f5fdb4dddb2320eb87801aeca5c40b0a28ce8aa420e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4999819336,
+      "lfs": {
+        "size": 4999819336,
+        "sha256": "2b229607fecd98b8111320178e5bf3e2c527b05a942c85d65b5b507c76c1ed00",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4927408360,
+      "lfs": {
+        "size": 4927408360,
+        "sha256": "12b18ecdf8924d5fe28ada797fe6697fa60e62cba630759fbeb52975b261c4e2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 262144128,
+      "lfs": {
+        "size": 262144128,
+        "sha256": "1d2063fcd429d3f0f0a8a091b0522f0e02f2d85fe0e5b0eeb4ae168183a603bc",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 73152,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 438,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 493443,
+      "lfs": {
+        "size": 493443,
+        "sha256": "dadfd56d766715c61d2ef780a525ab43b8e6da4de6865bda3d95fdef5e134055",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1463,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- image-text-to-text\n- medical\n- vision\n---\n\n\n# LLaVA-Med v1.5, using [mistralai/Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) as LLM for a better commercial license\n\nLarge Language and Vision Assistant for bioMedicine (i.e., \u201cLLaVA-Med\u201d) is a large language and vision model trained using a curriculum learning method for adapting LLaVA to the biomedical domain. It is an open-source release intended for research use only to facilitate reproducibility of the corresponding paper which claims improved performance for open-ended biomedical questions answering tasks, including common visual question answering (VQA) benchmark datasets such as PathVQA and VQA-RAD.\n\nLLaVA-Med was proposed in [LLaVA-Med: Training a Large Language-and-Vision Assistant for Biomedicine in One Day](https://arxiv.org/abs/2306.00890) by Chunyuan Li, Cliff Wong, Sheng Zhang, Naoto Usuyama, Haotian Liu, Jianwei Yang, Tristan Naumann, Hoifung Poon, Jianfeng Gao.\n\n\n**Model date:**\nLLaVA-Med-v1.5-Mistral-7B was trained in April 2024.\n\n**Paper or resources for more information:**\nhttps://aka.ms/llava-med\n\n**Where to send questions or comments about the model:**\nhttps://github.com/microsoft/LLaVA-Med/issues\n\n\n## License\n[mistralai/Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) license.\n\n## Intended use\n\nThe data, code, and model checkpoints are intended to be used solely for (I) future research on visual-language processing and (II) reproducibility of the experimental results reported in the reference paper. The data, code, and model checkpoints are not intended to be used in clinical care or for any clinical decision making purposes.\n\n### Primary Intended Use\n\nThe primary intended use is to support AI researchers reproducing and building on top of this work. LLaVA-Med and its associated models should be helpful for exploring various biomedical vision-language processing (VLP ) and vision question answering (VQA) research questions.\n\n### Out-of-Scope Use\n\nAny deployed use case of the model --- commercial or otherwise --- is out of scope. Although we evaluated the models using a broad set of publicly-available research benchmarks, the models and evaluations are intended for research use only and not intended for deployed use cases. Please refer to [the associated paper](https://aka.ms/llava-med) for more details.\n\n\n## Data\n\nThis model builds upon [PMC-15M dataset](https://aka.ms/biomedclip-paper), which is a large-scale parallel image-text dataset for biomedical vision-language processing. It contains 15 million figure-caption pairs extracted from biomedical research articles in PubMed Central. It covers a diverse range of biomedical image types, such as microscopy, radiography, histology, and more.\n\n\n\n## How to use\n\nSee the [Serving](https://github.com/microsoft/LLaVA-Med?tab=readme-ov-file#serving) and [Evaluation](https://github.com/microsoft/LLaVA-Med?tab=readme-ov-file#evaluation) sections in the [LLaVA-Med repo](https://aka.ms/llava-med).\n\n## Limitations\n\nThis model was developed using English corpora, and thus may be considered English-only. This model is evaluated on a narrow set of biomedical benchmark tasks, described in [LLaVA-Med paper](https://aka.ms/llava-med). As such, it is not suitable for use in any clinical setting. Under some conditions, the model may make inaccurate predictions and display limitations, which may require additional mitigation strategies. In particular, this model is likely to carry many of the limitations of the model from which it is derived, [LLaVA](https://llava-vl.github.io/).\n\nFurther, this model was developed in part using the [PMC-15M](https://aka.ms/biomedclip-paper) dataset. The figure-caption pairs that make up this dataset may contain biases reflecting the current practice of academic publication. For example, the corresponding papers may be enriched for positive findings, contain examples of extreme cases, and otherwise reflect distributions that are not representative of other sources of biomedical data.\n\n\n### BibTeX entry and citation info\n\n```bibtex\n@article{li2023llavamed,\n  title={Llava-med: Training a large language-and-vision assistant for biomedicine in one day},\n  author={Li, Chunyuan and Wong, Cliff and Zhang, Sheng and Usuyama, Naoto and Liu, Haotian and Yang, Jianwei and Naumann, Tristan and Poon, Hoifung and Gao, Jianfeng},\n  journal={arXiv preprint arXiv:2306.00890},\n  year={2023}\n}\n```\n### Data Summary Card\nhttps://huggingface.co/microsoft/llava-med-v1.5-mistral-7b/blob/main/data_summary_card.md",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "image-text-to-text",
+      "medical",
+      "vision"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

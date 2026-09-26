@@ -1,0 +1,149 @@
+{
+  "modelId": "microsoft/dolly-v2-7b-olive-optimized",
+  "author": "microsoft",
+  "sha": "846ca6f68d715588cefbf581ec5cc4cdc2c95cde",
+  "lastModified": "2023-07-11 21:41:14+00:00",
+  "tags": [
+    "transformers",
+    "onnx",
+    "gpt_neox",
+    "text-generation",
+    "en",
+    "dataset:databricks/databricks-dolly-15k",
+    "license:mit",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 5,
+  "downloads": 190,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "databricks/databricks-dolly-15k"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null,
+    "inference": false
+  },
+  "config": {
+    "architectures": [
+      "GPTNeoXForCausalLM"
+    ],
+    "model_type": "gpt_neox",
+    "tokenizer_config": {
+      "bos_token": "<|endoftext|>",
+      "eos_token": "<|endoftext|>",
+      "unk_token": "<|endoftext|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1525,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 10222,
+      "lfs": null
+    },
+    {
+      "rfilename": "_gpt_neox_layers.0_attention_rotary_emb_Constant_5_attr__value",
+      "size": 262144,
+      "lfs": null
+    },
+    {
+      "rfilename": "_gpt_neox_layers.0_attention_rotary_emb_Constant_attr__value",
+      "size": 262144,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 848,
+      "lfs": null
+    },
+    {
+      "rfilename": "decoder_model_merged.onnx",
+      "size": 4169900,
+      "lfs": {
+        "size": 4169900,
+        "sha256": "0ea722b6e7020eae65c844c168d5a97279d3c0d00fccce5bdcfa65688f6e96d6",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "decoder_model_merged.onnx_data",
+      "size": 13716054016,
+      "lfs": {
+        "size": 13716054016,
+        "sha256": "5b6b1e949e90e91c080f89c3aed058c04b8eb842684d9c8502b0b455ac36ef8c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 111,
+      "lfs": null
+    },
+    {
+      "rfilename": "instruct_pipeline.py",
+      "size": 9283,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 228,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 2114302,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 264,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlanguage:\n- en\nlibrary_name: transformers\ninference: false\ndatasets:\n- databricks/databricks-dolly-15k\n---\n# dolly-v2-7b Olive Optimized Model Card\n\n## Summary\n\nDatabricks\u2019 `dolly-v2-7b`, an instruction-following large language model trained on the Databricks machine learning platform \nthat is licensed for commercial use. Based on `pythia-6.9b`, Dolly is trained on ~15k instruction/response fine tuning records \n[`databricks-dolly-15k`](https://github.com/databrickslabs/dolly/tree/master/data) generated \nby Databricks employees in capability domains from the InstructGPT paper, including brainstorming, classification, closed QA, generation,\ninformation extraction, open QA and summarization. `dolly-v2-7b` is not a state-of-the-art model, but does exhibit surprisingly \nhigh quality instruction following behavior not characteristic of the foundation model on which it is based.  \n\nDolly v2 is also available in these other models sizes:\n\n* [dolly-v2-12b](https://huggingface.co/databricks/dolly-v2-12b), a 12 billion parameter based on `pythia-12b`\n* [dolly-v2-3b](https://huggingface.co/databricks/dolly-v2-3b), a 2.8 billion parameter based on `pythia-2.8b`\n\nPlease refer to the [dolly GitHub repo](https://github.com/databrickslabs/dolly#getting-started-with-response-generation) for tips on \nrunning inference for various GPU configurations.\n\n**Owner**: Databricks, Inc.\n\n## Olive Optimization\n\nThis repo hosts model files that may be loaded as an [`ORTModelForCausalLM`](https://github.com/huggingface/optimum/blob/a6951c17c3450e1dea99617aa842334f4e904392/optimum/onnxruntime/modeling_decoder.py#L623) when using Python with [\ud83e\udd17 Optimum](https://huggingface.co/docs/optimum/onnxruntime/overview). Alternatively, the ONNX models may be composed into a custom pipeline in any language that supports ONNX Runtime & DirectML. If you choose to use ONNX Runtime & DirectML outside of Python, then you will need to provide your own implementation of the tokenizer.\n\n| Model                           | Impl                                                        |\n| ------------------------------- | ----------------------------------------------------------- |\n| **dolly-v2-7b decoder merged with past**    | **ONNX Model**                                  |\n| Tokenizer                       | `AutoTokenizer` (\ud83e\udd17 Transformers)                          |\n\nThe ONNX model above was processed with the [Olive](https://github.com/microsoft/olive) toolchain using the [Olive + Dolly V2 with DirectML Sample](https://github.com/microsoft/Olive/tree/main/examples/directml/dolly_v2). The Olive sample performs the following steps:\n\n1. Run the [OptimumConversion Pass](https://microsoft.github.io/Olive/api/passes.html#optimumconversion)\n2. Run the [OrtTransformersOptimization Pass](https://microsoft.github.io/Olive/api/passes.html#orttransformersoptimization), which leverages the [ONNX Runtime Transformer Model Optimization Tool](https://onnxruntime.ai/docs/performance/transformers-optimization.html). This step executes several time-consuming graph transformations, such as fusing subgraphs into LayerNorm.\n3. Convert the optimized ONNX models from FLOAT32 to FLOAT16.\n4. Run the [OptimumMerging Pass](https://microsoft.github.io/Olive/api/passes.html#optimummerging) to leverage caching and reduce memory usage by merging the decoder_model.onnx and decoder_with_past_model.onnx models together.\n\n## Model Overview\n`dolly-v2-7b` is a 6.9 billion parameter causal language model created by [Databricks](https://databricks.com/) that is derived from \n[EleutherAI\u2019s](https://www.eleuther.ai/) [Pythia-6.9b](https://huggingface.co/EleutherAI/pythia-6.9b) and fine-tuned \non a [~15K record instruction corpus](https://github.com/databrickslabs/dolly/tree/master/data) generated by Databricks employees and released under a permissive license (CC-BY-SA)\n\n`dolly-v2-7b-olive-optimized` is an optimized ONNX model of `dolly-v2-7b` generated by [Olive](https://github.com/microsoft/Olive) that is meant to be used with ONNX Runtime and DirectML.\n\n## Usage\n\nTo use the model with the `transformers` library on a machine with ONNX Runtime and DirectML, first make sure you have the `transformers`, `accelerate`, `optimum`, `onnxruntime-directml` and `onnx` libraries installed:\n\n```python\npip install \"accelerate>=0.16.0,<1\" \"transformers[torch]>=4.28.1,<5\" \"torch>=1.13.1,<2\" \"optimum>=1.8.8,<2\" \"onnxruntime-directml>=1.15.1,<2\" \"onnx>=1.14.0<2\"\n```\n\nYou can then download [instruct_pipeline.py](https://huggingface.co/microsoft/dolly-v2-7b-olive-optimized/raw/main/instruct_pipeline.py) and construct the pipeline from the loaded model and tokenizer:\n\n```python\nfrom transformers import AutoTokenizer, TextStreamer\nfrom optimum.onnxruntime import ORTModelForCausalLM\nfrom instruct_pipeline import InstructionTextGenerationPipeline\n\ntokenizer = AutoTokenizer.from_pretrained(\"microsoft/dolly-v2-7b-olive-optimized\", padding_side=\"left\")\nmodel = ORTModelForCausalLM.from_pretrained(\"microsoft/dolly-v2-7b-olive-optimized\", provider=\"DmlExecutionProvider\", use_cache=True, use_merged=True, use_io_binding=False)\n\nstreamer = TextStreamer(tokenizer, skip_prompt=True)\ngenerate_text = InstructionTextGenerationPipeline(model=model, streamer=streamer, tokenizer=tokenizer, max_new_tokens=128)\ngenerate_text(\"Explain to me the difference between nuclear fission and fusion.\")\n```\n\n\n## Known Limitations\n\n### Performance Limitations\n**`dolly-v2-7b` is not a state-of-the-art generative language model** and, though quantitative benchmarking is ongoing, is not designed to perform \ncompetitively with more modern model architectures or models subject to larger pretraining corpuses.  \n\nThe Dolly model family is under active development, and so any list of shortcomings is unlikely to be exhaustive, but we include known limitations and misfires here as a means to document and share our preliminary findings with the community.  \nIn particular, `dolly-v2-7b` struggles with: syntactically complex prompts, programming problems, mathematical operations, factual errors, \ndates and times, open-ended question answering, hallucination, enumerating lists of specific length, stylistic mimicry, having a sense of humor, etc.\nMoreover, we find that `dolly-v2-7b` does not have some capabilities, such as well-formatted letter writing, present in the original model.  \n\n### Dataset Limitations\nLike all language models, `dolly-v2-7b` reflects the content and limitations of its training corpuses. \n\n- **The Pile**: GPT-J\u2019s pre-training corpus contains content mostly collected from the public internet, and like most web-scale datasets,\nit contains content many users would find objectionable. As such, the model is likely to reflect these shortcomings, potentially overtly\nin the case it is explicitly asked to produce objectionable content, and sometimes subtly, as in the case of biased or harmful implicit\nassociations.\n\n- **`databricks-dolly-15k`**: The training data on which `dolly-v2-7b` is instruction tuned represents natural language instructions generated\nby Databricks employees during a period spanning March and April 2023 and includes passages from Wikipedia as references passages\nfor instruction categories like closed QA and summarization. To our knowledge it does not contain obscenity, intellectual property or\npersonally identifying information about non-public figures, but it may contain typos and factual errors.\nThe dataset may also reflect biases found in Wikipedia. Finally, the dataset likely reflects\nthe interests and semantic choices of Databricks employees, a demographic which is not representative of the global population at large.\n\nDatabricks is committed to ongoing research and development efforts to develop helpful, honest and harmless AI technologies that \nmaximize the potential of all individuals and organizations. \n\n### Benchmark Metrics\n\nBelow you'll find various models benchmark performance on the [EleutherAI LLM Evaluation Harness](https://github.com/EleutherAI/lm-evaluation-harness); \nmodel results are sorted by geometric mean to produce an intelligible ordering. As outlined above, these results demonstrate that `dolly-v2-7b` is not state of the art, \nand in fact underperforms `dolly-v1-6b` in some evaluation benchmarks. We believe this owes to the composition and size of the underlying fine tuning datasets, \nbut a robust statement as to the sources of these variations requires further study.  \n\n|  model                            |   openbookqa |   arc_easy |   winogrande |   hellaswag |   arc_challenge |     piqa |    boolq |    gmean |\n| --------------------------------- | ------------ | ---------- | ------------ | ----------- | --------------- | -------- | -------- | ---------|\n| EleutherAI/pythia-2.8b            |        0.348 |   0.585859 |     0.589582 |    0.591217 |        0.323379 | 0.73395  | 0.638226 | 0.523431 |\n| EleutherAI/pythia-6.9b            |        0.368 |   0.604798 |     0.608524 |    0.631548 |        0.343857 | 0.761153 | 0.6263   | 0.543567 |\n| databricks/dolly-v2-3b            |        0.384 |   0.611532 |     0.589582 |    0.650767 |        0.370307 | 0.742655 | 0.575535 | 0.544886 |\n| EleutherAI/pythia-12b             |        0.364 |   0.627104 |     0.636148 |    0.668094 |        0.346416 | 0.760065 | 0.673394 | 0.559676 |\n| EleutherAI/gpt-j-6B               |        0.382 |   0.621633 |     0.651144 |    0.662617 |        0.363481 | 0.761153 | 0.655963 | 0.565936 |\n| databricks/dolly-v2-12b           |        0.408 |   0.63931  |     0.616417 |    0.707927 |        0.388225 | 0.757889 | 0.568196 | 0.56781  |\n| databricks/dolly-v2-7b            |        0.392 |   0.633838 |     0.607735 |    0.686517 |        0.406997 | 0.750816 | 0.644037 | 0.573487 |\n| databricks/dolly-v1-6b            |        0.41  |   0.62963  |     0.643252 |    0.676758 |        0.384812 | 0.773667 | 0.687768 | 0.583431 |\n| EleutherAI/gpt-neox-20b           |        0.402 |   0.683923 |     0.656669 |    0.7142   |        0.408703 | 0.784004 | 0.695413 | 0.602236 |\n\n# Happy Hacking!\n\nThis model is an optimized version of Databricks, Inc. [databricks/dolly-v2-7b](https://huggingface.co/databricks/dolly-v2-7b)\u200b.",
+  "cardDataParsed": {
+    "license": "mit",
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "inference": false,
+    "datasets": [
+      "databricks/databricks-dolly-15k"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,232 @@
+{
+  "modelId": "nvidia/nemotron-colembed-vl-8b-v2",
+  "author": "nvidia",
+  "sha": "34b640612f311ed05a6c7c62c6564847ed555f5f",
+  "lastModified": "2026-02-21 01:02:09+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_vl_nemotron_embed",
+    "feature-extraction",
+    "text",
+    "image",
+    "vidore",
+    "colpali",
+    "multimodal-embedding",
+    "multilingual-embedding",
+    "Text-to-Visual Document (T\u2192VD) retrieval",
+    "visual-document-retrieval",
+    "custom_code",
+    "multilingual",
+    "arxiv:2602.03992",
+    "arxiv:2511.21631",
+    "license:cc-by-nc-4.0",
+    "region:us"
+  ],
+  "pipeline_tag": "visual-document-retrieval",
+  "library_name": "transformers",
+  "likes": 50,
+  "downloads": 6770,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "transformers",
+    "license": "cc-by-nc-4.0",
+    "license_name": null,
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "visual-document-retrieval",
+    "tags": [
+      "text",
+      "image",
+      "vidore",
+      "colpali",
+      "multimodal-embedding",
+      "multilingual-embedding",
+      "Text-to-Visual Document (T\u2192VD) retrieval",
+      "feature-extraction"
+    ],
+    "inference": false
+  },
+  "config": {
+    "architectures": [
+      "Qwen3VLNemotronEmbedModel"
+    ],
+    "auto_map": {
+      "AutoConfig": "modeling_qwen3_vl_nemotron_embed.Qwen3VLNemotronEmbedConfig",
+      "AutoModel": "modeling_qwen3_vl_nemotron_embed.Qwen3VLNemotronEmbedModel",
+      "AutoProcessor": "processing_qwen3_vl_nemotron_embed.Qwen3VLNemotronEmbedProcessor"
+    },
+    "model_type": "qwen3_vl_nemotron_embed",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "CONTRIBUTING.md",
+      "size": 2158,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 30942,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 15603,
+      "lfs": null
+    },
+    {
+      "rfilename": "THIRD_PARTY_NOTICES.md",
+      "size": 36619,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 5292,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2064,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 145,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4998056552,
+      "lfs": {
+        "size": 4998056552,
+        "sha256": "bb29c35b6134ccfc3efb2037e485c68825b47da49cd79d3577798aad35b613d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4915962464,
+      "lfs": {
+        "size": 4915962464,
+        "sha256": "1554269f5301e2648833fae1bc3e7af9819bd12f6a47cc7abddd50ba7292dadc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4915962496,
+      "lfs": {
+        "size": 4915962496,
+        "sha256": "29354f4ce45b28fb4e66dca9ce99c0a76b7aed928beb0e6c17fcccac3b87d2f6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 2704357976,
+      "lfs": {
+        "size": 2704357976,
+        "sha256": "342d220da028c6e5baa94dae031da44b521194c9aef9b9c70b41ef071837817d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 67795,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_qwen3_vl_nemotron_embed.py",
+      "size": 21087,
+      "lfs": null
+    },
+    {
+      "rfilename": "mteb2_eval.py",
+      "size": 3384,
+      "lfs": null
+    },
+    {
+      "rfilename": "nemotron_colembed_4b_8b_v2_example_vidore_v3.ipynb",
+      "size": 3183083,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_qwen3_vl_nemotron_embed.py",
+      "size": 9489,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 2104,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 482,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: cc-by-nc-4.0\nlicense_link: LICENSE\ntags:\n- text\n- image\n- vidore\n- colpali\n- multimodal-embedding\n- multilingual-embedding\n- Text-to-Visual Document (T\u2192VD) retrieval\n- feature-extraction\nlanguage:\n- multilingual\ninference: false\nlibrary_name: transformers\npipeline_tag: visual-document-retrieval\n---\n# Nemotron ColEmbed V2\n\n<p align=\"center\">\n   \ud83e\udd17 <a href=\"https://huggingface.co/nvidia/nemotron-colembed-vl-8b-v2\">8B</a> | &nbsp&nbsp \ud83e\udd17 <a href=\"https://huggingface.co/nvidia/nemotron-colembed-vl-4b-v2\">4B</a> | &nbsp&nbsp \ud83e\udd17 <a href=\"https://huggingface.co/nvidia/llama-nemotron-colembed-vl-3b-v2\">3B</a> &nbsp\n</p>\n\n# **Model Overview**\n\n## Description\n\nIntroducing **nvidia/nemotron-colembed-vl-8b-v2**, the state-of-the-art late interaction embedding model that currently ranks No.\u202f1 on ViDoRe V3\u2014a comprehensive benchmark for enterprise retrieval use cases\u2014as of January 26, 2026, with a score of `63.54` across 8 public tasks. The model was fine-tuned for query-document retrieval. Users can input `queries`, which are text, or `documents` which are page images, to the model. The model outputs ColBERT-style multi-vector numerical representations for input queries and documents.\n\n\u2728 **Key Improvements:**\n* \u2697\ufe0f **Advanced Model Merging:** Utilizes post-training model merging to combine the strengths of multiple fine-tuned checkpoints. This delivers the accuracy stability of an ensemble without any additional inference latency.\n* \ud83c\udf0d **Enhanced Synthetic Data:** We significantly enriched our training mixture with diverse multilingual synthetic data, improving semantic alignment across languages and complex document types.\n\nThis model is for non-commercial/research use only.  \nSee the Nemotron ColEmbed v2 [paper](https://arxiv.org/abs/2602.03992) for more details about its architecture, training and results.\n\n### License/Terms of Use\nThe use of this model is governed by the [Creative Commons Attribution-NonCommercial 4.0 license](https://creativecommons.org/licenses/by-nc/4.0/deed.en) and the use of the post-processing scripts are licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt). Additional Information: Built with Qwen3-VL which is released under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt).\n\nThis project will download and install additional third-party open source software projects. Review the license terms of these open source projects before use.\n\n### Deployment Geography\nGlobal\n\n### Use Case\n\n**nemotron-colembed-vl-8b-v2** is a powerful, highly accurate model intended for researchers exploring applications that must understand or retrieve information across both text and image modalities. It is instrumental in multimodal RAG systems, where queries are in text format and documents are images, such as pages, text, charts, tables, or infographics. Potential applications include multimedia search engines, cross-modal retrieval systems, and conversational AI with rich input understanding.\n\n\n### Release Date\n01/26/2026 via [https://huggingface.co/nvidia/nemotron-colembed-vl-8b-v2](https://huggingface.co/nvidia/nemotron-colembed-vl-8b-v2)\n\n## Model Architecture\n\n- **Architecture Type:** Transformer\n- **Network Architecture:** [Qwen3-VL-8B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct) based encoder. \n\nThe `nemotron-colembed-vl-8b-v2` is a transformer-based multimodal embedding model built from `Qwen3-VL-8B-Instruct`, which adopts a three-module architecture comprising a vision encoder (default to the [SigLIP2-SO-400M](https://huggingface.co/collections/google/siglip2) variant), an MLP-based vision\u2013language merger, and a large language model (LLM) (see [technical report](https://arxiv.org/pdf/2511.21631) for details). It has approximately 8.8B parameters.\n\n\n## Input(s):\n**Input Type(s):** Image, Text <br>\n\n**Input Format(s):** <br>\n- Image: List of images- Red, Green, Blue (RGB) <br>\n- Text: List of Strings <br>\n\n**Input Parameters:** <br>\n- Image: Two-Dimensional (2D) <br>\n- Text: One-Dimensional (1D) <br>\n\n\n**Other Properties Related to Input:** \n- The model's maximum context length we evaluated is 10240 tokens. <br>\n- Each image tile consumes 256 tokens. We have tested this model extensively with these settings on config.json - `max_input_tiles = 8`, `use_thumbnails = True`, so that every image is split into maximum of 8 tiles + 1 thumbnail (whole image at lower resolution). Images must be python PIL format. The model will scale the image into multiple tiles of 512x512.\n\n\n## Outputs\n\n- **Output Type:** Floats\n- **Output Format:** List of float arrays\n- **Output Parameters:**  The list of floats equivalent to [batchsize x seq length x embedding_dim]\n- **Other Properties Related to Output:** For each input token, the model outputs a 4096-dimensional embedding vector of floating-point values.\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n\n### Installation\nThe model requires `transformers>=4.57.2` and flash attention installed.\n\n```bash\npip install \"transformers>=4.57.2\"\npip install flash-attn==2.6.3 --no-build-isolation\n```\nDepending on your environment you might need to upgrade polars and pydantic:\n\n```bash\npip install -U datasets polars\npip install -U pydantic\n```\n\n### Transformers Usage\n\nWe provide an [example notebook](nemotron_colembed_4b_8b_v2_example_vidore_v3.ipynb) demonstrating model usage with a simple indexing and retrieval pipeline.   \n\nWe also provide a simple example code snippet below.  \n\n```python\nimport requests\nfrom PIL import Image\nfrom io import BytesIO\nimport torch\nfrom transformers import AutoModel\nfrom transformers.image_utils import load_image\n# Load Model\n\nmodel = AutoModel.from_pretrained(\n    'nvidia/nemotron-colembed-vl-8b-v2',\n    device_map='cuda',\n    trust_remote_code=True,\n    torch_dtype=torch.bfloat16,\n    attn_implementation=\"flash_attention_2\"\n).eval()\n\n# Queries\nqueries = [\n    'How is AI improving the intelligence and capabilities of robots?',\n    'Canary, a multilingual model that transcribes speech in English, Spanish, German, and French with punctuation and capitalization.',\n    'Generative AI can generate DNA sequences that can be translated into proteins for bioengineering.'\n]\n\nimage_urls = [\n    \"https://developer.download.nvidia.com/images/isaac/nvidia-isaac-lab-1920x1080.jpg\",\n    \"https://developer-blogs.nvidia.com/wp-content/uploads/2024/03/asr-nemo-canary-featured.jpg\",\n    \"https://blogs.nvidia.com/wp-content/uploads/2023/02/genome-sequencing-helix.jpg\"\n]\n\n# Load all images (load_image handles both local paths and URLs)\nimages = [load_image(img_path) for img_path in image_urls]\n\n# Encoding\nquery_embeddings = model.forward_queries(queries, batch_size=8)\nimage_embeddings = model.forward_images(images, batch_size=8)\n\nscores = model.get_scores(\n    query_embeddings,\n    image_embeddings\n)\n# Diagonal should have higher scores\nprint(scores)\n\n# tensor([[21.1969, 20.9079, 20.5363],\n#         [32.2324, 32.8058, 32.2075],\n#         [25.7505, 25.8201, 26.2726]], device='cuda:0')\n```\n\n\n## Software Integration: <br>\n\nRuntime Engine(s): Not Applicable <br>\nSupported Hardware Microarchitecture Compatibility:\n- NVIDIA Ampere - A100 40GB and A100 80GB <br>\n- NVIDIA Hopper - H100 80GB\n\nSupported Operating System(s): Linux\n\n## Model Version(s)\n**nemotron-colembed-vl-8b-v2**\n\n# Training and Evaluation Datasets\n\n## Training Dataset\n\nThe model was trained on publicly available datasets, including [DocMatix-IR](https://huggingface.co/datasets/Tevatron/docmatix-ir), [VDR](https://huggingface.co/datasets/vdr-multilingual-train), [Vidore-ColPali-Training](https://huggingface.co/datasets/vidore/colpali_train_set), [VisRAG-Ret-Train-Synthetic-data](https://huggingface.co/datasets/openbmb/VisRAG-Ret-Train-Synthetic-data), [VisRAG-Ret-Train-In-domain-data](https://huggingface.co/datasets/openbmb/VisRAG-Ret-Train-In-domain-data), and [Wiki-SS-NQ](https://huggingface.co/datasets/Tevatron/wiki-ss-nq).\n\n**Data Modality**: Image\n\n**Image Training Data Size**\n- Less than a Million Images\n\n**Data Collection Method by dataset:** Hybrid: Automated, Human, Synthetic <br>\n**Labeling Method by dataset:** Hybrid: Automated, Human, Synthetic <br>\n**Properties:** Training: The vision embedding model was fine-tuned on approximately 500k image samples.\n\n## Evaluation Dataset\n\nWe evaluate the model on the datasets from [ViDoRe](https://huggingface.co/spaces/vidore/README) V1, V2 and V3 Visual Document Retrieval benchmarks.\n\n[ViDoRe](https://huggingface.co/spaces/vidore/README) is a premier benchmark for Visual Document Retrieval and it is composed of various page-level retrieving tasks spanning multiple domains, languages, and settings. The latest version of the benchmark is [Vidore V3](https://huggingface.co/blog/QuentinJG/introducing-vidore-v3), a comprehensive evaluation of retrieval for enterprise use-cases.   \n\nWe provide a [script](https://huggingface.co/nvidia/nemotron-colembed-vl-8b-v2/blob/main/mteb2_eval.py) using [MTEB 2](https://github.com/embeddings-benchmark/mteb/tree/main/mteb) library to evaluate ColEmbed models on ViDoRe benchmarks.\n\n- **Data Collection Method by dataset:** Hybrid: Automated, Human, Synthetic\n- **Labeling Method by dataset:** Hybrid: Automated, Human, Synthetic\n- **Properties:** More details on ViDoRe V1 and ViDoRe V2 can be found on their leaderboard. [Visual Document Retrieval Benchmark](https://huggingface.co/vidore), \n\n\n## Evaluation Results\n\n### ViDoRE V1&V2 and V3 on MTEB leaderboards\n\n```bash\npip install \"mteb>=2.7.0, <3.0.0\"\n# Evaluates with Vidore V1 and V2\nCUDA_VISIBLE_DEVICES=0; python3 mteb2_eval.py --model_name nvidia/nemotron-colembed-vl-8b-v2 --batch_size 16 --benchmark \"VisualDocumentRetrieval\"\n# Evaluates with Vidore V3\nCUDA_VISIBLE_DEVICES=0; python3 mteb2_eval.py --model_name nvidia/nemotron-colembed-vl-8b-v2 --batch_size 16 --benchmark \"ViDoRe(v3)\"\n# Evaluates with a specific task/dataset of Vidore V3: Vidore3ComputerScienceRetrieval\nCUDA_VISIBLE_DEVICES=0; python3 mteb2_eval.py --model_name nvidia/nemotron-colembed-vl-8b-v2 --batch_size 16 --benchmark \"ViDoRe(v3)\" --task-list Vidore3ComputerScienceRetrieval\n```\n\nIn this section, we evaluate the performance of nemotron-colembed-vl-8b-v2 against other models that  previously achieved top-five rankings on the leaderboards.\n\nWe report results on the ViDoRe benchmark suite. The tables below summarize the image-modality accuracy of `nemotron-colembed-vl-8b-v2` on the ViDoRe V1, V2, and V3 benchmarks, alongside other NVIDIA nemotron-colembed models. Note that (M)MTEB leaderboards use Borda ranking. Each task acts like a voter that ranks models based on how well they perform. Models earn more points when they rank higher on a task. The model with the most total points across all tasks gets the top overall rank.\n\n\n#### ViDoRe V3 (NDCG@10)\n\n| Model | **Avg** | CompSci | Energy | FinanceEn | FinanceFr | HR | Industrial | Pharma | Physics |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **nemotron-colembed-8b**| **63.54** | 79.30 | 69.82 | 67.29 | 51.54 | 66.32 | 56.03 | 67.19 | 50.84 |\n| tomoro-colqwen3-8b| 61.60 | 75.35 | 68.41 | 65.08 | 49.10 | 63.98 | 54.41 | 66.36 | 50.13|\n| [nemotron-colembed-4b]((https://huggingface.co/nvidia/nemotron-colembed-4b-v2)) | 61.42 | 78.56 | 67.48 | 65.02 | 49.01 | 62.39 | 53.91 | 66.10 | 48.86 |\n| tomoro-colqwen3-4b| 60.16 | 75.44 | 66.43 | 63.84 | 46.83 | 60.09 | 53.58 | 65.74 | 49.32 |\n| [nemotron-colembed-3b-v2](https://huggingface.co/nvidia/llama-nemotron-colembed-3b-v2) | 59.70 | 77.09 | 64.88 | 64.23 | 44.41 | 62.28 | 51.71 | 66.04 | 46.93 |\n| nomic-ai/colnomic-embed-multimodal-7b | 57.64 | 76.20 | 63.58 | 56.57 | 45.46 | 58.67 | 50.13 | 62.26 | 48.25 |\n| jinaai/jina-embeddings-v4 | 57.54 | 71.81 | 63.50 | 59.30 | 46.10 | 59.53 | 50.38 | 63.09 | 46.63 |\n\n\n#### ViDoRe V2 (NDCG@5)\n\n| Model | **Avg** | BioMedicalLectures | ESGReportsHL | ESGReports | EconomicsReports |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| tomoro-colqwen3-8b| 65.40 | 65.47 | 75.98 | 60.71 | 59.46 |\n| EvoQwen2.5-VL-Retriever-7B-v1 | 65.24 | 65.20 | 76.98 | 59.67 | 59.13 |\n| [nemotron-colembed-8b](https://huggingface.co/nvidia/nemotron-colembed-8b-v2) | 65.16 | 66.16 | 73.15 | 60.56| 60.76 |\n| tomoro-colqwen3-4b| 64.69 | 65.38 | 74.65 | 62.44 | 56.30 |\n| [nemotron-colembed-4b]((https://huggingface.co/nvidia/nemotron-colembed-4b-v2)) | 64.49 | 64.32 | 71.43 | 61.48 | 60.75 |\n| [nemotron-colembed-3b-v2](https://huggingface.co/nvidia/llama-nemotron-colembed-3b-v2)| 63.38 | 63.19 | 73.11 | 58.64 | 58.59 |\n| [nemotron-colembed-3b-v1](https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1)| 63.32 | 62.70 | 75.38 | 57.38 | 57.84 |\n\n\n#### ViDoRe V1 (NDCG@5)\n\n| Model | **Avg** | ArxivQA | DocVQA | InfoVQA | Shift | Syn-AI | Syn-Energy | Syn-Gov | Syn-Health | TabFQuAD | Tatdqa |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **nemotron-colembed-8b** | **92.65** | 93.08 | 68.05 | 94.56 | 93.30 | 100.00 | 97.89 | 98.89 | 99.63 | 97.74 | 83.37 |\n| [nemotron-colembed-3b-v2](https://huggingface.co/nvidia/llama-nemotron-colembed-3b-v2)| 91.74 | 90.40 | 67.17 | 94.68 | 92.00 | 100.00 | 98.02 | 97.95 | 98.89 | 97.25 | 81.04 |\n| nemotron-colembed-4b | 91.62 | 92.03 | 67.39 | 93.31 | 92.26 | 99.26 | 96.19 | 98.02 | 98.52 | 98.05 | 81.19 |\n| [nemotron-colembed-3b-v1](https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1)| 91.00 | 88.35 | 66.21 | 94.92 | 90.70 | 99.63 | 96.63 | 97.82 | 99.26 | 95.94 | 80.57 |\n| tomoro-colqwen3-8b| 90.76 | 91.15 | 66.37 | 94.48 | 87.89 | 99.26 | 96.71 | 97.58 | 99.06 | 94.23 | 80.92 |\n| EvoQwen2.5-VL-Retriever-7B-v1 | 90.68 | 91.49 | 65.07 | 94.11 | 88.80 | 99.63 | 96.63 | 96.29 | 98.89 | 93.63 | 82.26 |\n| tomoro-colqwen3-4b| 90.57 | 90.58 | 66.30 | 94.31 | 87.39 | 99.26 | 96.91 | 97.17 | 99.63 | 94.33 | 79.87 |\n\n\n## Inference:\n**Acceleration Engine:** Not Applicable <br>\n**Test Hardware:** A100 40GB, A100 80GB, H100 80GB\n\n\n\n### Citation\n\n```\n@misc{moreira2026_nemotron_colembed_v2,\n      title={Nemotron ColEmbed V2: Top-Performing Late Interaction embedding models for Visual Document Retrieval}, \n      author={Gabriel de Souza P. Moreira, Ronay Ak, Mengyao Xu, Oliver Holworthy, Benedikt Schifferer, Zhiding Yu, Yauhen Babakhin, Radek Osmulski, Jiarui Cai, Ryan Chesler, Bo Liu, Even Oldridge},\n      year={2026},\n      eprint={2602.03992},\n      archivePrefix={arXiv},\n      primaryClass={cs.IR},\n      url={https://arxiv.org/abs/2602.03992}, \n}\n```\n\n## **Ethical Considerations**\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their supporting model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nPlease make sure you have proper rights and permissions for all input image and video content; if image or video includes people, personal health information, or intellectual property, the image or video generated will not blur or maintain proportions of image subjects included.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://app.intigriti.com/programs/nvidia/nvidiavdp/detail).\n",
+  "cardDataParsed": {
+    "license": "cc-by-nc-4.0",
+    "license_link": "LICENSE",
+    "tags": [
+      "text",
+      "image",
+      "vidore",
+      "colpali",
+      "multimodal-embedding",
+      "multilingual-embedding",
+      "Text-to-Visual Document (T\u2192VD) retrieval",
+      "feature-extraction"
+    ],
+    "language": [
+      "multilingual"
+    ],
+    "inference": false,
+    "library_name": "transformers",
+    "pipeline_tag": "visual-document-retrieval",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_qwen3_vl_nemotron_embed.Qwen3VLNemotronEmbedModel",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

@@ -1,0 +1,529 @@
+{
+  "modelId": "microsoft/Mage-VL",
+  "author": "microsoft",
+  "sha": "d88b153285f1633a61b2f693c59c8576693af185",
+  "lastModified": "2026-08-10 09:23:16+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "mage_vl",
+    "image-text-to-text",
+    "multimodal",
+    "vision-language-model",
+    "mage-vl",
+    "video-understanding",
+    "streaming",
+    "conversational",
+    "custom_code",
+    "arxiv:2607.24904",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 414,
+  "downloads": 16279,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "multimodal",
+      "vision-language-model",
+      "mage-vl",
+      "video-understanding",
+      "streaming"
+    ]
+  },
+  "config": {
+    "auto_map": {
+      "AutoConfig": "configuration_mage_vl.MageVLConfig",
+      "AutoModel": "modeling_mage_vl.MageVLModel",
+      "AutoModelForImageTextToText": "modeling_mage_vl.MageVLForConditionalGeneration",
+      "AutoProcessor": "processing_mage_vl.MageVLProcessor",
+      "AutoVideoProcessor": "video_processing_mage_vl.MageVLVideoProcessor",
+      "AutoModelForCausalLM": "modeling_mage_vl.MageVLForConditionalGeneration"
+    },
+    "model_type": "mage_vl",
+    "architectures": [
+      "MageVLForConditionalGeneration"
+    ],
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1947,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 22495,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/mage-vl-cover.png",
+      "size": 2712894,
+      "lfs": {
+        "size": 2712894,
+        "sha256": "f5a8f9a516d1d26b4798e9633fbca431b10d7065fa6f3c05df3b2a3bbbe3abff",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/mage-vl-framework.png",
+      "size": 1522442,
+      "lfs": {
+        "size": 1522442,
+        "sha256": "9a62ff5d41f67f420f3d32426358eee2fd56870eb07cd09a0e6f3a7fa96291f4",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1017,
+      "lfs": null
+    },
+    {
+      "rfilename": "codec_video_processing_mage_vl.py",
+      "size": 26358,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3243,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_mage_vl.py",
+      "size": 4926,
+      "lfs": null
+    },
+    {
+      "rfilename": "examples/dog.jpg",
+      "size": 525201,
+      "lfs": {
+        "size": 525201,
+        "sha256": "164d8dfe707fb854e288ad2eea65c2db87e90af11f689c85502860eeaf3f4794",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "examples/soccer-broadcast.mp4",
+      "size": 3914911,
+      "lfs": {
+        "size": 3914911,
+        "sha256": "9d840e86558fe5a59bb743092d161228c63c687ab53588ee476a1cd46064125a",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 121,
+      "lfs": null
+    },
+    {
+      "rfilename": "inference.py",
+      "size": 5990,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4967403560,
+      "lfs": {
+        "size": 4967403560,
+        "sha256": "98fa203652a843650343732d2597f08c9b491cf4e310cd269eed34ca27ebce58",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 4516272328,
+      "lfs": {
+        "size": 4516272328,
+        "sha256": "719360069004f6b7b59303bd21bc1111bcd353bb0ccdebe1fe3971b87cd7b30f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 65768,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_mage_vl.py",
+      "size": 72783,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/LICENSE.txt",
+      "size": 1074,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/NOTICE.txt",
+      "size": 14429,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/cpp/py_rans/py_rans.cpp",
+      "size": 15043,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/cpp/py_rans/py_rans.h",
+      "size": 2456,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/cpp/py_rans/rans.cpp",
+      "size": 17735,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/cpp/py_rans/rans.h",
+      "size": 6986,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/cpp/py_rans/rans_byte.h",
+      "size": 5077,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/cpp/setup.py",
+      "size": 820,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/cuda_inference.py",
+      "size": 7071,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/extensions/inference/bind.cpp",
+      "size": 1661,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/extensions/inference/common.h",
+      "size": 10154,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/extensions/inference/def.h",
+      "size": 5639,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/extensions/inference/impl.cpp",
+      "size": 6666,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/extensions/inference/kernel.cu",
+      "size": 47400,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/extensions/inference/setup.py",
+      "size": 1202,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/layers/layers.py",
+      "size": 5475,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/models/common_model.py",
+      "size": 13211,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/models/entropy_models.py",
+      "size": 13366,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/models/image_model.py",
+      "size": 7864,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/models/video_model.py",
+      "size": 13075,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/utils/common.py",
+      "size": 6756,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/utils/metrics.py",
+      "size": 3174,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/utils/stream_helper.py",
+      "size": 6035,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/utils/transforms.py",
+      "size": 1623,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/utils/video_reader.py",
+      "size": 2759,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/DCVC/src/utils/video_writer.py",
+      "size": 1402,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/README.md",
+      "size": 3253,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/canvas_assembler.py",
+      "size": 9100,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_dcvc_config.py",
+      "size": 2899,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_loader.py",
+      "size": 3899,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/__init__.py",
+      "size": 252,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/energy_sampling.py",
+      "size": 21471,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/frame_utils.py",
+      "size": 17735,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/patch_utils.py",
+      "size": 5229,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/scoring.py",
+      "size": 3969,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/utils.py",
+      "size": 6472,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/video_probe.py",
+      "size": 10691,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/codec_patch_gop/video_processor.py",
+      "size": 71859,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/pipeline/__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/pipeline/generate_codec_patch_smart_resize.py",
+      "size": 110346,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/pipeline/process_video_bitcost_mv_mask_collage.py",
+      "size": 66163,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/codec_tools/pipeline/process_video_bitcost_readiness.py",
+      "size": 29212,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/dcvc_readiness_gen.py",
+      "size": 5854,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/dcvc_rt_engine.py",
+      "size": 12054,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/dcvc_rt_inter.tar",
+      "size": 82899063,
+      "lfs": {
+        "size": 82899063,
+        "sha256": "b12e7faf4ddb6126d8e138a627ed6a349b8e1052d3ed9e343e1ba266466675d6",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "neural_codec/dcvc_rt_intra.tar",
+      "size": 182764252,
+      "lfs": {
+        "size": 182764252,
+        "sha256": "555eff5f4026774f477bebdcbb3b52548e0da230803959dcebcea4d732a90dd9",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "neural_codec/infer_dcvc_rt.py",
+      "size": 5118,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/precompute_dcvc_rt.py",
+      "size": 12167,
+      "lfs": null
+    },
+    {
+      "rfilename": "neural_codec/reproduce_bench.py",
+      "size": 6500,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 1813,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_mage_vl.py",
+      "size": 25480,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "streammind_gate.py",
+      "size": 5102,
+      "lfs": null
+    },
+    {
+      "rfilename": "streammind_gate.safetensors",
+      "size": 1073494728,
+      "lfs": {
+        "size": 1073494728,
+        "sha256": "01938c515679c1130cff2e6a2af2e4cbc3aad10ea7ccb29229e64c2cfdbf6535",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422064,
+      "lfs": {
+        "size": 11422064,
+        "sha256": "ba0c439f7be467bf47d12a7e6f9adc6116201056fc60c67f431c679b7c16afc8",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 4750,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 465,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_processing_mage_vl.py",
+      "size": 28368,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlibrary_name: transformers\npipeline_tag: image-text-to-text\ntags:\n- multimodal\n- vision-language-model\n- mage-vl\n- video-understanding\n- streaming\n---\n\n<h1 align=\"center\">Mage-VL<br><span style=\"font-size: 0.55em; font-weight: normal;\">An Efficient Codec-Native Streaming Multimodal Foundation Model</span></h1>\n\n<p align=\"center\">\n  <a href=\"https://microsoft.github.io/Mage\"><img alt=\"Project Page\" src=\"https://img.shields.io/badge/%F0%9F%8C%90-Project%20Page-blue\" height=\"22\" /></a>\n  <a href=\"https://github.com/microsoft/Mage/blob/main/assets/mage_vl_tech_report.pdf\"><img alt=\"arXiv\" src=\"https://img.shields.io/badge/arXiv-Mage--VL-b31b1b\" height=\"22\" /></a>\n  <a href=\"https://github.com/microsoft/Mage\"><img src=\"https://img.shields.io/badge/Code-GitHub-181717?logo=github\" alt=\"GitHub\" height=\"22\"></a>\n  <a href=\"https://huggingface.co/microsoft/Mage-VL\"><img alt=\"Mage-VL\" src=\"https://img.shields.io/badge/%F0%9F%A4%97-Mage--VL-yellow\" height=\"22\" /></a>\n  <a href=\"https://huggingface.co/microsoft/Mage-ViT\"><img alt=\"Mage-ViT\" src=\"https://img.shields.io/badge/%F0%9F%A4%97-Mage--ViT-yellow\" height=\"22\" /></a>\n  <a href=\"https://www.apache.org/licenses/LICENSE-2.0\"><img src=\"https://img.shields.io/badge/License-Apache%202.0-green\" alt=\"License: Apache 2.0\" height=\"22\"></a>\n</p>\n\n<div align=\"center\">\n<img src=\"assets/mage-vl-cover.png\" width=\"100%\" alt=\"Mage-VL\">\n</div>\n\n---\n\n**Mage-VL** is a **codec-native, proactive-streaming multimodal foundation model** for image and video understanding, whose visual encoder is trained **entirely from scratch** at a compact **4B** scale. It targets a modern *Moravec's paradox* of VLMs \u2014 strong at complex offline reasoning, yet slow and compute-heavy on simple real-time streaming perception. Instead of decoding video into uniformly-sampled frames and pushing a dense grid of patch tokens through a frozen web-pretrained ViT, Mage-VL follows the structure of modern video codecs: it separates a stream into **anchor (I) frames** and **predicted (P) frames**, keeps every anchor patch, and retains only the predicted-frame patches where the codec spends bits \u2014 the regions carrying real motion and new detail. This codec-aligned sparsity cuts visual tokens by **over 75%** while preserving spatio-temporal context, yielding **up to 3.5\u00d7 wall-clock inference speedup** over uniform frame sampling.\n\nThe system pairs **two components**:\n\n- **Mage-ViT** \u2014 a from-scratch *Codec-ViT* visual encoder that allocates tokens by codec-derived spatio-temporal importance, on a shared `16\u00d716` patch grid with 3D rotary position encoding. It is **codec-agnostic**: the same interface accepts a traditional codec (H.264/AVC, HEVC/H.265) via motion vectors + residual energy, or a neural codec (DCVC-RT) via its learned rate map \u2014 no architecture or retraining change.\n- **Qwen3-4B causal decoder** \u2014 a Qwen3-4B-Instruct-2507 language backbone (the only pretrained component) that consumes Mage-ViT's variable-length token stream through a lightweight two-layer MLP projector, with a unified interface for images, short/long/ultra-long video, and streaming.\n\nOn top of this pair, a **System 1 & System 2 dual-process design** adds proactive streaming inside a single model: a lightweight **cognition gate** (System 1) watches each rolling codec window and stays silent on routine content, invoking the full VLM (System 2) only when a response-worthy event completes \u2014 no multi-agent pipeline required.\n\n## \u2728 Highlights\n\n- **Codec-native & from scratch.** The entire visual stack is trained from scratch \u2014 no billion-scale image-text ViT initialization. The bio-inspired predictive-patch mechanism (I/P frames at `16\u00d716`) cuts visual-token consumption by **over 75%** (**~1/8 or less** of dense frame sampling), letting the model train on videos **8\u00d7 longer** under the same budget.\n- **Codec-native speedup.** Codec tokenization sets a superior accuracy\u2013efficiency frontier \u2014 **up to 3.5\u00d7 wall-clock inference speedup** over uniform frame sampling at matched accuracy, and the fastest of all compared models on most video benchmarks (single 8\u00d7B200 node).\n- **Data-efficient tokenizer.** Trained on only **~100M unlabeled images/videos**, Mage-ViT matches or beats frontier encoders trained on billions of image-text pairs (SigLIP2 @ 10B, MoonViT @ 2B) \u2014 e.g. **99.33% on CIFAR-10** and **85.69% on ImageNet** with 256 tokens, showing web-scale pretraining is *not* essential for a strong VLM front-end.\n- **Native-resolution scaling.** Variable-resolution pretraining lets Mage-ViT improve *monotonically* with the token budget (peaking **>96.1% Food-101 / >86.3% ImageNet** at 676 tokens) where fixed-resolution encoders saturate or degrade.\n- **Matched-LLM video gains.** With the 4B Qwen3 backbone held fixed and only the ViT swapped, Mage-VL improves over Qwen3-VL-4B on **every** reported video and temporal-grounding benchmark \u2014 largest on localization-heavy tasks (**+22.5 QVHighlight**, +17.1 ActivityNet, +11.0 VSI-Bench, +24.5 VideoEval-Pro).\n- **Strong for its size.** On par with Qwen3-VL-4B on static images, and clearly ahead on video understanding and spatial intelligence (**+11.0** VSI-Bench, **+53.1** CrossPoint, **+5.2** EmbSpatial, **+22.5** QVHighlight).\n- **Proactive streaming, single model.** A frozen-backbone cognition gate delivers low-latency, event-gated commentary; it tops **TimVal / F1 / ROC-AUC / PR-AUC** on SoccerNet streaming and generalizes to real 2026 World Cup broadcasts.\n\n## \ud83d\udce5 Model\n\nA **single checkpoint**, `microsoft/Mage-VL`, is one unified model that **simultaneously** provides image & video understanding **and** the proactive streaming gate \u2014 the same weights answer offline image/video questions and drive event-gated commentary. It covers every Mage-VL capability: image understanding, frame-sampled video, traditional H.264/HEVC codec video, neural DCVC-RT codec video, and event-gated streaming. The repository bundles the codec processor, the neural codec package, and the proactive gate weights \u2014 no separate understanding, NVC, or streaming checkpoint is required.\n\nWe additionally release **`microsoft/Mage-ViT`** \u2014 the standalone visual encoder from the two-stage, from-scratch ViT pre-training (cluster-discrimination on ~100M unlabeled image/video frames). This is the **ViT-pre-trained checkpoint only**: it has **not** gone through the joint VLM training with the language model. Use it as a data-efficient, codec-native visual encoder or as a drop-in ViT for your own multimodal training.\n\n| Model | Task | Backbone | Hugging Face |\n| :--- | :--- | :--- | :--- |\n| `Mage-VL` | image & video understanding **+** proactive streaming gate | Mage-ViT + Qwen3-4B-Instruct-2507 | [\ud83e\udd17 microsoft/Mage-VL](https://huggingface.co/microsoft/Mage-VL) |\n| `Mage-ViT` | codec-native visual encoder \u2014 ViT pre-training only, no VLM joint training | Codec-ViT (from scratch) | [\ud83e\udd17 microsoft/Mage-ViT](https://huggingface.co/microsoft/Mage-ViT) |\n\n## \ud83c\udfd7\ufe0f Architecture\n\n<div align=\"center\">\n<img src=\"assets/mage-vl-framework.png\" width=\"100%\" alt=\"Mage-VL proactive streaming framework\">\n<em>Proactive streaming framework \u2014 Mage-ViT incrementally encodes the continuous stream into codec-native visual features shared by the event gate and the causal decoder. The gate scores each rolling window and stays silent on routine content; when it opens, the decoder emits an event-conditioned response.</em>\n</div>\n\n**Mage-ViT** \u2014 a from-scratch Codec-ViT visual encoder. On a `16\u00d716` patch grid it keeps all anchor (I) frame patches and only the motion-salient predicted (P) frame patches, cutting visual tokens by over 75% while a shared 3D RoPE preserves spatio-temporal positions.\n\n**Mage-VL** \u2014 a unified model where projected visual tokens and text tokens share one causal Qwen3 decoder. Still images become a single spatial block; videos become temporally-ordered codec windows. In **streaming** mode, a lightweight **cognition gate** predicts `p_speak = g(h_t)` per rolling window (over a recurrent streaming memory kept by an event-preserving feature extractor) and triggers generation when `p_speak \u2265 \u03c4`; the response is decoded by the frozen base model from a local sliding window of the most recent codec segments, and a text query can be injected at any time.\n\n**Training** \u2014 a progressive **five-stage** supervised curriculum (no preference/RL post-training) that produces one unified model:\n\n1. **Multimodal alignment via captions** \u2014 ~350M dense image captions + 4.2M short-video captions.\n2. **Instruction tuning + short temporal grounding** \u2014 ~54M image-instruction samples + 3.4M 30\u2013180s video captions.\n3. **Temporal-horizon expansion** \u2014 medium/long video (LLaVA-Video, TimeLens, VideoChat-Flash, Molmo2) with retained image SFT.\n4. **Codec-native long-context adaptation** \u2014 350K long videos as rolling codec windows (up to 384/768 frames).\n5. **Proactive streaming alignment** \u2014 a cognition gate fine-tuned on ~3.3M streaming samples with the visual encoder and LLM kept frozen (only the gate is trained).\n\nThe five stages together produce a **single unified model**, `Mage-VL`, that handles image understanding, offline video reasoning, and proactive streaming \u2014 no separate variants are shipped.\n\nTwo parts of the pipeline apply an **AI4AI** (AI-for-AI) paradigm: (1) dense recaptioning runs through an agentic closed loop where a GPT-5 rubric scorer grades captions and a Copilot coding agent co-designs the prompt *and* harness code (e.g. rendering timestamp overlays) under a human validation gate \u2014 improving every downstream OCR/doc/chart/perception benchmark and inspiring SkillOpt-Lite; and (2) Stage-3 uses AI-based diagnostics to decide which video categories, resolutions, and frame counts to train on.\n\n## \ud83d\udcca Performance\n\n<details>\n<summary><b>Image understanding & spatial intelligence \u2014 click to expand</b></summary>\n\nPerformance comparison across models. Mage-VL-4B and Qwen3-VL-4B use the same 4B Qwen3 LLM backbone; Phi-4-Multimodal-Instruct (Phi-4-MM, 5.6B) and Phi-4-Reasoning-Vision (Phi-4-R-V, 15B) are reported for reference. `\u2013` = not run. **Bold** = best in row.\n\n| Benchmark | Mage-VL-4B | Qwen3-VL-4B | Phi-4-MM-5.6B | Phi-4-R-V-15B |\n| :--- | :---: | :---: | :---: | :---: |\n| *Document understanding* | | | | |\n| DocVQA-val | **95.14** | 94.69 | 92.79 | 76.20 |\n| InfoVQA-val | **80.33** | 79.50 | 71.84 | 55.41 |\n| AI2D w/ Mask | **83.16** | 81.54 | 81.83 | 82.87 |\n| ChartQA | **84.88** | 83.96 | 83.76 | 83.40 |\n| OCRBench | **81.80** | 81.60 | 81.70 | 73.90 |\n| MultiDocVQA-val | **87.46** | 87.21 | 46.84 | 58.35 |\n| ChartQAPro | **32.57** | 26.79 | 0.13 | 25.38 |\n| TextVQA-val | 77.28 | **80.55** | 39.93 | 76.06 |\n| CC-OCR Doc | 32.25 | **39.69** | 4.99 | 17.65 |\n| *General VQA* | | | | |\n| MMBench-EN-dev | 84.02 | 83.25 | 65.81 | **84.19** |\n| MMBench-CN-dev | **82.04** | 80.58 | 75.17 | 79.47 |\n| MMStar | **67.32** | 62.04 | 61.24 | 59.63 |\n| MME-Perception | **1709.54** | 1703.50 | 1409.66 | 1590.21 |\n| SeedBench (All) | **76.78** | 75.65 | 68.28 | 73.70 |\n| CV-Bench | **87.79** | 85.37 | 57.09 | 81.31 |\n| MME-RealWorld | **66.52** | 63.20 | 32.45 | 57.80 |\n| *Spatial intelligence* | | | | |\n| CV-Bench-2D | **82.13** | 81.00 | 56.12 | 80.11 |\n| CV-Bench-3D | **94.75** | 92.30 | 56.92 | 82.50 |\n| BLINK | **65.11** | 65.10 | 35.24 | 57.80 |\n| EmbSpatial | **82.67** | 77.50 | 41.51 | 72.67 |\n| CrossPoint | **80.00** | 26.90 | 12.20 | 47.73 |\n| CRPE-Relation | 76.12 | **77.70** | 34.60 | 74.46 |\n| SAT | 67.33 | **69.30** | 55.33 | 66.67 |\n\n</details>\n\n<details>\n<summary><b>Video understanding & temporal grounding \u2014 click to expand</b></summary>\n\n**Bold** = best in row.\n\n| Benchmark | Mage-VL-4B | Qwen3-VL-4B | Phi-4-MM-5.6B | Phi-4-R-V-15B |\n| :--- | :---: | :---: | :---: | :---: |\n| *Video QA* | | | | |\n| MV-Bench | 65.1 | **66.7** | 44.9 | 49.2 |\n| NextQA | **83.1** | 79.8 | 54.1 | 69.0 |\n| VideoMME | **64.0** | 59.7 | 44.7 | 55.3 |\n| LongVideoBench | **61.3** | 57.7 | 41.14 | 51.2 |\n| LVBench | **41.8** | 39.2 | 25.31 | 34.4 |\n| MLVU-dev | **68.7** | 61.5 | 44.18 | 51.8 |\n| VideoEval-Pro | **45.2** | 20.7 | 14.35 | 16.8 |\n| *Temporal grounding* | | | | |\n| Timelens-Charades | **50.7** | 43.1 | 4.09 | 20.6 |\n| Timelens-ActivityNet | **45.4** | 28.4 | 2.03 | 23.0 |\n| Timelens-QVHighlight | **57.4** | 34.9 | 2.47 | 11.6 |\n| *Spatial reasoning* | | | | |\n| VSI-Bench | **64.3** | 53.3 | 24.09 | 25.5 |\n| *Tracking (J&F)* | | | | |\n| Ref-DAVIS17 | **25.83** | 7.48 | 3.14 | 2.15 |\n| MeViS-ValidU | **22.55** | 3.16 | 10.28 | 1.53 |\n| ReasonVOS | **17.76** | 9.66 | 9.50 | 9.77 |\n| Ref-YT-VOS | **25.57** | 5.28 | 8.64 | 3.85 |\n\n</details>\n\n<details>\n<summary><b>Proactive streaming (SoccerNet) & online video (OVO-Bench) \u2014 click to expand</b></summary>\n\n**SoccerNet \u2014 response timing** (StreamMind protocol, codec-native inputs, zero-tolerance canvas matching). **Bold** = best in column.\n\n| Method | TriggerAcc | TimVal | F1 | ROC-AUC | PR-AUC |\n| :--- | :---: | :---: | :---: | :---: | :---: |\n| StreamMind | 52.18 | 47.36 | \u2013 | \u2013 | \u2013 |\n| JoyAI-VL-Interaction-9B | **97.98** | 19.25 | 3.55 | 56.26 | 1.68 |\n| **Mage-VL-4B** | 79.21 | **55.54** | **16.35** | **83.14** | **9.30** |\n\nJoyAI's high TriggerAcc comes from predicting silence almost everywhere under SoccerNet's heavy class imbalance, so it collapses on the precision-sensitive metrics; StreamMind is trained *in-distribution* on SoccerNet, whereas Mage-VL is not.\n\n**OVO-Bench** \u2014 online video understanding (SimpleStream recent-window protocol, 4 frames @ 1 fps; no streaming-specific fine-tuning). Mage-VL sets a new state-of-the-art overall score **among streaming architectures**. RT-Avg / BT-Avg are the Real-Time Visual Perception / Backward Tracing sub-task averages; Overall is their mean. **Bold** = best model per column (Human is the reference upper bound).\n\n| Model | #Frames | RT-Avg | BT-Avg | Overall |\n| :--- | :---: | :---: | :---: | :---: |\n| Human | \u2013 | 93.2 | 92.3 | 92.77 |\n| *Offline video LLMs* | | | | |\n| Qwen2.5-VL-7B | 1 fps | 59.9 | 44.7 | 52.28 |\n| LLaVA-Video-7B | 64 | 63.5 | 40.4 | 51.95 |\n| Qwen3-VL-4B | 64 | 72.8 | **53.1** | 63.00 |\n| *Online / streaming video LLMs* | | | | |\n| VideoLLM-online-8B | 2 fps | 20.8 | 17.7 | 19.26 |\n| Flash-VStream-7B | 1 fps | 28.4 | 27.4 | 27.90 |\n| Dispider-7B | 1 fps | 54.6 | 36.1 | 45.35 |\n| TimeChat-Online-7B | 1 fps | 61.9 | 41.7 | 51.80 |\n| StreamForest-7B | 1 fps | 61.2 | 52.0 | 56.60 |\n| Streamo-7B | 1 fps | 66.0 | 46.1 | 56.05 |\n| HERMES-7B<sup>\u2020</sup> | 1 fps | 69.0 | 49.4 | 59.20 |\n| JoyAI-VL-Interaction-9B | 1 fps | 68.4 | 48.6 | 58.50 |\n| **Mage-VL-4B** | 1 fps | **79.84** | 48.15 | **64.00** |\n\n<sub><sup>\u2020</sup> HERMES = Qwen2.5-VL-7B + HERMES (4K tokens). Baseline results and table structure follow SimpleStream.</sub>\n\n</details>\n\n## \ud83d\udd2c Key Findings\n\nBeyond the model, the report distills **seven empirical findings** for efficient multimodal training:\n\n1. **Web-scale pretraining is not essential.** A from-scratch backbone on ~100M unlabeled frames matches encoders trained on billions of image-text pairs.\n2. **Variable-resolution pretraining scales monotonically.** Quality keeps improving with the visual-token budget instead of saturating/degrading like fixed-resolution encoders.\n3. **Codec-native tokenization sets a better accuracy\u2013efficiency frontier** \u2014 up to **3.5\u00d7 wall-clock inference speedup** over uniform frame sampling.\n4. **Explicit VideoQA SFT is redundant.** Dense video *captions* + standard image SFT are sufficient for strong zero-shot VideoQA.\n5. **Motion\u2013spatial synergy.** Dynamic video training substantially improves static 2D/3D spatial reasoning.\n6. **AI4AI data pipeline.** Agentic closed-loop feedback + prompt/code co-design systematically lift caption quality and downstream scores (inspired SkillOpt-Lite).\n7. **Zero-Vision SFT for multimodal RL.** Bypassing visual SFT in favor of pure-text reasoning SFT unlocks stronger multimodal RL \u2014 a compute-efficient path.\n\n## \ud83d\ude80 Quick Start\n\nA single checkpoint, `microsoft/Mage-VL`, covers every capability below.\n\n| Capability | Script | How to run |\n|---|---|---|\n| Image understanding | `inference.py` | `--mode offline --image` |\n| Frame-sampled video | `inference.py` | `--mode offline --video --video-backend frames` |\n| Traditional H.264/HEVC codec video | `inference.py` | `--mode offline --video --video-backend codec --codec-engine traditional` |\n| Neural DCVC-RT codec video | `inference.py` | `--mode offline --video --video-backend codec --codec-engine neural` |\n| Online image / video (SGLang) | `inference.py` | `--mode online \u2026 --base-url <server>` |\n| Event-gated streaming commentary | `inference_streaming.py` | in the [GitHub repo](https://github.com/microsoft/Mage/tree/main/mage_vl) |\n\n### Installation\n\nFor offline Transformers inference:\n\n```bash\npip install \"transformers>=5.7\" accelerate pillow torch torchvision \\\n  opencv-python codec-video-prep\n```\n\nCodec-based video inference also requires `ffmpeg` and `ffprobe` on `PATH`.\n\n### Examples\n\nTwo sample inputs ship with this repository:\n\n| Input | Question | Content |\n|---|---|---|\n| [`examples/dog.jpg`](examples/dog.jpg) | Describe this image in detail. | Photo of a dog sitting in front of a patterned rug |\n| [`examples/soccer-broadcast.mp4`](examples/soccer-broadcast.mp4) | Describe this video. | 30s, 960\u00d7540 football broadcast clip |\n\n### Offline inference\n\nDownload [`inference.py`](inference.py). Offline mode loads the checkpoint with `AutoModelForCausalLM.from_pretrained` and supports images, frame sampling, and both codec engines:\n\n```bash\n# image\npython inference.py --mode offline --image examples/dog.jpg \\\n  --question \"Describe this image in detail.\"\n```\n\n> The image depicts a dog sitting on a patterned rug. The dog appears to be a\n> medium-sized breed with a thick, fluffy coat. Its fur is primarily white with\n> patches of black and brown. The dog's ears are perked up, and it has a calm and\n> attentive expression. [...]\n\n```bash\n# video \u2014 uniform frame sampling\npython inference.py --mode offline --video examples/soccer-broadcast.mp4 \\\n  --video-backend frames --num-frames 32 \\\n  --question \"Describe this video.\"\n```\n\n> The video opens with a man in a black polo shirt, sporting a short haircut,\n> standing in a stadium. He is holding a yellow microphone with the BBC Sport\n> logo on it. The background reveals a large crowd of spectators. [...]\n\n```bash\n# video \u2014 traditional codec (HEVC/H.264)\npython inference.py --mode offline --video examples/soccer-broadcast.mp4 \\\n  --video-backend codec --codec-engine traditional --num-frames 32 \\\n  --question \"Describe this video.\"\n```\n\n> The video opens with a BBC Sport broadcast, featuring a presenter in a black\n> shirt holding a yellow microphone. The background reveals a packed stadium,\n> with the scoreboard displaying \"ENG 1 ARG 2 FT\", indicating the final score of\n> the match. [...]\n\n```bash\n# video \u2014 neural codec (DCVC-RT)\npython inference.py --mode offline --video examples/soccer-broadcast.mp4 \\\n  --video-backend codec --codec-engine neural --num-frames 32 \\\n  --question \"Describe this video.\"\n```\n\n> The video opens with a BBC Sport broadcast, featuring a presenter standing in a\n> stadium filled with spectators. The presenter, dressed in a black shirt, holds\n> a yellow BBC Sport microphone and wears a black earpiece. [...]\n\n### Online inference\n\nOnline mode talks to an OpenAI-compatible SGLang server. **First** build and launch the server with the Mage-VL SGLang branch (building it needs `protobuf-compiler` and a Rust toolchain):\n\n```bash\nsudo apt-get update && sudo apt-get install -y protobuf-compiler\ncurl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \\\n  | sh -s -- -y --profile minimal --default-toolchain 1.90.0\nsource \"$HOME/.cargo/env\"\n\ngit clone -b feat/mage-vl https://github.com/kcz358/sglang\ncd sglang\npip install -e 'python[all]'\npython -m sglang.launch_server \\\n  --model-path microsoft/Mage-VL \\\n  --trust-remote-code\n```\n\n**Then** send an image or sampled video frames to the running server:\n\n```bash\npip install openai\n\npython inference.py --mode online --image examples/dog.jpg \\\n  --question \"Describe this image in detail.\" \\\n  --base-url http://localhost:30000/v1\n\npython inference.py --mode online --video examples/soccer-broadcast.mp4 \\\n  --num-frames 32 \\\n  --question \"Describe this video.\" \\\n  --base-url http://localhost:30000/v1\n```\n\nUse `--model`, `--max-new-tokens`, and `--api-key` to override their defaults.\n\n### Streaming inference\n\n`streammind_gate.safetensors` in this repository holds the event gate. Streaming inference splits a video into non-overlapping segments, stays silent on routine content, and generates a caption only when a response-worthy event is detected. Run it with `inference_streaming.py` from the [GitHub repository](https://github.com/microsoft/Mage/tree/main/mage_vl):\n\n```bash\npython inference_streaming.py \\\n  --video examples/soccer-broadcast.mp4 \\\n  --video_backend codec \\\n  --segment_sec 8\n```\n\n```text\n[t=0.0-8.0s] gate=silence (p=0.19)\n[t=8.0-16.0s] gate=response (p=0.55) -> The video features a live sports broadcast from BBC Sport, set in a large stadium filled with spectators. The broadcast focuses on a football match between England and Argentina, with the score displayed as England 1, Argentina 2. [...]\n[t=16.0-24.0s] gate=response (p=0.73) -> The video features a sports broadcast set in a large stadium filled with spectators. Four commentators are gathered around a table with a 'BBC Sport' logo, each holding a yellow microphone. [...]\n[t=24.0-30.0s] gate=silence (p=0.31)\n```\n\nThe gate is trained on codec inputs, so `--video_backend codec` is the intended setting. Use `--video_backend frames` for direct frame sampling. Additional controls include `--num_frames`, `--cur_fps`, `--max_segments`, `--max_new_tokens`, `--gate_threshold`, and `--attn_impl`.\n\n## \ud83d\udcdd Citation\n\n```bibtex\n@article{yang2026mage,\n  title={Mage-VL: An Efficient Codec-Native Streaming Multimodal Foundation Model},\n  author={Yang, Senqiao and Zhang, Kaichen and Jia, Zhaoyang and Guo, Jinghao and Shen, Yifei and Zhang, Xinjie and Zhang, Xiaoyi and Wang, Haoqing and Li, Xiao and Zhang, Peng and others},\n  journal={arXiv preprint arXiv:2607.24904},\n  year={2026}\n}\n```\n\n## \ud83d\udcc4 License\n\nMage-VL is released under the [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0).\n",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "library_name": "transformers",
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "multimodal",
+      "vision-language-model",
+      "mage-vl",
+      "video-understanding",
+      "streaming"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageTextToText",
+    "custom_class": "modeling_mage_vl.MageVLForConditionalGeneration",
+    "pipeline_tag": "image-text-to-text",
+    "processor": null
+  }
+}

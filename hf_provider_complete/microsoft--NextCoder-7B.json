@@ -1,0 +1,211 @@
+{
+  "modelId": "microsoft/NextCoder-7B",
+  "author": "microsoft",
+  "sha": "962f9fabe1856edb99398a35b671c319da46840a",
+  "lastModified": "2025-06-12 10:47:34+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "code",
+    "chat",
+    "microsoft",
+    "nextcoder",
+    "selekt",
+    "conversational",
+    "en",
+    "dataset:microsoft/NextCoderDataset",
+    "dataset:microsoft/NextCoderDataset-Conversational",
+    "dataset:bigcode/commitpackft",
+    "dataset:bigcode/starcoderdata",
+    "base_model:Qwen/Qwen2.5-Coder-7B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-Coder-7B-Instruct",
+    "license:mit",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 36,
+  "downloads": 532,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-Coder-7B-Instruct"
+    ],
+    "datasets": [
+      "microsoft/NextCoderDataset",
+      "microsoft/NextCoderDataset-Conversational",
+      "bigcode/commitpackft",
+      "bigcode/starcoderdata"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "code",
+      "chat",
+      "microsoft",
+      "nextcoder",
+      "selekt"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5519,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 777,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 121,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00007.safetensors",
+      "size": 4976687216,
+      "lfs": {
+        "size": 4976687216,
+        "sha256": "1cdb557e6751932ec8396d956839373662a03d8c9418574ee663492c1d26a4f7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00007.safetensors",
+      "size": 4778622352,
+      "lfs": {
+        "size": 4778622352,
+        "sha256": "206abd13dc686b778759b7c71dad03dd2fffa9e5bbe0c7b4122c460ed0b10bf0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00007.safetensors",
+      "size": 4932743960,
+      "lfs": {
+        "size": 4932743960,
+        "sha256": "e29d8c651e9f8d08a2b9fd6ac9aea6991d0a43d860f93ed2db6d168f3f9ca859",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00007.safetensors",
+      "size": 4932743992,
+      "lfs": {
+        "size": 4932743992,
+        "sha256": "e706cd04824c579e9553c9066587e5e928440459b2141f65c1a0fa97897d07b4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00007.safetensors",
+      "size": 4998852296,
+      "lfs": {
+        "size": 4998852296,
+        "sha256": "32f1e16ea373ba9ff8030406ae8c535486a3f172476495a65eb7fa24e2c1f80b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00007.safetensors",
+      "size": 3662865184,
+      "lfs": {
+        "size": 3662865184,
+        "sha256": "a52b4df89529eb0a647e963161c15e5639f6eb5c7344a1c7fc078e0bcb4bdebb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00007.safetensors",
+      "size": 2179989632,
+      "lfs": {
+        "size": 2179989632,
+        "sha256": "1240db91cf893b12d62b4a46e0a60a7e0d09120ec920ba791e4d49025db0c960",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 27752,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11421896,
+      "lfs": {
+        "size": 11421896,
+        "sha256": "9c5ae00e602b8860cbd784ba82a8aa14e8feecec692e7076590d014d7b7fdafa",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 7305,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

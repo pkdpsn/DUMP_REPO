@@ -1,0 +1,173 @@
+{
+  "modelId": "Qwen/Qwen1.5-7B-Chat",
+  "author": "Qwen",
+  "sha": "5f4f5e69ac7f1d508f8369e977de208b4803444b",
+  "lastModified": "2024-04-30 07:33:42+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "chat",
+    "conversational",
+    "en",
+    "arxiv:2309.16609",
+    "license:other",
+    "eval-results",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 186,
+  "downloads": 15687,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "other",
+    "license_name": "tongyi-qianwen",
+    "license_link": "https://huggingface.co/Qwen/Qwen1.5-7B-Chat/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}{% endif %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 6896,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4259,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 663,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 243,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 3988014264,
+      "lfs": {
+        "size": 3988014264,
+        "sha256": "9e8f7873d7c4c74b8883db207a08bf8a783ec8c26da6b3d660a0929048ce6422",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 3957749080,
+      "lfs": {
+        "size": 3957749080,
+        "sha256": "e573fdaf3eba785c4b31b8858288f762f3541f09d75b53dfb1ae4d8ee5011d65",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 3957749112,
+      "lfs": {
+        "size": 3957749112,
+        "sha256": "1d7cd36508251baa069a894f6ee98da5929e8b0788ff9c9faa7934ad102f845a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 3539181096,
+      "lfs": {
+        "size": 3539181096,
+        "sha256": "189e7a297229937ec93912c940ef05019738c56ff0720c811fd083f5dd400dce",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 31696,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7028015,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1287,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: tongyi-qianwen\nlicense_link: https://huggingface.co/Qwen/Qwen1.5-7B-Chat/blob/main/LICENSE\nlanguage:\n- en\npipeline_tag: text-generation\ntags:\n- chat\n---\n\n# Qwen1.5-7B-Chat\n\n\n## Introduction\n\nQwen1.5 is the beta version of Qwen2, a transformer-based decoder-only language model pretrained on a large amount of data. In comparison with the previous released Qwen, the improvements include: \n\n* 8 model sizes, including 0.5B, 1.8B, 4B, 7B, 14B, 32B and 72B dense models, and an MoE model of 14B with 2.7B activated;\n* Significant performance improvement in human preference for chat models;\n* Multilingual support of both base and chat models;\n* Stable support of 32K context length for models of all sizes\n* No need of `trust_remote_code`.\n\nFor more details, please refer to our [blog post](https://qwenlm.github.io/blog/qwen1.5/) and [GitHub repo](https://github.com/QwenLM/Qwen1.5).\n<br>\n\n## Model Details\nQwen1.5 is a language model series including decoder language models of different model sizes. For each size, we release the base language model and the aligned chat model. It is based on the Transformer architecture with SwiGLU activation, attention QKV bias, group query attention, mixture of sliding window attention and full attention, etc. Additionally, we have an improved tokenizer adaptive to multiple natural languages and codes. For the beta version, temporarily we did not include GQA (except for 32B) and the mixture of SWA and full attention.\n\n## Training details\nWe pretrained the models with a large amount of data, and we post-trained the models with both supervised finetuning and direct preference optimization. \n\n## Requirements\nThe code of Qwen1.5 has been in the latest Hugging face transformers and we advise you to install `transformers>=4.37.0`, or you might encounter the following error:\n```\nKeyError: 'qwen2'\n```\n\n## Quickstart\n\nHere provides a code snippet with `apply_chat_template` to show you how to load the tokenizer and model and how to generate contents.\n\n```python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\ndevice = \"cuda\" # the device to load the model onto\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    \"Qwen/Qwen1.5-7B-Chat\",\n    torch_dtype=\"auto\",\n    device_map=\"auto\"\n)\ntokenizer = AutoTokenizer.from_pretrained(\"Qwen/Qwen1.5-7B-Chat\")\n\nprompt = \"Give me a short introduction to large language model.\"\nmessages = [\n    {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\n    {\"role\": \"user\", \"content\": prompt}\n]\ntext = tokenizer.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True\n)\nmodel_inputs = tokenizer([text], return_tensors=\"pt\").to(device)\n\ngenerated_ids = model.generate(\n    model_inputs.input_ids,\n    max_new_tokens=512\n)\ngenerated_ids = [\n    output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)\n]\n\nresponse = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]\n```\n\nFor quantized models, we advise you to use the GPTQ, AWQ, and GGUF correspondents, namely `Qwen1.5-7B-Chat-GPTQ-Int4`, `Qwen1.5-7B-Chat-GPTQ-Int8`, `Qwen1.5-7B-Chat-AWQ`, and `Qwen1.5-7B-Chat-GGUF`.\n\n\n## Tips\n\n* If you encounter code switching or other bad cases, we advise you to use our provided hyper-parameters in `generation_config.json`.\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{qwen,\n  title={Qwen Technical Report},\n  author={Jinze Bai and Shuai Bai and Yunfei Chu and Zeyu Cui and Kai Dang and Xiaodong Deng and Yang Fan and Wenbin Ge and Yu Han and Fei Huang and Binyuan Hui and Luo Ji and Mei Li and Junyang Lin and Runji Lin and Dayiheng Liu and Gao Liu and Chengqiang Lu and Keming Lu and Jianxin Ma and Rui Men and Xingzhang Ren and Xuancheng Ren and Chuanqi Tan and Sinan Tan and Jianhong Tu and Peng Wang and Shijie Wang and Wei Wang and Shengguang Wu and Benfeng Xu and Jin Xu and An Yang and Hao Yang and Jian Yang and Shusheng Yang and Yang Yao and Bowen Yu and Hongyi Yuan and Zheng Yuan and Jianwei Zhang and Xingxuan Zhang and Yichang Zhang and Zhenru Zhang and Chang Zhou and Jingren Zhou and Xiaohuan Zhou and Tianhang Zhu},\n  journal={arXiv preprint arXiv:2309.16609},\n  year={2023}\n}\n```",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "tongyi-qianwen",
+    "license_link": "https://huggingface.co/Qwen/Qwen1.5-7B-Chat/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

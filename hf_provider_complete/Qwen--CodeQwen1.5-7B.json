@@ -1,0 +1,170 @@
+{
+  "modelId": "Qwen/CodeQwen1.5-7B",
+  "author": "Qwen",
+  "sha": "5ce5a1554e50a9e3bb236de7c0b8a2a1746186e4",
+  "lastModified": "2024-05-13 07:15:25+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "pretrained",
+    "en",
+    "arxiv:2309.16609",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 105,
+  "downloads": 1766,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "other",
+    "license_name": "tongyi-qianwen-research",
+    "license_link": "https://huggingface.co/Qwen/CodeQwen1.5-7B/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "pretrained"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": "<|endoftext|>",
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<fim_pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 6896,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2443,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 702,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 213,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 3893570024,
+      "lfs": {
+        "size": 3893570024,
+        "sha256": "6afdb05eb2086c1c52bf7c64ec0c2867546f6ad6428b49f3fb8344d5cbd26457",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 3948168512,
+      "lfs": {
+        "size": 3948168512,
+        "sha256": "56f3ea9dc15b8c1e969b727478ef6ec503c975d752d4ab64623ef4b50a02262b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 3948168536,
+      "lfs": {
+        "size": 3948168536,
+        "sha256": "a70c66a55aa55c917b4f9dae0a7f78ef7fead0ad53c0df5011d5879e9f7fe186",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 2710706344,
+      "lfs": {
+        "size": 2710706344,
+        "sha256": "0eeca152f62824c53b01cf16e2e2ae588ec8d15ec2a7caaff0992bd4d1b8e317",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 31696,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4462887,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 1423961,
+      "lfs": {
+        "size": 1423961,
+        "sha256": "656b66a920a54bc45e8e06dc587691ab3c0b2930b9ae56d5fa31e72db2f3bff3",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 619,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: tongyi-qianwen-research\nlicense_link: https://huggingface.co/Qwen/CodeQwen1.5-7B/blob/main/LICENSE\nlanguage:\n- en\npipeline_tag: text-generation\ntags:\n- pretrained\n---\n\n# CodeQwen1.5-7B\n\n\n## Introduction\n\nCodeQwen1.5 is the Code-Specific version of Qwen1.5. It is a transformer-based decoder-only language model pretrained on a large amount of data of codes. \n\n* Strong code generation capabilities and competitve performance across a series of benchmarks;\n* Supporting long context understanding and generation with the context length of 64K tokens;\n* Supporting 92 coding languages\n* Excellent performance in text-to-SQL, bug fix, etc.\n\n\nFor more details, please refer to our [blog post](https://qwenlm.github.io/blog/codeqwen1.5/) and [GitHub repo](https://github.com/QwenLM/Qwen1.5).\n\n\n## Model Details\nCodeQwen1.5 is based on Qwen1.5, a language model series including decoder language models of different model sizes. It is trained on 3 trillion tokens of data of codes, and it includes group query attention (GQA) for efficient inference.\n\n\n## Requirements\nThe code of Qwen1.5 has been in the latest Hugging face transformers and we advise you to install `transformers>=4.37.0`, or you might encounter the following error:\n```\nKeyError: 'qwen2'.\n```\n\n\n## Usage\n\nFor the base language model, we do not advise you to use it for chat. You can use it for finetuning, and you can also use it for code infilling, code generation, etc., but please be careful about your stopping criteria.\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{qwen,\n  title={Qwen Technical Report},\n  author={Jinze Bai and Shuai Bai and Yunfei Chu and Zeyu Cui and Kai Dang and Xiaodong Deng and Yang Fan and Wenbin Ge and Yu Han and Fei Huang and Binyuan Hui and Luo Ji and Mei Li and Junyang Lin and Runji Lin and Dayiheng Liu and Gao Liu and Chengqiang Lu and Keming Lu and Jianxin Ma and Rui Men and Xingzhang Ren and Xuancheng Ren and Chuanqi Tan and Sinan Tan and Jianhong Tu and Peng Wang and Shijie Wang and Wei Wang and Shengguang Wu and Benfeng Xu and Jin Xu and An Yang and Hao Yang and Jian Yang and Shusheng Yang and Yang Yao and Bowen Yu and Hongyi Yuan and Zheng Yuan and Jianwei Zhang and Xingxuan Zhang and Yichang Zhang and Zhenru Zhang and Chang Zhou and Jingren Zhou and Xiaohuan Zhou and Tianhang Zhu},\n  journal={arXiv preprint arXiv:2309.16609},\n  year={2023}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "tongyi-qianwen-research",
+    "license_link": "https://huggingface.co/Qwen/CodeQwen1.5-7B/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "pretrained"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

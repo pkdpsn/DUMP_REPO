@@ -1,0 +1,178 @@
+{
+  "modelId": "nvidia/OpenCodeReasoning-Nemotron-14B",
+  "author": "nvidia",
+  "sha": "7719d4f9edf310676aa7d628bbfe301c2c8b985e",
+  "lastModified": "2025-05-07 19:38:53+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "nvidia",
+    "code",
+    "conversational",
+    "en",
+    "dataset:nvidia/OpenCodeReasoning",
+    "arxiv:2504.01943",
+    "base_model:Qwen/Qwen2.5-14B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-14B-Instruct",
+    "license:apache-2.0",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 20,
+  "downloads": 326,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-14B-Instruct"
+    ],
+    "datasets": [
+      "nvidia/OpenCodeReasoning"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "code"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1618,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 699,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7528,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 733,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 121,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 9941058640,
+      "lfs": {
+        "size": 9941058640,
+        "sha256": "2870a88bcef736b77679f86de06f3ccedf56d7aebb992c79e785cff21382cb3b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 9909694792,
+      "lfs": {
+        "size": 9909694792,
+        "sha256": "8e2928a4b1dc7d04a0f56972ffb9547e4a8b278ef7243f47333c6ae14cea4ba3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 9689380560,
+      "lfs": {
+        "size": 9689380560,
+        "sha256": "4340738c2f709ce8af77b7734a90e6e55e1817fd2acde1c6a266f73ae395f3cd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 47472,
+      "lfs": null
+    },
+    {
+      "rfilename": "results.png",
+      "size": 110568,
+      "lfs": {
+        "size": 110568,
+        "sha256": "4a3d2647221c5a347ecc4172e4d43c4eb209e439f1b1bb6a68f5a58cbe5358cf",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11421896,
+      "lfs": {
+        "size": 11421896,
+        "sha256": "9c5ae00e602b8860cbd784ba82a8aa14e8feecec692e7076590d014d7b7fdafa",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 7336,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,486 @@
+{
+  "modelId": "nvidia/NVIDIA-Nemotron-Labs-3-Puzzle-75B-A9B-BF16",
+  "author": "nvidia",
+  "sha": "8fe5546888e9bd03fdbf52d808adebdfca901b52",
+  "lastModified": "2026-07-07 10:58:24+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron_h_puzzle",
+    "text-generation",
+    "nvidia",
+    "pytorch",
+    "nemotron-3",
+    "latent-moe",
+    "mtp",
+    "conversational",
+    "custom_code",
+    "en",
+    "fr",
+    "es",
+    "it",
+    "de",
+    "ja",
+    "zh",
+    "dataset:nvidia/nemotron-post-training-v3",
+    "dataset:nvidia/nemotron-pre-training-datasets",
+    "arxiv:2607.04371",
+    "arxiv:2411.19146",
+    "arxiv:2604.12374",
+    "arxiv:2512.20848",
+    "base_model:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+    "base_model:finetune:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 68,
+  "downloads": 981,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16"
+    ],
+    "datasets": [
+      "nvidia/nemotron-post-training-v3",
+      "nvidia/nemotron-pre-training-datasets"
+    ],
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "es",
+      "it",
+      "de",
+      "ja",
+      "zh"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "pytorch",
+      "nemotron-3",
+      "latent-moe",
+      "mtp"
+    ],
+    "track_downloads": true
+  },
+  "config": {
+    "architectures": [
+      "NemotronHPuzzleForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_nemotron_h_puzzle.NemotronHPuzzleConfig",
+      "AutoModelForCausalLM": "modeling_nemotron_h_puzzle.NemotronHPuzzleForCausalLM"
+    },
+    "model_type": "nemotron_h_puzzle",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|im_end|>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{% macro render_extra_keys(json_dict, handled_keys) %}\n    {%- if json_dict is mapping %}\n        {%- for json_key in json_dict if json_key not in handled_keys %}\n            {%- if json_dict[json_key] is mapping or (json_dict[json_key] is sequence and json_dict[json_key] is not string) %}\n                {{- '\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | tojson | safe) ~ '</' ~ json_key ~ '>' }}\n            {%- else %}\n                {{-'\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | string) ~ '</' ~ json_key ~ '>' }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{% endmacro %}\n{%- set enable_thinking = enable_thinking if enable_thinking is defined else True %}\n{%- set low_effort = low_effort if low_effort is defined else False %}\n{%- set truncate_history_thinking = truncate_history_thinking if truncate_history_thinking is defined else True %}\n\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- set loop_messages = messages %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n\n{%- if messages[0][\"role\"] == \"system\" %}\n    {%- set system_message = messages[0][\"content\"] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = [] %}\n{%- endif %}\n{# Recompute last_user_idx relative to loop_messages after handling system #}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n{%- if system_message is defined %}\n    {{- \"<|im_start|>system\\n\" + system_message }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- \"<|im_start|>system\\n\" }}\n    {%- endif %}\n{%- endif %}\n{%- if tools is iterable and tools | length > 0 %}\n    {%- if system_message is defined and system_message | length > 0 %}\n        {{- \"\\n\\n\" }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n\" }}\n    {{- \"<tools>\" }}\n    {%- for tool in tools %}\n        {%- if tool.function is defined %}\n            {%- set tool = tool.function %}\n        {%- endif %}\n        {{- \"\\n<function>\\n<name>\" ~ tool.name ~ \"</name>\" }}\n        {%- if tool.description is defined %}\n            {{- '\\n<description>' ~ (tool.description | trim) ~ '</description>' }}\n        {%- endif %}\n        {{- '\\n<parameters>' }}\n        {%- if tool.parameters is defined and tool.parameters is mapping and tool.parameters.properties is defined and tool.parameters.properties is mapping %}\n            {%- for param_name, param_fields in tool.parameters.properties|items %}\n                {{- '\\n<parameter>' }}\n                {{- '\\n<name>' ~ param_name ~ '</name>' }}\n                {%- if param_fields.type is defined %}\n                    {{- '\\n<type>' ~ (param_fields.type | string) ~ '</type>' }}\n                {%- endif %}\n                {%- if param_fields.description is defined %}\n                    {{- '\\n<description>' ~ (param_fields.description | trim) ~ '</description>' }}\n                {%- endif %}\n                {%- if param_fields.enum is defined %}\n                    {{- '\\n<enum>' ~ (param_fields.enum | tojson | safe) ~ '</enum>' }}\n                {%- endif %}\n                {%- set handled_keys = ['name', 'type', 'description', 'enum'] %}\n                {{- render_extra_keys(param_fields, handled_keys) }}\n                {{- '\\n</parameter>' }}\n            {%- endfor %}\n        {%- endif %}\n        {% set handled_keys = ['type', 'properties', 'required'] %}\n        {{- render_extra_keys(tool.parameters, handled_keys) }}\n        {%- if tool.parameters is defined and tool.parameters.required is defined %}\n            {{- '\\n<required>' ~ (tool.parameters.required | tojson | safe) ~ '</required>' }}\n        {%- endif %}\n        {{- '\\n</parameters>' }}\n        {%- set handled_keys = ['type', 'name', 'description', 'parameters'] %}\n        {{- render_extra_keys(tool, handled_keys) }}\n        {{- '\\n</function>' }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n{%- endif %}\n\n\n{%- if system_message is defined %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n\n{%- for message in loop_messages %}\n    {%- if message.role == \"assistant\" %}\n        {# Add reasoning content in to content field for unified processing below. #}\n        {%- if message.reasoning_content is defined and message.reasoning_content is string and message.reasoning_content | trim | length > 0 %}\n            {%- set content = \"<think>\\n\" ~ message.reasoning_content ~ \"\\n</think>\\n\" ~ (message.content | default('', true)) %}\n        {%- else %}\n            {%- set content = message.content | default('', true) %}\n            {%- if content is string -%}\n                {# Allow downstream logic to to take care of broken thought, only handle coherent reasoning here. #}\n                {%- if '<think>' not in content and '</think>' not in content -%}\n                    {%- set content = \"<think></think>\" ~ content -%}\n                {%- endif -%}\n            {%- else -%}\n                {%- set content = content -%}\n            {%- endif -%}\n        {%- endif %}\n        {%- if message.tool_calls is defined and message.tool_calls is iterable and message.tool_calls | length > 0 %}\n            {# Assistant message has tool calls. #}\n            {{- '<|im_start|>assistant\\n' }}\n                {%- set include_content = not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {%- if content is string and content | trim | length > 0 %}\n                    {%- if include_content %}\n                        {{- (content | trim) ~ '\\n' -}}\n                    {%- else %}\n                        {%- set c = (content | string) %}\n                        {%- if '</think>' in c %}\n                            {# Keep only content after the last closing think. Also generation prompt causes this. #}\n                            {%- set c = c.split('</think>')[-1] %}\n                        {%- elif '<think>' in c %}\n                            {# If <think> was opened but never closed, drop the trailing think segment #}\n                            {%- set c = c.split('<think>')[0] %}\n                        {%- endif %}\n                        {%- set c = \"<think></think>\" ~ c | trim %}\n                        {%- if c | length > 0 %}\n                            {{- c ~ '\\n' -}}\n                        {%- endif %}\n                    {%- endif %}\n                {%- else %}\n                    {{- \"<think></think>\" -}}\n                {%- endif %}\n                {%- for tool_call in message.tool_calls %}\n                    {%- if tool_call.function is defined %}\n                        {%- set tool_call = tool_call.function %}\n                    {%- endif %}\n                    {{- '<tool_call>\\n<function=' ~ tool_call.name ~ '>\\n' -}}\n                        {%- if tool_call.arguments is defined %}\n                            {%- for args_name, args_value in tool_call.arguments|items %}\n                                {{- '<parameter=' ~ args_name ~ '>\\n' -}}\n                                    {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                                {{- args_value ~ '\\n</parameter>\\n' -}}\n                            {%- endfor %}\n                        {%- endif %}\n                    {{- '</function>\\n</tool_call>\\n' -}}\n                {%- endfor %}\n                {{- '<|im_end|>\\n' }}\n        {%- else %}\n            {# Assistant message doesn't have tool calls. #}\n            {%- if not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {{- '<|im_start|>assistant\\n' ~ (content | default('', true) | string | trim) ~ '<|im_end|>\\n' }}\n            {%- else %}\n                {%- set c = (content | default('', true) | string) %}\n                {%- if '<think>' in c and '</think>' in c %}\n                    {%- set c = \"<think></think>\" ~ c.split('</think>')[-1] %}\n                {%- endif %}\n                {%- set c = c | trim %}\n                {%- if c | length > 0 %}\n                    {{- '<|im_start|>assistant\\n' ~ c ~ '<|im_end|>\\n' }}\n                {%- else %}\n                    {{- '<|im_start|>assistant\\n<|im_end|>\\n' }}\n                {%- endif %}\n            {%- endif %}\n        {%- endif %}\n    {%- elif message.role == \"user\" or message.role == \"system\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- set content = message.content | string %}\n        {%- if message.role == \"user\" and loop.index0 == ns.last_user_idx and low_effort %}\n            {{- content + '\\n\\n{reasoning effort: low}' }}\n        {%- else %}\n            {{- content }}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user\\n' }}\n        {%- endif %}\n        {{- '<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>\\n' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endfor %}\n\n{%- if add_generation_prompt %}\n    {%- if enable_thinking %}\n        {{- '<|im_start|>assistant\\n<think>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>assistant\\n<think></think>' }}\n    {%- endif %}\n{%- endif %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 15220,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 71786,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 2481,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 10771,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 9506,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nemotron_h.py",
+      "size": 19822,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nemotron_h_puzzle.py",
+      "size": 6089,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 2681,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 210,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00031.safetensors",
+      "size": 5000040648,
+      "lfs": {
+        "size": 5000040648,
+        "sha256": "10bd518f46b479aa975f5ac022830190ed71facdd7b4e561b5a8070fc72999ac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00031.safetensors",
+      "size": 4994729424,
+      "lfs": {
+        "size": 4994729424,
+        "sha256": "1f73ff4892a4dc541812a13171c2d161ccf3ce91769e44a8889fd7fe0ce0dbb6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00031.safetensors",
+      "size": 4999044416,
+      "lfs": {
+        "size": 4999044416,
+        "sha256": "5d7e4e59da55fc2c4d6cf8e3b48c1145fa6593b889175465b011bbd227136bb6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00031.safetensors",
+      "size": 5000090904,
+      "lfs": {
+        "size": 5000090904,
+        "sha256": "25781f8a716e13b9e79d3f027238f3f3014118b56070e200401c0490eebbd957",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00031.safetensors",
+      "size": 4998928928,
+      "lfs": {
+        "size": 4998928928,
+        "sha256": "c4feb15101baf49172759df6b271d019ba5a56ee8ed2b7eb224c687985014c1d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00031.safetensors",
+      "size": 5000091120,
+      "lfs": {
+        "size": 5000091120,
+        "sha256": "dda5af6e6a2fd5c014933caa3f3b0967f57fde9d7e4c5886f8ad3f3b13e4e46a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00031.safetensors",
+      "size": 4998572664,
+      "lfs": {
+        "size": 4998572664,
+        "sha256": "39701899c36c204a1fca118927295c657acc54ff27b67e61e1cc731813a8e2c7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00031.safetensors",
+      "size": 4997019104,
+      "lfs": {
+        "size": 4997019104,
+        "sha256": "3dd79b8bbcd6f145317012e85f2f3cf989964ac50ae6505959c69e4ae6e3d6f1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00031.safetensors",
+      "size": 4999604472,
+      "lfs": {
+        "size": 4999604472,
+        "sha256": "34e0a172b71361d17f730395d834a606ed18f365ca17e01337d8bf1b870309bf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00031.safetensors",
+      "size": 4998069168,
+      "lfs": {
+        "size": 4998069168,
+        "sha256": "1781c4c89c0579964691d5ce424ced46dc181a3548bd4e339e75a9f830d0466a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00031.safetensors",
+      "size": 4998992648,
+      "lfs": {
+        "size": 4998992648,
+        "sha256": "e2e4d7f327e116a98c6575d6a50124d8c5b01c5e9aef0eb2c7e196015d74c2b7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00031.safetensors",
+      "size": 4909653672,
+      "lfs": {
+        "size": 4909653672,
+        "sha256": "606490cb451099d343584b5aa873d2323a5929afb56d2d98e362dbea9488e6da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00031.safetensors",
+      "size": 4998704664,
+      "lfs": {
+        "size": 4998704664,
+        "sha256": "ca63679b00a11fa7a0a71f98577c3e007fc49db6678e1eaeda87122040337d2e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00031.safetensors",
+      "size": 4998018112,
+      "lfs": {
+        "size": 4998018112,
+        "sha256": "36c1ad53c46472def43b554b92f75f67e91e5f23c97eb9d72e4328841d812253",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00031.safetensors",
+      "size": 4999639600,
+      "lfs": {
+        "size": 4999639600,
+        "sha256": "d33eba760c4686f7c406bdc34dbc10a3f82b4096a1b17a97457b819e753d9f23",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00031.safetensors",
+      "size": 4997239160,
+      "lfs": {
+        "size": 4997239160,
+        "sha256": "9a0f3e2545096ea9fdbba7d7960ca63bf600413b7431a286f3976d47aebb62be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00031.safetensors",
+      "size": 4998018096,
+      "lfs": {
+        "size": 4998018096,
+        "sha256": "89cafb56c572121526e9607c3a23cb3447b3bcce13f6d77c1adb33df8abf28c4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00031.safetensors",
+      "size": 4999624160,
+      "lfs": {
+        "size": 4999624160,
+        "sha256": "c0645c1623611bb7f909c3572fdac33d74d837c8ec4312bbe1426a2014fd7e3c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00031.safetensors",
+      "size": 4999907304,
+      "lfs": {
+        "size": 4999907304,
+        "sha256": "7a8faa01ef48feed58a982cdc3a683ab3fbbdbba9daabc3b04faae38f2991cb9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00031.safetensors",
+      "size": 4997985680,
+      "lfs": {
+        "size": 4997985680,
+        "sha256": "04a69fc5534aab2a31d47861017c54e8db0ef4bb67f24c1a3c158aaead6caa97",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00031.safetensors",
+      "size": 4988030408,
+      "lfs": {
+        "size": 4988030408,
+        "sha256": "0c83fc5b62d829e8467af15ec9163f10637f91d4306763c042b5ca410013e4ee",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00031.safetensors",
+      "size": 4997881640,
+      "lfs": {
+        "size": 4997881640,
+        "sha256": "78a7bee4fa4e60d42fb45ae11e49270f54f8da14213c1037bc173afafb6fb10f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00031.safetensors",
+      "size": 5000091088,
+      "lfs": {
+        "size": 5000091088,
+        "sha256": "53bef88e91a96e94f9d2797af330cc56452ec9b1766a24f17958dff8710e0ddf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00031.safetensors",
+      "size": 4863755064,
+      "lfs": {
+        "size": 4863755064,
+        "sha256": "80fa04eef0fe33016a86a984cabdc5e4719468b31904c3ff4131eb7cb4e467b1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00031.safetensors",
+      "size": 4998943512,
+      "lfs": {
+        "size": 4998943512,
+        "sha256": "88435f672d9e5bc553d461cb1c81600a6a55cbd5bacb72248eab78ec9cc4a201",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00031.safetensors",
+      "size": 5000090912,
+      "lfs": {
+        "size": 5000090912,
+        "sha256": "65d70bbf718029ceb31e654bce06e41d0343f2967d09746629323a65659f16d7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00031.safetensors",
+      "size": 4998928928,
+      "lfs": {
+        "size": 4998928928,
+        "sha256": "008b110213fb424aafca7e0840c815df50c253c496513a9641a7aaf56968c736",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00031.safetensors",
+      "size": 5000091136,
+      "lfs": {
+        "size": 5000091136,
+        "sha256": "a755361c1f1870cbaec2e125dc4f76b792bff30d8bceafcef57e4d7147cc20c3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00031.safetensors",
+      "size": 4998349432,
+      "lfs": {
+        "size": 4998349432,
+        "sha256": "2559bfdf397fa479b2f17eec53fbe18df00177eee183de0fac2030515ced7e04",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00031.safetensors",
+      "size": 4908142424,
+      "lfs": {
+        "size": 4908142424,
+        "sha256": "73fd019b3a44c36ad9422e2caaeb63afa2e99104ac60da31268cb84f753ebc04",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00031.safetensors",
+      "size": 1073741952,
+      "lfs": {
+        "size": 1073741952,
+        "sha256": "6e2c6b5c80500a1ff041f8fd69c4ce2445438902c09b941eaba0c25d95177bf9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 3926653,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_nemotron_h.py",
+      "size": 82338,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_nemotron_h_puzzle.py",
+      "size": 1505,
+      "lfs": null
+    },
+    {
+      "rfilename": "mtp.safetensors",
+      "size": 5884780728,
+      "lfs": {
+        "size": 5884780728,
+        "sha256": "fa65fc46b6f3d94f77695ae4a298d5b8e22adf9c80874b6fb27028ab16cfe78a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 2688,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 2091,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 563,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077484,
+      "lfs": {
+        "size": 17077484,
+        "sha256": "623c34567aebb18582765289fbe23d901c62704d6518d71866e0e58db892b5b7",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 177209,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_nemotron_h_puzzle.NemotronHPuzzleForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

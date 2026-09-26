@@ -1,0 +1,223 @@
+{
+  "modelId": "nvidia/llama-nemotron-embed-vl-1b-v2",
+  "author": "nvidia",
+  "sha": "582e3bf72aee355e3c59ed89de53543c5b0657ee",
+  "lastModified": "2026-07-07 11:13:28+00:00",
+  "tags": [
+    "sentence-transformers",
+    "safetensors",
+    "llama_nemotron_vl",
+    "feature-extraction",
+    "retrieval",
+    "visual document retrieval",
+    "vlm embedding",
+    "page image embedding",
+    "text embedding",
+    "semantic search",
+    "question-answering retrieval",
+    "rag",
+    "transformers",
+    "sentence-similarity",
+    "custom_code",
+    "multilingual",
+    "arxiv:2501.14818",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "sentence-similarity",
+  "library_name": "sentence-transformers",
+  "likes": 104,
+  "downloads": 40183,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "sentence-transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "sentence-similarity",
+    "tags": [
+      "sentence-transformers",
+      "retrieval",
+      "visual document retrieval",
+      "vlm embedding",
+      "page image embedding",
+      "text embedding",
+      "semantic search",
+      "question-answering retrieval",
+      "rag",
+      "transformers"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "LlamaNemotronVLModel"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_llama_nemotron_vl.LlamaNemotronVLConfig",
+      "AutoModel": "modeling_llama_nemotron_vl.LlamaNemotronVLModel"
+    },
+    "model_type": "llama_nemotron_vl",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_string = strftime_now(\"%d %b %Y\") %}\n    {%- else %}\n        {%- set date_string = \"26 Jul 2024\" %}\n    {%- endif %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = none %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{%- if tools is not none %}\n    {{- \"Environment: ipython\\n\" }}\n{%- endif %}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{%- if tools is not none and not tools_in_user_message %}\n    {{- \"You have access to the following functions. To call a function, please respond with JSON for a function call.\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n{%- endif %}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{#- Custom tools are passed in a user message with some extra guidance #}\n{%- if tools_in_user_message and not tools is none %}\n    {#- Extract the first user message so we can plug it in here #}\n    {%- if messages | length != 0 %}\n        {%- set first_user_message = messages[0]['content']|trim %}\n        {%- set messages = messages[1:] %}\n    {%- else %}\n        {{- raise_exception(\"Cannot put tools in the first user message when there's no first user message!\") }}\n{%- endif %}\n    {{- '<|start_header_id|>user<|end_header_id|>\\n\\n' -}}\n    {{- \"Given the following functions, please respond with a JSON for a function call \" }}\n    {{- \"with its proper arguments that best answers the given prompt.\\n\\n\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n    {{- first_user_message + \"<|eot_id|>\"}}\n{%- endif %}\n\n{%- for message in messages %}\n    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n    {%- elif 'tool_calls' in message %}\n        {%- if not message.tool_calls|length == 1 %}\n            {{- raise_exception(\"This model only supports single tool-calls at once!\") }}\n        {%- endif %}\n        {%- set tool_call = message.tool_calls[0].function %}\n        {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n        {{- '{\"name\": \"' + tool_call.name + '\", ' }}\n        {{- '\"parameters\": ' }}\n        {{- tool_call.arguments | tojson }}\n        {{- \"}\" }}\n        {{- \"<|eot_id|>\" }}\n    {%- elif message.role == \"tool\" or message.role == \"ipython\" %}\n        {{- \"<|start_header_id|>ipython<|end_header_id|>\\n\\n\" }}\n        {%- if message.content is mapping or message.content is iterable %}\n            {{- message.content | tojson }}\n        {%- else %}\n            {{- message.content }}\n        {%- endif %}\n        {{- \"<|eot_id|>\" }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|eot_id|>",
+      "pad_token": "<|finetune_right_pad_id|>"
+    },
+    "chat_template_jinja": "{% set vars = namespace(prefix='', images=[], texts=[], payload_count=0) %}\n{%- for message in messages -%}\n    {%- if message['role'] == 'system' -%}\n        {%- if message['content'] is string -%}\n            {%- set vars.prefix = message['content'] %}\n        {%- else -%}\n            {%- for content in message['content'] -%}\n                {%- if content['type'] == 'text' -%}\n                    {%- set vars.prefix = content['text'] %}\n                {%- endif -%}\n            {%- endfor -%}\n        {%- endif -%}\n    {%- else -%}\n        {%- set vars.payload_count = vars.payload_count + 1 %}\n        {%- if message['role'] == 'query' -%}\n        {%- set vars.prefix = 'query: ' %}\n        {%- elif message['role'] == 'document' -%}\n            {%- set vars.prefix = 'passage: ' %}\n        {%- endif -%}\n        {%- for content in message['content'] -%}\n            {%- if content['type'] == 'text' -%}\n                {%- set vars.texts = vars.texts + [content['text']] %}\n            {%- elif content['type'] == 'image' -%}\n                {%- set vars.images = vars.images + ['<image> '] %}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- endif -%}\n{%- endfor -%}\n{%- if vars.payload_count != 1 -%}\n    {{ raise_exception('Llama Nemotron VL embedding template expects exactly one non-system message per embedding input; system messages are reserved for task prefixes') }}\n{%- endif -%}\n{{- bos_token }}{{ vars.prefix }}{{ (vars.images + vars.texts) | join('') }}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "1_Pooling/config.json",
+      "size": 91,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 21817,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 30816,
+      "lfs": null
+    },
+    {
+      "rfilename": "THIRD_PARTY_NOTICES.md",
+      "size": 16467,
+      "lfs": null
+    },
+    {
+      "rfilename": "__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1485,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 5875,
+      "lfs": null
+    },
+    {
+      "rfilename": "config_sentence_transformers.json",
+      "size": 315,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_llama_nemotron_vl.py",
+      "size": 5131,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 69,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 3356585352,
+      "lfs": {
+        "size": 3356585352,
+        "sha256": "2192a98e3d88c07c21b1567fc8781ca79d7eed4ff64e7dbf2274c96b2b1b8e17",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "modeling_llama_nemotron_vl.py",
+      "size": 23004,
+      "lfs": null
+    },
+    {
+      "rfilename": "modules.json",
+      "size": 277,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_llama_nemotron_vl.py",
+      "size": 22226,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 549,
+      "lfs": null
+    },
+    {
+      "rfilename": "sentence_bert_config.json",
+      "size": 625,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 454,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17212133,
+      "lfs": {
+        "size": 17212133,
+        "sha256": "0fb8bdddbd4c4ffa55e51d5b0393611e3df49dd86a31189ef5dcb750cf3da399",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 56719,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\ntags:\n- sentence-transformers\n- retrieval\n- visual document retrieval\n- vlm embedding\n- page image embedding\n- text embedding\n- semantic search\n- question-answering retrieval\n- rag\n- transformers\nlanguage:\n- multilingual\nlibrary_name: sentence-transformers\npipeline_tag: sentence-similarity\n---\n# Model Overview\n\n### Description:\n\nllama-nemotron-embed-vl-1b-v2 was developed by NVIDIA for **multimodal** question-answering retrieval. The model can embed document pages in the form of image, text, or combined image\u2013text inputs. Documents can be retrieved given a user query in text form. The model supports page images containing text, tables, charts, and infographics. We report the evaluation of this model on two internal multimodal retrieval benchmarks, and on the popular [ViDoRe](https://huggingface.co/vidore) V1 and V2 benchmarks and the new [Vidore V3](https://huggingface.co/blog/QuentinJG/introducing-vidore-v3) benchmark.\n\nAn embedding model is a crucial component of a retrieval system because it transforms information into dense vector representations. An embedding model is typically a transformer encoder that processes tokens of input text or images (for example, questions, passages, or page images) to output an embedding. llama-nemotron-embed-vl-1b-v2 is a combined language and vision model.\n\nThe llama-nemotron-embed-vl-1b-v2 is part of the [Nemotron RAG collection](https://huggingface.co/collections/nvidia/nemotron-rag) of open models available on HuggingFace. It is also available for optimized inference as a NIM (NVIDIA Inference Microservice) from NVIDIA NeMo Retriever, which provides state-of-the-art, commercially-ready models and microservices optimized for the lowest latency and highest throughput. It features a production-ready information retrieval pipeline with enterprise support. The models that form the core of this solution have been trained using responsibly selected, auditable data sources. With multiple pre-trained models available as starting points, developers can readily customize them for domain-specific use cases, such as information technology, human resource help assistants, and research & development research assistants.\n\nThis model is ready for commercial use.\n\n### License/Terms of use\n\nThe use of this model is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/) and the use of the post-processing scripts are licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt). \nAdditional Information: [Llama 3.2 Community Model License Agreement](https://www.llama.com/llama3_2/license/). Built with Llama.\n\n\n### Deployment Geography:\nGlobal <br>\n\n### Use Case: <br>\nThe llama-nemotron-embed-vl-1b-v2 is suitable for users who want to build a multimodal question-and-answer application over a large corpus, leveraging the latest dense retrieval technology.  \nThe input of the model is a text or document image and the output is a fixed-size embedding vector.\nThe embedding model is a bi-encoder that supports context in textual format (e.g. the query or the OCR text of a page or a section of a document) or the image of a document page.  \nTypically, the embedding model is used first to embed (vectorize) the whole corpus (document images or text chunks), and embeddings are stored in a vector database associated to its raw content (image or text). Then at inference time, the embedding model is used to embed the query. The embeddings of the query and relevant context from the corpus should be close in the embedding space.\n\n\n### Release Date:  <br>\n12/18/2025 via https://huggingface.co/nvidia/llama-nemotron-embed-vl-1b-v2\n\n### Citation\n```\n@inproceedings{moreira2025_nvretriever,\n    author = {Moreira, Gabriel de Souza P. and Osmulski, Radek and Xu, Mengyao and Ak, Ronay and Schifferer, Benedikt and Oldridge, Even},\n    title = {Improving Text Embedding Models with Positive-aware Hard-negative Mining},\n    year = {2025},\n    isbn = {9798400720406},\n    publisher = {Association for Computing Machinery},\n    address = {New York, NY, USA},\n    url = {https://doi.org/10.1145/3746252.3761254},\n    doi = {10.1145/3746252.3761254},\n    pages = {2169\u20132178},\n    numpages = {10},\n    keywords = {contrastive learning, distillation, embedding models, hard-negative mining, rag, text retrieval, transformers},\n    location = {Seoul, Republic of Korea},\n    series = {CIKM '25}\n}\n```\n\n### **Model Architecture**\n**Architecture Type:** Transformer <br>\n\n**Network Architecture:** [Eagle VLM](https://huggingface.co/collections/nvidia/eagle) architecture with Llama 3.2 1B language model and SigLip2 400M image encoder<br>\n\nThe llama-nemotron-embed-vl-1b-v2 embedding model is a transformer encoder,  with approximately 1.7B parameters. It is a fine-tuned version of NVIDIA Eagle family of models, using Llama 3.2 1B language model and SigLip2 400M image encoder. The language model submodule has 16 layers with embedding size of 2048, and is pre-trained on public datasets. Embedding models for retrieval are typically trained with a bi-encoder architecture, that encodes query and document independently. The model applies mean pooling over the output token embeddings from the language model, so that it outputs a single embedding with 2048 dimensions. Contrastive learning is used to train the embedding model to maximize the similarity between the query and the document page that contains the answer, while minimizing the similarity between the query and sampled negative pages that are not useful to answer the question.\n\nThe vision-language model encoder incorporates key innovations from NVIDIA, including [Eagle 2 research](https://arxiv.org/abs/2501.14818) and [nemoretriever-parse](https://build.nvidia.com/nvidia/nemoretriever-parse), which use a tiling-based VLM architecture. This architecture, available on [Hugging Face](https://huggingface.co/collections/nvidia/eagle-2-6764ba887fa1ef387f7df067), significantly enhances multimodal understanding through its dynamic tiling and mixture of vision encoders design. It particularly improves performance on tasks that involve high-resolution images and complex visual content.\n\n**Number of model parameters:**  \n- Llama 3.2 1B language model: 1.23 B (Transformer parameters: 973 M, Token embedding parameters: 262 M)  \n- SigLip 2 image encoder: 428.77 M\n\n\n## Input(s): <br>\n**Input Type(s):** Image, Text <br>\n\n**Input Format(s):** <br>\n- Image: Red, Green, Blue (RGB) <br>\n- Text: String <br>\n\n**Input Parameters:** <br>\n- Image: Two-Dimensional (2D) <br>\n- Text: One-Dimensional (1D) <br>\n\n**Output Parameters:** <br>\n- Image/Text Embedding (2D) - embedding of 2048 dimensions <br>\n\n**Other Properties Related to Input:** \n- The model's maximum context length we evaluated is 10240 tokens. <br>\n- Each image tile consumes 256 tokens. We have tested this model extensively with these settings on config.json - `max_input_tiles = 6`, `use_thumbnails = True`, so that every image is split into maximum 6 tiles + 1 thumbnail (whole image at lower resolution), consuming about 1792 visual tokens. If you embed both page image and text (e.g. page OCR), the sum of the visual tokens (explained above) and the text tokens should not be higher than 10240 tokens.\n\n\n## Output(s)\n\n**Output Type:** Floats<br>\n**Output Format:** List of float arrays (embeddings) <br>\n**Output:** Model outputs embedding vectors of maximum dimension 2048 for each input.<br>\n**Other Properties Related to Output:** N/A<br>\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (such as GPU cores) and software frameworks (such as CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n\n## Installation\n\nThe model requires `transformers>=4.56.0` and optionally flash-attention.\n\n```bash\npip install \"transformers>=4.56.0\"\npip install \"flash-attn>=2.6.3,<2.8\" --no-build-isolation\n```\n\n## Sentence Transformers Usage\n\nInstall Sentence Transformers:\n```bash\npip install sentence_transformers\n```\n\nThis model supports **text**, **image**, and **image+text** embedding with Sentence Transformers.\n\n```python\nfrom sentence_transformers import SentenceTransformer\nfrom transformers.image_utils import load_image\n\nmodel = SentenceTransformer(\"nvidia/llama-nemotron-embed-vl-1b-v2\", trust_remote_code=True)\n\nquery = \"How is AI improving the intelligence and capabilities of robots?\"\ndocuments = [\n    \"AI enables robots to perceive, plan, and act autonomously.\",\n    \"AI is transforming autonomous vehicles by enabling safer, smarter, and more reliable decision-making on the road.\",\n    \"A biological foundation model designed to analyze and generate DNA, RNA, and protein sequences.\",\n]\n# Images can be URLs, file paths, or PIL Images\nimages = [\n    load_image(\"https://developer.download.nvidia.com/images/isaac/nvidia-isaac-lab-1920x1080.jpg\"),\n    load_image(\"https://blogs.nvidia.com/wp-content/uploads/2018/01/automotive-key-visual-corp-blog-level4-av-og-1280x680-1.png\"),\n    load_image(\"https://developer-blogs.nvidia.com/wp-content/uploads/2025/02/hc-press-evo2-nim-25-featured-b.jpg\"),\n]\n\n# Text-only encoding\nquery_embeddings = model.encode_query([query])\ndocument_embeddings = model.encode_document(documents)\nprint(query_embeddings.shape, document_embeddings.shape)\n# (1, 2048) (3, 2048)\n\nsimilarities = model.similarity(query_embeddings, document_embeddings)\nprint(similarities)\n# tensor([[0.4142, 0.4046, 0.0421]])\n\n# Image-only encoding\nimage_embeddings = model.encode(images)\nprint(image_embeddings.shape)\n# (3, 2048)\n\nsimilarities = model.similarity(query_embeddings, image_embeddings)\nprint(similarities)\n# tensor([[ 0.2766,  0.1378, -0.0062]])\n\n# Image+text encoding (e.g. page image + OCR text)\nmultimodal_docs = [{\"image\": img, \"text\": txt} for img, txt in zip(images, documents)]\nmultimodal_embeddings = model.encode(multimodal_docs)\nprint(multimodal_embeddings.shape)\n# (3, 2048)\n\nsimilarities = model.similarity(query_embeddings, multimodal_embeddings)\nprint(similarities)\n# tensor([[0.3385, 0.2688, 0.0077]])\n```\n\n## Transformers Usage\n\n```python\nimport torch\nfrom transformers import AutoModel, AutoProcessor\nfrom transformers.image_utils import load_image\n\nmodality = \"image\"\n# Load model\nmodel_name_or_path = \"nvidia/llama-nemotron-embed-vl-1b-v2\"\n\ndevice = \"cuda\" if torch.cuda.is_available() else \"cpu\"\n\nmodel = AutoModel.from_pretrained(\n    model_name_or_path,\n    torch_dtype=torch.bfloat16,\n    trust_remote_code=True,\n    attn_implementation=\"flash_attention_2\",\n    device_map=\"auto\"\n).eval()\n\n\n# Set max number of tokens (p_max_length) based on modality\nif modality == \"image\":\n    p_max_length = 2048\nelif modality == \"image_text\":\n    p_max_length = 10240\nelif modality == \"text\":\n    p_max_length = 8192\nmodel.processor.p_max_length = p_max_length\n# Sets max number of tiles an image can be split. Each tile consumes 256 tokens.\nmodel.processor.max_input_tiles = 6\n# Enables an extra tile with the full image at lower resolution\nmodel.processor.use_thumbnail = True\n\n\n# Example usage: single query with multiple image documents\nquery = \"How is AI improving the intelligence and capabilities of robots?\"\nimage_paths = [\n    \"https://developer.download.nvidia.com/images/isaac/nvidia-isaac-lab-1920x1080.jpg\",\n    \"https://blogs.nvidia.com/wp-content/uploads/2018/01/automotive-key-visual-corp-blog-level4-av-og-1280x680-1.png\",\n    \"https://developer-blogs.nvidia.com/wp-content/uploads/2025/02/hc-press-evo2-nim-25-featured-b.jpg\"\n]\n\n# Load all images (load_image handles both local paths and URLs)\nimages = [load_image(img_path) for img_path in image_paths]\n\n# Text descriptions corresponding to each image/document (used in image_text and text modalities)\ndocument_texts = [\n    \"AI enables robots to perceive, plan, and act autonomously.\",\n    \"AI is transforming autonomous vehicles by enabling safer, smarter, and more reliable decision-making on the road.\",\n    \"A biological foundation model designed to analyze and generate DNA, RNA, and protein sequences.\"\n]\n\n# Run inference (common for all modalities)\nwith torch.inference_mode():\n    queries_embeddings = model.encode_queries([query])\n    \n    if modality == \"image_text\":\n        documents_embeddings = model.encode_documents(images=images, texts=document_texts)\n    elif modality == \"image\":\n        documents_embeddings = model.encode_documents(images=images)\n    elif modality == \"text\":\n        documents_embeddings = model.encode_documents(texts=document_texts)\n\ndef _l2_normalize(x: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:\n    return x / (x.norm(p=2, dim=-1, keepdim=True) + eps)      \n\n# Computes cosine similarity (as they are already normalized) between the query embeddings and the document embeddings\ncos_sim = _l2_normalize(queries_embeddings) @ _l2_normalize(documents_embeddings).T\n\n# Flatten logits to 1D array (handle both [batch_size] and [batch_size, 1] shapes)\ncos_sim_flat = cos_sim.flatten()\n    \n# Get sorted indices (highest to lowest)\nsorted_indices = torch.argsort(cos_sim_flat, descending=True)\n\nprint(f\"\\nQuery: {query}\\n\")\nprint(f\"\\nRanking (highest to lowest relevance for the modality {modality}):\")\nfor rank, idx in enumerate(sorted_indices, 1):\n    doc_idx = idx.item()\n    sim_val = cos_sim_flat[doc_idx].item()\n    if modality == \"text\":\n        print(f\"  Rank {rank}: cos_sim={sim_val:.4f} | Text: {document_texts[doc_idx]}\")\n    else:  # image or image_text modality\n        print(f\"  Rank {rank}: cos_sim={sim_val:.4f} | Image: {image_paths[doc_idx]}\")\n```\n\n## vLLM Usage\n\nThe model can be served with [vLLM](https://github.com/vllm-project/vllm) for high-throughput embedding. The model repository includes a chat template that correctly applies the `query:` / `passage:` prefix based on the message role. Without that template, the prefix is not applied and results will be incorrect.\n\nSee the [vLLM documentation](https://docs.vllm.ai/en/stable/models/pooling_models/specific_models/#llama-nemotron-multimodal) for full details.\n\nUse vLLM `0.17.0` or newer. Older releases such as `0.16.0` do not register the `LlamaNemotronVLModel` architecture.\n\n### Online Serving\n\nStart the server:\n```bash\nvllm serve nvidia/llama-nemotron-embed-vl-1b-v2 \\\n  --trust-remote-code \\\n  --max-model-len 10240\n```\n\nNote: Use `--max-model-len 10240` to support all modalities including image+text. A smaller value like `2048` can be used if only processing image-only or text-only inputs.\n\nThe chat template uses the message `role` to apply the correct prefix: set `role` to `\"query\"` for queries (prepends `query:`) or `\"document\"` for passages (prepends `passage:`).\n\nSend embedding requests:\n```python\nimport requests\n\nurl = \"http://localhost:8000/v1/embeddings\"\n\n# Text query embedding\nresponse = requests.post(url, json={\n    \"model\": \"nvidia/llama-nemotron-embed-vl-1b-v2\",\n    \"messages\": [\n        {\n            \"role\": \"query\",\n            \"content\": [\n                {\"type\": \"text\", \"text\": \"How is AI improving the intelligence and capabilities of robots?\"}\n            ]\n        }\n    ],\n})\nquery_embedding = response.json()[\"data\"][0][\"embedding\"]\n\n# Text document embedding\nresponse = requests.post(url, json={\n    \"model\": \"nvidia/llama-nemotron-embed-vl-1b-v2\",\n    \"messages\": [\n        {\n            \"role\": \"document\",\n            \"content\": [\n                {\"type\": \"text\", \"text\": \"AI enables robots to perceive, plan, and act autonomously.\"}\n            ]\n        }\n    ],\n})\ndoc_embedding = response.json()[\"data\"][0][\"embedding\"]\n\n# Image document embedding\nresponse = requests.post(url, json={\n    \"model\": \"nvidia/llama-nemotron-embed-vl-1b-v2\",\n    \"messages\": [\n        {\n            \"role\": \"document\",\n            \"content\": [\n                {\"type\": \"image_url\", \"image_url\": {\"url\": \"https://example.com/page.png\"}}\n            ]\n        }\n    ],\n})\nimage_embedding = response.json()[\"data\"][0][\"embedding\"]\n\n# Image + text document embedding\nresponse = requests.post(url, json={\n    \"model\": \"nvidia/llama-nemotron-embed-vl-1b-v2\",\n    \"messages\": [\n        {\n            \"role\": \"document\",\n            \"content\": [\n                {\"type\": \"image_url\", \"image_url\": {\"url\": \"https://example.com/page.png\"}},\n                {\"type\": \"text\", \"text\": \"AI enables robots to perceive, plan, and act autonomously.\"}\n            ]\n        }\n    ],\n})\nimage_text_embedding = response.json()[\"data\"][0][\"embedding\"]\n```\n\n### Offline / In-Process\n\nFor offline usage, `LLM.embed(...)` expects already-rendered prompts. To use the same bundled chat template without relying on private vLLM APIs, render messages with `AutoProcessor.apply_chat_template(..., tokenize=False)`, then call `LLM.embed(...)` with `add_special_tokens=False` to avoid adding the BOS token twice.\n\n```python\nfrom transformers import AutoProcessor\nfrom vllm import LLM\nfrom vllm.multimodal.utils import fetch_image\n\ndef encode(llm, processor, input_type, text=None, image=None):\n    content = []\n    if image is not None:\n        content.append({\"type\": \"image\"})\n    if text is not None:\n        content.append({\"type\": \"text\", \"text\": text})\n\n    prompt = processor.apply_chat_template(\n        [{\"role\": input_type, \"content\": content}],\n        tokenize=False,\n        add_generation_prompt=False,\n    )\n\n    if image is not None:\n        prompt = {\n            \"prompt\": prompt,\n            \"multi_modal_data\": {\"image\": image},\n        }\n    return llm.embed(\n        prompt,\n        tokenization_kwargs={\"add_special_tokens\": False},\n    )[0]\n\ndef main():\n    model_name = \"nvidia/llama-nemotron-embed-vl-1b-v2\"\n\n    processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)\n    llm = LLM(\n        model=model_name,\n        max_model_len=10240,\n        trust_remote_code=True,\n    )\n\n    query = \"How is AI improving the intelligence and capabilities of robots?\"\n    documents = [\n        \"AI enables robots to perceive, plan, and act autonomously.\",\n        \"A biological foundation model designed to analyze DNA, RNA, and protein sequences.\",\n    ]\n    image_url = \"https://developer.download.nvidia.com/images/isaac/nvidia-isaac-lab-1920x1080.jpg\"\n\n    # Embed a text query\n    query_output = encode(llm, processor, input_type=\"query\", text=query)\n    print(f\"Query embedding dim: {len(query_output.outputs.embedding)}\")\n    # Query embedding dim: 2048\n\n    # Embed text documents\n    doc_outputs = [\n        encode(llm, processor, input_type=\"document\", text=doc)\n        for doc in documents\n    ]\n    for doc, output in zip(documents, doc_outputs):\n        print(f\"Embedding dim: {len(output.outputs.embedding)} | {doc}\")\n    # Embedding dim: 2048 | AI enables robots to perceive, plan, and act autonomously.\n    # Embedding dim: 2048 | A biological foundation model designed to analyze DNA, RNA, and protein sequences.\n\n    # Embed an image document\n    image = fetch_image(image_url)\n    image_output = encode(llm, processor, input_type=\"document\", image=image)\n    print(f\"Image embedding dim: {len(image_output.outputs.embedding)}\")\n    # Image embedding dim: 2048\n\n    # Embed an image + text document\n    multimodal_output = encode(\n        llm,\n        processor,\n        input_type=\"document\",\n        text=\"AI enables robots to perceive, plan, and act autonomously.\",\n        image=image,\n    )\n    print(f\"Multimodal embedding dim: {len(multimodal_output.outputs.embedding)}\")\n    # Multimodal embedding dim: 2048\n\nif __name__ == \"__main__\":\n    main()\n```\n\n\n## Software Integration:\n\n**Runtime Engine(s)**: TensorRT, Triton, NeMo Retriever Embedding NIM (upcoming)<br>\n**Supported Hardware Microarchitecture Compatibility**: NVIDIA Ampere, NVIDIA Blackwell, NVIDIA Hopper, NVIDIA Lovelace<br>\n**Preferred/Supported Operating System(s):** Linux<br>\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment. <br>\n\n## Model Version(s):\n\n`llama-nemotron-embed-vl-1b-v2`<br>\n\n## Training and Evaluation Datasets:\n\n### Training Dataset\n\nThe development of large-scale, public, open-QA datasets has enabled tremendous progress in powerful embedding models. However, the following issues limit the use of these models in commercial settings.\n\n- One popular dataset, named MS MARCO, restricts \u200ccommercial licensing.\n- Many multimodal datasets use synthetic data generation with proprietary models.\n\nNVIDIA's training dataset is based on public QA datasets, and only includes datasets that have a license for commercial applications.\n\n**Properties:** The text component is comprised of semi-supervised pre-training on 12M samples from public datasets and fine-tuning on 1.5M samples from public datasets. The VLM component uses only commercially-viable data from the [Eagle2](https://github.com/NVlabs/EAGLE) training data and other public datasets.<br>\n\n**Data Modality**: Image, Text\n\n**Image Training Data Size**\n- 1 Million to 1 Billion Images (about 2.57 Million)\n\n**Text Training Data Size**\n- 1 Billion to 10 Trillion Tokens (about 1.6 Billion)\n\n**Data Collection Method by dataset**: Hybrid: Automated, Human, Synthetic<br>\n**Labeling Method by dataset**: Hybrid: Automated, Human, Synthetic<br>\n\n### Evaluation Datasets\n\n#### Vision document retrieval benchmarks\nWe evaluated **llama-nemotron-embed-vl-1b-v2** on the popular [ViDoRe](https://huggingface.co/vidore) V1, V2 and on the new [ViDoRe V3](https://huggingface.co/blog/QuentinJG/introducing-vidore-v3).  \nMore details on [ViDoRe leaderboard](https://huggingface.co/spaces/vidore/vidore-leaderboard) can be found on  their leaderboard. \n\nWe also evaluated the **llama-nemotron-embed-vl-1b-v2** on two internal visual document retrieval datasets:\n  - **DigitalCorpora-10k**: A dataset with questions based on a corpus of 10k documents from [DigitalCorpora](https://digitalcorpora.org/corpora/file-corpora/cc-main-2021-31-pdf-untruncated/) that have a good mixture of text, tables, and charts.\n  - **Earnings V2**: an internal retrieval dataset of 287 questions based on 500 PDFs, mostly consisting of earnings reports from big tech companies.\n\nFor those interested in reproducing our results, one of our internal datasets (DigitalCorpora-10k) can be created by following instructions in [this notebook](https://github.com/NVIDIA/nv-ingest/blob/main/evaluation/digital_corpora_download.ipynb) ([download script](https://github.com/NVIDIA/nv-ingest/blob/main/evaluation/digital_corpora_download.ipynb)) from the NeMo Retriever Extraction GitHub repository.\n\n#### Text retrieval benchmarks\nWe evaluated  **llama-nemotron-embed-vl-1b-v2** on 92 text retrieval datasets, from the benchmarks BEIR, MIRACL (multi-language), MLQA (cross-language) and MLDR (long-context).\n\n**Data Collection Method by dataset**: Hybrid: Automated, Human, Synthetic<br>\n**Labeling Method by dataset**: Hybrid: Automated, Human, Synthetic<br>\n\n### Evaluation Results\n\n#### Visual Document Retrieval (page retrieval)\n\nIn this section, we compare the performance of **llama-nemotron-embed-vl-1b-v2** with its previous version **llama-3.2-nemoretriever-1b-vl-embed-v1** (closed weights), available as a NIM [here](https://build.nvidia.com/nvidia/llama-3_2-nemoretriever-1b-vlm-embed-v1). You can see [here](https://build.nvidia.com/nvidia/llama-3_2-nemoretriever-1b-vlm-embed-v1/modelcard) how the previous model compares to other small sized VLMs.\n\nIn the table below, it is possible to see that the new **llama-nemotron-embed-vl-1b-v2** provides much better retrieval accuracy (Recall@5) for the image and image+text modalities than its predecessor.  \n*Note:* Image+Text modality means that both the page image and its text (that might be extracted by some OCR library like [NV-Ingest](https://github.com/NVIDIA/nv-ingest)) are fed as input to the embedding model for more accurate representation and retrieval.\n\n<table>\n<caption><b><em>Visual Document Retrieval benchmarks (page retrieval) - Avg Recall@5 on DC10k, Earnings V2, ViDoRe V1, V2, V3</em></b></caption>    \n<thead>\n  <tr>\n    <th></th>\n    <th colspan=\"3\">Modality</th>\n  </tr></thead>\n<tbody>\n  <tr>\n    <td>Model</td>\n    <td>Text</td>\n    <td>Image</td>\n    <td>Image + Text</td>\n  </tr>\n  <tr>\n    <td>llama-nemotron-embed-1b-v2 (former name: llama-3_2-nv-embedqa-1b-v2)</td>\n    <td>69.35%</td>\n    <td>-</td>\n    <td>-</td>\n  </tr>\n  <tr>\n    <td>llama-3.2-nemoretriever-1b-vlm-embed-v1 (closed weights, NIM-only)</td>\n    <td>71.07%</td>\n    <td>70.46%</td>\n    <td>71.71%</td>\n  </tr>\n  <tr>\n    <td><b>llama-nemotron-embed-vl-1b-v2</b></td>\n    <td>71.04%</td>\n    <td><b>71.20%</b></td>\n    <td><b>73.24%</b></td>\n  </tr>\n</tbody>\n</table>\n\n\n#### Text Retrieval benchmarks (chunk retrieval)\n\nThe **llama-nemotron-embed-vl-1b-v2** also improves retrieval accuracy on text retrieval benchmarks compared to our competitive text-only embedding model **llama-nemotron-embed-1b-v2**. That means you can deploy our single VLM-based model **llama-nemotron-embed-vl-1b-v2** regardless of whether the modality to be retrieved is image or text.\n\n<table>\n<caption><b><em>Text Retrieval benchmarks (chunk retrieval) - Avg. Recall@5</em></b></caption>\n<thead>\n  <tr>\n    <th><b>Model<b/></th>\n    <th><b>BEIR retrieval + TechQA</b></th>\n    <th><b>MIRACL</b></th>\n    <th><b>MLQA</b></th>\n    <th><b>MLDR</b></th>\n    <th><em>Average</em></th>\n  </tr></thead>\n<tbody>\n  <tr>\n    <td>llama-nemotron-embed-1b-v2 (former name: llama-3_2-nv-embedqa-1b-v2)</td>\n    <td>68.60%</td>\n    <td>60.75%</td>\n    <td>79.86%</td>\n    <td>59.55%</td>\n    <td>67.19%</td>\n  </tr>\n  <tr>\n    <td><b>llama-nemotron-embed-vl-1b-v2</b></td>\n    <td><b>69.19%</b></td>\n    <td>60.48%</td>\n    <td><b>79.90%</b></td>\n    <td><b>60.09%</b></td>\n    <td><b>67.42%</b></td>\n  </tr>\n</tbody>\n</table>\n\n## Inference\n**Acceleration Engine**: TensorRT   <br>\n**Test Hardware**: H100, A100, L40S, A10G, B200, RTX PRO 6000\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br> \n\nFor more detailed information on ethical considerations for this model, see the Model Card++ tab for the Explainability, Bias, Safety & Security, and Privacy subcards.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).  <br>\n\n# Bias\n\n| Field | Response |\n| ----- | ----- |\n| Participation considerations from adversely impacted groups [protected classes](https://www.senate.ca.gov/content/protected-classes) in model design and testing | None |\n| Measures taken to mitigate against unwanted bias | None |\n\n\n# Explainability\n\n| Field | Response |\n| ----- | ----- |\n| Intended Application & Domain: | Document and query embedding for question and answer retrieval. |\n| Model Type: | Transformer encoder. |\n| Intended User: | Generative AI creators working with conversational AI models. Users who want to build a question and answer application over a large corpus, leveraging the latest dense retrieval technologies. The corpus can be images of PDFs, such as text, tables, charts or infographics, or extracted plain text. |\n| Output: | Array of float numbers (Dense Vector Representation for the input text). |\n| Describe how the model works: | Model transforms the input into a dense vector representation. |\n| Technical Limitations: | The model's max sequence length is 10240. Longer text inputs should be truncated. |\n| Name the adversely impacted groups this has been tested to deliver comparable outcomes regardless of: | N/A |\n| Verified to have met prescribed NVIDIA quality standards: | Yes |\n| Performance Metrics: | Accuracy, Throughput, and Latency. |\n| Potential Known Risks: | This model does not guarantee to always retrieve the correct passage(s) for a given query. |\n| Licensing & Terms of Use: | The use of this model is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/) and the use of the post-processing scripts are licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt). Additional Information: [Llama 3.2 Community Model License Agreement](https://www.llama.com/llama3_2/license/). Built with Llama. |\n\n# Privacy\n\n| Field | Response |\n| ----- | ----- |\n| Generatable or reverse engineerable personal data? | None |\n| Personal data used to create this model? | None Known |\n| How often is dataset reviewed? | Dataset is initially reviewed upon addition, and subsequent reviews are conducted as needed or upon request for changes. |\n| Is there provenance for all datasets used in training? | Yes |\n| Does data labeling (annotation, metadata) comply with privacy laws? | Yes |\n| Is data compliant with data subject requests for data correction or removal, if such a request was made? | No, not possible with externally-sourced data. |\n| Applicable Privacy Policy | https://www.nvidia.com/en-us/about-nvidia/privacy-policy/ |\n\n# Safety\n\n| Field | Response |\n| ----- | ----- |\n| Model Application(s): | Document Embedding for Retrieval. User queries can be text and documents can be text, document page images, charts, tables, and infographics. |\n| Describe the life critical impact (if present) | Not applicable |\n| Use Case Restrictions: | The use of this model is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/) and the use of the post-processing scripts are licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt). Additional Information: [Llama 3.2 Community Model License Agreement](https://www.llama.com/llama3_2/license/). Built with Llama. |\n| Model and dataset restrictions: | The Principle of least privilege (PoLP) is applied limiting access for dataset generation and model development. Restrictions enforce dataset access during training, and dataset license constraints adhered to. |\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "tags": [
+      "sentence-transformers",
+      "retrieval",
+      "visual document retrieval",
+      "vlm embedding",
+      "page image embedding",
+      "text embedding",
+      "semantic search",
+      "question-answering retrieval",
+      "rag",
+      "transformers"
+    ],
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "sentence-transformers",
+    "pipeline_tag": "sentence-similarity",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_llama_nemotron_vl.LlamaNemotronVLModel",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

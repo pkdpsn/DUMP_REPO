@@ -1,0 +1,179 @@
+{
+  "modelId": "microsoft/Fara-7B",
+  "author": "microsoft",
+  "sha": "4fca9cdeeff278777751ec558257753b89cf078b",
+  "lastModified": "2026-08-12 14:22:05+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_5_vl",
+    "image-text-to-text",
+    "multimodal",
+    "conversational",
+    "en",
+    "arxiv:2511.19663",
+    "license:mit",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 620,
+  "downloads": 9808,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "multimodal"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2_5_VLForConditionalGeneration"
+    ],
+    "model_type": "qwen2_5_vl",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 16361,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1017,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2490,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4968243272,
+      "lfs": {
+        "size": 4968243272,
+        "sha256": "d293a0b9ab4add8829d3ac57ee88bc16121ca713bfcc0e76bc9e8aeae7057e89",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4991495784,
+      "lfs": {
+        "size": 4991495784,
+        "sha256": "8424c791566a077b69e589c2220972b1dc3584dea3d1409b9316d2d61f0d82e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4932751008,
+      "lfs": {
+        "size": 4932751008,
+        "sha256": "32d6e0f417c8c6aca30ac130d5728f28c3c2cbbf07933bed54a3712a59637442",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1691924352,
+      "lfs": {
+        "size": 1691924352,
+        "sha256": "7c0fe359fdfbf4d5d6a32f4024b91f8db77ebd94cabe16d7fe91bf6f357ba210",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 57618,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 575,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11421896,
+      "lfs": {
+        "size": 11421896,
+        "sha256": "9c5ae00e602b8860cbd784ba82a8aa14e8feecec692e7076590d014d7b7fdafa",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 4730,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 1730,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

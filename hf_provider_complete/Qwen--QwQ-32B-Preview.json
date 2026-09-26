@@ -1,0 +1,292 @@
+{
+  "modelId": "Qwen/QwQ-32B-Preview",
+  "author": "Qwen",
+  "sha": "91906fe41a48b6a89ce2970abfd1269eefee170e",
+  "lastModified": "2025-01-12 01:58:42+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "chat",
+    "conversational",
+    "en",
+    "arxiv:2407.10671",
+    "base_model:Qwen/Qwen2.5-32B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-32B-Instruct",
+    "license:apache-2.0",
+    "eval-results",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 1743,
+  "downloads": 12460,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "Qwen/Qwen2.5-32B-Instruct",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": "https://huggingface.co/Qwen/QwQ-32B-Preview/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "chat"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11343,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4654,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 662,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 241,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00017.safetensors",
+      "size": 3916539832,
+      "lfs": {
+        "size": 3916539832,
+        "sha256": "ffebcb560a500f1984a7c694891a1354075ff7b7bb37e54b37c8b7d4e6e79d93",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00017.safetensors",
+      "size": 3900847496,
+      "lfs": {
+        "size": 3900847496,
+        "sha256": "5fa514bd1e90deb61c31efd64a9cf4a0375976c4c7cd996856c2d03b39664cd9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00017.safetensors",
+      "size": 3900847480,
+      "lfs": {
+        "size": 3900847480,
+        "sha256": "9b651617538311cd1ba0919e3ab44b9e9373a523c89a30037942453f086b3952",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "c1ad1cce832f86a2f63e59a080dc23548ddc31c68fc366d2b65048275fd92d74",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "e0607b8dce4427d0310f06f9d853c50f0e00f2a3d4c020671187c499f7b795da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "8d660bc6659c2f9672c52bbc28e88178c3eb55955fae8e5bc26563dca4fa8ffe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "2dd54b23fe25c130ab6e407ade936382269fc177486475ea0de1132115542135",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "81a100df124c214b152de6471a361015a8e03c2597f21e1471935d7365ed71a1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "a44110afb3ccce512e7c57c7c470240d3560c5dbf6939f2bcc6a8b0f96342fb7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "b50e2e937ae348f0eb3169d03020e1c9e6af9e163c7299d600104bf4e2a49a3f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "8d915709803ae8717087e8bf7596ed10ef76e6943bc117148d46c2eb76d3dde4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "6487a04f25e7d6336c5de8f800337b31f060c11db9b042d4dd3becb86b0bfefa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "123f52ba88a34a4832e59b5f428769eca4cb6495c6247e9e1d3cd86306a7db6a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "a7e78d641e1164bd128d8f2b8d11f38bc3a985a774717db75b900f9a2596252b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "170c30e3b020706e2ebd1fc9891256c9ca5859776542818a3e17efb5e979d4b8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00017.safetensors",
+      "size": 3900847544,
+      "lfs": {
+        "size": 3900847544,
+        "sha256": "608fb9e35c12d2ce31bacc69a0c8175cb0c9582126cd6ab412f72ebfcf49b5f8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00017.safetensors",
+      "size": 3098588976,
+      "lfs": {
+        "size": 3098588976,
+        "sha256": "3cc27c57a539b24b7c57b20553ad95c9a4582b086f9f3e7105445a126388cf13",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 63248,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7031645,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 7383,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlicense_link: https://huggingface.co/Qwen/QwQ-32B-Preview/blob/main/LICENSE\nlanguage:\n- en\nbase_model: Qwen/Qwen2.5-32B-Instruct\ntags:\n- chat\nlibrary_name: transformers\n---\n\n# QwQ-32B-Preview\n<a href=\"https://chat.qwenlm.ai/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/%F0%9F%92%9C%EF%B8%8F%20Qwen%20Chat%20-536af5\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n\n## Introduction\n\n**QwQ-32B-Preview** is an experimental research model developed by the Qwen Team, focused on advancing AI reasoning capabilities. As a preview release, it demonstrates promising analytical abilities while having several important limitations:\n\n1. **Language Mixing and Code-Switching**: The model may mix languages or switch between them unexpectedly, affecting response clarity.\n2. **Recursive Reasoning Loops**: The model may enter circular reasoning patterns, leading to lengthy responses without a conclusive answer.\n3. **Safety and Ethical Considerations**: The model requires enhanced safety measures to ensure reliable and secure performance, and users should exercise caution when deploying it.\n4. **Performance and Benchmark Limitations**: The model excels in math and coding but has room for improvement in other areas, such as common sense reasoning and nuanced language understanding.\n\n**Specification**:\n- Type: Causal Language Models\n- Training Stage: Pretraining & Post-training\n- Architecture: transformers with RoPE, SwiGLU, RMSNorm, and Attention QKV bias\n- Number of Parameters: 32.5B\n- Number of Paramaters (Non-Embedding): 31.0B\n- Number of Layers: 64\n- Number of Attention Heads (GQA): 40 for Q and 8 for KV\n- Context Length: Full 32,768 tokens\n\nFor more details, please refer to our [blog](https://qwenlm.github.io/blog/qwq-32b-preview/). You can also check Qwen2.5 [GitHub](https://github.com/QwenLM/Qwen2.5), and [Documentation](https://qwen.readthedocs.io/en/latest/).\n\n## Requirements\n\nThe code of Qwen2.5 has been in the latest Hugging face `transformers` and we advise you to use the latest version of `transformers`.\n\nWith `transformers<4.37.0`, you will encounter the following error:\n```\nKeyError: 'qwen2'\n```\n\n## Quickstart\n\nHere provides a code snippet with `apply_chat_template` to show you how to load the tokenizer and model and how to generate contents.\n\n```python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_name = \"Qwen/QwQ-32B-Preview\"\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    torch_dtype=\"auto\",\n    device_map=\"auto\"\n)\ntokenizer = AutoTokenizer.from_pretrained(model_name)\n\nprompt = \"How many r in strawberry.\"\nmessages = [\n    {\"role\": \"system\", \"content\": \"You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step.\"},\n    {\"role\": \"user\", \"content\": prompt}\n]\ntext = tokenizer.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True\n)\nmodel_inputs = tokenizer([text], return_tensors=\"pt\").to(model.device)\n\ngenerated_ids = model.generate(\n    **model_inputs,\n    max_new_tokens=512\n)\ngenerated_ids = [\n    output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)\n]\n\nresponse = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]\n```\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@misc{qwq-32b-preview,\n    title = {QwQ: Reflect Deeply on the Boundaries of the Unknown},\n    url = {https://qwenlm.github.io/blog/qwq-32b-preview/},\n    author = {Qwen Team},\n    month = {November},\n    year = {2024}\n}\n\n@article{qwen2,\n      title={Qwen2 Technical Report}, \n      author={An Yang and Baosong Yang and Binyuan Hui and Bo Zheng and Bowen Yu and Chang Zhou and Chengpeng Li and Chengyuan Li and Dayiheng Liu and Fei Huang and Guanting Dong and Haoran Wei and Huan Lin and Jialong Tang and Jialin Wang and Jian Yang and Jianhong Tu and Jianwei Zhang and Jianxin Ma and Jin Xu and Jingren Zhou and Jinze Bai and Jinzheng He and Junyang Lin and Kai Dang and Keming Lu and Keqin Chen and Kexin Yang and Mei Li and Mingfeng Xue and Na Ni and Pei Zhang and Peng Wang and Ru Peng and Rui Men and Ruize Gao and Runji Lin and Shijie Wang and Shuai Bai and Sinan Tan and Tianhang Zhu and Tianhao Li and Tianyu Liu and Wenbin Ge and Xiaodong Deng and Xiaohuan Zhou and Xingzhang Ren and Xinyu Zhang and Xipin Wei and Xuancheng Ren and Yang Fan and Yang Yao and Yichang Zhang and Yu Wan and Yunfei Chu and Yuqiong Liu and Zeyu Cui and Zhenru Zhang and Zhihao Fan},\n      journal={arXiv preprint arXiv:2407.10671},\n      year={2024}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "license_link": "https://huggingface.co/Qwen/QwQ-32B-Preview/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "base_model": "Qwen/Qwen2.5-32B-Instruct",
+    "tags": [
+      "chat"
+    ],
+    "library_name": "transformers",
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "modelId": "nvidia/Llama3-ChatQA-2-8B",
+  "author": "nvidia",
+  "sha": "828c866f4d90f88c002ed456e28ef89358bcb5b8",
+  "lastModified": "2024-09-10 05:04:18+00:00",
+  "tags": [
+    "pytorch",
+    "llama",
+    "nvidia",
+    "chatqa-2",
+    "chatqa",
+    "llama-3",
+    "text-generation",
+    "conversational",
+    "en",
+    "arxiv:2401.10225",
+    "arxiv:2407.14482",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": null,
+  "likes": 18,
+  "downloads": 953,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "chatqa-2",
+      "chatqa",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "LLaMAForCausalLM"
+    ],
+    "model_type": "llama",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{% if add_generation_prompt %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}{% endif %}",
+      "eos_token": "<|end_of_text|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7042,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 727,
+      "lfs": null
+    },
+    {
+      "rfilename": "overview.png",
+      "size": 98201,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model-00001-of-00002.bin",
+      "size": 9976577242,
+      "lfs": {
+        "size": 9976577242,
+        "sha256": "7918fd950ca9f49b581ee0b1871e5e4fedb59bed8fc086fdac4e36bed0ef40f5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00002-of-00002.bin",
+      "size": 6084070061,
+      "lfs": {
+        "size": 6084070061,
+        "sha256": "8d7abcc6404cc9f4128f3a93755bc1185be049aaf0070135c93175b82fca3f4d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin.index.json",
+      "size": 26788,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 9084490,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 50982,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\npipeline_tag: text-generation\ntags:\n- nvidia\n- chatqa-2\n- chatqa\n- llama-3\n- pytorch\n---\n\n\n## Model Details\nWe introduce Llama3-ChatQA-2, a suite of 128K long-context models, which bridges the gap between open-source LLMs and leading proprietary models (e.g., GPT-4-Turbo) in long-context understanding and retrieval-augmented generation (RAG) capabilities. Llama3-ChatQA-2 is developed using an improved training recipe from [ChatQA-1.5 paper](https://arxiv.org/pdf/2401.10225), and it is built on top of [Llama-3 base model](https://huggingface.co/meta-llama/Meta-Llama-3-70B). Specifically, we continued training of Llama-3 base models to extend the context window from 8K to 128K tokens, along with a three-stage instruction tuning process to enhance the model\u2019s instruction-following, RAG performance, and long-context understanding capabilities. Llama3-ChatQA-2 has two variants: Llama3-ChatQA-2-8B and Llama3-ChatQA-2-70B. Both models were originally trained using [Megatron-LM](https://github.com/NVIDIA/Megatron-LM), we converted the checkpoints to Hugging Face format. **For more information about ChatQA 2, check the [website](https://chatqa2-project.github.io/)!**\n\n## Other Resources\n[Llama3-ChatQA-2-70B](https://huggingface.co/nvidia/Llama3-ChatQA-2-70B) &ensp; [Evaluation Data](https://huggingface.co/nvidia/Llama3-ChatQA-2-70B/tree/main/data) &ensp; [Training Data](https://huggingface.co/datasets/nvidia/ChatQA2-Long-SFT-data) &ensp; [Website](https://chatqa2-project.github.io/) &ensp; [Paper](https://arxiv.org/abs/2407.14482)\n\n## Overview of Benchmark Results\n<!-- Results in [ChatRAG Bench](https://huggingface.co/datasets/nvidia/ChatRAG-Bench) are as follows: -->\nWe evaluate ChatQA 2 on short-context RAG benchmark (ChatRAG) (within 4K tokens), long context tasks from SCROLLS and LongBench (within 32K tokens), and ultra-long context tasks from In- finiteBench (beyond 100K tokens). Results are shown below.\n\n\n![Example Image](overview.png)\n<!-- | | ChatQA-2-70B | GPT-4-Turbo-2024-04-09 | Qwen2-72B-Instruct | Llama3.1-70B-Instruct |\n| -- |:--:|:--:|:--:|:--:|\n| Ultra-long (4k) | 41.04 | 33.16 | 39.77 | 39.81 |\n| Long (32k) | 48.15 | 51.93 | 49.94 | 49.92 |\n| Short (4k) | 56.30 | 54.72 | 54.06 | 52.12 | -->\n\nNote that ChatQA-2 is built based on Llama-3 base model.\n\n\n## Prompt Format\n**We highly recommend that you use the prompt format we provide, as follows:**\n### when context is available\n<pre>\nSystem: {System}\n\n{Context}\n\nUser: {Question}\n\nAssistant: {Response}\n\nUser: {Question}\n\nAssistant:\n</pre>\n\n### when context is not available\n<pre>\nSystem: {System}\n\nUser: {Question}\n\nAssistant: {Response}\n\nUser: {Question}\n\nAssistant:\n</pre>\n**The content of the system's turn (i.e., {System}) for both scenarios is as follows:**\n<pre>\nThis is a chat between a user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions based on the context. The assistant should also indicate when the answer cannot be found in the context.\n</pre>\n**Note that our ChatQA-2 models are optimized for the capability with context, e.g., over documents or retrieved context.**\n\n## How to use\n\n### take the whole document as context \nThis can be applied to the scenario where the whole document can be fitted into the model, so that there is no need to run retrieval over the document.\n```python\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\nimport torch\n\nmodel_id = \"nvidia/Llama3-ChatQA-2-8B\"\n\ntokenizer = AutoTokenizer.from_pretrained(model_id)\nmodel = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.float16, device_map=\"auto\")\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"what is the percentage change of the net income from Q4 FY23 to Q4 FY24?\"}\n]\n\ndocument = \"\"\"NVIDIA (NASDAQ: NVDA) today reported revenue for the fourth quarter ended January 28, 2024, of $22.1 billion, up 22% from the previous quarter and up 265% from a year ago.\\nFor the quarter, GAAP earnings per diluted share was $4.93, up 33% from the previous quarter and up 765% from a year ago. Non-GAAP earnings per diluted share was $5.16, up 28% from the previous quarter and up 486% from a year ago.\\nQ4 Fiscal 2024 Summary\\nGAAP\\n| $ in millions, except earnings per share | Q4 FY24 | Q3 FY24 | Q4 FY23 | Q/Q | Y/Y |\\n| Revenue | $22,103 | $18,120 | $6,051 | Up 22% | Up 265% |\\n| Gross margin | 76.0% | 74.0% | 63.3% | Up 2.0 pts | Up 12.7 pts |\\n| Operating expenses | $3,176 | $2,983 | $2,576 | Up 6% | Up 23% |\\n| Operating income | $13,615 | $10,417 | $1,257 | Up 31% | Up 983% |\\n| Net income | $12,285 | $9,243 | $1,414 | Up 33% | Up 769% |\\n| Diluted earnings per share | $4.93 | $3.71 | $0.57 | Up 33% | Up 765% |\"\"\"\n\ndef get_formatted_input(messages, context):\n    system = \"System: This is a chat between a user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions based on the context. The assistant should also indicate when the answer cannot be found in the context.\"\n    instruction = \"Please give a full and complete answer for the question.\"\n\n    for item in messages:\n        if item['role'] == \"user\":\n            ## only apply this instruction for the first user turn\n            item['content'] = instruction + \" \" + item['content']\n            break\n\n    conversation = '\\n\\n'.join([\"User: \" + item[\"content\"] if item[\"role\"] == \"user\" else \"Assistant: \" + item[\"content\"] for item in messages]) + \"\\n\\nAssistant:\"\n    formatted_input = system + \"\\n\\n\" + context + \"\\n\\n\" + conversation\n    \n    return formatted_input\n\nformatted_input = get_formatted_input(messages, document)\ntokenized_prompt = tokenizer(tokenizer.bos_token + formatted_input, return_tensors=\"pt\").to(model.device)\n\nterminators = [\n    tokenizer.eos_token_id,\n    tokenizer.convert_tokens_to_ids(\"<|eot_id|>\")\n]\n\noutputs = model.generate(input_ids=tokenized_prompt.input_ids, attention_mask=tokenized_prompt.attention_mask, max_new_tokens=128, eos_token_id=terminators)\n\nresponse = outputs[0][tokenized_prompt.input_ids.shape[-1]:]\nprint(tokenizer.decode(response, skip_special_tokens=True))\n```\n\n## Command to run generation\n```\npython evaluate_cqa_vllm_chatqa2.py --model-folder ${model_path} --eval-dataset ${dataset_name} --start-idx 0 --end-idx ${num_samples} --max-tokens ${max_tokens} --sample-input-file ${dataset_path}\n```\n\nsee all_command.sh for all detailed configuration.\n\n## Correspondence to\nPeng Xu (pengx@nvidia.com), Wei Ping (wping@nvidia.com)\n\n## Citation\n<pre>\n@article{xu2024chatqa,\n  title={ChatQA 2: Bridging the Gap to Proprietary LLMs in Long Context and RAG Capabilities},\n  author={Xu, Peng and Ping, Wei and Wu, Xianchao and Liu, Zihan and Shoeybi, Mohammad and Catanzaro, Bryan},\n  journal={arXiv preprint arXiv:2407.14482},\n  year={2024}\n}\n</pre>\n\n\n## License\nThe Model is released under Non-Commercial License and the use of this model is also governed by the [META LLAMA 3 COMMUNITY LICENSE AGREEMENT](https://llama.meta.com/llama3/license/)",
+  "cardDataParsed": {
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "chatqa-2",
+      "chatqa",
+      "llama-3",
+      "pytorch"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": null
+}

@@ -1,0 +1,119 @@
+{
+  "modelId": "nvidia/Nemotron-4-Mini-Hindi-4B-Instruct",
+  "author": "nvidia",
+  "sha": "2bb79bb5dacffd8b328eb76a1dbf6a3c98e115b1",
+  "lastModified": "2025-08-20 17:08:44+00:00",
+  "tags": [
+    "nemo",
+    "safetensors",
+    "nemotron",
+    "en",
+    "hi",
+    "arxiv:2410.14815",
+    "base_model:nvidia/Nemotron-4-Mini-Hindi-4B-Base",
+    "base_model:finetune:nvidia/Nemotron-4-Mini-Hindi-4B-Base",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "nemo",
+  "likes": 21,
+  "downloads": 981,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "nvidia/Nemotron-4-Mini-Hindi-4B-Base",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "hi"
+    ],
+    "library_name": "nemo",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "NemotronForCausalLM"
+    ],
+    "model_type": "nemotron",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{%- if messages[0]['role'] == 'system' -%}{%- set system_message = messages[0]['content'] | trim -%}{%- set messages = messages[1:] -%}{%- else -%}{%- set system_message = '' -%}{%- endif -%}{%- if tools -%}{{- '<extra_id_0>System' + '\n' + system_message -}}{{- '\n' if system_message else '' -}}{{- '<AVAILABLE_TOOLS>[' -}}{% for t in tools %}{{- (t.function if t.function is defined else t) | tojson() -}}{{- ', ' if not loop.last else '' -}}{%- endfor -%}{{- ']</AVAILABLE_TOOLS>' -}}{{- '\n' -}}{%- else -%}{{- '<extra_id_0>System' + '\n' + system_message + '\n' -}}{%- endif -%}{%- for message in messages -%}{%- if (message['role'] in ['user', 'tool']) != (loop.index0 % 2 == 0) -%}{{- raise_exception('Conversation roles must alternate between user/tool and assistant') -}}{%- elif message['role'] == 'user' -%}{{- '<extra_id_1>User' + '\n' + message['content'] | trim + '\n' -}}{%- elif message['role'] == 'tool' -%}{%- set tool_response = '<TOOL_RESPONSE>[' + message['content'] | trim + ']</TOOL_RESPONSE>' -%}{{- '<extra_id_1>User' + '\n' + tool_response + '\n' -}}{%- elif message['role'] == 'assistant' and message.get('tool_calls') is not none -%}{%- set tool_calls = message['tool_calls'] -%}{{- '<extra_id_1>Assistant' + '\n' + '<TOOLCALL>[' -}}{%- for tool_call in tool_calls -%}{{ {\"name\": tool_call.function.name, \"arguments\": tool_call.function.arguments} | tojson }}{%- if not loop.last -%}{{ ', ' }}{%- else -%}{{ ']</TOOLCALL>' + '\n' }}{%- endif -%}{%- endfor -%}{%- elif message['role'] == 'assistant' -%}{{- '<extra_id_1>Assistant' + '\n' + message['content'] | trim + '\n' -}}{%- endif -%}{%- endfor -%}{%- if add_generation_prompt -%}{{ '<extra_id_1>Assistant' + '\n' }}{%- endif -%}",
+      "eos_token": "<extra_id_1>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1645,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6922,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 659,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 8381055584,
+      "lfs": {
+        "size": 8381055584,
+        "sha256": "815d91511ec209e5ef46b69dd74706b3efe133dc6f9bee74e9d2e9cc776a25c0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "nemotron-4-mini-hindi-4b-instruct.nemo",
+      "size": 8387092480,
+      "lfs": {
+        "size": 8387092480,
+        "sha256": "721df1f7db1c9652f672d09a9eb90bb4bd7778eaec42b1457dee06edfcba9273",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 56,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 18143149,
+      "lfs": {
+        "size": 18143149,
+        "sha256": "83d0648daa0467fb02ddef7ff25460321dab2fbb20c280ae0bc1ea8052f7df90",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4545602,
+      "lfs": {
+        "size": 4545602,
+        "sha256": "6dfd8b970f437002fc445214304969fe59e64d4f48500bd0b77ba55340f2d811",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 181328,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}

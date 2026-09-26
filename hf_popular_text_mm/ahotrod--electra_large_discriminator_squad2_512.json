@@ -1,0 +1,108 @@
+{
+  "modelId": "ahotrod/electra_large_discriminator_squad2_512",
+  "author": "ahotrod",
+  "sha": "fe230d41e74248eceb366a91e4f8572f358f201c",
+  "lastModified": "2020-12-11 21:31:42+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "electra",
+    "question-answering",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "question-answering",
+  "library_name": "transformers",
+  "likes": 7,
+  "downloads": 761748,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {
+    "architectures": [
+      "ElectraForQuestionAnswering"
+    ],
+    "model_type": "electra",
+    "tokenizer_config": {}
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 1472,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 475,
+      "lfs": null
+    },
+    {
+      "rfilename": "electra_large_squad2_512.sh",
+      "size": 947,
+      "lfs": null
+    },
+    {
+      "rfilename": "nvidia-smi.png",
+      "size": 58774,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1336478856,
+      "lfs": {
+        "size": 1336478856,
+        "sha256": "a93ff4d9e9f46938768a9f7ace495516911f27aa8681cbd30e9bc073611b3e21",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 112,
+      "lfs": null
+    },
+    {
+      "rfilename": "tensorboard_learning_rate.png",
+      "size": 45883,
+      "lfs": null
+    },
+    {
+      "rfilename": "tensorboard_loss.png",
+      "size": 42882,
+      "lfs": null
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 1336890160,
+      "lfs": {
+        "size": 1336890160,
+        "sha256": "8c1df9f473b3b8fefceebf38876561ecc602dc6ae31b8d6da85a278cbe3846b7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 48,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.txt",
+      "size": 231508,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n## ELECTRA_large_discriminator language model fine-tuned on SQuAD2.0\n\n### with the following results:\n\n```\n  \"exact\": 87.09677419354838,\n  \"f1\": 89.98343832723452,\n  \"total\": 11873,\n  \"HasAns_exact\": 84.66599190283401,\n  \"HasAns_f1\": 90.44759839056285,\n  \"HasAns_total\": 5928,\n  \"NoAns_exact\": 89.52060555088309,\n  \"NoAns_f1\": 89.52060555088309,\n  \"NoAns_total\": 5945,\n  \"best_exact\": 87.09677419354838,\n  \"best_exact_thresh\": 0.0,\n  \"best_f1\": 89.98343832723432,\n  \"best_f1_thresh\": 0.0\n```\n### from script:\n```\npython ${EXAMPLES}/run_squad.py \\\n  --model_type electra \\\n  --model_name_or_path google/electra-large-discriminator \\\n  --do_train \\\n  --do_eval \\\n  --train_file ${SQUAD}/train-v2.0.json \\\n  --predict_file ${SQUAD}/dev-v2.0.json \\\n  --version_2_with_negative \\\n  --do_lower_case \\\n  --num_train_epochs 3 \\\n  --warmup_steps 306 \\\n  --weight_decay 0.01 \\\n  --learning_rate 3e-5 \\\n  --max_grad_norm 0.5 \\\n  --adam_epsilon 1e-6 \\\n  --max_seq_length 512 \\\n  --doc_stride 128 \\\n  --per_gpu_train_batch_size 8 \\\n  --gradient_accumulation_steps 16 \\\n  --per_gpu_eval_batch_size 128 \\\n  --fp16 \\\n  --fp16_opt_level O1 \\\n  --threads 12 \\\n  --logging_steps 50 \\\n  --save_steps 1000 \\\n  --overwrite_output_dir \\\n  --output_dir ${MODEL_PATH}\n```\n### using the following system & software:\n```\nTransformers: 2.11.0\nPyTorch: 1.5.0\nTensorFlow: 2.2.0\nPython: 3.8.1\nOS/Platform: Linux-5.3.0-59-generic-x86_64-with-glibc2.10\nCPU/GPU: Intel i9-9900K / NVIDIA Titan RTX 24GB\n```\n",
+  "transformersInfo": {
+    "auto_model": "AutoModelForQuestionAnswering",
+    "custom_class": null,
+    "pipeline_tag": "question-answering",
+    "processor": "AutoTokenizer"
+  }
+}

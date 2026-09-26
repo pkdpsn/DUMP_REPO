@@ -1,0 +1,122 @@
+{
+  "modelId": "nvidia/fourcastnet3",
+  "author": "nvidia",
+  "sha": "df5d8d005f2334c16502581abf0a510c634c295a",
+  "lastModified": "2026-03-05 17:51:32+00:00",
+  "tags": [
+    "arxiv:2507.12144",
+    "arxiv:2402.16845",
+    "arxiv:2408.03100",
+    "arxiv:2408.01581",
+    "arxiv:2306.03838",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": null,
+  "likes": 41,
+  "downloads": 972,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 83,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 8003,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 23468,
+      "lfs": null
+    },
+    {
+      "rfilename": "global_means.npy",
+      "size": 420,
+      "lfs": null
+    },
+    {
+      "rfilename": "global_stds.npy",
+      "size": 420,
+      "lfs": null
+    },
+    {
+      "rfilename": "land_mask.nc",
+      "size": 766274,
+      "lfs": {
+        "size": 766274,
+        "sha256": "ac5d93fbc2a7afc100cd8599fb6b324cfc2f2d20706f6e8df0b92f5bf61c6e61",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "maxs.npy",
+      "size": 420,
+      "lfs": null
+    },
+    {
+      "rfilename": "metadata.json",
+      "size": 82,
+      "lfs": null
+    },
+    {
+      "rfilename": "mins.npy",
+      "size": 420,
+      "lfs": null
+    },
+    {
+      "rfilename": "orography.nc",
+      "size": 2618598,
+      "lfs": {
+        "size": 2618598,
+        "sha256": "ebc93b1aeb0060fd5289b9b995f584c9b41abd40642afe34575dc619a310d66d",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "training_checkpoints/best_ckpt_mp0.tar",
+      "size": 2843497639,
+      "lfs": {
+        "size": 2843497639,
+        "sha256": "5e0d7cc69f00e04dfc3cf0a97736abef578b7b2437702a5888edac869f724b2e",
+        "pointer_size": 135
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\n---\n# Earth-2 Checkpoints: FourCastNet 3\n\n## Description:\n\nFourCastNet 3 advances global weather modeling by implementing a scalable, geometric\nmachine learning (ML) approach to probabilistic ensemble forecasting. The approach is\ndesigned to respect spherical geometry and to accurately model the spatially\ncorrelated probabilistic nature of the problem, resulting in stable spectra and\nrealistic dynamics across multiple scales. FourCastNet 3 delivers forecasting accuracy\nthat surpasses leading conventional ensemble models and rivals the best diffusion-based\nmethods, while producing forecasts 8 to 60 times faster than these approaches. In\ncontrast to other ML approaches, FourCastNet 3 demonstrates excellent probabilistic\ncalibration and retains realistic spectra, even at extended lead times of up to 60 days.\nAll of these advances are realized using a purely convolutional neural network\narchitecture specifically tailored for spherical geometry. Scalable and e\ufb03cient\nlarge-scale training on 1024 GPUs and more is enabled by a novel training paradigm for\ncombined model- and data-parallelism, inspired by domain decomposition methods in\nclassical numerical models. Additionally, FourCastNet 3 enables rapid inference on a\nsingle GPU, producing a 60-day global forecast at 0.25\u00b0, 6-hourly resolution in under\n4 minutes. Its computational efficiency, medium-range probabilistic skill, spectral\nfidelity, and rollout stability at subseasonal timescales make it a strong candidate\nfor improving meteorological forecasting and early warning systems through large\nensemble predictions.\n\n![FCN3 15 member ensemble](https://raw.githubusercontent.com/NVIDIA/makani/main/images/fcn3_ens15.gif)\n\nThis model is ready for commercial/non-commercial use.\n\n### License/Terms of Use:\n\n[Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0)\n\n### Deployment Geography:\n\nGlobal\n\n### Use Case:\n\nIndustry, academic, and government research teams interested in medium-range and\nsubseasonal-to-seasonal weather forecasting, and climate modeling.\n\n### Release Date:\n\nNGC 07/18/2025\n\n## Reference:\n\n**Papers**:\n\n- [FourCastNet 3: A geometric approach to probabilistic machine-learning weather forecasting at scale](https://arxiv.org/abs/2507.12144v2)\n- [Neural Operators with Localized Integral and Differential Kernels](https://arxiv.org/abs/2402.16845)\n- [Huge Ensembles Part I: Design of Ensemble Weather Forecasts using Spherical Fourier Neural Operators](https://arxiv.org/abs/2408.03100)\n- [Huge Ensembles Part II: Properties of a Huge Ensemble of Hindcasts Generated with Spherical Fourier Neural Operators](https://arxiv.org/abs/2408.01581)\n- [Spherical Fourier Neural Operators: Learning Stable Dynamics on the Sphere](https://arxiv.org/abs/2306.03838)\n\n**Code**:\n\n- [Makani](https://github.com/NVIDIA/makani)\n\n- [PhysicsNeMo](https://github.com/NVIDIA/physicsnemo)\n\n- [Earth2Studio](https://github.com/NVIDIA/earth2studio)\n\n- [torch-harmonics](https://github.com/NVIDIA/torch-harmonics)\n\n## Model Architecture:\n\n**Architecture Type:** Spherical Neural Operator. A fully convolutional architecture\nbased on group convolutions defined on the sphere. Leverages both local and global\nconvolutions. For details regarding the architecture refer to the\n[FourCastNet 3 paper](https://arxiv.org/abs/2507.12144v1). <br>\n\n**Network Architecture:** N/A <br>\n\n**Number of model parameters:** 710,867,670\n\n**Model datatype:** We recommend that the model is run in AMP with bf16, however, the\ninputs and outputs are typically float32.\n\n## Input:\n\n**Input Type:**\n\n- Tensor (72 surface and pressure-level variables)\n\n**Input Format:** PyTorch Tensor  <br>\n**Input Parameters:**\n\n- Six Dimensional (6D) (batch, time, lead time, variable, latitude, longitude) <br>\n\n**Other Properties Related to Input:**\n\n- Input equi-rectangular latitude/longitude grid: 0.25 degree 721 x 1440\n- Input state weather variables: `u10m`, `v10m`, `u100m`, `v100m`, `t2m`, `msl`,\n`tcwv`, `u50`, `u100`, `u150`, `u200`, `u250`, `u300`, `u400`, `u500`, `u600`, `u700`,\n`u850`, `u925`, `u1000`, `v50`, `v100`, `v150`, `v200`, `v250`, `v300`, `v400`, `v500`,\n`v600`, `v700`, `v850`, `v925`, `v1000`, `z50`, `z100`, `z150`, `z200`, `z250`, `z300`,\n`z400`, `z500`, `z600`, `z700`, `z850`, `z925`, `z1000`, `t50`, `t100`, `t150`, `t200`,\n`t250`, `t300`, `t400`, `t500`, `t600`, `t700`, `t850`, `t925`, `t1000`, `q50`, `q100`,\n`q150`, `q200`, `q250`, `q300`, `q400`, `q500`, `q600`, `q700`, `q850`, `q925`, `q1000`\n- Time: datetime64\n\nFor variable name information, review the Lexicon at [Earth2Studio](https://github.com/NVIDIA/earth2studio).\n\n## Output:\n\n**Output Type:** Tensor (72 surface and pressure-level variables) <br>\n**Output Format:** Pytorch Tensor <br>\n**Output Parameters:** Six Dimensional (6D) (batch, time, lead time, variable,\n latitude, longitude)  <br>\n**Other Properties Related to Output:**\n\n- Output latitude/longitude grid: 0.25 degree 721 x 1440, same as input.\n- Output state weather variables: same as above.\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems.\nBy leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA\nlibraries), the model achieves faster training and inference times compared to\nCPU-only solutions.\n\n## Software Integration\n\n**Runtime Engine:** Pytorch <br>\n**Supported Hardware Microarchitecture Compatibility:** <br>\n\n- NVIDIA Ampere <br>\n- NVIDIA Hopper <br>\n- NVIDIA Turing <br>\n\n**Supported Operating System:**\n\n- Linux <br>\n\n## Model Version:\n\n**Model Version:** v1 <br>\n\n## Training, Testing, and Evaluation Datasets:\n\n**Total size (in number of data points):** 110,960 <br>\n**Total number of datasets:** 1<br>\n**Dataset partition:** training 95%, testing 2.5%, validation 2.5% <br>\n\n## Training Dataset:\n\n**Link:** [ERA5](https://cds.climate.copernicus.eu/) <br>\n\n**Data Collection Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Labeling Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Properties:**\nERA5 data for the period 1980-2015. ERA5 provides hourly estimates of various\natmospheric, land, and oceanic climate variables. The data covers the Earth on a 30km\ngrid and resolves the atmosphere at 137 levels. <br>\n\n## Testing Dataset:\n\n**Link:** [ERA5](https://cds.climate.copernicus.eu/) <br>\n\n**Data Collection Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Labeling Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Properties:**\nERA5 data for the period 2016-2017. ERA5 provides hourly estimates of various\natmospheric, land, and oceanic climate variables. The data covers the Earth on a 30km\ngrid and resolves the atmosphere at 137 levels. <br>\n\n## Evaluation Dataset:\n\n**Link:** [ERA5](https://cds.climate.copernicus.eu/) <br>\n\n**Data Collection Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Labeling Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Properties:**\nERA5 data for the period 2018-2019. ERA5 provides hourly estimates of various\natmospheric, land, and oceanic climate variables. The data covers the Earth on a 30km\ngrid and resolves the atmosphere at 137 levels. <br>\n\n## Inference:\n\n**Acceleration Engine:** Makani, Pytorch <br>\n**Test Hardware:**\n\n- A100 <br>\n- H100 <br>\n- L40S <br>\n\n## Ethical Considerations:\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established\npolicies and practices to enable development for a wide array of AI applications.\nWhen downloaded or used in accordance with our terms of service, developers should\nwork with their internal model team to ensure this model meets requirements for the\nrelevant industry and use case and addresses unforeseen product misuse.\n\nFor more detailed information on ethical considerations for this model, please see the\nModel Card++ Explainability, Bias, Safety & Security, and Privacy Subcards.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

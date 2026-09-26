@@ -1,0 +1,138 @@
+{
+  "modelId": "microsoft/resnet-50",
+  "author": "microsoft",
+  "sha": "34c2154c194f829b11125337b98c8f5f9965ff19",
+  "lastModified": "2024-02-13 21:24:05+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "jax",
+    "safetensors",
+    "resnet",
+    "image-classification",
+    "vision",
+    "dataset:imagenet-1k",
+    "arxiv:1512.03385",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-classification",
+  "library_name": "transformers",
+  "likes": 514,
+  "downloads": 575552,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "imagenet-1k"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "image-classification"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "ResNetForImageClassification"
+    ],
+    "model_type": "resnet"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1229,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2642,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 69556,
+      "lfs": null
+    },
+    {
+      "rfilename": "flax_model.msgpack",
+      "size": 102450913,
+      "lfs": {
+        "size": 102450913,
+        "sha256": "1dba0174a596673117b14b7b97d27bbfef1928a94377b18b4cb849b9c8569b90",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 102482854,
+      "lfs": {
+        "size": 102482854,
+        "sha256": "9c6061af1f450bb0847e529fd742aa5066017be379c71bbf5546b198e5b13a1e",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 266,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 102567489,
+      "lfs": {
+        "size": 102567489,
+        "sha256": "ff8163a1323333126706d649ce73ecd76e45d241b42d623dea6c723690cafe07",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 102753944,
+      "lfs": {
+        "size": 102753944,
+        "sha256": "57afa67ca9f9aa1657f38f100f8e5c7fc49550dafa7226793b48dae4426f5a69",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\n- image-classification\ndatasets:\n- imagenet-1k\n---\n\n# ResNet-50 v1.5\n\nResNet model pre-trained on ImageNet-1k at resolution 224x224. It was introduced in the paper [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385) by He et al. \n\nDisclaimer: The team releasing ResNet did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nResNet (Residual Network) is a convolutional neural network that democratized the concepts of residual learning and skip connections. This enables to train much deeper models.\n\nThis is ResNet v1.5, which differs from the original model: in the bottleneck blocks which require downsampling, v1 has stride = 2 in the first 1x1 convolution, whereas v1.5 has stride = 2 in the 3x3 convolution. This difference makes ResNet50 v1.5 slightly more accurate (\\~0.5% top1) than v1, but comes with a small performance drawback (~5% imgs/sec) according to [Nvidia](https://catalog.ngc.nvidia.com/orgs/nvidia/resources/resnet_50_v1_5_for_pytorch).\n\n![model image](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/resnet_architecture.png)\n\n## Intended uses & limitations\n\nYou can use the raw model for image classification. See the [model hub](https://huggingface.co/models?search=resnet) to look for\nfine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model to classify an image of the COCO 2017 dataset into one of the 1,000 ImageNet classes:\n\n```python\nfrom transformers import AutoImageProcessor, ResNetForImageClassification\nimport torch\nfrom datasets import load_dataset\n\ndataset = load_dataset(\"huggingface/cats-image\")\nimage = dataset[\"test\"][\"image\"][0]\n\nprocessor = AutoImageProcessor.from_pretrained(\"microsoft/resnet-50\")\nmodel = ResNetForImageClassification.from_pretrained(\"microsoft/resnet-50\")\n\ninputs = processor(image, return_tensors=\"pt\")\n\nwith torch.no_grad():\n    logits = model(**inputs).logits\n\n# model predicts one of the 1000 ImageNet classes\npredicted_label = logits.argmax(-1).item()\nprint(model.config.id2label[predicted_label])\n```\n\nFor more code examples, we refer to the [documentation](https://huggingface.co/docs/transformers/main/en/model_doc/resnet).\n\n### BibTeX entry and citation info\n\n```bibtex\n@inproceedings{he2016deep,\n  title={Deep residual learning for image recognition},\n  author={He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},\n  booktitle={Proceedings of the IEEE conference on computer vision and pattern recognition},\n  pages={770--778},\n  year={2016}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision",
+      "image-classification"
+    ],
+    "datasets": [
+      "imagenet-1k"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "image-classification",
+    "processor": "AutoImageProcessor"
+  }
+}

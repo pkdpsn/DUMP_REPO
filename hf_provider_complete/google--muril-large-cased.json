@@ -1,0 +1,103 @@
+{
+  "modelId": "google/muril-large-cased",
+  "author": "google",
+  "sha": "ace319f0d17524297957e249aff028b0b7357ab5",
+  "lastModified": "2021-10-16 03:28:16+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "bert",
+    "feature-extraction",
+    "arxiv:1810.04805",
+    "arxiv:1911.02116",
+    "arxiv:2003.11080",
+    "arxiv:2009.05166",
+    "arxiv:2103.10730",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "feature-extraction",
+  "library_name": "transformers",
+  "likes": 20,
+  "downloads": 15414,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {
+    "architectures": [
+      "BertModel"
+    ],
+    "model_type": "bert",
+    "tokenizer_config": {
+      "unk_token": "[UNK]",
+      "sep_token": "[SEP]",
+      "pad_token": "[PAD]",
+      "cls_token": "[CLS]",
+      "mask_token": "[MASK]"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7084,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 406,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 2028800502,
+      "lfs": {
+        "size": 2028800502,
+        "sha256": "1a3bb993f09d053d285b7f301ddeef32934db4038593c7fc9eaa02c6057b27d0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 112,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 181,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.txt",
+      "size": 3162999,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n# MuRIL Large\nMultilingual Representations for Indian Languages : A BERT Large (24L) model pre-trained on 17 Indian languages, and their transliterated counterparts.\n\n## Overview\n\nThis model uses a BERT large architecture [1] pretrained from scratch using the\nWikipedia [2], Common Crawl [3], PMINDIA [4] and Dakshina [5] corpora for 17 [6]\nIndian languages.\n\nWe use a training paradigm similar to multilingual bert, with a few\nmodifications as listed:\n\n*   We include translation and transliteration segment pairs in training as\n    well.\n*   We keep an exponent value of 0.3 and not 0.7 for upsampling, shown to\n    enhance low-resource performance. [7]\n\nSee the Training section for more details.\n\n## Training\n\nThe MuRIL model is pre-trained on monolingual segments as well as parallel\nsegments as detailed below :\n\n*   Monolingual Data : We make use of publicly available corpora from Wikipedia\n    and Common Crawl for 17 Indian languages.\n*   Parallel Data : We have two types of parallel data :\n    *   Translated Data : We obtain translations of the above monolingual\n        corpora using the Google NMT pipeline. We feed translated segment pairs\n        as input. We also make use of the publicly available PMINDIA corpus.\n    *   Transliterated Data : We obtain transliterations of Wikipedia using the\n        IndicTrans [8] library. We feed transliterated segment pairs as input.\n        We also make use of the publicly available Dakshina dataset.\n\nWe keep an exponent value of 0.3 to calculate duplication multiplier values for\nupsampling of lower resourced languages and set dupe factors accordingly. Note,\nwe limit transliterated pairs to Wikipedia only.\n\nThe model was trained using a self-supervised masked language modeling task. We\ndo whole word masking with a maximum of 80 predictions. The model was trained\nfor 1500K steps, with a batch size of 8192, and a max sequence length of 512.\n\n### Trainable parameters\n\nAll parameters in the module are trainable, and fine-tuning all parameters is\nthe recommended practice.\n\n\n## Uses & Limitations\n\nThis model is intended to be used for a variety of downstream NLP tasks for\nIndian languages. This model is trained on transliterated data as well, a\nphenomenon commonly observed in the Indian context. This model is not expected\nto perform well on languages other than the ones used in pre-training, i.e. 17\nIndian languages.\n\n## Evaluation\n\nWe provide the results of fine-tuning this model on a set of downstream tasks.<br/>\nWe choose these tasks from the XTREME benchmark, with evaluation done on Indian language test-sets.<br/>\nAll results are computed in a zero-shot setting, with English being the high resource training set language.<br/>\nThe results for XLM-R (Large) are taken from the XTREME paper [9].\n\n*   Shown below are results on datasets from the XTREME benchmark (in %)\n    <br/>\n\n    PANX (F1)     | bn   | en   | hi   | ml   | mr   | ta   | te   | ur   | Average\n    :------------ | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ------:\n    XLM-R (large) | 78.8 | 84.7 | 73.0 | 67.8 | 68.1 | 59.5 | 55.8 | 56.4 | 68.0\n    MuRIL (large) | 85.8 | 85.0 | 78.3 | 75.6 | 77.3 | 71.1 | 65.6 | 83.0 | 77.7\n\n    <br/>\n\n    UDPOS (F1)    | en   | hi   | mr   | ta   | te   | ur   | Average\n    :------------ | ---: | ---: | ---: | ---: | ---: | ---: | ------:\n    XLM-R (large) | 96.1 | 76.4 | 80.8 | 65.2 | 86.6 | 70.3 | 79.2\n    MuRIL (large) | 95.7 | 71.3 | 85.7 | 62.6 | 85.8 | 62.8 | 77.3\n\n    <br/>\n\n    XNLI (Accuracy) | en   | hi   | ur   | Average\n    :-------------- | ---: | ---: | ---: | ------:\n    XLM-R (large)   | 88.7 | 75.6 | 71.7 | 78.7\n    MuRIL (large)   | 88.4 | 75.8 | 71.7 | 78.6\n\n    <br/>\n\n    XQUAD (F1/EM) | en        | hi        | Average\n    :------------ | --------: | --------: | --------:\n    XLM-R (large) | 86.5/75.7 | 76.7/59.7 | 81.6/67.7\n    MuRIL (large) | 88.2/77.8 | 78.4/62.4 | 83.3/70.1\n\n    <br/>\n\n    MLQA (F1/EM)  | en        | hi        | Average\n    :------------ | --------: | --------: | --------:\n    XLM-R (large) | 83.5/70.6 | 70.6/53.1 | 77.1/61.9\n    MuRIL (large) | 84.4/71.7 | 72.2/54.1 | 78.3/62.9\n\n    <br/>\n\n    TyDiQA (F1/EM) | en        | bn        | te        | Average\n    :------------- | --------: | --------: | --------: | --------:\n    XLM-R (large)  | 71.5/56.8 | 64.0/47.8 | 70.1/43.6 | 68.5/49.4\n    MuRIL (large)  | 75.9/66.8 | 67.1/53.1 | 71.5/49.8 | 71.5/56.6\n\n    <br/>\n\n    The fine-tuning hyperparameters are as follows:\n\n    Task   | Batch Size | Learning Rate | Epochs | Warm-up Ratio\n    :----- | ---------: | ------------: | -----: | ------------:\n    PANX   | 32         | 2e-5          | 10     | 0.1\n    UDPOS  | 64         | 5e-6          | 10     | 0.1\n    XNLI   | 128        | 2e-5          | 5      | 0.1\n    XQuAD  | 32         | 3e-5          | 2      | 0.1\n    MLQA   | 32         | 3e-5          | 2      | 0.1\n    TyDiQA | 32         | 3e-5          | 3      | 0.1\n\n## References\n\n\\[1]: Jacob Devlin, Ming-Wei Chang, Kenton Lee, Kristina Toutanova. [BERT:\nPre-training of Deep Bidirectional Transformers for Language\nUnderstanding](https://arxiv.org/abs/1810.04805). arXiv preprint\narXiv:1810.04805, 2018.\n\n\\[2]: [Wikipedia](https://www.tensorflow.org/datasets/catalog/wikipedia)\n\n\\[3]: [Common Crawl](http://commoncrawl.org/the-data/)\n\n\\[4]:\n[PMINDIA](http://lotus.kuee.kyoto-u.ac.jp/WAT/indic-multilingual/index.html)\n\n\\[5]: [Dakshina](https://github.com/google-research-datasets/dakshina)\n\n\\[6]: Assamese (as), Bengali (bn), English (en), Gujarati (gu), Hindi (hi),\nKannada (kn), Kashmiri (ks), Malayalam (ml), Marathi (mr), Nepali (ne), Oriya\n(or), Punjabi (pa), Sanskrit (sa), Sindhi (sd), Tamil (ta), Telugu (te) and Urdu\n(ur).\n\n\\[7]: Conneau, Alexis, et al.\n[Unsupervised cross-lingual representation learning at scale](https://arxiv.org/pdf/1911.02116.pdf).\narXiv preprint arXiv:1911.02116 (2019).\n\n\\[8]: [IndicTrans](https://github.com/libindic/indic-trans)\n\n\\[9]: Hu, J., Ruder, S., Siddhant, A., Neubig, G., Firat, O., & Johnson, M.\n(2020). [Xtreme: A massively multilingual multi-task benchmark for evaluating\ncross-lingual generalization.](https://arxiv.org/pdf/2003.11080.pdf) arXiv\npreprint arXiv:2003.11080.\n\n\\[10]: Fang, Y., Wang, S., Gan, Z., Sun, S., & Liu, J. (2020).\n[FILTER: An Enhanced Fusion Method for Cross-lingual Language Understanding.](https://arxiv.org/pdf/2009.05166.pdf)\narXiv preprint arXiv:2009.05166.\n\n## Citation\n\nIf you find MuRIL useful in your applications, please cite the following paper:\n\n```\n@misc{khanuja2021muril,\n      title={MuRIL: Multilingual Representations for Indian Languages},\n      author={Simran Khanuja and Diksha Bansal and Sarvesh Mehtani and Savya Khosla and Atreyee Dey and Balaji Gopalan and Dilip Kumar Margam and Pooja Aggarwal and Rajiv Teja Nagipogu and Shachi Dave and Shruti Gupta and Subhash Chandra Bose Gali and Vish Subramanian and Partha Talukdar},\n      year={2021},\n      eprint={2103.10730},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL}\n}\n```\n\n## Contact\n\nPlease mail your queries/feedback to muril-contact@google.com.\n",
+  "cardDataParsed": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoTokenizer"
+  }
+}

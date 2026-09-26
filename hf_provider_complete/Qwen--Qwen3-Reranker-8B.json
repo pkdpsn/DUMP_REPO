@@ -1,0 +1,205 @@
+{
+  "modelId": "Qwen/Qwen3-Reranker-8B",
+  "author": "Qwen",
+  "sha": "77d193c791ed757ca307ee72715aa132723da912",
+  "lastModified": "2026-04-16 08:56:16+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3",
+    "text-generation",
+    "sentence-transformers",
+    "text-ranking",
+    "arxiv:2506.05176",
+    "base_model:Qwen/Qwen3-8B-Base",
+    "base_model:finetune:Qwen/Qwen3-8B-Base",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-ranking",
+  "library_name": "transformers",
+  "likes": 273,
+  "downloads": 420244,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-8B-Base"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-ranking",
+    "tags": [
+      "sentence-transformers"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3ForCausalLM"
+    ],
+    "model_type": "qwen3",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set content = message.content %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is not none %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in message.content %}\n                {%- set content = message.content.split('</think>')[-1].lstrip('\\n') %}\n                {%- set reasoning_content = message.content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- set instruction = messages | selectattr(\"role\", \"eq\", \"system\") | map(attribute=\"content\") | first | default(\"Given a web search query, retrieve relevant passages that answer the query\") -%}\n{%- set query_text = messages | selectattr(\"role\", \"eq\", \"query\") | map(attribute=\"content\") | first -%}\n{%- set document_text = messages | selectattr(\"role\", \"eq\", \"document\") | map(attribute=\"content\") | first -%}\n<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n<Instruct>: {{ instruction }}\n<Query>: {{ query_text }}\n<Document>: {{ document_text }}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "1_LogitScore/config.json",
+      "size": 57,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 11286,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 741,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 729,
+      "lfs": null
+    },
+    {
+      "rfilename": "config_sentence_transformers.json",
+      "size": 294,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00005.safetensors",
+      "size": 4027618768,
+      "lfs": {
+        "size": 4027618768,
+        "sha256": "22cdfea4a13b7b3e866573800eeeb638fc38962940adf631d06dc03befed047a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00005.safetensors",
+      "size": 4060268160,
+      "lfs": {
+        "size": 4060268160,
+        "sha256": "d2163b74137e35b4614bd2aa5bf27bcb07de4ca61c6962495feb968385eb0df8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00005.safetensors",
+      "size": 4043508680,
+      "lfs": {
+        "size": 4043508680,
+        "sha256": "a5038caa78c817e8acce6806104869675938a33fd4e60ed038e9931d390d6989",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00005.safetensors",
+      "size": 3003274088,
+      "lfs": {
+        "size": 3003274088,
+        "sha256": "247f85538c5996d4c296291b0e4004f618c9b17ca8cdc25d1fc726567eb15803",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00005.safetensors",
+      "size": 1242472576,
+      "lfs": {
+        "size": 1242472576,
+        "sha256": "8ba41b93c2e4ec8339ad16b000bc977fde196aeac054956cbfc8c0186ee6d4cf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 32878,
+      "lfs": null
+    },
+    {
+      "rfilename": "modules.json",
+      "size": 280,
+      "lfs": null
+    },
+    {
+      "rfilename": "sentence_bert_config.json",
+      "size": 362,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9706,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nbase_model:\n- Qwen/Qwen3-8B-Base\nlibrary_name: transformers\ntags:\n- sentence-transformers\npipeline_tag: text-ranking\n---\n# Qwen3-Reranker-8B\n\n<p align=\"center\">\n    <img src=\"https://qianwen-res.oss-accelerate-overseas.aliyuncs.com/logo_qwen3.png\" width=\"400\"/>\n<p>\n\n## Highlights\n\nThe Qwen3 Embedding model series is the latest proprietary model of the Qwen family, specifically designed for text embedding and ranking tasks. Building upon the dense foundational models of the Qwen3 series, it provides a comprehensive range of text embeddings and reranking models in various sizes (0.6B, 4B, and 8B). This series inherits the exceptional multilingual capabilities, long-text understanding, and reasoning skills of its foundational model. The Qwen3 Embedding series represents significant advancements in multiple text embedding and ranking tasks, including text retrieval, code retrieval, text classification, text clustering, and bitext mining.\n\n**Exceptional Versatility**: The embedding model has achieved state-of-the-art performance across a wide range of downstream application evaluations. The 8B size embedding model ranks No.1 in the MTEB multilingual leaderboard (as of June 5, 2025, score 70.58), while the reranking model excels in various text retrieval scenarios.\n\n**Comprehensive Flexibility**: The Qwen3 Embedding series offers a full spectrum of sizes (from 0.6B to 8B) for both embedding and reranking models, catering to diverse use cases that prioritize efficiency and effectiveness. Developers can seamlessly combine these two modules. Additionally, the embedding model allows for flexible vector definitions across all dimensions, and both embedding and reranking models support user-defined instructions to enhance performance for specific tasks, languages, or scenarios.\n\n**Multilingual Capability**: The Qwen3 Embedding series offer support for over 100 languages, thanks to the multilingual capabilites of Qwen3 models. This includes various programming languages, and provides robust multilingual, cross-lingual, and code retrieval capabilities.\n\n\n## Model Overview\n\n**Qwen3-Reranker-8B** has the following features:\n\n- Model Type: Text Reranking\n- Supported Languages: 100+ Languages\n- Number of Paramaters: 8B\n- Context Length: 32k\n\nFor more details, including benchmark evaluation, hardware requirements, and inference performance, please refer to our [blog](https://qwenlm.github.io/blog/qwen3-embedding/), [GitHub](https://github.com/QwenLM/Qwen3-Embedding).\n\n## Qwen3 Embedding Series Model list\n\n| Model Type       | Models               | Size | Layers | Sequence Length | Embedding Dimension | MRL Support | Instruction Aware |\n|------------------|----------------------|------|--------|-----------------|---------------------|-------------|----------------|\n| Text Embedding   | [Qwen3-Embedding-0.6B](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B) | 0.6B | 28     | 32K             | 1024                | Yes         | Yes            |\n| Text Embedding   | [Qwen3-Embedding-4B](https://huggingface.co/Qwen/Qwen3-Embedding-4B)   | 4B   | 36     | 32K             | 2560                | Yes         | Yes            |\n| Text Embedding   | [Qwen3-Embedding-8B](https://huggingface.co/Qwen/Qwen3-Embedding-8B)   | 8B   | 36     | 32K             | 4096                | Yes         | Yes            |\n| Text Reranking   | [Qwen3-Reranker-0.6B](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B) | 0.6B | 28     | 32K             | -                   | -           | Yes            |\n| Text Reranking   | [Qwen3-Reranker-4B](https://huggingface.co/Qwen/Qwen3-Reranker-4B)   | 4B   | 36     | 32K             | -                   | -           | Yes            |\n| Text Reranking   | [Qwen3-Reranker-8B](https://huggingface.co/Qwen/Qwen3-Reranker-8B)   | 8B   | 36     | 32K             | -                   | -           | Yes            |\n\n> **Note**:\n> - `MRL Support` indicates whether the embedding model supports custom dimensions for the final embedding. \n> - `Instruction Aware` notes whether the embedding or reranking model supports customizing the input instruction according to different tasks.\n> - Our evaluation indicates that, for most downstream tasks, using instructions (instruct) typically yields an improvement of 1% to 5% compared to not using them. Therefore, we recommend that developers create tailored instructions specific to their tasks and scenarios. In multilingual contexts, we also advise users to write their instructions in English, as most instructions utilized during the model training process were originally written in English.\n\n\n## Usage\n\n### Using Sentence Transformers\n\nInstall Sentence Transformers:\n```bash\npip install sentence_transformers\n```\n\n```python\nfrom sentence_transformers import CrossEncoder\n\nmodel = CrossEncoder(\"Qwen/Qwen3-Reranker-8B\")\n\nquery = \"What is the capital of China?\"\ndocuments = [\n    \"The capital of China is Beijing.\",\n    \"Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.\",\n]\n\npairs = [(query, doc) for doc in documents]\nscores = model.predict(pairs)\nprint(scores)\n# [  5.0625 -14.25  ]\n\nrankings = model.rank(query, documents)\nprint(rankings)\n# [{'corpus_id': 0, 'score': 5.0625}, {'corpus_id': 1, 'score': -14.25}]\n```\n\nBy default, scores are raw logit differences. To get 0-1 probability scores, pass a Sigmoid activation function:\n```python\nscores = model.predict([(query, doc) for doc in documents], activation_fn=torch.nn.Sigmoid())\n```\n\nThe model uses a default prompt `\"query\"` which injects the instruction `\"Given a web search query, retrieve relevant passages that answer the query\"` into the chat template. You can provide a custom instruction via the `prompts` parameter:\n```python\nmodel = CrossEncoder(\n    \"Qwen/Qwen3-Reranker-8B\",\n    prompts={\"classification\": \"Classify whether the document matches the query topic\"},\n    default_prompt_name=\"classification\",\n)\n```\n\n### Using Transformers\n\nWith Transformers versions earlier than 4.51.0, you may encounter the following error:\n```\nKeyError: 'qwen3'\n```\n\n```python\n# Requires transformers>=4.51.0\nimport torch\nfrom transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM\n\ndef format_instruction(instruction, query, doc):\n    if instruction is None:\n        instruction = 'Given a web search query, retrieve relevant passages that answer the query'\n    output = \"<Instruct>: {instruction}\\n<Query>: {query}\\n<Document>: {doc}\".format(instruction=instruction,query=query, doc=doc)\n    return output\n\ndef process_inputs(pairs):\n    inputs = tokenizer(\n        pairs, padding=False, truncation='longest_first',\n        return_attention_mask=False, max_length=max_length - len(prefix_tokens) - len(suffix_tokens)\n    )\n    for i, ele in enumerate(inputs['input_ids']):\n        inputs['input_ids'][i] = prefix_tokens + ele + suffix_tokens\n    inputs = tokenizer.pad(inputs, padding=True, return_tensors=\"pt\", max_length=max_length)\n    for key in inputs:\n        inputs[key] = inputs[key].to(model.device)\n    return inputs\n\n@torch.no_grad()\ndef compute_logits(inputs, **kwargs):\n    batch_scores = model(**inputs).logits[:, -1, :]\n    true_vector = batch_scores[:, token_true_id]\n    false_vector = batch_scores[:, token_false_id]\n    batch_scores = torch.stack([false_vector, true_vector], dim=1)\n    batch_scores = torch.nn.functional.log_softmax(batch_scores, dim=1)\n    scores = batch_scores[:, 1].exp().tolist()\n    return scores\n\ntokenizer = AutoTokenizer.from_pretrained(\"Qwen/Qwen3-Reranker-8B\", padding_side='left')\n\nmodel = AutoModelForCausalLM.from_pretrained(\"Qwen/Qwen3-Reranker-8B\").eval()\n# We recommend enabling flash_attention_2 for better acceleration and memory saving.\n# model = AutoModelForCausalLM.from_pretrained(\"Qwen/Qwen3-Reranker-8B\", torch_dtype=torch.float16, attn_implementation=\"flash_attention_2\").cuda().eval()\n\ntoken_false_id = tokenizer.convert_tokens_to_ids(\"no\")\ntoken_true_id = tokenizer.convert_tokens_to_ids(\"yes\")\nmax_length = 8192\n\nprefix = \"<|im_start|>system\\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \\\"yes\\\" or \\\"no\\\".<|im_end|>\\n<|im_start|>user\\n\"\nsuffix = \"<|im_end|>\\n<|im_start|>assistant\\n<think>\\n\\n</think>\\n\\n\"\nprefix_tokens = tokenizer.encode(prefix, add_special_tokens=False)\nsuffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)\n        \ntask = 'Given a web search query, retrieve relevant passages that answer the query'\n\nqueries = [\"What is the capital of China?\",\n    \"Explain gravity\",\n]\n\ndocuments = [\n    \"The capital of China is Beijing.\",\n    \"Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.\",\n]\n\npairs = [format_instruction(task, query, doc) for query, doc in zip(queries, documents)]\n\n# Tokenize the input texts\ninputs = process_inputs(pairs)\nscores = compute_logits(inputs)\n\nprint(\"scores: \", scores)\n```\n\n\ud83d\udccc **Tip**: We recommend that developers customize the `instruct` according to their specific scenarios, tasks, and languages. Our tests have shown that in most retrieval scenarios, not using an `instruct` on the query side can lead to a drop in retrieval performance by approximately 1% to 5%.\n\n## Evaluation\n\n| Model                              | Param  | MTEB-R  | CMTEB-R | MMTEB-R | MLDR   | MTEB-Code | FollowIR |\n|------------------------------------|--------|---------|---------|---------|--------|-----------|----------|\n| **Qwen3-Embedding-0.6B**               | 0.6B   | 61.82   | 71.02   | 64.64   | 50.26  | 75.41     | 5.09     |\n| Jina-multilingual-reranker-v2-base | 0.3B   | 58.22   | 63.37   | 63.73   | 39.66  | 58.98     | -0.68    |\n| gte-multilingual-reranker-base                      | 0.3B   | 59.51   | 74.08   | 59.44   | 66.33  | 54.18     | -1.64    |\n| BGE-reranker-v2-m3                 | 0.6B   | 57.03   | 72.16   | 58.36   | 59.51  | 41.38     | -0.01    |\n| **Qwen3-Reranker-0.6B**                | 0.6B   | 65.80   | 71.31   | 66.36   | 67.28  | 73.42     | 5.41     |\n| **Qwen3-Reranker-4B**                  | 4B   | **69.76** | 75.94   | 72.74   | 69.97  | 81.20     | **14.84** |\n| **Qwen3-Reranker-8B**                  | 8B     | 69.02   | **77.45** | **72.94** | **70.19** | **81.22** | 8.05     |\n\n> **Note**:  \n> - Evaluation results for reranking models. We use the retrieval subsets of MTEB(eng, v2), MTEB(cmn, v1), MMTEB and MTEB (Code), which are MTEB-R, CMTEB-R, MMTEB-R and MTEB-Code.\n> - All scores are our runs based on the top-100 candidates retrieved by dense embedding model [Qwen3-Embedding-0.6B](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B).\n\n## Citation\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{qwen3embedding,\n  title={Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models},\n  author={Zhang, Yanzhao and Li, Mingxin and Long, Dingkun and Zhang, Xin and Lin, Huan and Yang, Baosong and Xie, Pengjun and Yang, An and Liu, Dayiheng and Lin, Junyang and Huang, Fei and Zhou, Jingren},\n  journal={arXiv preprint arXiv:2506.05176},\n  year={2025}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "base_model": [
+      "Qwen/Qwen3-8B-Base"
+    ],
+    "library_name": "transformers",
+    "tags": [
+      "sentence-transformers"
+    ],
+    "pipeline_tag": "text-ranking",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "modelId": "google/siglip-base-patch16-256-multilingual",
+  "author": "google",
+  "sha": "8952a4eafcde3cb7ab46b1dd629b33f8784ca9c6",
+  "lastModified": "2024-09-26 08:21:48+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "siglip",
+    "zero-shot-image-classification",
+    "vision",
+    "arxiv:2303.15343",
+    "arxiv:2209.06794",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "zero-shot-image-classification",
+  "library_name": "transformers",
+  "likes": 55,
+  "downloads": 18280,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/cat-dog-music.png",
+        "candidate_labels": "playing music, playing sports",
+        "example_title": "Cat & Dog"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "SiglipModel"
+    ],
+    "model_type": "siglip",
+    "tokenizer_config": {
+      "eos_token": "</s>",
+      "pad_token": "</s>",
+      "unk_token": "<unk>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4161,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 348,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 1482553200,
+      "lfs": {
+        "size": 1482553200,
+        "sha256": "00df88d823790b34a4d2d0047803ffabd47497ae724fd6659b1533dd793255be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 368,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 409,
+      "lfs": null
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 4309802,
+      "lfs": {
+        "size": 4309802,
+        "sha256": "ef78f86560d809067d12bac6c09f19a462cb3af3f54d2b8acbba26e1433125d6",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 16350281,
+      "lfs": {
+        "size": 16350281,
+        "sha256": "babbf9fed5f505ac6b28fd820b5108ca6882332ce6b921c8d33f8ff69bf841d9",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 711,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\nwidget:\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/cat-dog-music.png\n  candidate_labels: playing music, playing sports\n  example_title: Cat & Dog\n---\n\n# SigLIP (base-sized model, multilingual) \n\nSigLIP model pre-trained on WebLi at resolution 256x256. It was introduced in the paper [Sigmoid Loss for Language Image Pre-Training](https://arxiv.org/abs/2303.15343) by Zhai et al. and first released in [this repository](https://github.com/google-research/big_vision).\n\nDisclaimer: The team releasing SigLIP did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nSigLIP is [CLIP](https://huggingface.co/docs/transformers/model_doc/clip), a multimodal model, with a better loss function. The sigmoid loss operates solely on image-text pairs and does not require a global view of the pairwise similarities for normalization. This allows further scaling up the batch size, while also performing better at smaller batch sizes.\n\nA TLDR of SigLIP by one of the authors can be found [here](https://twitter.com/giffmana/status/1692641733459267713).\n\n## Intended uses & limitations\n\nYou can use the raw model for tasks like zero-shot image classification and image-text retrieval. See the [model hub](https://huggingface.co/models?search=google/siglip) to look for\nother versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model to perform zero-shot image classification:\n\n```python\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, AutoModel\nimport torch\n\nmodel = AutoModel.from_pretrained(\"google/siglip-base-patch16-256-multilingual\")\nprocessor = AutoProcessor.from_pretrained(\"google/siglip-base-patch16-256-multilingual\")\n\nurl = \"http://images.cocodataset.org/val2017/000000039769.jpg\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\ntexts = [\"a photo of 2 cats\", \"a photo of 2 dogs\"]\ninputs = processor(text=texts, images=image, padding=\"max_length\", return_tensors=\"pt\")\n\nwith torch.no_grad():\n    outputs = model(**inputs)\n\nlogits_per_image = outputs.logits_per_image\nprobs = torch.sigmoid(logits_per_image) # these are the probabilities\nprint(f\"{probs[0][0]:.1%} that image 0 is '{texts[0]}'\")\n```\n\nAlternatively, one can leverage the pipeline API which abstracts away the complexity for the user:\n\n```python\nfrom transformers import pipeline\nfrom PIL import Image\nimport requests\n\n# load pipe\nimage_classifier = pipeline(task=\"zero-shot-image-classification\", model=\"google/siglip-base-patch16-256-multilingual\")\n\n# load image\nurl = 'http://images.cocodataset.org/val2017/000000039769.jpg'\nimage = Image.open(requests.get(url, stream=True).raw)\n\n# inference\noutputs = image_classifier(image, candidate_labels=[\"2 cats\", \"a plane\", \"a remote\"])\noutputs = [{\"score\": round(output[\"score\"], 4), \"label\": output[\"label\"] } for output in outputs]\nprint(outputs)\n```\nFor more code examples, we refer to the [documentation](https://huggingface.co/transformers/main/model_doc/siglip.html#).\n\n## Training procedure\n\n### Training data\n\nSigLIP is pre-trained on the WebLI dataset without language filter [(Chen et al., 2023)](https://arxiv.org/abs/2209.06794).\n\n### Preprocessing\n\nImages are resized/rescaled to the same resolution (256x256) and normalized across the RGB channels with mean (0.5, 0.5, 0.5) and standard deviation (0.5, 0.5, 0.5).\n\nTexts are tokenized and padded to the same length (64 tokens).\n\n### Compute\n\nThe model was trained on 16 TPU-v4 chips for three days.\n\n## Evaluation results\n\nEvaluation of SigLIP compared to CLIP is shown below (taken from the paper).\n\n<img src=\"https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/model_doc/siglip_table.jpeg\"\nalt=\"drawing\" width=\"600\"/>\n\n### BibTeX entry and citation info\n\n```bibtex\n@misc{zhai2023sigmoid,\n      title={Sigmoid Loss for Language Image Pre-Training}, \n      author={Xiaohua Zhai and Basil Mustafa and Alexander Kolesnikov and Lucas Beyer},\n      year={2023},\n      eprint={2303.15343},\n      archivePrefix={arXiv},\n      primaryClass={cs.CV}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/cat-dog-music.png",
+        "candidate_labels": "playing music, playing sports",
+        "example_title": "Cat & Dog"
+      }
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForZeroShotImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "zero-shot-image-classification",
+    "processor": "AutoProcessor"
+  }
+}

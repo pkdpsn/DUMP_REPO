@@ -1,0 +1,405 @@
+{
+  "modelId": "nvidia/LocateAnything-3B",
+  "author": "nvidia",
+  "sha": "c32291ca5e996f5a7a485845b4f57a233936bba0",
+  "lastModified": "2026-06-12 10:51:04+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "locateanything",
+    "feature-extraction",
+    "nvidia",
+    "eagle",
+    "vision",
+    "object-detection",
+    "grounding",
+    "arxiv:2605.27365",
+    "image-text-to-text",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2504.07491",
+    "arxiv:2109.10852",
+    "arxiv:2510.12798",
+    "arxiv:2303.05499",
+    "arxiv:1405.0312",
+    "arxiv:1908.03195",
+    "arxiv:2504.07981",
+    "base_model:Qwen/Qwen2.5-3B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-3B-Instruct",
+    "license:other",
+    "deploy:sagemaker",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 3043,
+  "downloads": 71233,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-3B-Instruct"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-license",
+    "license_link": "https://huggingface.co/nvidia/LocateAnything-3B/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "nvidia",
+      "eagle",
+      "vision",
+      "object-detection",
+      "grounding",
+      "locateanything",
+      "arxiv:2605.27365"
+    ],
+    "demo": "https://huggingface.co/spaces/nvidia/LocateAnything",
+    "github": "https://github.com/NVlabs/Eagle/tree/main/Embodied"
+  },
+  "config": {
+    "architectures": [
+      "LocateAnythingForConditionalGeneration"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_locateanything.LocateAnythingConfig",
+      "AutoModel": "modeling_locateanything.LocateAnythingForConditionalGeneration"
+    },
+    "model_type": "locateanything",
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}<image {{ image_count.value }}>{% endif %}<image-{{ image_count.value }}>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}<video {{ video_count.value }}>{% endif %}<video-{{ video_count.value }}>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1974,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 4123,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 27162,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 19834,
+      "lfs": null
+    },
+    {
+      "rfilename": "all_results.json",
+      "size": 247,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/coco_lvis.png",
+      "size": 235349,
+      "lfs": {
+        "size": 235349,
+        "sha256": "8b75aa2122f9bc32c3449dfb6ac483bbed27d1f81de30c57aba36c47eb845baa",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/decoding_demo.mp4",
+      "size": 24955186,
+      "lfs": {
+        "size": 24955186,
+        "sha256": "3f4083674bacb26f43d1f68f5529dac7ed4c713dca724d90b718358253453aba",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "assets/demo.mp4",
+      "size": 101601160,
+      "lfs": {
+        "size": 101601160,
+        "sha256": "56e5c216d26741be466562e90bf6f3d576f6e3c7ac64341a9101cccf94af2335",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "assets/dense_object_detection.png",
+      "size": 161282,
+      "lfs": {
+        "size": 161282,
+        "sha256": "5a656f3ec1d1931531a03380ccbf12db5f442027e519748c537d8d112a6cd371",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/layout_ocr.png",
+      "size": 103945,
+      "lfs": {
+        "size": 103945,
+        "sha256": "ecccc9ebcdf453f5ff0094a785d5c771d34740b8690f471017c3756b0eb0887d",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/pointing.png",
+      "size": 92984,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/referring.png",
+      "size": 150548,
+      "lfs": {
+        "size": 150548,
+        "sha256": "1a814ab0d9254962ee76d5928774b852540e235d6fc3eb6847840953a166b658",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/sspro.png",
+      "size": 162929,
+      "lfs": {
+        "size": 162929,
+        "sha256": "485bb3f9f49f413ee7d4dba852066184f2498a5067ce50055f29094e8f5b7acd",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/teaser.jpg",
+      "size": 580379,
+      "lfs": {
+        "size": 580379,
+        "sha256": "b5af7f67594ce5fd519d47b1ad86e23c175ca50c1af1c5014e1d7bd48a60c14f",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "batch_infer.py",
+      "size": 5344,
+      "lfs": null
+    },
+    {
+      "rfilename": "batch_utils/README.md",
+      "size": 2094,
+      "lfs": null
+    },
+    {
+      "rfilename": "batch_utils/__init__.py",
+      "size": 375,
+      "lfs": null
+    },
+    {
+      "rfilename": "batch_utils/engine_hybrid.py",
+      "size": 52406,
+      "lfs": null
+    },
+    {
+      "rfilename": "batch_utils/hybrid_runtime.py",
+      "size": 81105,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1027,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2351,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_locateanything.py",
+      "size": 5558,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_qwen2.py",
+      "size": 7025,
+      "lfs": null
+    },
+    {
+      "rfilename": "generate_utils.py",
+      "size": 18733,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 121,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processing_locateanything.py",
+      "size": 4908,
+      "lfs": null
+    },
+    {
+      "rfilename": "kernel_utils/README.md",
+      "size": 3350,
+      "lfs": null
+    },
+    {
+      "rfilename": "kernel_utils/__init__.py",
+      "size": 187,
+      "lfs": null
+    },
+    {
+      "rfilename": "kernel_utils/range_attention.py",
+      "size": 14444,
+      "lfs": null
+    },
+    {
+      "rfilename": "mask_magi_utils.py",
+      "size": 3840,
+      "lfs": null
+    },
+    {
+      "rfilename": "mask_sdpa_utils.py",
+      "size": 9165,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4959632160,
+      "lfs": {
+        "size": 4959632160,
+        "sha256": "923cfc10fed19808067da6df85a9a4220ddc1f9eb91ceee94c0fecd05d0f2d58",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 2701795216,
+      "lfs": {
+        "size": 2701795216,
+        "sha256": "3459ba101f40594f3f62d3312014f1f8378b4ba3da3b1d562480045938fc7d47",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 70657,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_locateanything.py",
+      "size": 22174,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_qwen2.py",
+      "size": 78477,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_vit.py",
+      "size": 21282,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 480,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_locateanything.py",
+      "size": 28446,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 493,
+      "lfs": null
+    },
+    {
+      "rfilename": "pyproject.toml",
+      "size": 392,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 13872,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 195313,
+      "lfs": null
+    },
+    {
+      "rfilename": "trainer_state.json",
+      "size": 806380,
+      "lfs": null
+    },
+    {
+      "rfilename": "training_args.bin",
+      "size": 7288,
+      "lfs": {
+        "size": 7288,
+        "sha256": "995b5f0a2fe72453ddc8ce97e1a93747554ec3ec0ac92d86e82a57050db51b85",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 3383407,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: nvidia-license\nlicense_link: https://huggingface.co/nvidia/LocateAnything-3B/blob/main/LICENSE\nlanguage:\n- en\ntags:\n- nvidia\n- eagle\n- vision\n- object-detection\n- grounding\n- locateanything\n- arxiv:2605.27365\ndemo: https://huggingface.co/spaces/nvidia/LocateAnything\ngithub: https://github.com/NVlabs/Eagle/tree/main/Embodied\nlibrary_name: transformers\npipeline_tag: image-text-to-text\nbase_model:\n- Qwen/Qwen2.5-3B-Instruct\n---\n\n# LocateAnything: Fast and High-Quality Vision-Language Grounding with Parallel Box Decoding\n\n<p align=\"center\">\n  <img src=\"assets/teaser.jpg\" alt=\"LocateAnything teaser\" width=\"100%\">\n</p>\n\n## \ud83d\udd17 Quick Links\n\n* \ud83d\ude80 **Online Demo**: [LocateAnything (Hugging Face Spaces)](https://huggingface.co/spaces/nvidia/LocateAnything)\n* \ud83d\udcbb **GitHub Code**: [NVlabs/Eagle/Embodied](https://github.com/NVlabs/Eagle/tree/main/Embodied)\n* \ud83d\udcc4 **Paper**: [arXiv:2605.27365](https://arxiv.org/abs/2605.27365)\n\n\n# Model Overview\n\n### Description:\n\nLocateAnything is a vision-language model for fast and high-quality visual grounding, enabling precise object localization, dense detection, and point-based localization across diverse domains in both Enterprise Intelligence and Physical AI. The model adopts a generalist design, supporting tasks such as referring expression grounding, multi-object detection, GUI element grounding, and text localization, with strong performance in complex and cluttered scenes.\n\nIts core innovation, Parallel Box Decoding (PBD), predicts complete bounding box coordinates in a single parallel step rather than autoregressive token-by-token decoding, improving efficiency while preserving geometric consistency. This enables up to 2.5\u00d7 higher throughput compared to prior approaches.\n\nThe model is trained on a large-scale multi-domain dataset (12M images, 138M+ queries, 785M bounding boxes) spanning natural scenes, robotics, driving, GUI interaction, and document understanding. It serves as a foundation for generalist multimodal perception and has been integrated into NVIDIA\u2019s frontier production-grade vision-language models, such as Nemotron 3 Nano Omni, supporting grounding, GUI understanding, and multimodal agentic capabilities.\n\nLocateAnything is developed as part of the [Eagle VLM](https://github.com/NVlabs/EAGLE) model family. This released model is for research and development only. In addition, LocateAnything contributed to [Nemotron](https://www.nvidia.com/en-us/ai-data-science/foundation-models/nemotron/) and [Cosmos](https://www.nvidia.com/en-us/ai/cosmos/) as part of the Computer Use and Visual Grounding features. We give special thanks the Nemotron and Cosmos Teams for time and efforts in product integration.\n\n### Demo Videos\n\n<p align=\"left\">\n  <video src=\"https://huggingface.co/nvidia/LocateAnything-3B/resolve/main/assets/demo.mp4\" controls=\"controls\" width=\"80%\">\n    Your browser does not support the video tag.\n  </video>\n</p>\n\n<p align=\"left\">\n  <video src=\"https://huggingface.co/nvidia/LocateAnything-3B/resolve/main/assets/decoding_demo.mp4\" controls=\"controls\" width=\"80%\">\n    Your browser does not support the video tag.\n  </video>\n</p>\n\n### License/Terms of Use:\n\nThis model is released under the [NVIDIA License](https://huggingface.co/nvidia/LocateAnything-3B/blob/main/LICENSE) for non-commercial use, which permits use, reproduction, and modification for **academic and non-profit research purposes only**. Commercial use is **not permitted**, except by NVIDIA and its affiliates. Redistribution must retain the license and all applicable copyright and attribution notices. The model is provided **\u201cas is\u201d without warranty of any kind**, and users assume all associated risks.\n\nThis model is built using components from third-party models with their respective licenses:\n- Language model: [Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) (Qwen Research License)\n- Vision encoder: [MoonViT-SO-400M](https://huggingface.co/moonshotai/MoonViT-SO-400M) (MIT License)\n\nModels are improved using Qwen.\n\n### Deployment Geography:\n\nGlobal\n\n### Use Case:\n\nLocateAnything-3B is intended for developers and researchers building vision-language models and applications that require fast and precise visual localization from natural language instructions.\n\nSupported use cases include:\n- Open-set, common, and long-tail object detection\n- Dense multi-object detection in cluttered scenes\n- Phrase and referring-expression grounding\n- Automated dataset labeling and annotation (e.g., detection, grounding, pointing)\n- GUI element grounding for interactive and agentic systems\n- Robotics and autonomous driving perception\n- Document understanding, layout grounding, and OCR localization\n- Industrial inspection, surveillance, and remote sensing applications\n- Point-based localization and fine-grained spatial reasoning\n\n### Release Date [Insert the expected release date below]:\n\n- Github [05/26/2026] via https://github.com/NVlabs/Eagle/tree/main/Embodied.\n- Hugging Face [05/26/2026] via https://huggingface.co/nvidia/LocateAnything-3B.\n- Demo [05/26/2026] via https://huggingface.co/spaces/nvidia/LocateAnything.\n- Webpage [05/26/2026] via https://research.nvidia.com/labs/lpr/locate-anything/.\n- Tech Report [05/26/2026] via https://research.nvidia.com/labs/lpr/locate-anything/LocateAnything.pdf\n\n## References(s):\n- Wang et al., [LocateAnything: Fast and High-Quality Vision-Language Grounding with Parallel Box Decoding](https://research.nvidia.com/labs/lpr/locate-anything/LocateAnything.pdf), NVIDIA Tech Report, 2026\n- Kimi Team, [Kimi-VL Technical Report](https://arxiv.org/abs/2504.07491), arXiv:2504.07491, 2025.\n- Qwen Team, [Qwen2.5: A Party of Foundation Models](https://qwen.ai/blog?id=qwen2.5), Qwen Blog, 2024.\n- Chen et al., [Pix2Seq: A Language Modeling Framework for Object Detection](https://arxiv.org/abs/2109.10852), ICLR, 2022.\n- Jiang et al., [Detect Anything via Next Point Prediction](https://arxiv.org/abs/2510.12798), arXiv:2510.12798, 2025.\n- Liu et al., [Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection](https://arxiv.org/abs/2303.05499), arXiv:2303.05499, 2023.\n- Lin et al., [Microsoft COCO: Common Objects in Context](https://arxiv.org/abs/1405.0312), ECCV, 2014.\n- Gupta et al., [LVIS: A Dataset for Large Vocabulary Instance Segmentation](https://arxiv.org/abs/1908.03195), CVPR, 2019.\n- Li et al., [ScreenSpot-Pro: GUI Grounding for Professional High-Resolution Computer Use](https://arxiv.org/abs/2504.07981), ACM MM, 2025.\n\n## Model Architecture:\n\n**Architecture Type:** Transformer-based vision-language model (VLM).  \n\n**Network Architecture:** Native-resolution VLM with the following components:\n- Vision encoder: MoonViT\n- Language model: Qwen2.5-3B-Instruct\n- Multimodal projector: MLP projector\n- Output formulation: Block-based structure for visual grounding\n\n**Number of model parameters:** 3B.\n\nLocateAnything extends a vision-language model with Parallel Box Decoding (PBD), a block-wise multi-token prediction framework for efficient visual grounding. Instead of autoregressive coordinate generation, the model predicts complete bounding boxes and points in parallel structured units, improving decoding efficiency while preserving geometric consistency. The architecture jointly optimizes next-token prediction and multi-token prediction to balance reasoning ability and parallel inference. Training follows a four-stage pipeline: initial multimodal knowledge adaptation using captioning, VQA, OCR, and related data, followed by grounding and dense-scene localization fine-tuning.\n\n## Input(s):\n\n**Input Type(s):** Image and Text.\n\n**Input Format(s):**\n- Image: RGB image input with original source resolution.\n- Text: Natural-language prompt or task template, such as object categories, referring expressions, GUI instructions, OCR/layout requests, or pointing queries.\n\n**Input Parameters:**\n- Image: Two-Dimensional (2D)\n- Text: One-Dimensional (1D)\n\n**Other Properties Related to Input:**\n- Production image resolution supports up to 2.5K.\n- Prompt length supports up to 24K tokens.\n- Training detection and grounding stages use a maximum sequence length of 25,600 tokens.\n- Inference supports up to 8,192 newly generated tokens.\n\n## Output(s):\n\n**Output Type(s):** Text.\n\n**Output Format(s):**\n- Text: Model-generated token sequence containing semantic labels and structured coordinate tokens, such as bounding boxes (`<box> x1, y1, x2, y2 </box>`) and points (`<box> x, y </box>`).\n\n**Output Parameters:**\n- Text: One-Dimensional (1D)\n- Bounding boxes/points: Two-Dimensional (2D) spatial coordinates\n\n**Other Properties Related to Output:**\n- Outputs are organized into fixed-length blocks (length 6), including Semantic, Box, Negative, and End blocks.\n- A Box block encodes quantized spatial coordinates with structural tokens; unused positions are padded with `<null>`.\n- Fast Mode predicts box-aligned blocks in parallel; Slow Mode uses autoregressive decoding; Hybrid Mode defaults to parallel decoding with fallback to autoregressive decoding for format irregularity or spatial ambiguity.\n\nOur AI models are designed and optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA hardware (e.g., GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves improved training and inference performance compared to CPU-only solutions.\n\n## Software Integration:\n**Runtime Engine(s):** \n* Transformers. The inference setup uses standard VLM generation with BF16 precision and KV cache. TensorRT, TensorRT-LLM, and Triton are not yet supported.\n\n**Supported Hardware Microarchitecture Compatibility:**\n\n* NVIDIA Ampere (e.g., A100)\n* NVIDIA Blackwell\n* NVIDIA Hopper (e.g., H100)\n* NVIDIA Lovelace (e.g., L40, RTX 4090)\n\nDeployment on embedded platforms such as NVIDIA Thor is possible with additional model optimization, including quantization, compression, or distillation. Other architectures may be supported depending on available memory, precision support, and software configuration.\n\n**Supported Operating System(s):**\n* Linux\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Model Version(s):\nLocateAnything-3B: 3B-parameter research model variant evaluated in Hybrid Mode by default. Fast, Hybrid, and Slow inference modes are supported by the same model formulation.\n\nLocateAnything-3B can be integrated into systems that require spatial grounding from natural language, such as GUI agents, robotics/embodied agents, document-understanding pipelines, OCR/text localization, and open-world detection workflows.\n\n## Training, Testing, and Evaluation Datasets:\n\n### Data Modality:\nImage and Text. <br>\n* Image <br>\n* Text <br>\n\n### Training Data Size: \n**Image Training Data Size:** <br>\n* 1 Million to 1 Billion Images - 12M unique images. <br>\n\n**Text Training Data Size:** <br>\n* 1 Billion to 10 Trillion Tokens - Derived from approximately 140M natural-language queries. <br>\n\n**Data Collection Method by dataset:** <br>\n- Hybrid: Human, Automated <br>\n  Data is collected from human-curated and open-source datasets, as well as automated ingestion of publicly available data sources.\n\n**Labeling Method by dataset:** <br>\n- Hybrid: Human, Synthetic, Automated <br>\n  Labeling includes original human or open-source annotations, along with model-assisted and synthetic annotation generation using Qwen3-VL, Molmo, SAM 3, and Rex-Omni, with automated post-verification.\n\n**Properties:** The training data consists of supervised fine-tuning (SFT) datasets with multimodal inputs, primarily image-text pairs and structured annotations such as bounding boxes, points, and negative samples.\n\nThe data spans multiple domains, including grounding, open-world grounding, general and dense object detection, scene text detection, GUI understanding and grounding, document layout understanding, and OCR.\n\nModalities include visual inputs (images) and natural-language queries or instructions. The dataset is derived from a mixture of publicly available academic datasets, along with model-assisted and synthetic annotations. It may include publicly available and potentially copyrighted content; users are responsible for ensuring compliance with applicable usage rights.\n\nThe linguistic content primarily consists of short, task-oriented natural-language expressions, such as object categories, referring expressions, GUI instructions, OCR queries, and grounding prompts, typically in English.\n\n## Evaluation Dataset:\n\n**Data Collection Method by dataset:**\n- Hybrid: Human, Automated\n\n**Labeling Method by dataset:**\n- Hybrid: Human, Synthetic, Automated\n\n**Properties:** The evaluation datasets consist of publicly available benchmarks spanning visual grounding, object detection, document understanding, scene text detection, and GUI-related tasks. Modalities include image inputs paired with natural-language queries and structured annotations such as bounding boxes and points.\n\nThe evaluation suite covers both box-level and point-level grounding tasks, with approximately 48K images for box evaluation and 35K images for point evaluation across multiple datasets. These datasets span diverse domains including natural scenes, documents, aerial imagery, and human-centric interactions, enabling comprehensive assessment of localization accuracy and robustness.\n\nEvaluation queries are typically short, task-oriented natural-language expressions such as referring phrases, object categories, and grounding prompts.\n\nPerformance is measured using box-based F1 at IoU thresholds of 0.5 and 0.95, as well as mean IoU for detection, layout, and OCR tasks. Point-based localization is evaluated based on whether predicted points fall within ground-truth segmentation masks or bounding boxes. Inference efficiency is reported in boxes per second (BPS) on a single NVIDIA H100 GPU with batch size 1.\n\n## Quantitative Evaluation Benchmarks\n\n### General Object Detection\n<p align=\"left\">\n  <img src=\"assets/coco_lvis.png\" width=\"700\">\n</p>\n\n### Dense Object Detection\n<p align=\"left\">\n  <img src=\"assets/dense_object_detection.png\" width=\"700\">\n</p>\n\n### GUI Understanding\n<p align=\"left\">\n  <img src=\"assets/sspro.png\" width=\"700\">\n</p>\n\n### Layout Grounding and OCR\n<p align=\"left\">\n  <img src=\"assets/layout_ocr.png\" width=\"700\">\n</p>\n\n### Referring Expression Grounding\n<p align=\"left\">\n  <img src=\"assets/referring.png\" width=\"700\">\n</p>\n\n### Pointing\n<p align=\"left\">\n  <img src=\"assets/pointing.png\" width=\"700\">\n</p>\n\n## Inference:\n\nTest Hardware: H100 & A100\n\nWe suggest using `max_new_tokens=8192` and `generation_mode=\"hybrid\"` to avoid truncated response and balance speed with accuracy.\n\n### Batch Hybrid Inference\n\nThis release includes `batch_infer.py`, `batch_utils`, and `kernel_utils` for\nhigh-throughput detection and grounding. The `la_flash` backend is a pure\nFlashAttention-varlen sparse range executor: it keeps LocateAnything's hybrid\nMTP decoding path, avoids dense `[B,H,Q,K]` SDPA masks, and does not require a\ncustom CUDA extension build.\n\nUse it with:\n\n```bash\npython batch_infer.py \\\n  --model . \\\n  --attn la_flash \\\n  --scheduler pipeline \\\n  --batch-size 4 \\\n  --image /path/to/image.jpg \\\n  --query \"person</c>car\"\n```\n\nA100 4K probe, real 3840x2160 street image, `query=vehicle`,\n`batch_size=4`, raw PIL input, `in_token_limit=25600`, hybrid MTP inference:\n\n| Backend | Attention Path | Time | Peak Reserved Memory |\n| --- | --- | ---: | ---: |\n| `sdpa` | Dense SDPA masks | 8.2600 s | 35.12 GB |\n| `la_flash` | FlashAttention sparse range plan | 8.0314 s | 11.71 GB |\n\nSee `batch_utils/README.md` and `kernel_utils/README.md` for runtime knobs and\nimplementation details.\n\n### Installation\n\n```bash\npip install opencv-python-headless==4.11.0.86 transformers==4.57.1 numpy==1.25.0 Pillow==11.1.0 peft torchvision decord==0.6.0 lmdb==1.7.5\n```\n\n> PyTorch (`torch`) must be installed separately according to your CUDA version. See [pytorch.org/get-started](https://pytorch.org/get-started/locally/).\n\nOptional \u2014 [MagiAttention](https://sandai-org.github.io/MagiAttention/docs/main/user_guide/install.html) (Hopper / Blackwell GPUs only, recommended for faster MTP inference):\n\n```bash\ngit clone https://github.com/SandAI-org/MagiAttention.git\ncd MagiAttention\ngit checkout v1.0.5\ngit submodule update --init --recursive\npip install -r requirements.txt\npip install --no-build-isolation .\n```\n\nIf MagiAttention is installed, the model will automatically use it for efficient MTP block-diffusion attention. If not installed, it will fall back to PyTorch SDPA \u2014 fully functional but slower for MTP decoding.\n\n### Worker (recommended)\n\nBelow is a self-contained worker that loads the model once and serves perception queries via a unified `predict()` plus task-specific convenience methods. You can drop this class into any FastAPI / gRPC / Triton serving framework.\n\n```python\nimport re\nimport torch\nfrom PIL import Image\nfrom transformers import AutoModel, AutoTokenizer, AutoProcessor\n\n\nclass LocateAnythingWorker:\n    \"\"\"Stateful worker that loads the model once and serves perception queries.\"\"\"\n\n    def __init__(self, model_path: str, device: str = \"cuda\", dtype=torch.bfloat16):\n        self.device = device\n        self.dtype = dtype\n\n        self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)\n        self.processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)\n        self.model = AutoModel.from_pretrained(\n            model_path,\n            torch_dtype=dtype,\n            trust_remote_code=True,\n        ).to(device).eval()\n\n    @torch.no_grad()\n    def predict(\n        self,\n        image: Image.Image,\n        question: str,\n        generation_mode: str = \"hybrid\",   # \"fast\" (MTP) | \"slow\" (NTP/AR) | \"hybrid\"\n        max_new_tokens: int = 2048,\n        temperature: float = 0.7,\n        verbose: bool = True,\n    ) -> dict:\n        messages = [\n            {\"role\": \"user\", \"content\": [\n                {\"type\": \"image\", \"image\": image},\n                {\"type\": \"text\", \"text\": question},\n            ]}\n        ]\n\n        text = self.processor.py_apply_chat_template(\n            messages, tokenize=False, add_generation_prompt=True\n        )\n        images, videos = self.processor.process_vision_info(messages)\n        inputs = self.processor(\n            text=[text], images=images, videos=videos, return_tensors=\"pt\"\n        ).to(self.device)\n\n        pixel_values = inputs[\"pixel_values\"].to(self.dtype)\n        input_ids = inputs[\"input_ids\"]\n        image_grid_hws = inputs.get(\"image_grid_hws\", None)\n\n        response = self.model.generate(\n            pixel_values=pixel_values,\n            input_ids=input_ids,\n            attention_mask=inputs[\"attention_mask\"],\n            image_grid_hws=image_grid_hws,\n            tokenizer=self.tokenizer,\n            max_new_tokens=max_new_tokens,\n            use_cache=True,\n            generation_mode=generation_mode,\n            temperature=temperature,\n            do_sample=True,\n            top_p=0.9,\n            repetition_penalty=1.1,\n            verbose=verbose,\n        )\n\n        result = {\"answer\": response[0] if isinstance(response, tuple) else response}\n        if isinstance(response, tuple) and len(response) >= 3:\n            result[\"history\"] = response[1]\n            result[\"stats\"] = response[2]\n        return result\n\n    # ---- Convenience methods for each task ----\n\n    def detect(self, image: Image.Image, categories: list[str], **kwargs) -> dict:\n        \"\"\"Object detection / document layout analysis.\"\"\"\n        cats = \"</c>\".join(categories)\n        prompt = f\"Locate all the instances that matches the following description: {cats}.\"\n        return self.predict(image, prompt, **kwargs)\n\n    def ground_single(self, image: Image.Image, phrase: str, **kwargs) -> dict:\n        \"\"\"Phrase grounding \u2014 single instance.\"\"\"\n        prompt = f\"Locate a single instance that matches the following description: {phrase}.\"\n        return self.predict(image, prompt, **kwargs)\n\n    def ground_multi(self, image: Image.Image, phrase: str, **kwargs) -> dict:\n        \"\"\"Phrase grounding \u2014 multiple instances.\"\"\"\n        prompt = f\"Locate all the instances that match the following description: {phrase}.\"\n        return self.predict(image, prompt, **kwargs)\n\n    def ground_text(self, image: Image.Image, phrase: str, **kwargs) -> dict:\n        \"\"\"Text grounding.\"\"\"\n        prompt = f\"Please locate the text referred as {phrase}.\"\n        return self.predict(image, prompt, **kwargs)\n\n    def detect_text(self, image: Image.Image, **kwargs) -> dict:\n        \"\"\"Scene text detection.\"\"\"\n        prompt = \"Detect all the text in box format.\"\n        return self.predict(image, prompt, **kwargs)\n\n    def ground_gui(self, image: Image.Image, phrase: str, output_type: str = \"box\", **kwargs) -> dict:\n        \"\"\"GUI grounding (box or point).\"\"\"\n        if output_type == \"point\":\n            prompt = f\"Point to: {phrase}.\"\n        else:\n            prompt = f\"Locate the region that matches the following description: {phrase}.\"\n        return self.predict(image, prompt, **kwargs)\n\n    def point(self, image: Image.Image, phrase: str, **kwargs) -> dict:\n        \"\"\"Pointing.\"\"\"\n        prompt = f\"Point to: {phrase}.\"\n        return self.predict(image, prompt, **kwargs)\n\n    # ---- Utility: parse model output ----\n\n    @staticmethod\n    def parse_boxes(answer: str, image_width: int, image_height: int) -> list[dict]:\n        \"\"\"Parse model output into pixel-coordinate bounding boxes.\n\n        Coordinates in model output are normalized integers in [0, 1000].\n        \"\"\"\n        boxes = []\n        for m in re.finditer(r\"<box><(\\d+)><(\\d+)><(\\d+)><(\\d+)></box>\", answer):\n            x1, y1, x2, y2 = [int(g) for g in m.groups()]\n            boxes.append({\n                \"x1\": x1 / 1000 * image_width,\n                \"y1\": y1 / 1000 * image_height,\n                \"x2\": x2 / 1000 * image_width,\n                \"y2\": y2 / 1000 * image_height,\n            })\n        return boxes\n\n    @staticmethod\n    def parse_points(answer: str, image_width: int, image_height: int) -> list[dict]:\n        \"\"\"Parse model output into pixel-coordinate points.\"\"\"\n        points = []\n        for m in re.finditer(r\"<box><(\\d+)><(\\d+)></box>\", answer):\n            x, y = int(m.group(1)), int(m.group(2))\n            points.append({\n                \"x\": x / 1000 * image_width,\n                \"y\": y / 1000 * image_height,\n            })\n        return points\n```\n\n### Usage Example\n\n```python\nworker = LocateAnythingWorker(\"nvidia/LocateAnything-3B\")\nimg = Image.open(\"example.jpg\").convert(\"RGB\")\n\n# Object Detection\nresult = worker.detect(img, [\"person\", \"car\", \"bicycle\"])\nprint(\"Detection:\", result[\"answer\"])\n\n# Phrase Grounding (multiple)\nresult = worker.ground_multi(img, \"people wearing red shirts\")\nprint(\"Grounding:\", result[\"answer\"])\n\n# Scene Text Detection\nresult = worker.detect_text(img)\nprint(\"Text Detection:\", result[\"answer\"])\n\n# Pointing\nresult = worker.point(img, \"the traffic light\")\nprint(\"Pointing:\", result[\"answer\"])\n\n# GUI Grounding (point)\nresult = worker.ground_gui(img, \"the search button\", output_type=\"point\")\nprint(\"GUI Point:\", result[\"answer\"])\n\n# Parse structured output into pixel coordinates\nw, h = img.size\nboxes = LocateAnythingWorker.parse_boxes(result[\"answer\"], w, h)\npoints = LocateAnythingWorker.parse_points(result[\"answer\"], w, h)\n```\n\n### Supported Tasks & Prompt Templates\n\n| Task | Worker Method | Output | Prompt Template |\n| --- | --- | --- | --- |\n| Object Detection | `worker.detect(img, [...])` | Box | `Locate all the instances that matches the following description: [CATEGORIES].` |\n| Phrase Grounding (single) | `worker.ground_single(img, phrase)` | Single Box | `Locate a single instance that matches the following description: [PHRASE].` |\n| Phrase Grounding (multi) | `worker.ground_multi(img, phrase)` | Multiple Boxes | `Locate all the instances that match the following description: [PHRASE].` |\n| Text Grounding | `worker.ground_text(img, phrase)` | Box | `Please locate the text referred as [PHRASE].` |\n| Scene Text Detection | `worker.detect_text(img)` | Box | `Detect all the text in box format.` |\n| Document Layout Analysis | `worker.detect(img, [...])` | Box | `Locate all the instances that matches the following description: [CATEGORIES].` |\n| GUI Grounding (box) | `worker.ground_gui(img, phrase, \"box\")` | Box | `Locate the region that matches the following description: [PHRASE].` |\n| GUI Grounding (point) / Pointing | `worker.ground_gui(img, phrase, \"point\")` / `worker.point(img, phrase)` | Point | `Point to: [PHRASE].` |\n\n`[PHRASE]` is a free-form natural-language description; `[CATEGORIES]` is a comma-separated list (multiple categories may also be joined with `</c>`).\n\n### Generation Modes\n\n| Mode | Description | Speed | Accuracy |\n| --- | --- | --- | --- |\n| `fast` | MTP only, never falls back to AR | Fastest | Good for simple scenes |\n| `slow` | Pure auto-regressive decoding | Slowest | Most robust |\n| `hybrid` (default) | MTP first, falls back to AR on uncertain boxes, switches back after box boundary | Balanced | Best overall |\n\n## Batch Utils and Kernel Utils\n\nThis repository also includes optional utilities for high-throughput detection\nruns:\n\n- `batch_infer.py`: JSONL/image-query batch inference CLI.\n- `batch_utils/`: batched hybrid generation runtime. See\n  `batch_utils/README.md`.\n- `kernel_utils/`: LA Flash sparse range utilities. See\n  `kernel_utils/README.md`.\n\nRun a small batch inference job:\n\n```bash\npython batch_infer.py \\\n  --model . \\\n  --attn la_flash \\\n  --scheduler pipeline \\\n  --batch-size 4 \\\n  --image assets/pointing.png \\\n  --query \"the object being pointed at\"\n```\n\nThe batched sparse-plan decode runtime is intended for inference/evaluation and\ndoes not support the training `labels` path. Training remains on the\nMagiAttention backend.\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nPlease make sure you have proper rights and permissions for all input image and video content; if image or video includes people, personal health information, or intellectual property, the image or video generated will not blur or maintain proportions of image subjects included.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://app.intigriti.com/programs/nvidia/nvidiavdp/detail).\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "nvidia-license",
+    "license_link": "https://huggingface.co/nvidia/LocateAnything-3B/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "eagle",
+      "vision",
+      "object-detection",
+      "grounding",
+      "locateanything",
+      "arxiv:2605.27365"
+    ],
+    "demo": "https://huggingface.co/spaces/nvidia/LocateAnything",
+    "github": "https://github.com/NVlabs/Eagle/tree/main/Embodied",
+    "library_name": "transformers",
+    "pipeline_tag": "image-text-to-text",
+    "base_model": [
+      "Qwen/Qwen2.5-3B-Instruct"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_locateanything.LocateAnythingForConditionalGeneration",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

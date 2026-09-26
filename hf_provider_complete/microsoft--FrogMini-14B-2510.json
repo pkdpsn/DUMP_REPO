@@ -1,0 +1,196 @@
+{
+  "modelId": "microsoft/FrogMini-14B-2510",
+  "author": "microsoft",
+  "sha": "bde8b2b59a5f8f98294b2cd096ecb727042c975f",
+  "lastModified": "2026-01-15 13:48:52+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3",
+    "text-generation",
+    "conversational",
+    "arxiv:2510.19898",
+    "base_model:Qwen/Qwen3-14B",
+    "base_model:finetune:Qwen/Qwen3-14B",
+    "license:mit",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 64,
+  "downloads": 337,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "Qwen/Qwen3-14B",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen3ForCausalLM"
+    ],
+    "model_type": "qwen3",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, use this XML format:\\n\\n<function=function_name>\\n  <parameter=param1>value1</parameter>\\n  <parameter=param2>value2</parameter>\\n</function>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<function=' + tool_call.name + '>\\n' }}\n                {%- if tool_call.arguments is string %}\n                    {%- set args = tool_call.arguments | fromjson %}\n                {%- else %}\n                    {%- set args = tool_call.arguments %}\n                {%- endif %}\n                {%- for param_name, param_value in args.items() %}\n                    {{- '  <parameter=' + param_name + '>' + param_value + '</parameter>\\n' }}\n                {%- endfor %}\n                {{- '</function>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 1141,
+      "lfs": null
+    },
+    {
+      "rfilename": "NOTICE.md",
+      "size": 780,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 11721,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 4260,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1633,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00006.safetensors",
+      "size": 4984780784,
+      "lfs": {
+        "size": 4984780784,
+        "sha256": "0ae25735eca0d3f3c858cd8d78c67a5b7a180c2efd15dff213ad2dddaeebc0cc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00006.safetensors",
+      "size": 4980892048,
+      "lfs": {
+        "size": 4980892048,
+        "sha256": "da2cc39010f2f1d7815418f7e299f5bd71fa42cc889907b32ee67403002b450c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00006.safetensors",
+      "size": 4928485104,
+      "lfs": {
+        "size": 4928485104,
+        "sha256": "1d0d620abef3b3413d131bcb6a6fc3842fe8509bfe691c4d9839ab42686973af",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00006.safetensors",
+      "size": 4980892112,
+      "lfs": {
+        "size": 4980892112,
+        "sha256": "a9ceee9f4a18d473af0803b3072bf6e1150272775824a298be6a84926dc2613d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00006.safetensors",
+      "size": 4928485104,
+      "lfs": {
+        "size": 4928485104,
+        "sha256": "464ea1c293e2448cb65cee4b2d96e701dfcb2e714968d97e0ac18a0df1a04877",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00006.safetensors",
+      "size": 4733130504,
+      "lfs": {
+        "size": 4733130504,
+        "sha256": "38b0cb181310990dd785dafbb1e237c5b259f19bc59141ee04bb4b8184b95add",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 36546,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5431,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\npipeline_tag: text-generation\nbase_model: Qwen/Qwen3-14B\nlicense: mit\n---\n# FrogMini-14B-2510\n\n\n| **Field** | **Value** |\n|----------|-----------|\n| Developer | Microsoft Corporation<br>**Authorized representative: Microsoft Ireland Operations Limited 70 Sir John Rogerson\u2019s Quay, Dublin 2, D02 R296, Ireland** |\n| Description | FrogMini is a 14B-parameter coding agent specialized in fixing bugs in code. FrogMini was obtained by fine\u2011tuning a Qwen3\u201114B language model on debugging trajectories generated by Claude Sonnet 4 within the [BugPilot framework](https://aka.ms/bug-pilot). The training data combines real\u2011world bugs from R2E\u2011Gym, synthetic bugs from SWE\u2011Smith, and novel \u201cFeatAdd\u201d bugs. |\n| Model architecture | FrogMini is based on Qwen3\u201114B, a transformer model with 64k context, optimized for multi\u2011turn debugging workflows. |\n| Parameters | 14B |\n| Inputs | Text (max input length: 46k tokens). |\n| Context length | 64k tokens |\n| Outputs | Text (max output length: 8k tokens). |\n| GPUs | 8 \u00d7 H100 |\n| Training time | 1 day |\n| Public data summary | Tech Report: https://arxiv.org/abs/2510.19898\nBlog Post: https://microsoft.github.io/debug-gym/blog/2025/10/bug-pilot |\n| Dates | August-October, 2025 |\n| Status | Static model trained on offline dataset collected before September 2025. |\n| Release date / EU release date | January 12th, 2026|\n| License | MIT License |\n| Model dependencies | https://huggingface.co/Qwen/Qwen3-14B |\n| Additional related assets | N/A |\n| Acceptable use policy | N/A |\n\n\n\n## Model overview\n\nFrogMini is built on the Qwen3-14B transformer architecture with a maximum context length of 64k tokens. The model uses multi-turn debugging workflows and complex code reasoning. Unlike general-purpose LLMs, FrogMini is specialized for software engineering tasks.\n\nThe training procedure comes down to supervised fine-tuning (SFT) on successful debugging trajectories produced by a strong teacher model (e.g., claude-sonnet-4). Those trajectories were obtained from a mix of real-world and synthetic bug datasets (e.g., R2E-Gym, SWE-Smith) and high-quality FeatAdd bugs generated through the BugPilot framework. This approach ensures the model learns realistic debugging patterns rather than trivial fixes. Compared to other open-weight models, FrogMini stands out for its parameter's efficiency, achieving state-of-the-art performance on [SWE-Bench Verified](https://www.swebench.com/) (Pass@1: 45.0%) with 14B parameters, and its emphasis on realistic, multi-file debugging scenarios, making it more robust for real-world coding environments.\n\n### Alignment approach\n\nThe model was trained to ensure alignment with intended behavior of producing accurate bug identification and code patches by curating high-quality trajectories and removing failure patterns. Specifically, all unsuccessful debugging attempts were excluded from the training data to prevent reinforcement of ineffective strategies. Additionally, safeguards were applied to the teacher model to avoid \u201ccheating\u201d by dropping tasks that were failing. This approach ensures that the model consistently learns from successful problem-solving examples and produces reliable bug identification and code fix proposals aligned with developer expectations.\n\n## Usage\n\n### Primary use cases\n\nFrogMini is intended for software engineering and debugging tasks in controlled research environments, excelling at multi-turn reasoning, code repair, and feature-level bug resolution across complex repositories. It is optimized for scenarios such as automated bug fixing.\n\n**Intended Uses**\n\n- Debugging and repairing code in controlled environments.\n- Automated resolution of software bugs across multi-file repositories.\n- Research and development of agentic workflows for software engineering.\n\n\n### Out-of-scope use cases\n\nFrogMini has several limitations and constraints that users should be aware of. While it excels at debugging and multi-file code reasoning, it is restricted to text-based inputs and outputs and cannot process or generate images, audio, or video. The model may struggle with highly domain-specific codebases outside its training distribution and can produce incorrect or incomplete fixes if prompts are ambiguous. It is not designed for general-purpose text generation or tasks unrelated to software engineering.\n\nProhibited uses include generating harmful or insecure code, engaging in activities that violate legal or ethical standards, producing disallowed content (e.g., sexual, violent, hateful), or using the model for tasks unrelated to software development or outside a research setting.\n\n### Distribution channels\n\nModel weights are available on [HuggingFace](https://huggingface.co/microsoft/FrogMini-14B-2510) and Azure AI Foundry.\n\n### Input formats\n\nGiven the nature of the training data, FrogMini is best suited for prompts using the chat format as follows:\n\n```json\n[\n\u2003\u2003{\n\u2003\u2003\u2003\u2003\"role\": \"system\",\n\u2003\u2003\u2003\u2003\"content\": \"The system prompt, followed by the list of descriptions of available functions, and a templatic function call example.\"\n\u2003\u2003},\n\u2003\u2003{\n\u2003\u2003\u2003\u2003\"role\": \"user\",\n\u2003\u2003\u2003\u2003\"content\": \"The first user prompt, which includes a paragraph describing the problem statement, and a list of general instructions on bug fixing tasks.\"\n\u2003\u2003},\n\u2003\u2003...,\n\u2003\u2003{\n\u2003\u2003\u2003\u2003\"role\": \"assistant\",\n\u2003\u2003\u2003\u2003\"content\": \"The reasoning content generated by the agent in previous step.\n<function=the_called_function_name>\n<parameter=example_parameter_1>value_1</parameter>\n</function>\"\n\u2003\u2003},\n\u2003\u2003{\n\u2003\u2003\u2003\u2003\"role\": \"user\",\n\u2003\u2003\u2003\u2003\"content\": \"The new observation returned from the environment in response to the agent's previous function call.\"\n\u2003\u2003}\n]\n```\n\n#### Using R2E-Gym Agent\u2019s scaffolding\n\nClone R2E-Gym repository and install dependencies:\n\n```bash\ngit clone https://github.com/R2E-Gym/R2E-Gym.git\ncd R2E-Gym\npip install -e .\n```\n\n**Serving the model**\n\nThe recommended way to serve FrogMini-14B-2510 is with vLLM.\n\n```bash\nvllm serve microsoft/FrogMini-14B-2510 --tensor-parallel-size 4 \\\n--enable-prefix-caching \\\n--gpu-memory-utilization 0.9 \\\n--max-model-len 65536 \\\n--hf-overrides '{\"max_position_embeddings\": 65536}'\n```\n\n**Example code snippet**\n\n```python\nimport os\nfrom r2egym.agenthub.environment.env import EnvArgs, RepoEnv\nfrom r2egym.agenthub.agent.agent import AgentArgs, Agent\nfrom pathlib import Path\nfrom datasets import load_dataset\n\nds = load_dataset(\"R2E-Gym/SWE-Bench-Verified\")[\"test\"]\nenv_index = 100 # index of the environment [0, len(ds)]\nenv_args = EnvArgs(ds = ds[env_index])\nenv = RepoEnv(env_args)\n\nagent_args = AgentArgs.from_yaml(Path('./src/r2egym/agenthub/config/r2egym/edit_non_fn_calling.yaml'))\nos.environ[\"LLM_BASE_URL\"] = \"http://127.0.0.1:8000/v1\"\nagent_args.llm_name = 'hosted_vllm/microsoft/FrogMini-14B-2510'\nagent = Agent(name=\"EditingAgent\", args=agent_args)\noutput = agent.run(env, max_steps=40, use_fn_calling=False)\n```\n\n### Responsible AI considerations\n\nThe model may struggle with highly domain-specific codebases outside its training distribution and can produce incorrect or incomplete fixes if prompts are ambiguous. It is not designed for general-purpose text generation or tasks unrelated to software engineering. The user should keep these limitations in mind when choosing a use case.\n\n**Best Practices**\n\n- Always validate generated code for security and correctness.\n- Use the model in environments with proper monitoring, guardrails, and sandboxing.\n\n## Data overview\n\n### Training, testing, and validation datasets\n\nThe training data consists of a collection of 9k debugging trajectories (i.e., sequence of tool calls, and code generation) produced by a strong teacher model (e.g., claude-sonnet-4). Those trajectories were obtained from a mix of real-world bugs (R2E-Gym), synthetic bugs (e.g., SWE-Smith), and high-quality FeatAdd bugs generated with the BugPilot framework. The composition of the dataset ensures the model learns realistic debugging patterns rather than trivial fixes.\n\n## Quality and performance evaluation\n\nFrogMini was evaluated on SWE-Bench Verified (500 problems) using the R2E-Gym agent scaffolding with 64k max context length, 100 max environment steps, and temperature of 1.0. We report Pass@1 accuracy averaged over 3 runs.\n\n\n| **Models**             | **Scaffolds**     | **Bugs** | **Trajectories** | **SWE\u2011Bench Verified (%)** |\n|------------------------|-------------------|----------|-------------------|-----------------------------|\n| FrogBoss\u201132B\u20112510      | R2E\u2011Gym           | 3k       | 9k                | **54.6**                    |\n| CWM\u201132B                | Agentless         | -        | -                 | 53.9                        |\n| SWE\u2011Mirror\u2011LM\u201132B      | OpenHands         | 60k      | 12k               | 52.2                        |\n| FrogMini\u201114B\u20112510      | R2E\u2011Gym           | 3k       | 9k                | **45.3**                    |\n| DeepSWE\u201132B\u2011Preview    | R2E\u2011Gym           | 4.6k     | -                 | 42.2                        |\n| SWE\u2011Smith\u2011LM\u201132B       | SWE\u2011Agent         | 50k      | 5k                | 40.2                        |\n| Skywork\u2011SWE\u201132B        | OpenHands         | 10.1k    | 8k                | 38.0                        |\n| R2E\u2011Gym\u201132B            | R2E\u2011Gym           | 4.6k     | 4.5k              | 34.4                        |\n| SWE\u2011Gym\u201132B            | OpenHands         | 2.4k     | 491               | 20.6                        |\n| **Larger Open Weights Models** |               |          |                   |                             |\n| GLM\u20114.5\u2011358B           | SWE\u2011Agent         | -        | -                 | 64.2                        |\n| Qwen3\u2011Coder\u2011480B       | mini\u2011SWE\u2011Agent    | -        | -                 | 55.4                        |\n| GLM\u20114.5\u2011358B           | mini\u2011SWE\u2011Agent    | -        | -                 | 54.2                        |\n| DeepSeek\u2011R1\u20110528       | OpenHands         | -        | -                 | 45.6                        |\n| SWE\u2011RL\u201170B             | Agentless         | -        | -                 | 41.0                        |\n| SWE\u2011Fixer\u201172B          | SWE\u2011Fixer         | 110k     | -                 | 32.8                        |\n| **Proprietary Models** |                   |          |                   |                             |\n| Claude Sonnet 4        | Moatless Tools    | -        | -                 | 70.8                        |\n| Claude Sonnet 4        | SWE\u2011Agent         | -        | -                 | 66.6                        |\n| Claude Sonnet 4        | R2E\u2011Gym           | -        | -                 | 66.9                        |\n| GPT\u20115                  | R2E\u2011Gym           | -        | -                 | 65.7                        |\n| GPT\u20114o                 | R2E\u2011Gym           | -        | -                 | 29.3                        |\n\n### Long context\n\nOur models don\u2019t support long context.\n\n### Safety evaluation and red-teaming\n\nThe primary mode of failure for FrogMini occurs when, given a buggy codebase and a task statement describing the problem (similar to a GitHub issue), the model generates a code patch that attempts to fix the bug, but the patch may be incorrect. Users should be aware that the output code patch might not successfully resolve the issue or could introduce new errors.\n\n## Acknowledgement\n\nOur training used LLaMA-Factory, an open-source LLM fine-tuning library.<br>\nOur model is trained on top of Qwen/Qwen3-14B.<br>\nOur model has been optimized for the R2E-Gym's agent scaffolding.",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "pipeline_tag": "text-generation",
+    "base_model": "Qwen/Qwen3-14B",
+    "license": "mit",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

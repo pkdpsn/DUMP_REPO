@@ -1,0 +1,317 @@
+{
+  "modelId": "nvidia/gpt-oss-puzzle-88B",
+  "author": "nvidia",
+  "sha": "9c0e0746a0d2218b28cc7b2cb3ce4e1a2f50fdb2",
+  "lastModified": "2026-04-28 06:49:34+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "gpt_oss_puzzle",
+    "text-generation",
+    "nvidia",
+    "gpt-oss",
+    "puzzle",
+    "mixture-of-experts",
+    "reasoning",
+    "pytorch",
+    "vllm",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2411.19146",
+    "arxiv:2508.10925",
+    "arxiv:2602.11937",
+    "license:other",
+    "8-bit",
+    "mxfp4",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 95,
+  "downloads": 498,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "gpt-oss",
+      "puzzle",
+      "mixture-of-experts",
+      "reasoning",
+      "pytorch",
+      "transformers",
+      "vllm"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "GptOssPuzzleForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_gpt_oss_puzzle.GptOssPuzzleConfig",
+      "AutoModelForCausalLM": "modeling_gpt_oss_puzzle.GptOssPuzzleForCausalLM"
+    },
+    "model_type": "gpt_oss_puzzle",
+    "num_experts_per_tok": 4,
+    "quantization_config": {
+      "modules_to_not_convert": [
+        "model.layers.*.self_attn",
+        "model.layers.*.mlp.router",
+        "model.embed_tokens",
+        "lm_head"
+      ],
+      "quant_method": "mxfp4"
+    },
+    "tokenizer_config": {
+      "bos_token": "<|startoftext|>",
+      "eos_token": "<|return|>",
+      "pad_token": "<|endoftext|>"
+    },
+    "chat_template_jinja": "{#-\n  In addition to the normal inputs of `messages` and `tools`, this template also accepts the\n  following kwargs:\n  - \"builtin_tools\": A list, can contain \"browser\" and/or \"python\".\n  - \"model_identity\": A string that optionally describes the model identity.\n  - \"reasoning_effort\": A string that describes the reasoning effort, defaults to \"medium\".\n #}\n\n{#- Tool Definition Rendering ============================================== #}\n{%- macro render_typescript_type(param_spec, required_params, is_nullable=false) -%}\n    {%- if param_spec.type == \"array\" -%}\n        {%- if param_spec['items'] -%}\n            {%- if param_spec['items']['type'] == \"string\" -%}\n                {{- \"string[]\" }}\n            {%- elif param_spec['items']['type'] == \"number\" -%}\n                {{- \"number[]\" }}\n            {%- elif param_spec['items']['type'] == \"integer\" -%}\n                {{- \"number[]\" }}\n            {%- elif param_spec['items']['type'] == \"boolean\" -%}\n                {{- \"boolean[]\" }}\n            {%- else -%}\n                {%- set inner_type = render_typescript_type(param_spec['items'], required_params) -%}\n                {%- if inner_type == \"object | object\" or inner_type|length > 50 -%}\n                    {{- \"any[]\" }}\n                {%- else -%}\n                    {{- inner_type + \"[]\" }}\n                {%- endif -%}\n            {%- endif -%}\n            {%- if param_spec.nullable -%}\n                {{- \" | null\" }}\n            {%- endif -%}\n        {%- else -%}\n            {{- \"any[]\" }}\n            {%- if param_spec.nullable -%}\n                {{- \" | null\" }}\n            {%- endif -%}\n        {%- endif -%}\n    {%- elif param_spec.type is defined and param_spec.type is iterable and param_spec.type is not string and param_spec.type is not mapping and param_spec.type[0] is defined -%}\n        {#- Handle array of types like [\"object\", \"object\"] from Union[dict, list] #}\n        {%- if param_spec.type | length > 1 -%}\n            {{- param_spec.type | join(\" | \") }}\n        {%- else -%}\n            {{- param_spec.type[0] }}\n        {%- endif -%}\n    {%- elif param_spec.oneOf -%}\n        {#- Handle oneOf schemas - check for complex unions and fallback to any #}\n        {%- set has_object_variants = false -%}\n        {%- for variant in param_spec.oneOf -%}\n            {%- if variant.type == \"object\" -%}\n                {%- set has_object_variants = true -%}\n            {%- endif -%}\n        {%- endfor -%}\n        {%- if has_object_variants and param_spec.oneOf|length > 1 -%}\n            {{- \"any\" }}\n        {%- else -%}\n            {%- for variant in param_spec.oneOf -%}\n                {{- render_typescript_type(variant, required_params) -}}\n                {%- if variant.description %}\n                    {{- \"// \" + variant.description }}\n                {%- endif -%}\n                {%- if variant.default is defined %}\n                    {{ \"// default: \" + variant.default|tojson }}\n                {%- endif -%}\n                {%- if not loop.last %}\n                    {{- \" | \" }}\n                {% endif -%}\n            {%- endfor -%}\n        {%- endif -%}\n    {%- elif param_spec.type == \"string\" -%}\n        {%- if param_spec.enum -%}\n            {{- '\"' + param_spec.enum|join('\" | \"') + '\"' -}}\n        {%- else -%}\n            {{- \"string\" }}\n            {%- if param_spec.nullable %}\n                {{- \" | null\" }}\n            {%- endif -%}\n        {%- endif -%}\n    {%- elif param_spec.type == \"number\" -%}\n        {{- \"number\" }}\n    {%- elif param_spec.type == \"integer\" -%}\n        {{- \"number\" }}\n    {%- elif param_spec.type == \"boolean\" -%}\n        {{- \"boolean\" }}\n\n    {%- elif param_spec.type == \"object\" -%}\n        {%- if param_spec.properties -%}\n            {{- \"{\\n\" }}\n            {%- for prop_name, prop_spec in param_spec.properties.items() -%}\n                {{- prop_name -}}\n                {%- if prop_name not in (param_spec.required or []) -%}\n                    {{- \"?\" }}\n                {%- endif -%}\n                {{- \": \" }}\n                {{ render_typescript_type(prop_spec, param_spec.required or []) }}\n                {%- if not loop.last -%}\n                    {{-\", \" }}\n                {%- endif -%}\n            {%- endfor -%}\n            {{- \"}\" }}\n        {%- else -%}\n            {{- \"object\" }}\n        {%- endif -%}\n    {%- else -%}\n        {{- \"any\" }}\n    {%- endif -%}\n{%- endmacro -%}\n\n{%- macro render_tool_namespace(namespace_name, tools) -%}\n    {{- \"## \" + namespace_name + \"\\n\\n\" }}\n    {{- \"namespace \" + namespace_name + \" {\\n\\n\" }}\n    {%- for tool in tools %}\n        {%- set tool = tool.function %}\n        {{- \"// \" + tool.description + \"\\n\" }}\n        {{- \"type \"+ tool.name + \" = \" }}\n        {%- if tool.parameters and tool.parameters.properties %}\n            {{- \"(_: {\\n\" }}\n            {%- for param_name, param_spec in tool.parameters.properties.items() %}\n                {%- if param_spec.description %}\n                    {{- \"// \" + param_spec.description + \"\\n\" }}\n                {%- endif %}\n                {{- param_name }}\n                {%- if param_name not in (tool.parameters.required or []) -%}\n                    {{- \"?\" }}\n                {%- endif -%}\n                {{- \": \" }}\n                {{- render_typescript_type(param_spec, tool.parameters.required or []) }}\n                {%- if param_spec.default is defined -%}\n                    {%- if param_spec.enum %}\n                        {{- \", // default: \" + param_spec.default }}\n                    {%- elif param_spec.oneOf %}\n                        {{- \"// default: \" + param_spec.default }}\n                    {%- else %}\n                        {{- \", // default: \" + param_spec.default|tojson }}\n                    {%- endif -%}\n                {%- endif -%}\n                {%- if not loop.last %}\n                    {{- \",\\n\" }}\n                {%- else %}\n                    {{- \",\\n\" }}\n                {%- endif -%}\n            {%- endfor %}\n            {{- \"}) => any;\\n\\n\" }}\n        {%- else -%}\n            {{- \"() => any;\\n\\n\" }}\n        {%- endif -%}\n    {%- endfor %}\n    {{- \"} // namespace \" + namespace_name }}\n{%- endmacro -%}\n\n{%- macro render_builtin_tools(browser_tool, python_tool) -%}\n    {%- if browser_tool %}\n        {{- \"## browser\\n\\n\" }}\n        {{- \"// Tool for browsing.\\n\" }}\n        {{- \"// The `cursor` appears in brackets before each browsing display: `[{cursor}]`.\\n\" }}\n        {{- \"// Cite information from the tool using the following format:\\n\" }}\n        {{- \"// `\u3010{cursor}\u2020L{line_start}(-L{line_end})?\u3011`, for example: `\u30106\u2020L9-L11\u3011` or `\u30108\u2020L3\u3011`.\\n\" }}\n        {{- \"// Do not quote more than 10 words directly from the tool output.\\n\" }}\n        {{- \"// sources=web (default: web)\\n\" }}\n        {{- \"namespace browser {\\n\\n\" }}\n        {{- \"// Searches for information related to `query` and displays `topn` results.\\n\" }}\n        {{- \"type search = (_: {\\n\" }}\n        {{- \"query: string,\\n\" }}\n        {{- \"topn?: number, // default: 10\\n\" }}\n        {{- \"source?: string,\\n\" }}\n        {{- \"}) => any;\\n\\n\" }}\n        {{- \"// Opens the link `id` from the page indicated by `cursor` starting at line number `loc`, showing `num_lines` lines.\\n\" }}\n        {{- \"// Valid link ids are displayed with the formatting: `\u3010{id}\u2020.*\u3011`.\\n\" }}\n        {{- \"// If `cursor` is not provided, the most recent page is implied.\\n\" }}\n        {{- \"// If `id` is a string, it is treated as a fully qualified URL associated with `source`.\\n\" }}\n        {{- \"// If `loc` is not provided, the viewport will be positioned at the beginning of the document or centered on the most relevant passage, if available.\\n\" }}\n        {{- \"// Use this function without `id` to scroll to a new location of an opened page.\\n\" }}\n        {{- \"type open = (_: {\\n\" }}\n        {{- \"id?: number | string, // default: -1\\n\" }}\n        {{- \"cursor?: number, // default: -1\\n\" }}\n        {{- \"loc?: number, // default: -1\\n\" }}\n        {{- \"num_lines?: number, // default: -1\\n\" }}\n        {{- \"view_source?: boolean, // default: false\\n\" }}\n        {{- \"source?: string,\\n\" }}\n        {{- \"}) => any;\\n\\n\" }}\n        {{- \"// Finds exact matches of `pattern` in the current page, or the page given by `cursor`.\\n\" }}\n        {{- \"type find = (_: {\\n\" }}\n        {{- \"pattern: string,\\n\" }}\n        {{- \"cursor?: number, // default: -1\\n\" }}\n        {{- \"}) => any;\\n\\n\" }}\n        {{- \"} // namespace browser\\n\\n\" }}\n    {%- endif -%}\n\n    {%- if python_tool %}\n        {{- \"## python\\n\\n\" }}\n        {{- \"Use this tool to execute Python code in your chain of thought. The code will not be shown to the user. This tool should be used for internal reasoning, but not for code that is intended to be visible to the user (e.g. when creating plots, tables, or files).\\n\\n\" }}\n        {{- \"When you send a message containing Python code to python, it will be executed in a stateful Jupyter notebook environment. python will respond with the output of the execution or time out after 120.0 seconds. The drive at '/mnt/data' can be used to save and persist user files. Internet access for this session is UNKNOWN. Depends on the cluster.\\n\\n\" }}\n    {%- endif -%}\n{%- endmacro -%}\n\n{#- System Message Construction ============================================ #}\n{%- macro build_system_message() -%}\n    {%- if model_identity is not defined %}\n        {%- set model_identity = \"You are ChatGPT, a large language model trained by OpenAI.\" %}\n    {%- endif %}\n    {{- model_identity + \"\\n\" }}\n    {{- \"Knowledge cutoff: 2024-06\\n\" }}\n    {{- \"Current date: \" + strftime_now(\"%Y-%m-%d\") + \"\\n\\n\" }}\n    {%- if reasoning_effort is not defined %}\n        {%- set reasoning_effort = \"medium\" %}\n    {%- endif %}\n    {{- \"Reasoning: \" + reasoning_effort + \"\\n\\n\" }}\n    {%- if builtin_tools %}\n        {{- \"# Tools\\n\\n\" }}\n        {%- set available_builtin_tools = namespace(browser=false, python=false) %}\n        {%- for tool in builtin_tools %}\n            {%- if tool == \"browser\" %}\n                {%- set available_builtin_tools.browser = true %}\n            {%- elif tool == \"python\" %}\n                {%- set available_builtin_tools.python = true %}\n            {%- endif %}\n        {%- endfor %}\n        {{- render_builtin_tools(available_builtin_tools.browser, available_builtin_tools.python) }}\n    {%- endif -%}\n    {{- \"# Valid channels: analysis, commentary, final. Channel must be included for every message.\" }}\n    {%- if tools -%}\n        {{- \"\\nCalls to these tools must go to the commentary channel: 'functions'.\" }}\n    {%- endif -%}\n{%- endmacro -%}\n\n{#- Main Template Logic ================================================= #}\n{#- Set defaults #}\n\n{#- Render system message #}\n{{- \"<|start|>system<|message|>\" }}\n{{- build_system_message() }}\n{{- \"<|end|>\" }}\n\n{#- Extract developer message #}\n{%- if messages[0].role == \"developer\" or messages[0].role == \"system\" %}\n    {%- set developer_message = messages[0].content %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set developer_message = \"\" %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n\n{#- Render developer message #}\n{%- if developer_message or tools %}\n    {{- \"<|start|>developer<|message|>\" }}\n    {%- if developer_message %}\n        {{- \"# Instructions\\n\\n\" }}\n        {{- developer_message }}\n        {{- \"\\n\\n\" }}\n    {%- endif %}\n    {%- if tools -%}\n        {{- \"# Tools\\n\\n\" }}\n        {{- render_tool_namespace(\"functions\", tools) }}\n    {%- endif -%}\n    {{- \"<|end|>\" }}\n{%- endif %}\n\n{#- Render messages #}\n{%- set last_tool_call = namespace(name=none) %}\n{%- for message in loop_messages -%}\n    {#- At this point only assistant/user/tool messages should remain #}\n    {%- if message.role == 'assistant' -%}\n        {#- Checks to ensure the messages are being passed in the format we expect #}\n        {%- if \"content\" in message %}\n            {%- if \"<|channel|>analysis<|message|>\" in message.content or \"<|channel|>final<|message|>\" in message.content %}\n                {{- raise_exception(\"You have passed a message containing <|channel|> tags in the content field. Instead of doing this, you should pass analysis messages (the string between '<|message|>' and '<|end|>') in the 'thinking' field, and final messages (the string between '<|message|>' and '<|end|>') in the 'content' field.\") }}\n            {%- endif %}\n        {%- endif %}\n        {%- if \"thinking\" in message %}\n            {%- if \"<|channel|>analysis<|message|>\" in message.thinking or \"<|channel|>final<|message|>\" in message.thinking %}\n                {{- raise_exception(\"You have passed a message containing <|channel|> tags in the thinking field. Instead of doing this, you should pass analysis messages (the string between '<|message|>' and '<|end|>') in the 'thinking' field, and final messages (the string between '<|message|>' and '<|end|>') in the 'content' field.\") }}\n            {%- endif %}\n        {%- endif %}\n        {%- if \"tool_calls\" in message %}\n            {#- We need very careful handling here - we want to drop the tool call analysis message if the model #}\n            {#- has output a later <|final|> message, but otherwise we want to retain it. This is the only case #}\n            {#- when we render CoT/analysis messages in inference. #}\n            {%- set future_final_message = namespace(found=false) %}\n            {%- for future_message in loop_messages[loop.index:] %}\n                {%- if future_message.role == 'assistant' and \"tool_calls\" not in future_message %}\n                    {%- set future_final_message.found = true %}\n                {%- endif %}\n            {%- endfor %}\n            {#- We assume max 1 tool call per message, and so we infer the tool call name #}\n            {#- in \"tool\" messages from the most recent assistant tool call name #}\n            {%- set tool_call = message.tool_calls[0] %}\n            {%- if tool_call.function %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {%- if message.content and message.thinking %}\n                {{- raise_exception(\"Cannot pass both content and thinking in an assistant message with tool calls! Put the analysis message in one or the other, but not both.\") }}\n            {%- elif message.content and not future_final_message.found %}\n                {{- \"<|start|>assistant<|channel|>analysis<|message|>\" + message.content + \"<|end|>\" }}\n            {%- elif message.thinking and not future_final_message.found %}\n                {{- \"<|start|>assistant<|channel|>analysis<|message|>\" + message.thinking + \"<|end|>\" }}\n            {%- endif %}\n            {{- \"<|start|>assistant to=\" }}\n            {{- \"functions.\" + tool_call.name + \"<|channel|>commentary \" }}\n            {{- (tool_call.content_type if tool_call.content_type is defined else \"json\") + \"<|message|>\" }}\n            {{- tool_call.arguments|tojson }}\n            {{- \"<|call|>\" }}\n            {%- set last_tool_call.name = tool_call.name %}\n        {%- elif loop.last and not add_generation_prompt %}\n            {#- Only render the CoT if the final turn is an assistant turn and add_generation_prompt is false #}\n            {#- This is a situation that should only occur in training, never in inference. #}\n            {%- if \"thinking\" in message %}\n                {{- \"<|start|>assistant<|channel|>analysis<|message|>\" + message.thinking + \"<|end|>\" }}\n            {%- endif %}\n            {#- <|return|> indicates the end of generation, but <|end|> does not #}\n            {#- <|return|> should never be an input to the model, but we include it as the final token #}\n            {#- when training, so the model learns to emit it. #}\n            {{- \"<|start|>assistant<|channel|>final<|message|>\" + message.content + \"<|return|>\" }}\n        {%- else %}\n            {#- CoT is dropped during all previous turns, so we never render it for inference #}\n            {{- \"<|start|>assistant<|channel|>final<|message|>\" + message.content + \"<|end|>\" }}\n            {%- set last_tool_call.name = none %}\n        {%- endif %}\n    {%- elif message.role == 'tool' -%}\n        {%- if last_tool_call.name is none %}\n            {{- raise_exception(\"Message has tool role, but there was no previous assistant message with a tool call!\") }}\n        {%- endif %}\n        {{- \"<|start|>functions.\" + last_tool_call.name }}\n        {{- \" to=assistant<|channel|>commentary<|message|>\" + message.content|tojson + \"<|end|>\" }}\n    {%- elif message.role == 'user' -%}\n        {{- \"<|start|>user<|message|>\" + message.content + \"<|end|>\" }}\n    {%- endif -%}\n{%- endfor -%}\n\n{#- Generation prompt #}\n{%- if add_generation_prompt -%}\n<|start|>assistant\n{%- endif -%}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1660,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 15692,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 273,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 16738,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 5015,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_gpt_oss_puzzle.py",
+      "size": 2460,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 2672,
+      "lfs": null
+    },
+    {
+      "rfilename": "fig1.png",
+      "size": 300849,
+      "lfs": {
+        "size": 300849,
+        "sha256": "b1e1bb2a9650e1541ad6ab62705de1c1b1b35d535e2097ab7c21ffef15315bf6",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "fig2.png",
+      "size": 205986,
+      "lfs": {
+        "size": 205986,
+        "sha256": "348bd2b0c8db89e647e82e679419c606b1065a6a0d30a1959f110f033bed407b",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 165,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00011.safetensors",
+      "size": 4115581080,
+      "lfs": {
+        "size": 4115581080,
+        "sha256": "450b3564a3cc1ff4fe2ca900c440aa619b017d7555658f7979f43116e591f7ad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00011.safetensors",
+      "size": 4678869240,
+      "lfs": {
+        "size": 4678869240,
+        "sha256": "e08e900384dff118d28397aa96caf7e4d9960a10f90217446841f2f716ce5ae9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00011.safetensors",
+      "size": 4679238480,
+      "lfs": {
+        "size": 4679238480,
+        "sha256": "050248abe00e9216471283d8a0aae075db722282bbbbf61439cec2cd3ea130f8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00011.safetensors",
+      "size": 4987817832,
+      "lfs": {
+        "size": 4987817832,
+        "sha256": "64e240da7cf5ac9531b3d0b9032c3660f261d0cb9787bd13878f5d7a5d499944",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00011.safetensors",
+      "size": 4759633712,
+      "lfs": {
+        "size": 4759633712,
+        "sha256": "1ca2a05ac2f4e0c7b5b522471a9a0ac3fd6ce72e2db0089c7e544129ca7d077f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00011.safetensors",
+      "size": 4503088168,
+      "lfs": {
+        "size": 4503088168,
+        "sha256": "221819279728057cfc388cf354417ce0641b0df7b7c602c1eba57dd667be1c97",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00011.safetensors",
+      "size": 4980815736,
+      "lfs": {
+        "size": 4980815736,
+        "sha256": "834f2121924b54f9960c299e06931ab8fc1f707245c1a06ea8d324532701ea43",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00011.safetensors",
+      "size": 4537371312,
+      "lfs": {
+        "size": 4537371312,
+        "sha256": "5e1cda36a0e16c3ca61087c2718abfc0f4ce3c22c2e6268fa500f6c233e737f5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00011.safetensors",
+      "size": 4061736320,
+      "lfs": {
+        "size": 4061736320,
+        "sha256": "07632a1a122cb2ea3cf75d0f867f53e16d021bbc269f7f127b5397af7e929267",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00011.safetensors",
+      "size": 4678869176,
+      "lfs": {
+        "size": 4678869176,
+        "sha256": "23bae85e80dab667efcfa959c74778b71a1fecd03d6ba3b97fdb1d79710e1c7f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00011.safetensors",
+      "size": 4010816256,
+      "lfs": {
+        "size": 4010816256,
+        "sha256": "9c4199a2da5a339d54f514066454e34cf9e9cf9563c1758772a5f466ebf5cf1b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 62802,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_gpt_oss_puzzle.py",
+      "size": 11473,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 1394,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 644,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 440,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 27868174,
+      "lfs": {
+        "size": 27868174,
+        "sha256": "0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 4200,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- gpt-oss\n- puzzle\n- mixture-of-experts\n- reasoning\n- pytorch\n- transformers\n- vllm\n---\n\n# gpt-oss-puzzle-88B\n\n# Model Overview\n\n### Description\ngpt-oss-puzzle-88B is a deployment-optimized large language model developed by NVIDIA, derived from [OpenAI's gpt-oss-120b](https://huggingface.co/openai/gpt-oss-120b).  \nThe model is produced using Puzzle, a post-training neural architecture search (NAS) framework, with the goal of significantly improving inference efficiency for reasoning-heavy workloads while maintaining or improving accuracy across reasoning budgets.  \n\nThe model is specifically optimized for long-context and short-context serving on NVIDIA H100-class hardware, where reasoning models are often bottlenecked by KV-cache bandwidth and memory capacity rather than raw compute.\n\nCompared to its parent, gpt-oss-puzzle-88B:\n- Reduces total parameters to ~88B (\u224873% of the parent),\n- Achieves 1.63\u00d7 throughput improvement in long-context (64K/64K) scenarios on an 8\u00d7H100 node,\n- Achieves 1.22\u00d7 throughput improvement in short-context (4K/4K) scenarios,\n- Delivers up to 2.82\u00d7 throughput improvement on a single H100 GPU,\n- Matches or slightly exceeds parent accuracy across reasoning efforts.\n\n**Parameter count note.** Hugging Face Hub may automatically show this model as ~91B parameters. We refer to it as 88B because the automatic count includes additional MXFP4 quantization scale tensors for the MoE experts, which are typically not counted as model parameters.\n\n\nThis model is ready for commercial use.\n\n![Accuracy vs Relative Request Rate](fig1.png)\n![Accuracy Retention and Throughput Speedup](fig2.png)\n\n### License/Terms of Use\n\nGoverning Terms: Use of this model is governed by the [NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license)).\n\n### Deployment Geography\nGlobal\n\n### Use Case\ngpt-oss-puzzle-88B is a general purpose reasoning and chat model. This model is intended for production deployment, cost-efficient reasoning, and long-context inference workloads.\n\n### Release Date\nMarch 26, 2026 via [Hugging Face](https://huggingface.co/nvidia/gpt-oss-puzzle-88B)\n\n## References(s)\n* [\\[2411.19146\\] Puzzle: Distillation-Based NAS for Inference-Optimized LLMs](https://arxiv.org/abs/2411.19146)  \n* [\\[2508.10925\\] gpt-oss-120b & gpt-oss-20b Model Card](https://arxiv.org/abs/2508.10925)  \n* [\\[2602.11937\\] Extending Puzzle for Mixture-of-Experts Reasoning Models with Application to GPT-OSS Acceleration](https://arxiv.org/abs/2602.11937)\n\n## Model Architecture\n- **Architecture Type:** Mixture-of-Experts Decoder-only Transformer\n\n- **Network Architecture:** Modified [gpt-oss](https://huggingface.co/openai/gpt-oss-120b) architecture with varying number of experts per layer, and a modified global/window attention pattern across layers.\n\n- **Number of model parameters:** 88B\n\n### Key Architectural Optimizations\nThis model was created using Puzzle, a post-training NAS framework that constructs a heterogeneous architecture under explicit deployment constraints:\n\n- Heterogeneous MoE Expert Pruning  \n  Each MoE layer retains a different number of experts, determined via activation-based importance scoring. Early layers retain more experts; later layers are more aggressively pruned.\n\n- Selective Window Attention  \n  A subset of global attention layers is replaced with window attention (8K window), reducing KV-cache footprint by ~40% in long-context scenarios while preserving long-range reasoning.\n\n- RoPE Scaling Adjustment  \n  The YaRN RoPE scaling factor was increased to improve stability at 128K context length.\n\n## Training and Optimization Procedure\n\n### Knowledge Distillation\n\nAfter Puzzle architecture selection, the model underwent knowledge distillation:\n\n- Total Tokens: 84B\n- Sequence Length: 128K\n- MoE Experts & Router: Frozen\n- Framework: Megatron-LM\n\nThis phase restores inter-block compatibility and recovers quality lost during blockwise substitution.\n\n### Reinforcement Learning:\n\nA post-distillation reinforcement learning (RL) phase was applied to improve reasoning accuracy while controlling generation length:\n\n- Multi-environment RL (math, coding, reasoning)\n- MoE experts and router frozen\n- Two complementary policies trained:\n  - High-effort-focused (max accuracy)\n  - Mixed-effort (length-regularized)\n- Final model obtained via checkpoint weight averaging\n\nThis preserves high reasoning accuracy while maintaining a stable effort length ratio, ensuring predictable cost-quality trade-offs.\n\n### Quantization:\n\n- MoE Weights: MXFP4 (inherited from gpt-oss-120B)\n- KV Cache: FP8 with calibrated KV scales\n- Effect:  \n  - ~2\u00d7 KV-cache token capacity  \n  - Faster attention kernels  \n  - Preserved accuracy vs unscaled FP8 KV-cache\n\n## Reasoning Effort Control:\nThe model supports three reasoning effort modes:\n\n- Low: Fast, concise responses\n- Medium: Balanced accuracy and verbosity\n- High: Deep, multi-step reasoning\n\nEffort reliably controls generation length and accuracy, enabling cost-aware deployment.\n\n## Input\n\n- **Input Type(s):** Text\n\n- **Input Format(s):** String  \n    \n- **Input Parameters:** One-Dimensional (1D): Sequences  \n    \n- **Other Properties Related to Input:** Context length is 128k tokens.\n\n## Output\n\n- **Output Type(s):** Text  \n    \n- **Output Format:** String  \n    \n- **Output Parameters:** One-Dimensional (1D): Sequences  \n    \n- **Other Properties Related to Output:** Context length is 128k tokens.\n\nOur AI models are designed and optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions. \n\n## Software Integration\n**Runtime Engine(s):** \n* vLLM (See instructions [below](#vllm))\n\n**Supported Hardware Microarchitecture Compatibility:**\n* NVIDIA B200\n* NVIDIA H100-80GB\n\n**Preferred/Supported Operating System(s):**\n* Linux\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Model Version\n- v1.0\n\n## Training and Evaluation Datasets\n\n### Dataset Overview\n**Total Number of Datasets:** 7  \n**Time period for data collection:** 2013 to May 1, 2025  \n\nFor the KD stage data, the prompts from [nvidia/Llama-Nemotron-Post-Training-Dataset](https://huggingface.co/datasets/nvidia/Llama-Nemotron-Post-Training-Dataset) were used to generate responses from the parent model (gpt-oss-120b) to create full KD training examples. For each prompt, we generated responses under high and medium reasoning-effort settings.\n\nFor the RL stage data, we used a subset of the [NeMo Gym collection](https://huggingface.co/collections/nvidia/nemo-gym) which includes RL verifiable data.\n\n# Public Datasets\n- [nvidia/Llama-Nemotron-Post-Training-Dataset](https://huggingface.co/datasets/nvidia/Llama-Nemotron-Post-Training-Dataset)\n- [nvidia/Nemotron-RL-coding-competitive_coding](https://huggingface.co/datasets/nvidia/Nemotron-RL-coding-competitive_coding)\n- [nvidia/Nemotron-RL-instruction_following](https://huggingface.co/datasets/nvidia/Nemotron-RL-instruction_following)\n- [BytedTsinghua-SIA/DAPO-Math-17k](https://huggingface.co/datasets/BytedTsinghua-SIA/DAPO-Math-17k)\n- [Skywork/Skywork-OR1-RL-Data](https://huggingface.co/datasets/Skywork/Skywork-OR1-RL-Data)\n- [nvidia/Nemotron-RL-knowledge-mcqa](https://huggingface.co/datasets/nvidia/Nemotron-RL-knowledge-mcqa)\n- [nvidia/Nemotron-RL-instruction_following-structured_outputs](https://huggingface.co/datasets/nvidia/Nemotron-RL-instruction_following-structured_outputs)\n\n## Training Dataset\n\n**Data Modality**: Text\n\n**Text Training Data Size**: 1 Billion to 10 Trillion Tokens\n\n**Data Collection Method by dataset**: Automated/Synthetic/Human\n\n**Labeling Method by dataset**: Not Applicable\n\n**Properties**:\nThe training data is text-only and spans a broad range of task categories. The knowledge distillation stage used the Llama-Nemotron-Post-Training-Dataset, a large-scale collection covering mathematics, code, science, instruction following, general chat, and safety. The reinforcement learning stage used datasets spanning several domains: competitive programming problems with unit tests (Nemotron-RL-coding-competitive_coding, Skywork-OR1-RL-Data), diverse verifiable mathematical reasoning problems (DAPO-Math-17k, Skywork-OR1-RL-Data), multi-domain multiple-choice question answering across fields such as physics, biology, chemistry, mathematics, computer science, engineering, humanities, law, and others (Nemotron-RL-knowledge-mcqa), easily verifiable instruction-following tasks with diverse format and linguistic constraints (Nemotron-RL-instruction_following), and structured output generation requiring adherence to JSON schemas (Nemotron-RL-instruction_following-structured_outputs). No personal data was used for training.\n\n\n## Evaluation Dataset\n\n**Data Collection Method by dataset:** Hybrid: Human, Synthetic\n\n**Labeling Method by dataset:** Hybrid: Automated, Human, Synthetic\n\n| Benchmark | Description |\n|-----------|-------------|\n| [**MMLU-Pro**](https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro) | MMLU-Pro dataset is a more robust and challenging massive multi-task understanding dataset tailored to more rigorously benchmark large language models' capabilities. |\n| [**GPQA-Diamond**](https://huggingface.co/datasets/Idavidrein/gpqa) | The GPQA (Graduate-Level Google-Proof Q&A) benchmark is a challenging dataset of 448 multiple-choice questions in biology, physics, and chemistry. |\n| [**HLE**](https://huggingface.co/datasets/cais/hle) | Humanity's Last Exam (HLE) is a multi-modal benchmark at the frontier of human knowledge, designed to be the final closed-ended academic benchmark of its kind with broad subject coverage. Humanity's Last Exam consists of 3,000 questions across dozens of subjects, including mathematics, humanities, and the natural sciences. HLE is developed globally by subject-matter experts and consists of multiple-choice and short-answer questions suitable for automated grading. |\n| [**AA-LCR**](https://huggingface.co/datasets/ArtificialAnalysis/AA-LCR) | A challenging benchmark measuring language models' ability to extract, reason about, and synthesize information from long-form documents ranging from 10k to 100k tokens (measured using the cl100k_base tokenizer). |\n| [**AIME25**](https://huggingface.co/datasets/math-ai/aime25) | American Invitational Mathematics Examination (AIME) 2025 questions |\n| [**IFBench**](https://huggingface.co/datasets/allenai/IFBench_test) | IFBench is a new, challenging benchmark for precise instruction following. |\n| [**SciCode**](https://huggingface.co/datasets/SciCode1/SciCode) | SciCode is a challenging benchmark designed to evaluate the capabilities of LLMs in generating code for solving realistic scientific research problems. |\n| [**RULER 128K**](https://huggingface.co/datasets/GAIR/ruler-128k) | RULER generates synthetic examples to evaluate long-context language models with configurable sequence length and task complexity. Used with context length of 128K tokens. |\n\n\n# Inference\n**Acceleration Engine**: vLLM\n**Test Hardware:**  \n- 1\u00d7 NVIDIA H100-80GB  \n- 8\u00d7 NVIDIA H100-80GB  \n- 8\u00d7 NVIDIA B200  \n\n## Quick Start\n\nThe gpt-oss-puzzle-88B model can be used with standard inference stacks such as Hugging Face Transformers and vLLM.  \nIt is especially optimized for NVIDIA H100 GPUs and supports long-context inference up to 128K tokens.\n\n### Transformers\nWe recommend using Transformers \u2265 4.57.3.\n\n```python\nfrom transformers import pipeline\n\nmodel_id = \"nvidia/gpt-oss-puzzle-88B\"\n\npipe = pipeline(\n    \"text-generation\",\n    model=model_id,\n    trust_remote_code=True,\n    dtype=\"auto\",\n    device_map=\"auto\",\n)\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"Explain quantum mechanics clearly and concisely.\"},\n]\n\ngeneration_config = GenerationConfig.from_pretrained(model_id)\ngeneration_config.max_new_tokens = 256\n\noutputs = pipe(\n    messages,\n    generation_config=generation_config,\n)\nprint(outputs[0][\"generated_text\"][-1])\n```\n\n### vLLM\n\n#### Serving\n\nStart the server with a single command:\n\n```bash\ndocker run --gpus all -p 8000:8000 \\\n  --entrypoint bash \\\n  vllm/vllm-openai:v0.17.1 \\\n  -c \"\n    apt-get update && apt-get install -y git &&\n    VLLM_PRECOMPILED_WHEEL_LOCATION=https://wheels.vllm.ai/1ac2ef2e5335ca0af99aee438998c9305461f563/vllm-0.18.1rc1.dev127%2Bg1ac2ef2e5-cp38-abi3-manylinux_2_31_$(uname -m).whl VLLM_USE_PRECOMPILED=1 pip install --no-build-isolation 'git+https://github.com/vllm-project/vllm.git@88f6aaad7cc2fe8904d5fcf31d06eb57f15a6d25' &&\n    pip install flashinfer-cubin==0.6.6 flashinfer-jit-cache==0.6.6 --extra-index-url https://flashinfer.ai/whl/cu129 &&\n    export PYTORCH_ALLOC_CONF=expandable_segments:True &&\n    vllm serve nvidia/gpt-oss-puzzle-88B \\\n      -tp 1 \\\n      --trust-remote-code \\\n      --kv-cache-dtype fp8 \\\n      --max-num-batched-tokens 8192 \\\n      --stream-interval 20 \\\n      --gpu-memory-utilization 0.95 \\\n      --max-num-seqs 8 \\\n      --max-cudagraph-capture-size 8 \\\n      --max-model-len 131072\n  \"\n```\n\n> **Notes:**\n> - On Blackwell (B200), add `-e VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8=1` to the `docker run` command.\n> - Remove `--kv-cache-dtype fp8` for BF16 KV-cache instead of FP8.\n> - Increase `-tp` if you need larger batch sizes or longer sequences.\n> - Expert parallelism is supported via `--enable-expert-parallel`, but we recommend TP.\n\n#### Inference with Reasoning Effort Control\n\nThe model supports three reasoning effort levels (`low`, `medium`, `high`). For example:\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI(base_url=\"http://localhost:8000/v1\", api_key=\"unused\")\n\n# High effort \u2014 deep, multi-step reasoning\nresponse = client.chat.completions.create(\n    model=\"nvidia/gpt-oss-puzzle-88B\",\n    messages=[{\"role\": \"user\", \"content\": \"Write a haiku about neural network pruning\"}],\n    reasoning_effort=\"high\",\n)\nprint(response.choices[0].message.content)\n\n# Low effort \u2014 fast, concise responses\nresponse = client.chat.completions.create(\n    model=\"nvidia/gpt-oss-puzzle-88B\",\n    messages=[{\"role\": \"user\", \"content\": \"What is the capital of France?\"}],\n    reasoning_effort=\"low\",\n)\nprint(response.choices[0].message.content)\n```\n\n## Ethical Considerations\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. \n\nFor more detailed information on ethical considerations for this model, please see the [Bias, Explainability, Safety & Security, and Privacy Subcards](https://huggingface.co/nvidia/gpt-oss-puzzle-88B).\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).  ",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "gpt-oss",
+      "puzzle",
+      "mixture-of-experts",
+      "reasoning",
+      "pytorch",
+      "transformers",
+      "vllm"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_gpt_oss_puzzle.GptOssPuzzleForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

@@ -1,0 +1,2188 @@
+{
+  "modelId": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-GenRM",
+  "author": "nvidia",
+  "sha": "03c50a66b14ef8d2cf6e8acbd0f7703a5ffa576f",
+  "lastModified": "2026-09-01 22:17:38+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron_h",
+    "text-generation",
+    "nvidia",
+    "pytorch",
+    "nemotron-3",
+    "latent-moe",
+    "mtp",
+    "genrm",
+    "reward-model",
+    "conversational",
+    "en",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 13,
+  "downloads": 814,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "NVIDIA/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "pytorch",
+      "nemotron-3",
+      "latent-moe",
+      "mtp",
+      "genrm",
+      "reward-model"
+    ],
+    "track_downloads": true
+  },
+  "config": {
+    "architectures": [
+      "NemotronHForCausalLM"
+    ],
+    "model_type": "nemotron_h",
+    "num_experts_per_tok": 22,
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|im_end|>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{{- '<|im_start|>user\\n' -}}\nYou are an expert evaluation judge specializing in comparative assessment of LLM responses. You are impartial, rigorous, and consistent. Given the conversation context and two assistant responses to the user's latest query, you will follow the evaluation plan and scoring guidelines exactly as written below.\n\n#### Conversation Context ####\n{%- for message in messages %}\n{%- if message['role'] == 'system' %}\n{{ '\\n[The Start of the System Prompt for this Conversation]\\n' }}\n{{ message['content']|trim }}\n{{ '\\n[The End of the System Prompt for this Conversation]' }}\n{%- elif message['role'] == 'user' %}\n{{ '\\nUser: ' + message['content']|trim }}\n{%- elif message['role'] == 'assistant' %}\n{%- if '</think>' in message['content'] %}\n{%- set content = message['content'].split('</think>')[-1].lstrip() %}\n{%- else %}\n{%- set content = message['content'] %}\n{%- endif %}\n{{ '\\nAssistant: ' + content|trim }}\n{%- endif %}\n{%- endfor %}\n{{ '\\n\\n#### Responses to be Scored ####' }}\n{%- for message in messages %}\n{%- if message['role'] == 'response_1' %}\n{{ '\\n[The Start of Response 1]' }}\n{{ message['content']|trim }}\n{{ '[The End of Response 1]' }}\n{%- elif message['role'] == 'response_2' %}\n{{ '\\n\\n[The Start of Response 2]' }}\n{{ message['content']|trim }}\n{{ '[The End of Response 2]' }}\n{%- endif %}\n{%- endfor %}\n{{ '\\n\\n#### Evaluation Plan ####' }}\n{%- set ns_principle = namespace(content=none) %}\n{%- for message in messages %}\n{%- if message['role'] == 'principle' %}\n{%- set ns_principle.content = message['content'] %}\n{%- endif %}\n{%- endfor %}\n{%- if ns_principle.content %}\n{{ '\\n' + ns_principle.content }}\n{%- else %}\n{{ '\\n' -}}\nYou will be given one or more evaluation criteria (rubrics).\nEvaluate both responses on EACH criterion individually first, then synthesize an overall judgment.\nCriteria:\n\n1. Please act as an impartial judge and evaluate the quality of the responses provided by two AI assistants to the user prompt. Begin your evaluation by generating your own answer to the prompt. You must provide your answer before judging any answers. When evaluating the assistants' answers, compare both assistants' answers with your answer. You must identify and correct any mistakes or inaccurate information. Then consider if the assistant's answers are helpful, relevant, and concise. Helpful means the answer correctly responds to the prompt or follows the instructions. Note when user prompt has any ambiguity or more than one interpretation, it is more helpful and appropriate to ask for clarifications or more information from the user than providing an answer based on assumptions. Relevant means all parts of the response closely connect or are appropriate to what is being asked. Concise means the response is clear and not verbose or excessive. Then consider the creativity and novelty of the assistant's answers when needed. Finally, identify any missing important information in the assistants' answers that would be beneficial to include when responding to the user prompt.\n{%- endif %}\n{{ '\\n\\n#### Scoring Guidelines ####' }}\nBased on the evaluation plan above, assign scores using these scales:\n\n**Individual Helpfulness Scores (1-5):**\n- 5: Extremely Helpful - Completely aligned with what the user was asking for\n- 4: Mostly Helpful - Generally useful with minor room for improvement\n- 3: Partially Helpful - Misses the overall goal in some way\n- 2: Borderline Unhelpful - Mostly doesn't capture what the user wanted\n- 1: Not Helpful - Completely missed the essence of the request\n\n**Comparative Ranking (1-6):**\n- 1: Response 1 is much better than Response 2\n- 2: Response 1 is better than Response 2\n- 3: Response 1 is slightly better than Response 2\n- 4: Response 2 is slightly better than Response 1\n- 5: Response 2 is better than Response 1\n- 6: Response 2 is much better than Response 1\n\n#### Output Format ####\nFirst, evaluate each rubric individually. Then synthesize an overall judgment.\nProvide your judgment as JSON:\n```json\n{\n    \"rubric_evaluations\": [\n        {\n            \"rubric_id\": 1,\n            \"response_1_analysis\": \"Your analysis of Response 1 for this rubric\",\n            \"response_2_analysis\": \"Your analysis of Response 2 for this rubric\",\n            \"score_1\": <1-5>,\n            \"score_2\": <1-5>,\n            \"ranking\": <1-6>\n        }\n    ],\n    \"overall\": {\n        \"response_1_analysis\": \"Your overall analysis of Response 1 considering all rubrics\",\n        \"response_2_analysis\": \"Your overall analysis of Response 2 considering all rubrics\",\n        \"score_1\": <1-5>,\n        \"score_2\": <1-5>,\n        \"ranking\": <1-6>\n    }\n}\n```\n{{- '<|im_end|>\\n' }}\n{%- if add_generation_prompt %}\n{{- '<|im_start|>assistant\\n<think>\\n' }}\n{%- endif %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 60474,
+      "lfs": null
+    },
+    {
+      "rfilename": "__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 4752,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3031,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 188,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00225.safetensors",
+      "size": 4983097968,
+      "lfs": {
+        "size": 4983097968,
+        "sha256": "b047b6ffb9110d86e97861ce063818eae96a7e79c694d7bf7c0894869542af05",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00225.safetensors",
+      "size": 4991252496,
+      "lfs": {
+        "size": 4991252496,
+        "sha256": "9448983dcd6977a9f69e70be62f04e93284ff1cd8efd7dc2310ad1c524348c95",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "fd688cb298fc877eb49ab12ec8996833e0db95e678948178f8cd914aff7ef6b3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "dc42a367ffbcfee5555834781a0f2a68c19bdf5a1e90bf7838c7452ff5c7e9cf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00225.safetensors",
+      "size": 4920152112,
+      "lfs": {
+        "size": 4920152112,
+        "sha256": "8682b86efadd5b472983e3af38641429d1f0681deae08e6524be49019a3d3102",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00225.safetensors",
+      "size": 4995491168,
+      "lfs": {
+        "size": 4995491168,
+        "sha256": "342b9ece5deed5c08504430936d1964315c8a8866b0ec17ee3df3ebe83e3c2d1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "13a89f24b90b3b413461d85627506e4ea45e840ea926159f1b2aa45d52a10af1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "fa47c0b226eed97c2756ba2273949c765de705c1d9a570c6e862313145736195",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "459206df99f0a5c6aeb449212f033623aca255360f258f8d07284971ae4a5fb2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00225.safetensors",
+      "size": 4987305680,
+      "lfs": {
+        "size": 4987305680,
+        "sha256": "a11066724cacecd54dc3de24de26f21a34b1ba9334c7035398c46c9fc33e35ba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00225.safetensors",
+      "size": 4991252464,
+      "lfs": {
+        "size": 4991252464,
+        "sha256": "73958eb99dcb8b9e385a2f0792f7e66b27842a15224b3bd58f99d6eb28d96264",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "4e1631f12bacbadf3e2e06bf472e041123c9a407336adf6e220f072992784b5e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "4984d6b511b9b564185df3c8d3ce0350b3bdbfa77f91026c57b823543e6ed88e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "0a732716b733c939bcecf7375b6c85eb32f1ca1a07407342aa7cc201d047692f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00225.safetensors",
+      "size": 4991515208,
+      "lfs": {
+        "size": 4991515208,
+        "sha256": "d6a9bb0c2b506018ecbb5621e1848083060d91074ac0d3bf14aca5c901ecc5b6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00225.safetensors",
+      "size": 4991252560,
+      "lfs": {
+        "size": 4991252560,
+        "sha256": "21d7fb5e7f64503a8989896d86753e30f77c65c6f46d26b97ff1426db9c96d33",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "f2a171465eff897dc00939b57af971d2ded61101a079fd0ef25fad969d1fb221",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "4f8d9cb81b117449ba036e3a32646decd80cf0782a26e3a2c04a5a2327530569",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00225.safetensors",
+      "size": 4987305744,
+      "lfs": {
+        "size": 4987305744,
+        "sha256": "df0693475485904dec1266fcb02591de6ed514ca2f8319b2e59c912908669d4a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "d8d060f8816f7fc3f296a54a21aa153deaddcd4e7776d8ecc3dbec64ee3bb8e0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "bc44f36a0607f6b5f006c3b2a253948a0a12b8a2135dea5b1cd48287e340a9b8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "4ed1ecf96e606b86faf7838c26509385ef7d828cd752f1a99910324f204ce7e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "93c0ae8e42e88d960c2519baa619ac572d52032239986d49a783b283a0e513db",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "ea40fa2491e995dcc32e04033cb834a54c89efa68e8e574f4c9ac8c2878b2605",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "3d2616fc1d8ec92255c08dd670715c4da306870d963822905166f4acd8237aa0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "9e623d8e083e878ae9d0ec68f0ccd14cfa707d3c12db37bc3e39e044c856c4a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0eea8913fbe004024b5438a656005464252a9fa2219deb09b56aa0666ae7e5d6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00225.safetensors",
+      "size": 4966334304,
+      "lfs": {
+        "size": 4966334304,
+        "sha256": "e72661109cd5dd8d3527685c26906dce3527aff0905b66c3eb8df8e3145e1d6a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00225.safetensors",
+      "size": 4995462192,
+      "lfs": {
+        "size": 4995462192,
+        "sha256": "4467ab8f11c64474c7f4fe204cac6b0ef8cc97b2f68c57b2089380e384d26a6d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f37187bc1feca98dfd8a6e43619b8631ded4f98648443972434144a31ae94e23",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6195b50f17f49d7f77b311c617c8867f50157b0b559d7c852ca024390c95a859",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f04dba31a543b5c3bb6f10888746247046b2110c8caf93154a99ca053ff08bc3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00225.safetensors",
+      "size": 4987305848,
+      "lfs": {
+        "size": 4987305848,
+        "sha256": "c138ff5af6245f12a3f746cc95a3cd66b5bb37e60c4a9738cd00f334dc09c8c9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "74643e9a791a511fbd8bfcde5fb484b1be7fa2580964d69a048673e72a4e2f64",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "93b861cfded7774d451293ae216c68e6da02ab0901cfa5ce0bae679979bcff4e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "e43236fcf8bb2bd0cde281849be5228749141acf16dd148a666bb4e701626945",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00225.safetensors",
+      "size": 4962095640,
+      "lfs": {
+        "size": 4962095640,
+        "sha256": "ffc55ca38eb25f58e7535d9aba8f2b06a19a81de76d192afb29f1fefa2989047",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "2e36fd62d5ffd6a9f9390585c76334ae2a449798c2304c570698442e214ddfd9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ba2f5965bde275f01c9157a53f84225ef11b4f4091f2eb85ac6d7a2320241455",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "9c50cf68257712f75d5a70bd2602f305b55b9ba0a7c2965edb76da077d72c9af",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00041-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "212f0c1bdf20507dddc9e3cc7ed7a7cd4c47c6916d6169f44a4bf34dcf999dfe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00042-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "7ef387b6942a65702d512aaf24051c8727e18958403b852e199c815c1933219a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "f22b52f70713ceb348697c970b09b7e18c76e49668ceaf7bcc6bba7cc3ef9eb9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "68eacaca7f3454d1ff5678b18b253c6f0e92ce627df308d89df91ae01bde839b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "59b40280348efbc8011149ebb0c32d68be67eb0d2d25b7d6e6f28ea82c852ee2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "70797a1018210dce7aec416089be7937439f9a982d2283e87dffec0237feb893",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-00225.safetensors",
+      "size": 4991515392,
+      "lfs": {
+        "size": 4991515392,
+        "sha256": "44459f75b60b33b9019a089eef16a1f805e36dfe76eefc77c741bf07fc58b778",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-00225.safetensors",
+      "size": 4991252800,
+      "lfs": {
+        "size": 4991252800,
+        "sha256": "b8dc8685304bdc5545d63e24b5a98694683c9418f65adc3113855aaa39999ed5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00049-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "cd59149940a7c08f4517e0f6b6322f18e879c8371dfda6d35b768336b2e22698",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00050-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "44f53e56e1deffc079f9feef8a143bf322eba12f42e82826fc3c3077a7133d15",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00051-of-00225.safetensors",
+      "size": 4987305912,
+      "lfs": {
+        "size": 4987305912,
+        "sha256": "d2951dd8c833cdadd29e590953df5b1fda840b84b8a30a9eee53f2fb7ed93420",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00052-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "ed9ec20c064870d845dd0a240d4c6e987bf6d8dc45ffdd7dc7cdfef8618a772a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00053-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f41686af8ffc8a4e5a720ca1f51b36e3ec721b0f4469ebedc191ad8338b60a98",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00054-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "2a577a9d8457012583273cf8e83d2f483dd69fdb6a1c67368e6a81c3e4974f9f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00055-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "3ddc3ddc6e2da86ee5fcdb34132c63bb0164d8ff78cbd9a00a0191016e0a6216",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00056-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "7515472b4e9f4c51527d36a392d71a21e1812bd74aa810300eb67ddb586f2a0b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00057-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "f4c6ad0d1124d687f261f0e499f85f7cb03bfaf617643c470682ffc9601c40d4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00058-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "85145f00ced34b11f57443bfdeeb2f3dfa6c25a4dc6dfd19707ee2110abfa067",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00059-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "bacdd4366d704fed7b4ec7e6e28682a6dc4550e155a45c3966bd7713f04179ad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00060-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "f1bb09812614237b2693080a97dd84471882332ff4c902b496adc2367a90adcd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00061-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "afbbb80b812fa01a6f147f5075fa2b2b361b7d0eb380f9c9a45c1c4313ef73a0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00062-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "bfb430568ec1a10010b44ace5b71f34f10447f029b567249219c6a05498bd133",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00063-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "721c1ecb78dbbfe6cbea6142e7732e174dca868644184f90e8e70b8fdb2c5bda",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00064-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "9d509331ec07d34b61df641e74ad069baa580caf2aec1c9a4b8786050dbb739a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00065-of-00225.safetensors",
+      "size": 4991515400,
+      "lfs": {
+        "size": 4991515400,
+        "sha256": "573d43b2c5b76fae8c73d6c53ea23804314409831f08e2f44a7aaf65898fadc2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00066-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "baf39eccdb33c2a32f6c575df085ab39f1ab8731db4c8aba88e3174e534485e7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00067-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "1fba9cfac0fb806ada08739a66f0c413dc982f38534445acc33bada8d3c0841f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00068-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "8d7c17a37c09d510d2dd790cbd542dd9088c15bcd84953c3ae5c8b48974a793f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00069-of-00225.safetensors",
+      "size": 4941123984,
+      "lfs": {
+        "size": 4941123984,
+        "sha256": "92a603394e51c017c4698698aa97cdf4a99d0cce9d52ae943c880aeca2598783",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00070-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "38d9dcf3bf1507ecbe14ad95ebc59af10be619b5c2607dd418a01043e2b88638",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00071-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "263c21d97c44eb2618423dbdccd784c6e5ae56ec35109dd61b2c28723a331237",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00072-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6e6d746db0e67c3e6a81b35b5d7a615b277f71683a11aa9415e116821715acd7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00073-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "979a638f16a485046c07af736cc267e264fd3be31db735ac6b1d8cb4f008dc87",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00074-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "763712a6013d27f8273b5fc218f570c3f8d49b0994ed224ece187f742bba37e1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00075-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "4b57398ec9cb97118ac6f2af76c9ba697d7c2bd95b75f55b3c2751839b777b77",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00076-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "8ba15101771f3debe86136699d63e52263810e83ea24597d3ac59c41f9b04d0b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00077-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "33bd7550dc246951d4918041bb98e69530891c5171f841cb22ebd7146936186c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00078-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "47488cf907a0db84757139f2c39091d89bc1858da304bb2a4189b787fe5d618a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00079-of-00225.safetensors",
+      "size": 4991515392,
+      "lfs": {
+        "size": 4991515392,
+        "sha256": "048b0600f77ed56f8e043533c224b0ca23444d28cb39bed6e5346bada6473114",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00080-of-00225.safetensors",
+      "size": 4991252800,
+      "lfs": {
+        "size": 4991252800,
+        "sha256": "ce97b3842c632fdc1577250b3ae67bb4ee0f9b836b54c19e832970bac2422358",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00081-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "35843bbc6c24a5cb2352a89a2923041b67a64009f7c060090ef342bd49a1ae7a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00082-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "99ce2c4028a9256f6b84afa8e584fbb71b746bbef30c540157e041f17ed3091d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00083-of-00225.safetensors",
+      "size": 4987305912,
+      "lfs": {
+        "size": 4987305912,
+        "sha256": "af8cd2bae32cdfea630d9391f11dd5f035ded332ac5479ad66e8badf335a3ff3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00084-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "3310d75f7ac32040b0c91ebcce4f0a672a9a92c500f50be62c5d54b8c1345d73",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00085-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d2071581de41a03134d1bfd040f97fce93b1a8fc74dd4494430a954ea7cf096e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00086-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "b1918cdb6eea2ccb5b2904aa72a0e1fda03dc4d293d89e32c40c20d8547c3655",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00087-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "7c380d906faafc9282a6cb00d432452cb559b655cccfafe3eafc7707e278ff46",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00088-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "087e24b8e01a6b26008a96aee168762365ba96f2ac1fccc66fef4b186f6be76e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00089-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "aa5824aaabc7c3cb31b17d8801f485934b47a1b889ef7a1e30de9a52f95b2dcf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00090-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "a10d3247dce17a7419a8a768dd5c863714bb19741c3ae7e0971ca5c68d992d03",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00091-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ab427e55542e5da45ab7e983d6058917273225ac20b5b367bb7b9465da50f5ad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00092-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "fff1ed751429eb7476a8a66fc97d97abf61f15734fdeca12faa5d6cf23918c81",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00093-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "7853e863aca079f7f3b02405ec667c395a6574c8a7c200ab7900dab09ee797f8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00094-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "426b5cd2ac4ec793b2cbbb89b3fb7a356bf408fbef04a6ca2f5b026d025a7f53",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00095-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "24e6f4c84eec7c10872d4f18c5ea031ab41d25ebd575228e29eb03ca95b2f73c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00096-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fc1a0f45990660f5c7155137219eef957cb43a22c3948aeebd37a2f277cfb72b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00097-of-00225.safetensors",
+      "size": 4991515400,
+      "lfs": {
+        "size": 4991515400,
+        "sha256": "8b1beb9c78213475ba911e076fa49f80b5edbf73d06033b5339900ea40a64e5c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00098-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "7550226e3a6ac4f4d7550f6ef1932b5cda6bebfb60a0436e4b47ca1cd5975b18",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00099-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "31d1f64fba7b42e642ca7c4cc107ddb51330a67d7c04e4e2dccfa60151c99b16",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00100-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "dde690698b71299deaa2045955e563b86c0b7cf194fce35b293f3eb2152d94ea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00101-of-00225.safetensors",
+      "size": 4941123984,
+      "lfs": {
+        "size": 4941123984,
+        "sha256": "290fd84ce94f7ef93c33776f38f637a99bd3c23bc2ba4af5633a9325af99e933",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00102-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "5d732def31712a99d4849b177da4c74810317d1deb660715f6017a0fbb1513c5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00103-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "36840419eae6d85bdb3d9d0dbe2d71dc311243181e220f3c4c95825df27d17c6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00104-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f6b91768bf30f68d7b593381583a92ebefa6f1f0c3d916f7060a0ec9758261f2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00105-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "9045c47fe402f6c26fbaef79d7460b8e23ff4e234b0b8992b320ee52e20c013b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00106-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "cc8d6a578e5b0e034364abf932186ede13317b8f43c4fe2daa518ca7a24fec3a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00107-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "ae6c173d561d2c3811b5e9117eb9dea7c99830fddf0c932959d76dfd5375849d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00108-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0d864fc8c7e6d1116262284b324d5005053d9a3b400d1773403df916512cb0e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00109-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "bc72b8d79ba0824beaf5c2387a0a6a941a9798747b97745f9369d3b04bfc9017",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00110-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "32ad6c93fa540c374a5623ac2eefdcb74f0d703f39837ead963172b700e31f46",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00111-of-00225.safetensors",
+      "size": 4987305824,
+      "lfs": {
+        "size": 4987305824,
+        "sha256": "0233a620da1e4cc099ea6152d776f71b28a223857f329be4becefa653a8809f8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00112-of-00225.safetensors",
+      "size": 4991252808,
+      "lfs": {
+        "size": 4991252808,
+        "sha256": "4a3c331e500e2161772b326e2a4c81b8b8c260cb66361943f777ca608a9b05b0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00113-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "eae165927d3d716ca6d7af0d57ac89274a3ef68acbc5ac629afd3ab06fd4acaa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00114-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "e15e863686adeba3c13c225bd8f5cf19ae81aa5e103529eed842fcb01b26c8c0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00115-of-00225.safetensors",
+      "size": 4991515464,
+      "lfs": {
+        "size": 4991515464,
+        "sha256": "568263249e368db5bf33fb009b99e8545269fd8d157045ee9184f373fa961fa2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00116-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "ec78a98dfc3b2fcf439ad31c5ae640079471841a4e6fcb2f1a414c9a3339e811",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00117-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "73582997d0a81e71f3382c984acb2c320119b6873214ecf4803cda630b467358",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00118-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "e352ae41059cfe8aae5dcd5c532c46b469174f3397bc6f367c3694411cfd1507",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00119-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "85abc48e87c5c34a2f0a6c222c3a67f9972715977c4f23d87916759cc92471b6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00120-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "0a65d081db2bc6e9ce390be8f589145992f2894e994f9494825a53e46c06eed7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00121-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "334cfa0d9559cdb4076b1c1a662f032d1b92c21be414eb75ceb536683d505af9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00122-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f766e7a498cc0612edb88a894b6b3d67ddd312d615211759185b0c480f533ae4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00123-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "eeba4b26e289e189396e0074654fa57562acbce31ba29bdf4e3663c4d5f48c79",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00124-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "016c01978aa377c03f65a0ca46d5725a5b781682aa8bee280e74d8f1c6d51566",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00125-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "3e62a4df7f88708626307720ad73f7bd4b0bc207af9e97518e375efbb8436cae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00126-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "4f046c2343f70996f6249bc3cb0d9c625497fc8622b0079e97f7ebeaa151917d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00127-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "40329df2c2ded1655ea147b82578f0979be16850a2ad6da96e37cea1306311a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00128-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "137ac4035ef9fc46fcfd89873cb1d66ea5d1a55c4c11e782896ce159c9f6d9e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00129-of-00225.safetensors",
+      "size": 4991515400,
+      "lfs": {
+        "size": 4991515400,
+        "sha256": "fdef94bfc629c91cbf0fc9fdb70bad490e4f50d2d931913647435ddfe5ad7a76",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00130-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "920923f657223060803f3f699ebbd44a0a260780e38b88cc5b5921e7d187e363",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00131-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "5aaeae282bd3e3d0e352810ba586bc159e6ad1a97c316a4dde149430e11d60a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00132-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "445387f5c737e87d6d49124a59a333a3da485e832b1c59e531a968b962a12a3b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00133-of-00225.safetensors",
+      "size": 4941123984,
+      "lfs": {
+        "size": 4941123984,
+        "sha256": "1ca8d49458d79fd68afb18ca679006d136a9c9c04c0d4c7be035f6219b4d4c4c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00134-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "9f0ca7b0081c0a6f7464864ac0da507da946ee4cef23621aff27fe54ebdd0d39",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00135-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "83f4890005303c3264e66957e3a562ea8734ae238aeb5d9bdd8669ab325e024f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00136-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "b7003e670b585b2f9b3bad017db8d6bd6eb763de01f5bc20a031d2e109f65099",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00137-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "3148f0a148781ceec4d5bd26e7082f47d23e35674d5be602e15912250a2d9a57",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00138-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "d57b60e3313ddae4535dd917aa64b469690197c9eda4351b2231f48edb2a92c3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00139-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "ec08cb7e84d1ba8e4afd99dceea7cb8b538e9057dc62c15ca6509f9012c347c8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00140-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "59a86fabd177946f606909a70a27fc3a28b2018ce615a25e22b5c3ada05be432",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00141-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fabcf419fb5346d5b0a55eead7e3697e18c9a683015d0fabee7c03db34935cd2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00142-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "53fa4f9e53c7cc52294b4ba9a1e6fdad4002a81d42ca218b9fc47db89c31d7d1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00143-of-00225.safetensors",
+      "size": 4987305824,
+      "lfs": {
+        "size": 4987305824,
+        "sha256": "2c5ba7989fab8f96d571eeccce95291699a3b18db863efb9a1c34e0daae1da5a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00144-of-00225.safetensors",
+      "size": 4991252808,
+      "lfs": {
+        "size": 4991252808,
+        "sha256": "b7ab621728d91b5d964c92f7638887295e308a4235d44c3fac72fa6159a6aa29",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00145-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "10467a91cf1fd91778d44168255caf3e41eb58812f4898d5379cab1c235f42bf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00146-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d4cdbc762ef88a582aefe85d3d970bb6f0313df99b55039bce0f0a453d480293",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00147-of-00225.safetensors",
+      "size": 4991515464,
+      "lfs": {
+        "size": 4991515464,
+        "sha256": "0285f3347adeae3435f180e5e07d140733e92b8a9b5f87410adc12478f8b02ab",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00148-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "5bfed92ae45acb72b604c4281f255a55d27f81838d92529acef60d47fd686dd1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00149-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "923e16ce2318745ab4e4b3f8691e9f754cc92178ecea029bb9f3b3fc3c46be76",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00150-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "7e5a85a326ee3ae91205e1f708371e2b613a1fd2fcc86aa7646f91d2b5a813fc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00151-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fb94c64f901b2769a42384dcc26feb208a8a175af31aa4c4733d2cc3e0e4d05a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00152-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "ae007a8428d25275e28dfcc0e9a5f08e8dffd7e517db87abd198243e45cea61a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00153-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "a835bb86302bdd2fe2114eb6a06a8b020745fb0066154992ed1d408a45c316e5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00154-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ec6c46cf651469804feaec34ecfec2bde909a76b5d2037f9635f7218ff7484e6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00155-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "977c3f58631c9192b0dc471c127e0714cc1461a04f5c3e540b3ade72f7803167",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00156-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "78670c4496de423ecce98f6097e52c11b7d91ce223563a9f163b89ea0f1013aa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00157-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "6747ba8fa8f68a3df0ea575ef5f2a9277716984f10f6052f33fd2b7749d8fb1e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00158-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6c3c3e4fd1ec83bcdefabe7aee6ed2c6ac607f4fd917c1e8a256b31068132e99",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00159-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "4d053ca2d248574f67d4ae7358a745a856241d13f1a6db44e4880a56038502ac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00160-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ccfc4fb2dc0652f3702f47f94517386aa249b0c246f38eecf98e17b97c45c51c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00161-of-00225.safetensors",
+      "size": 4987305832,
+      "lfs": {
+        "size": 4987305832,
+        "sha256": "94195185ebe55f0eaeecf54a4e850a341415b0073aaef43d4f1ef45e83276ad3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00162-of-00225.safetensors",
+      "size": 4991252744,
+      "lfs": {
+        "size": 4991252744,
+        "sha256": "24716169a94d258578860ea5f1ff5e300b791003c10c79cf73fb6a6ec8483c0e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00163-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fb4de74ecd088154a7c71591fc607823eaf5b6daa71ce755291ea6baa999a9e6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00164-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "7ed6ca787c4c3720720ea8fd140b98ea560d92c93a51575436a8c6490f36a61b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00165-of-00225.safetensors",
+      "size": 4668492520,
+      "lfs": {
+        "size": 4668492520,
+        "sha256": "34933feef4b44a022d56f34a0a64932b8fd939cdbcf8ae2e0cd19070b716679b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00166-of-00225.safetensors",
+      "size": 4999700952,
+      "lfs": {
+        "size": 4999700952,
+        "sha256": "08579a67621bc19c3b10c24dd339cded5c2115f127292369c04ba100ef9b9554",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00167-of-00225.safetensors",
+      "size": 4991252824,
+      "lfs": {
+        "size": 4991252824,
+        "sha256": "312c7dd18e78938745666a3aba2f2e065e4177f3e24d41da16dc789776df8bee",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00168-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ff974a978761d2d0fffd2659760dcf8f41548b90a5ec4c548defececdf0001fc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00169-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6ccf9f2ca7e54ed8d0925a4f810ca146818edd9136bcf82e552addbfe23d268c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00170-of-00225.safetensors",
+      "size": 4987305888,
+      "lfs": {
+        "size": 4987305888,
+        "sha256": "e7c8a03c0f5bbf1b9b69ed08cc2ba26499c0805a0adaf577476049762b4693a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00171-of-00225.safetensors",
+      "size": 4991252696,
+      "lfs": {
+        "size": 4991252696,
+        "sha256": "9c694bdffdaf8c07afd5405bf73414f522a7821984dc8064e1a5a31e2ac9087e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00172-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "877a74c35775b63259aae36879573e3f2b7b3f4293e4512acf337a279feb603c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00173-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "a3bb4168d15b3de3ca5f197d364920bf5bd7ddcdaa8564318c3e475d4a507d96",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00174-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "47e98eb1ab9962af9221cf2fccd6989d3c8b5ea7cf4b342afe079187c9d81a72",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00175-of-00225.safetensors",
+      "size": 4987305816,
+      "lfs": {
+        "size": 4987305816,
+        "sha256": "4449c8adf760a0bb99cc54de809cc35538d1ca2aaec1fb4ce6e481a8dd61b200",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00176-of-00225.safetensors",
+      "size": 4991252800,
+      "lfs": {
+        "size": 4991252800,
+        "sha256": "c75187e6ddfc7ff2010efe4d2ee1bc6cdcaccb4a1eaa07118332d6f6e945f0f4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00177-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "b00c50bd220baf0197a4976943172912dc140d7ea2c5388e3145b339e536f256",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00178-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d78b25c29f00219cb033cccd298ec601543086f30987dc3c6be22e0d6827b5f4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00179-of-00225.safetensors",
+      "size": 4991515488,
+      "lfs": {
+        "size": 4991515488,
+        "sha256": "79af9305935fc15cbc16a5d8176877610c26e3c73e63ec7efb58d77b6497ca0a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00180-of-00225.safetensors",
+      "size": 4991252648,
+      "lfs": {
+        "size": 4991252648,
+        "sha256": "2b97af5bbca8431efe14a9978274ad52d6832f455ce5c11792d2adbffe37546e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00181-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f9680abbf3927f65923b60ae48f6a8079129c2c35c5832643e6f900e10489bc0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00182-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6e1850f80835535382d5ce27eedd1b12d12c74c35dea572c68117c65980f321e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00183-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "930da17ee99eabdee8014559534bcd7a1fb92cb65a75e5da64e0d2e3e62279d9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00184-of-00225.safetensors",
+      "size": 4987305816,
+      "lfs": {
+        "size": 4987305816,
+        "sha256": "3b0183e875d2b51a8c42bf6333a978345c2259c9200ac6b55ea5c2fef5cef824",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00185-of-00225.safetensors",
+      "size": 4991252760,
+      "lfs": {
+        "size": 4991252760,
+        "sha256": "3f358c88f85d18c6383f3f592b78bc0c0728b19418fa50685cfe9e3ac87968be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00186-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "b5aee9ed3cccda46631890945364e8317d37a83d988079830b81e36b86d50f1a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00187-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "10429e37cc65ef256c4e4c95a4ca2971ec83a49040fea7c8af0211b18cc0555f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00188-of-00225.safetensors",
+      "size": 4970513704,
+      "lfs": {
+        "size": 4970513704,
+        "sha256": "73ae1e536177e32064a077048a5088dfa09da83e88bdc7f92da4046302076df8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00189-of-00225.safetensors",
+      "size": 4987073248,
+      "lfs": {
+        "size": 4987073248,
+        "sha256": "c06e87c96d4bbec9ca2e3ef15ca9d23ee4c9243510fa7eba4c51d0fa1a49596c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00190-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "cacddb94df8a0f39f21184dd0278fca4aa5d42c99150b7c8580c17f4ff0dcc1e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00191-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "55a82981787dfe288d8ba97cdacb4177fb99a9bd72458efeda1190045e85f342",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00192-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "56aa9cdc4ca79682bddd9bd6daaacd3935dcec42f12348447e12f2ccb508741b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00193-of-00225.safetensors",
+      "size": 4987305848,
+      "lfs": {
+        "size": 4987305848,
+        "sha256": "22d284bf3e570256e39b8b54322d360e2e7068b509d899b171b4c7b6808df5fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00194-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "27330d1bedd7eac12e99a1098d19faeafaf027f21d836ae8bbd6fbb39fe3d2c8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00195-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "4d971dad10bb749673a8cdbf55ee340871fe603112497b79f7f13a2046d9cd4a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00196-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "91c9c45df691f0be971d06185314f6a6c8f0c46665ba8d9533825489501ebda4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00197-of-00225.safetensors",
+      "size": 4962095640,
+      "lfs": {
+        "size": 4962095640,
+        "sha256": "82862b5556471bef97143e13f56417dd48434b9269351ffb66403bd1f1adb45b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00198-of-00225.safetensors",
+      "size": 4999700952,
+      "lfs": {
+        "size": 4999700952,
+        "sha256": "007d8a92bb11e498239ae90e89f1234ee83c0af84902363700de41c090580496",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00199-of-00225.safetensors",
+      "size": 4991252824,
+      "lfs": {
+        "size": 4991252824,
+        "sha256": "18488251a8d3e017638e6fc4494ff8647dda148fddc2a68fe52d65f567c32f9f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00200-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "19b1ad201c4d1cca9001d672cc852d2445fb37b3da6ec225c03f5845367fe125",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00201-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "7e67fe98630a2cbf6145b648d9ac5f7c1fc2fd2ff69a889baf029bdcacfe654c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00202-of-00225.safetensors",
+      "size": 4987305976,
+      "lfs": {
+        "size": 4987305976,
+        "sha256": "b89f2e32ca32aaf54df34f059fb138c5a6129100e446f648906cab1d49d25e71",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00203-of-00225.safetensors",
+      "size": 4991252928,
+      "lfs": {
+        "size": 4991252928,
+        "sha256": "f0e10735c1ed161dbefcc79149065657f04806668f9158c18fd3112135056ae8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00204-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "3fe085c743e08cfa31f9971d4628332e39942a562b444fff457d0292e01e7587",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00205-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "fd842aef96717ed24f4d632376e5fac46e5258a425523c69dcc043feca911999",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00206-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "9355592d5f1fce77e7b24bdd17fedb8c64c80b4497bde3889d82148406d46b12",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00207-of-00225.safetensors",
+      "size": 4987306008,
+      "lfs": {
+        "size": 4987306008,
+        "sha256": "5582b7a9dce4e3ff06dbc8dab6a0017bd1886540e20f7b94691e0f927005ea77",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00208-of-00225.safetensors",
+      "size": 4991253040,
+      "lfs": {
+        "size": 4991253040,
+        "sha256": "22ad8d3e9eec43ea19ebed1ece4a12e50d2fbc19221448524c6a1a32ad7495a3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00209-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "9671c705e20b773541acdd1b5b7de6a265ac44423053989c4c2b713142fb8276",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00210-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "18277cd9dc1f466566255ecf1cad985cdd767d855fac4c0350eab0399d6f28f3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00211-of-00225.safetensors",
+      "size": 4987306104,
+      "lfs": {
+        "size": 4987306104,
+        "sha256": "532190a8d3f3a1e9fec5463b1fa7ef0ae5073cfcd45325c2cc29b811777db428",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00212-of-00225.safetensors",
+      "size": 4991252904,
+      "lfs": {
+        "size": 4991252904,
+        "sha256": "c9dad86d72543f8eb99beafe7c3b799a8353c0f1439546d65ffd30236d90619a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00213-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "e32730acf421c5e2d128f0b245080a76b951294b1bcffa306b264a79770d07d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00214-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "5e93dfb6c792f0264cfab531b719c2853355a4b7538b5e64cd1bf2305acbff8c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00215-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "c4d1415610603e4afe15f3a27498d6322aabe1f5ce3cc71fb0f5863878898468",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00216-of-00225.safetensors",
+      "size": 4987306000,
+      "lfs": {
+        "size": 4987306000,
+        "sha256": "32cf3cbbbc5b7b1d8434fa57688f2fafccd0b077818d6b4a487d09a4f09cb48a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00217-of-00225.safetensors",
+      "size": 4991253008,
+      "lfs": {
+        "size": 4991253008,
+        "sha256": "5c9cc25824860ded18f337b88a4bee2faf46bf407e369a73862cd108b3c8a8f5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00218-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "496e2a5c9498cb6ceecf6b2c902ee9cfb5c82b75652b6ca688a3679b5630c58e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00219-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "137a9c86878f861ea61cdf1d6f54b54d905b91318f5b03fc893cf2c2943ed93e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00220-of-00225.safetensors",
+      "size": 4123043384,
+      "lfs": {
+        "size": 4123043384,
+        "sha256": "9c7854bfda983f3684a49c28d8d8489c29c6c32a19f0d3371f56d9d5588f9da4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00221-of-00225.safetensors",
+      "size": 4999690568,
+      "lfs": {
+        "size": 4999690568,
+        "sha256": "6ef2313188d0a121fdaed125c288434750d61375dff7c0c3399eb754e37f0c6c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00222-of-00225.safetensors",
+      "size": 4991251320,
+      "lfs": {
+        "size": 4991251320,
+        "sha256": "d0c1b441d41c77584c9f466954b36de309fe8c1a248e0c5aa18713d1e56c9d85",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00223-of-00225.safetensors",
+      "size": 4991251408,
+      "lfs": {
+        "size": 4991251408,
+        "sha256": "a5f4696ba7d35079a8e9c981d14888a2783977947489ae81006c314d6f2502da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00224-of-00225.safetensors",
+      "size": 4991251408,
+      "lfs": {
+        "size": 4991251408,
+        "sha256": "5abf588c8fada86a3c2136b381d30d9aafb54726f5a2198132e691b427321fb9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00225-of-00225.safetensors",
+      "size": 4605389936,
+      "lfs": {
+        "size": 4605389936,
+        "sha256": "247df1c871b3e3b4ce711c1e1e1fd3ab06504b5c62a1ac9f2124b2e95ca7d41e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 5074480,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 563,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077484,
+      "lfs": {
+        "size": 17077484,
+        "sha256": "623c34567aebb18582765289fbe23d901c62704d6518d71866e0e58db892b5b7",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 177209,
+      "lfs": null
+    },
+    {
+      "rfilename": "ultra_v3_reasoning_parser.py",
+      "size": 1878,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: openmdw-1.1\nlicense_link: https://openmdw.ai/license/1-1/\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- pytorch\n- nemotron-3\n- latent-moe\n- mtp\n- genrm\n- reward-model\nbase_model: NVIDIA/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16\ntrack_downloads: true\n---\n\n# NVIDIA-Nemotron-3-Ultra-550B-A55B-GenRM\n\n<div align=\"center\" style=\"line-height: 1;\">\n<a href=\"https://build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/\ud83e\udd16Chat-Nemotron_3_Ultra-536af5?color=76B900&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Ultra-Technical-Report.pdf\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Paper\" src=\"https://img.shields.io/badge/\ud83d\udcddPaper-Read Now!-536af5?color=76B900&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://huggingface.co/collections/nvidia/nemotron-pre-training-datasets\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Pre-Training Datasets\" src=\"https://img.shields.io/badge/\ud83d\uddc4\ufe0f_Pre--Training_Datasets-Available_Here-76B900?logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://huggingface.co/collections/nvidia/nemotron-post-training-v3\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Post-Training Datasets\" src=\"https://img.shields.io/badge/\ud83d\uddc4\ufe0f_Post--Training_Datasets-Available_Here-76B900?logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n</div>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://developer.nvidia.com/nemotron\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Homepage\" src=\"https://img.shields.io/badge/\ud83c\udfe0Nemotron Developer Page-Learn More Here!-536af5?color=76B900&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n<a href=\"https://discord.gg/9xpKQtVvrk\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Discord\" src=\"https://img.shields.io/badge/Discord-NVIDIA%20AI%20Developer-7289da?logo=discord&logoColor=white&color=7289da\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n<div style=\"text-align: center; line-height: 1;\">\n  <a href=\"https://openmdw.ai/license/1-1/\" style=\"margin: 2px;\">\n    <img alt=\"License\" src=\"https://img.shields.io/badge/License-OpenMDW--1.1-f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n![](./accuracy_chart.png)\n\n## Model Summary\n\n| | |\n|:---|:---|\n| **Total Parameters** | 550B (55B active) |\n| **Architecture** | LatentMoE - Mamba-2 + MoE + Attention hybrid with Multi-Token Prediction (MTP) |\n| **Context Length** | Up to 1M tokens |\n| **Minimum GPU Requirement** | 8x GB200/B200/GB300/B300, 16x H100, 8x H200 |\n| **Supported Languages** | English, French, Spanish, Italian, German, Japanese, Hindi, Korean, Brazilian Portuguese, and Chinese |\n| **Best For** | Judging Model Responses |\n| **Reasoning Mode** | Thinking On Only |\n| **License** | [OpenMDW License Agreement, version 1.1](https://raw.githubusercontent.com/OpenMDW/OpenMDW/refs/heads/main/1.1/LICENSE.OpenMDW-1.1) |\n| **Release Date** | June 4, 2026 |\n\n\n## Quick Start\n\nFor more details on how to deploy and use the model - see the [Quick Start Guide](#quick-start-guide) below!\n\n## Model Overview\n\n**Model Developer:** NVIDIA Corporation\n\n**Model Dates:** December 2025 - April 2026\n\n**Data Freshness:**\n\n* The post-training data has a cutoff date of May 2026.\n* The pre-training data has a cutoff date of September 2025.\n\n### What is Nemotron?\n\nNVIDIA Nemotron\u2122 is a family of open models with open weights, training data, and recipes, delivering leading efficiency and accuracy for building specialized AI agents.\n\n## Description\n\n**NVIDIA-Nemotron-3-Ultra-550B-A55B-GenRM** is a Generative Reward Model (GenRM) that leverages NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16 as the foundation and is fine-tuned to evaluate the quality of assistant's responses.\n\nGiven a conversation history, a new user request, and two candidate assistant responses, it produces an individual helpfulness score for each response and a ranking score. The model also accepts user-specified principles, when given the principles, it judges the responses based on the principles.\n\nThis GenRM is used in the Reinforcement Learning from Human Feedback training of [NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16).\n\nFor training details, see the [Nemotron 3 Ultra technical report](https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Ultra-Technical-Report.pdf).\n\nThis model is ready for commercial and non-commercial use.\n\n## License/Terms of Use\n\nUse of this model is governed by the [OpenMDW License Agreement, version 1.1 (OpenMDW-1.1).](https://raw.githubusercontent.com/OpenMDW/OpenMDW/refs/heads/main/1.1/LICENSE.OpenMDW-1.1)\n\n### Deployment Geography: Global\n\n### Use Case\n\nThis GenRM is used in the Reinforcement Learning from Human Feedback training of NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16.\n\n### Release Date\n\nHugging Face - 06/04/2026 via [Hugging Face](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-GenRM)\n\n## Reference(s)\n\n* [NVIDIA Nemotron 3 model family on Hugging Face](https://huggingface.co/collections/nvidia/nvidia-nemotron-v3)\n* [NVIDIA Nemotron 3 Ultra Technical Report](https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Ultra-Technical-Report.pdf)\n\n## Model Architecture\n\n- **Architecture Type:** Mamba2-Transformer Hybrid Latent Mixture of Experts (LatentMoE) with Multi-Token Prediction (MTP)\n- **Network Architecture:** Nemotron Hybrid LatentMoE\n- **Number of model parameters:** 550B Total / 55B Active\n\n## Model Design\n\nWe developed this model using an early version of [NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16) as its foundation. This model contains 550 billion parameters.\n\n## Input\n\n- **Input Type(s):** Text\n- **Input Format(s):** String\n- **Input Parameters:** One-Dimensional (1D): Sequences\n- **Other Properties Related to Input:** Maximum context length up to 1M tokens. Supported languages include: English, French, Spanish, Italian, German, Japanese, Korean, Hindi, Korean, Brazilian Portuguese, and Chinese\n\n## Output\n\n- **Output Type(s):** Text\n- **Output Format:** String\n- **Output Parameters:** One-Dimensional (1D): Sequences\n- **Other Properties Related to Output:** Maximum context length up to 1M tokens\n\nOur AI models are designed and optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n## Software Integration\n\n- Runtime Engine(s): NeMo 26.04.01\n- Supported Hardware Microarchitecture Compatibility: NVIDIA Ampere - A100; NVIDIA Blackwell; NVIDIA Hopper - H100-80GB\n- Operating System(s): Linux\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Model Version(s)\n\n* v1.0 - GA\n\n## **Quick Start Guide**\n\nThe model shares the same architecture as NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16.\n\n> Deployment instructions can be found on the [NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16 model card](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16#quick-start-guide).\n\nNow you can query the model, here is an example:\n\n```python\nfrom openai import OpenAI\nclient = OpenAI(base_url=\"http://127.0.0.1:8000/v1\", api_key=\"dummy\")\nmsg = [\n  {\"role\": \"user\", \"content\": \"What is 1+1?\"}, \n  {\"role\": \"assistant\", \"content\": \"1+1=2\"}, \n  {\"role\": \"user\", \"content\": \"What about 1+2?\"},\n  {\"role\": \"response_1\", \"content\": \"1+2=4\"},\n  {\"role\": \"response_2\", \"content\": \"1+2=3\"}\n]\ncompletion = client.chat.completions.create(\n    model=\"nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-GenRM\",\n    messages=msg,\n    temperature=1.0,\n    top_p=0.95,\n    max_tokens=24576,\n    stream=False\n)\noutput = completion.choices[0].message.content\nprint(output)\n```\n\nYou can also use it with pre-defined principles by formatting message as:\n\n```python\nmsg = [\n  {\"role\": \"user\", \"content\": \"How's the weather in LA?\"}, \n  {\"role\": \"response_1\", \"content\": \"I don't have access to real-time data, so I can't give you the current weather in Los Angeles.\"},\n  {\"role\": \"response_2\", \"content\": \"Most days sit in the 65 \u00b0F\u201380 \u00b0F (18 \u00b0C\u201327 \u00b0C) range, with cooler evenings, especially near the coast.\"},\n  {\"role\": \"principle\", \"content\": \"You will be given one or more evaluation criteria (rubrics).\\nEvaluate both responses on EACH criterion individually first, then synthesize an overall judgment.\\nCriteria:\\n\\n1. Response should state that it doesn't have access to real-time data.\"}\n]\n```\n\nNote that the conversation history should be presented in `\"user\"` and `\"assistant\"` roles, where the last turn is user turn. The responses to be judged should be in `\"response_1\"` and `\"response_2\"` roles, and pre-defined principles should be in `\"principle\"` role. When no principle is given, it defaults to a general helpfulness principle.\n\n### Interpretation of Scores\n\nFor individual helpfulness score, it ranges from 1 to 5, where higher means better.\n\nFor ranking score, it ranges from 1 to 6, where:\n\n* 1 = Response 1 is much better than Response 2\n* 2 = Response 1 is better than Response 2\n* 3 = Response 1 is slightly better than Response 2\n* 4 = Response 2 is slightly better than Response 1\n* 5 = Response 2 is better than Response 1\n* 6 = Response 2 is much better than Response 1\n\n\n## Training and Evaluation Datasets\n\n# Training\n\n**Data Modality:** Text  \n**The total size:** 53.8 TiB (14.8 trillion tokens)  \n**Total number of datasets:** 226  \n**Dataset partition:** *Training [100%], testing [0%], validation [0%]*  \n**Time period for training data collection:** 2013 to 2026  \n**Time period for testing data collection:** 2013 to 2026  \n**Time period for validation data collection:** 2013 to 2026  \n**Data Collection Method by dataset:** Hybrid: Automated, Human, Synthetic  \n**Labeling Method by dataset:** Hybrid: Automated, Human, Synthetic  \n\nMore details on the datasets and synthetic data generation methods can be found in the technical report _[**_NVIDIA Nemotron 3 Ultra_**](https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Ultra-Technical-Report.pdf)_.\n\n<details>\n  <summary>For Detailed Dataset Information: Click here!</summary>\n\n#### **Base Pre-Training Corpus (Nemotron 3 Foundation)**\n\nThe foundation of the model is trained on the **Nemotron-3-Ultra** corpus, comprising the following datasets from the [Nemotron Pre-Training Datasets collection](https://huggingface.co/collections/nvidia/nemotron-pre-training-datasets):\n\n| Dataset Collection | Token Counts | Description |\n| :--- | :--- | :--- |\n| **Nemotron-CC-v2** & **v2.1** | 9.1T | A massive collection of English web data filtered from Common Crawl, including 2.5T+ tokens of new organic, translated, and synthetically rephrased content. |\n| **Nemotron-CC-Code-v1** | 427.9B | High-quality code tokens extracted from Common Crawl using the Lynx + LLM pipeline to preserve structure and equations. |\n| **Nemotron-Pretraining-Code-v1** & **v2** & **v3** | 1.7T | Curated GitHub code references with multi-stage filtering, deduplication, and large-scale synthetic code data. |\n| **Nemotron-CC-Math-v1** | 133.3B | High-quality math pre-training dataset preserving LaTeX formatting and mathematical structures. |\n| **Nemotron-Pretraining-Specialized-v1** & **v1.1** & **v1.2** & **Nemotron-Pretraining-SFT-v1** | 660.0B | Synthetic datasets targeting specialized domains such as STEM reasoning and scientific coding. |\n| **Nemotron-Pretraining-Legal-v1** | 4.3B | Synthetic datasets targeting the legal domain. |\n\nFor more information about the datasets used to train this model, please see the [Public Summary of Training Content](https://developer.download.nvidia.com/assets/nemo/docs/public-summary-of-training-content-for-nvidia-nemotron.pdf)\n\n### Public Datasets\n\n| Dataset | Collection Period |\n| :---- | :---- |\n| [GSM8K](https://github.com/openai/grade-school-math) | 4/23/2025 |\n| [CC-NEWS](https://commoncrawl.org/blog/news-dataset-available) | 4/23/2025 |\n| [Common Crawl](https://commoncrawl.org/) | 4/23/2025 |\n| [Wikimedia](https://dumps.wikimedia.org/) | 4/23/2025 |\n| [Bespoke-Stratos-17k](https://huggingface.co/datasets/bespokelabs/Bespoke-Stratos-17k) | 4/23/2025 |\n| [tigerbot-kaggle-leetcodesolutions-en-2k](https://huggingface.co/datasets/TigerResearch/tigerbot-kaggle-leetcodesolutions-en-2k) | 4/23/2025 |\n| [glaive-function-calling-v2](https://huggingface.co/datasets/glaiveai/glaive-function-calling-v2) | 4/23/2025 |\n| [APIGen Function-Calling](https://huggingface.co/datasets/Salesforce/xlam-function-calling-60k) | 4/23/2025 |\n| [LMSYS-Chat-1M](https://huggingface.co/datasets/lmsys/lmsys-chat-1m) | 4/23/2025 |\n| [Open Textbook Library \\- CC BY-SA & GNU subset](https://open.umn.edu/opentextbooks/textbooks/) and [OpenStax \\- CC BY-SA subset](https://openstax.org/) | 4/23/2025 |\n| [Advanced Reasoning Benchmark](https://github.com/TheDuckAI/arb), [tigerbot-kaggle-leetcodesolutions-en-2k](https://huggingface.co/datasets/TigerResearch/tigerbot-kaggle-leetcodesolutions-en-2k), [PRM800K](https://github.com/openai/prm800k), and [SciBench](https://github.com/mandyyyyii/scibench) | 4/23/2025 |\n| [FineWeb-2](https://huggingface.co/datasets/HuggingFaceFW/fineweb-2) | 4/23/2025 |\n| [Court Listener](https://www.courtlistener.com/help/api/bulk-data/) | Legacy Download |\n| [peS2o](https://huggingface.co/datasets/allenai/peS2o) | Legacy Download |\n| [OpenWebMath](https://huggingface.co/datasets/open-web-math/open-web-math) | Legacy Download |\n| [BioRxiv](https://www.biorxiv.org/tdm) | Legacy Download |\n| [PMC Open Access Subset](https://pmc.ncbi.nlm.nih.gov/tools/openftlist/) | Legacy Download |\n| [OpenWebText2](https://openwebtext2.readthedocs.io/en/latest/) | Legacy Download |\n| [Stack Exchange Data Dump](https://archive.org/details/stackexchange) | Legacy Download |\n| [PubMed Abstracts](https://github.com/thoppe/The-Pile-PubMed) | Legacy Download |\n| [NIH ExPorter](https://exporter.nih.gov/ExPORTER_Catalog.aspx) | Legacy Download |\n| [arXiv](https://info.arxiv.org/help/bulk_data/index.html) | Legacy Download |\n| [BigScience Workshop Datasets](https://github.com/bigscience-workshop/bigscience/tree/master/train/tr11-176B-ml#datasets) | Legacy Download |\n| [Reddit Dataset](https://files.pushshift.io/reddit/) | Legacy Download |\n| [SEC's Electronic Data Gathering, Analysis, and Retrieval (EDGAR)](https://www.sec.gov/search-filings) | Legacy Download |\n| [Advanced Mathematical Problem Solving](https://github.com/hendrycks/math?tab=readme-ov-file) | Legacy Download |\n| [MathPile](https://github.com/GAIR-NLP/MathPile/) | Legacy Download |\n| [NuminaMath CoT](https://huggingface.co/datasets/AI-MO/NuminaMath-CoT) | Legacy Download |\n| [PMC Article](https://pmc.ncbi.nlm.nih.gov/tools/textmining/) | Legacy Download |\n| [FLAN](https://github.com/google-research/FLAN) | Legacy Download |\n| [Advanced Reasoning Benchmark](https://github.com/TheDuckAI/arb) | Legacy Download |\n| [SciBench](https://github.com/mandyyyyii/scibench) | Legacy Download |\n| [WikiTableQuestions](https://huggingface.co/datasets/wikitablequestions) | Legacy Download |\n| [FinQA](https://finqasite.github.io/) | Legacy Download |\n| [Riddles](https://github.com/crawsome/riddles) | Legacy Download |\n| [Problems in Elementary Mathematics for Home Study](https://archive.org/details/AntonovVygodskyNikitinSankinProblemsInElementaryMathematicsForHomeStudyMir1982) | Legacy Download |\n| [MedMCQA](https://huggingface.co/datasets/openlifescienceai/medmcqa) | Legacy Download |\n| [Cosmos QA](https://huggingface.co/datasets/allenai/cosmos_qa) | Legacy Download |\n| [MCTest](https://huggingface.co/datasets/sagnikrayc/mctest) | Legacy Download |\n| [AI2's Reasoning Challenge](https://huggingface.co/datasets/ai2_arc) | Legacy Download |\n| [OpenBookQA](https://github.com/allenai/OpenBookQA) | Legacy Download |\n| [MMLU Auxiliary Train](https://huggingface.co/datasets/cais/mmlu/viewer/all/auxiliary_train) | Legacy Download |\n| [social-chemestry-101](https://huggingface.co/datasets/tasksource/social-chemestry-101) | Legacy Download |\n| [Moral Stories](https://huggingface.co/datasets/demelin/moral_stories) | Legacy Download |\n| [The Common Pile v0.1](https://huggingface.co/common-pile) | Legacy Download |\n| [FineMath](https://huggingface.co/datasets/HuggingFaceTB/finemath) | Legacy Download |\n| [MegaMath](https://huggingface.co/datasets/LLM360/MegaMath) | Legacy Download |\n| [MegaMath](https://huggingface.co/datasets/LLM360/MegaMath) | Legacy Download |\n| [MultiverseMathHard](https://huggingface.co/datasets/Nexusflow/MultiverseMathHard) | 10/2/2025 |\n| [News Commentary](https://opus.nlpl.eu/News-Commentary.php) | 10/2/2025 |\n| [Essential-Web](https://huggingface.co/datasets/EssentialAI/essential-web-v1.0) | 10/2/2025 |\n| [finepdfs](https://huggingface.co/datasets/HuggingFaceFW/finepdfs) | 10/2/2025 |\n| [HotpotQA](https://huggingface.co/hotpot_qa/datasets) | 10/2/2025 |\n| [SQuAD2.0](https://rajpurkar.github.io/SQuAD-explorer/) | 10/2/2025 |\n| [NLTK Words Lists](https://www.nltk.org/nltk_data/) | 10/2/2025 |\n\n### **Crawled and Scraped from Online Sources by NVIDIA**\n\nThe English Common Crawl data was downloaded from the Common Crawl Foundation (see their FAQ for details on their crawling) and includes the snapshots CC-MAIN-2013-20 through CC-MAIN-2025-13. The data was subsequently deduplicated and filtered in various ways described in the Nemotron-CC paper. Additionally, we extracted data for fifteen languages from the following three Common Crawl snapshots: CC-MAIN-2024-51, CC-MAIN-2025-08, CC-MAIN-2025-18. The fifteen languages included were Arabic, Chinese, Danish, Dutch, French, German, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Swedish, and Thai. As we did not have reliable multilingual model-based quality classifiers available, we applied just heuristic filtering instead\u2014similar to what we did for lower quality English data in the Nemotron-CC pipeline, but selectively removing some filters for some languages that did not work well. Deduplication was done in the same way as for Nemotron-CC.\n\nThe GitHub Crawl was collected using the GitHub REST API and the Amazon S3 API. Each crawl was operated in accordance with the rate limits set by its respective source, either GitHub or S3. We collect raw source code and subsequently remove any having a license which does not exist in our permissive-license set (for additional details, refer to the [technical report](https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Ultra-Technical-Report.pdf)).\n\n| Dataset | Modality | Dataset Size | Collection Period | Collecting Organisation |\n| :---- | :---- | :---- | :---- | :---- |\n| English Common Crawl | Text | 3.36T | 4/8/2025 | NVIDIA Advanced Deep Learning Research |\n| English Common Crawl 1.1 | Text | Not disclosed | 10/2/2025 | NVIDIA Advanced Deep Learning Research |\n| Multilingual Common Crawl | Text | 812.7B | 5/1/2025 | NVIDIA Advanced Deep Learning Research |\n| GitHub Crawl | Text | 747.4B | 4/29/2025 | NVIDIA Advanced Deep Learning Research |\n| GitHub Crawl 1.1 | Text | 172.7B | 9/30/2025 | NVIDIA Advanced Deep Learning Research |\n\n## Private Non-publicly Accessible Datasets of Third Parties\n\n| Dataset | Model(s) used |\n|---------|---------------|\n| Global Regulation | Unknown |\n| TAUS Translation Memory | Unknown |\n| Scale HLE | Unknown |\n| HackerRank Coding | Unknown |\n| RL data for Search | Gemini 3; GPT-5 |\n\n## Private Non-publicly Accessible Datasets by NVIDIA\n\n| Dataset | Model(s) used |\n|---------|---------------|\n| Simple Minesweeper | Undisclosed |\n| Simple Sudoku | Undisclosed |\n| Multitool Typewriter Hard | Undisclosed |\n| Machine Translation of News Commentary and TAUS Translation Memory | Undisclosed |\n| Machine Translation of STEM - | [Qwen2.5-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct) |\n| Competitive Coding RL data from Nemotron Cascade | Undisclosed |\n| Long context RL | Undisclosed |\n| Single-step SWE RL for patch generation | Undisclosed |\n| OpenHands SWE | Undisclosed |\n\n## NVIDIA-Sourced Synthetic Datasets (Pre-Training)\n\n| Dataset | Modality | Dataset Size | Seed Dataset | Model(s) used for generation |\n| :---- | :---- | :---- | :---- | :---- |\n| Nemotron-Pretraining-Fact-Seeking | Text | 35.0B | [FineWiki](https://huggingface.co/datasets/HuggingFaceFW/finewiki) | [Qwen3-30B-A3B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507) |\n| Nemotron-Pretraining-Legal | Text | 4.3B | CommonPile (caselaw_access_project_filtered); California Code of Regulations; Judicial Ethics Opinions; [GLOBALCIT](https://globalcit.eu/); [CUAD](https://www.atticusprojectai.org/cuad); Nemotron Personas; [ToSDR Terms of Service Corpus](https://www.kaggle.com/datasets/sonu1607/tosdr-terms-of-service-corpus); CodeHima/TOS_Dataset; [ContractNLI](https://stanfordnlp.github.io/contract-nli/); CaseHOLD; Code of Federal Regulations; [Canadian Case Law](https://huggingface.co/datasets/a2aj/canadian-case-law) (subsets that allow commercial use) | [Qwen3-235B-A22B-Thinking-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Thinking-2507) |\n| Nemotron-Pretraining-Formal-Logic | Text | 128M | [Nemotron Personas](https://huggingface.co/datasets/nvidia/Nemotron-Personas-USA) | [Qwen3-235B-A22B-Thinking-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Thinking-2507) |\n| Nemotron-Pretraining-Economics | Text | 73.4M | - | [Qwen3-235B-A22B-Thinking-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Thinking-2507) |\n| Nemotron-Pretraining-Multiple-Choice | Text | 1.6B | [MMLU Auxiliary Train](https://huggingface.co/datasets/cais/mmlu/viewer/all/auxiliary_train) | [DeepSeek-V3](https://huggingface.co/deepseek-ai/DeepSeek-V3); [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B) |\n| Nemotron-Pretraining-Code-Concepts | Text | 7.3B | - | [gpt-oss-20b](https://huggingface.co/openai/gpt-oss-20b); [gpt-oss-120b](https://huggingface.co/openai/gpt-oss-120b) |\n| Nemotron-Pretraining-Unconditional-Algorithmic | Text | 196.5M | - | [gpt-oss-120b](https://huggingface.co/openai/gpt-oss-120b); [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B) |\n| More Synthetic Tasks from DeepSeek-V3 and Qwen3-235B-A22B | Text | 1.1B | train splits of acp_bench; ai2_arc; babi; gsm8k; hendrycks_math; IFEval; MedText; mediqa_qa; mlqa; MMLU-Pro; mmlu-pro-plus; MMLU-ProX; nq_open; tinyGSM8k; truthful_qa; truthfulqa-multi; MATH-lighteval; mmlu; awesome-chatgpt-prompts; super_glue | [DeepSeek v3](https://huggingface.co/deepseek-ai/DeepSeek-V3); [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B) |\n| Synthetic Tasks from DeepSeek-V3 and Qwen3-235B-A22B | Text | 6.7B | train splits of Into the Unknown; AI2 ARC (AI2 Reasoning Challenge); BLiMP (Benchmark of Linguistic Minimal Pairs); CommonSenseQA; GLUE; HeadQA; Hendrycks Ethics; Memo Trap; modus-tollens; NeQA; pattern-matching-suppression; mastermind_24_mcq_random; mastermind_24_mcq_close; quote-repetition; redefine-math; Repetitive Algebra; sig-figs; MMLU-Pro; MC-TACO; MedConceptsQA; MMLU_dataset; OpenbooksQA; PIQA (Physical Interaction Question Answering); SocialIQA; SuperGLUE; tinyAI2_arc; tinyMMLU; tinyWinogrande; TruthfulQA; WebQuestions; Winogrande; GPQA; MBPP | [DeepSeek v3](https://huggingface.co/deepseek-ai/DeepSeek-V3); [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B) |\n| Synthetic Art of Problem Solving from DeepSeek-R1 | Text | 40B | [Art of Problem Solving](https://artofproblemsolving.com/company); [American Mathematics Competitions 8](https://artofproblemsolving.com/wiki/index.php/AMC_8_Problems_and_Solutions); [American Mathematics Competitions 10](https://artofproblemsolving.com/wiki/index.php/AMC_10_Problems_and_Solutions); | [DeepSeek-R1](https://huggingface.co/deepseek-ai/DeepSeek-R1) |\n| Synthetic Moral Stories and Social Chemistry from Qwen3-235B-A22B-Thinking-2507 and Mixtral-8x22B-v0.1 | Text | 15.2M | [social-chemestry-101](https://huggingface.co/datasets/tasksource/social-chemestry-101); [Moral Stories](https://huggingface.co/datasets/demelin/moral_stories) | [Qwen3-235B-A22B-Thinking-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Thinking-2507); [Mixtral-8x22B-v0.1](https://huggingface.co/mistralai/Mixtral-8x22B-v0.1) |\n| Synthetic Moral Stories and Social Chemistry from Mixtral-8x22B-v0.1 | Text | 327M | [social-chemestry-101](https://huggingface.co/datasets/tasksource/social-chemestry-101); [Moral Stories](https://huggingface.co/datasets/demelin/moral_stories) | [Mixtral-8x22B-v0.1](https://huggingface.co/mistralai/Mixtral-8x22B-v0.1) |\n| Synthetic Social Sciences seeded with OpenStax from DeepSeek-V3, Mixtral-8x22B-v0.1, and Qwen2.5-72B | Text | 83.6M | [OpenStax \\- CC BY-SA subset](https://openstax.org/) | [DeepSeek-V3](https://huggingface.co/deepseek-ai/DeepSeek-V3); [Mixtral-8x22B-v0.1](https://huggingface.co/mistralai/Mixtral-8x22B-v0.1); [Qwen2.5-72B](https://huggingface.co/Qwen/Qwen2.5-72B) |\n| Synthetic Health Sciences seeded with OpenStax from DeepSeek-V3, Mixtral-8x22B-v0.1, and Qwen2.5-72B | Text | 9.7M | [OpenStax \\- CC BY-SA subset](https://openstax.org/) | [DeepSeek-V3](https://huggingface.co/deepseek-ai/DeepSeek-V3); [Mixtral-8x22B-v0.1](https://huggingface.co/mistralai/Mixtral-8x22B-v0.1); [Qwen2.5-72B](https://huggingface.co/Qwen/Qwen2.5-72B) |\n| Synthetic STEM seeded with OpenStax, Open Textbook Library, and GSM8K from DeepSeek-R1, DeepSeek-V3, DeepSeek-V3-0324, and Qwen2.5-72B | Text | 175M | [OpenStax \\- CC BY-SA subset](https://openstax.org/); [GSM8K](https://github.com/openai/grade-school-math); [Open Textbook Library \\- CC BY-SA & GNU subset](https://open.umn.edu/opentextbooks/textbooks/) | [DeepSeek-R1](https://huggingface.co/deepseek-ai/DeepSeek-R1), [DeepSeek-V3](https://huggingface.co/deepseek-ai/DeepSeek-V3); [DeepSeek-V3-0324](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324); [Qwen2.5-72B](https://huggingface.co/Qwen/Qwen2.5-72B) |\n| [Nemotron-PrismMath](https://huggingface.co/datasets/nvidia/Nemotron-PrismMath) | Text | 4.6B | [Big-Math-RL-Verified](https://huggingface.co/datasets/SynthLabsAI/Big-Math-RL-Verified); [OpenR1-Math-220k](https://huggingface.co/datasets/open-r1/OpenR1-Math-220k) | [Qwen2.5-0.5B-instruct](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct), [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct); [DeepSeek-R1-Distill-Qwen-32B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) |\n| Synthetic Question Answering Data from Papers and Permissible Books from Qwen2.5-72B-Instruct | Text | 350M | [arXiv](https://info.arxiv.org/help/bulk_data/index.html); [National Institutes of Health ExPorter](https://www.nih.gov/); [BioRxiv](https://www.biorxiv.org/tdm); [PMC Article](https://pmc.ncbi.nlm.nih.gov/tools/textmining/); [USPTO Backgrounds](https://data.uspto.gov/apis/transition-guide/bdss#pats); [peS2o](https://huggingface.co/datasets/allenai/peS2o); Global Regulation; [CORE](https://core.ac.uk/documentation/dataset); [PG-19](https://github.com/google-deepmind/pg19); [DOAB CC BY & CC BY-SA subset](https://www.doabooks.org/en); [NDLTD](https://ndltd.org/thesis-resources/global-etd-search/) | [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) |\n| Synthetic Rephrased [Math Data from Common Crawl](https://huggingface.co/datasets/nvidia/Nemotron-MIND) from phi-4 | Text | 73B | [Common Crawl](https://commoncrawl.org/latest-crawl) | [phi-4](https://huggingface.co/microsoft/phi-4) |\n| Synthetic Math Data from Common Crawl 4plus | Text | 52.3B | [Common Crawl](https://commoncrawl.org/latest-crawl) | [phi-4](https://huggingface.co/microsoft/phi-4) |\n| Synthetic Math Data from Common Crawl 3 | Text | 80.9B | [Common Crawl](https://commoncrawl.org/latest-crawl) | [phi-4](https://huggingface.co/microsoft/phi-4) |\n| Synthetic AGIEval seeded with AQUA-RAT, LogiQA, and AR-LSAT from DeepSeek-V3 and DeepSeek-V3-0324 | Text | 4.0B | [AQUA-RAT](https://huggingface.co/datasets/deepmind/aqua_rat); [LogiQA](https://huggingface.co/datasets/lucasmccabe/logiqa); [AR-LSAT](https://github.com/zhongwanjun/AR-LSAT) | [DeepSeek-V3](https://huggingface.co/deepseek-ai/DeepSeek-V3); [DeepSeek-V3-0324](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324) |\n| Synthetic AGIEval seeded with AQUA-RAT, LogiQA, and AR-LSAT from Qwen3-30B-A3B | Text | 4.2B | [AQUA-RAT](https://huggingface.co/datasets/deepmind/aqua_rat); [LogiQA](https://huggingface.co/datasets/lucasmccabe/logiqa); [AR-LSAT](https://github.com/zhongwanjun/AR-LSAT) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) |\n| Synthetic Art of Problem Solving from Qwen2.5-32B-Instruct, Qwen2.5-Math-72B, Qwen2.5-Math-7B, and Qwen2.5-72B-Instruct | Text | Undisclosed | [Art of Problem Solving](https://artofproblemsolving.com/company); [American Mathematics Competitions 8](https://artofproblemsolving.com/wiki/index.php/AMC_8_Problems_and_Solutions); [American Mathematics Competitions 10](https://artofproblemsolving.com/wiki/index.php/AMC_10_Problems_and_Solutions); [GSM8K](https://github.com/openai/grade-school-math); [PRM800K](https://github.com/openai/prm800k) | [Qwen2.5-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct); [Qwen2.5-Math-72B](https://huggingface.co/Qwen/Qwen2.5-Math-72B); [Qwen2.5-Math-7B](https://huggingface.co/Qwen/Qwen2.5-Math-7B); [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) |\n| Synthetic MMLU Auxiliary Train from DeepSeek-R1 | Text | 0.5B | [MMLU Auxiliary Train](https://huggingface.co/datasets/cais/mmlu/viewer/all/auxiliary_train) | [DeepSeek-R1](https://huggingface.co/deepseek-ai/DeepSeek-R1) |\n| Synthetic Long Context Continued Post-Training Data from Papers and Permissible Books from Qwen2.5-72B-Instruct | Text | Undisclosed | [arXiv](https://info.arxiv.org/help/bulk_data/index.html); [National Institutes of Health ExPorter](https://www.nih.gov/); [BioRxiv](https://www.biorxiv.org/tdm); [PMC Article](https://pmc.ncbi.nlm.nih.gov/tools/textmining/); [USPTO Backgrounds](https://data.uspto.gov/apis/transition-guide/bdss#pats); [peS2o](https://huggingface.co/datasets/allenai/peS2o); Global Regulation; [CORE](https://core.ac.uk/documentation/dataset); [PG-19](https://github.com/google-deepmind/pg19); [DOAB CC BY & CC BY-SA subset](https://www.doabooks.org/en); [NDLTD](https://ndltd.org/thesis-resources/global-etd-search/) | [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) |\n| Synthetic Common Crawl from Qwen3-30B-A3B and Mistral-Nemo-12B-Instruct | Text | 415.8B | [Common Crawl](https://commoncrawl.org/) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B); [Mistral-NeMo-12B-Instruct](https://huggingface.co/nvidia/Mistral-NeMo-12B-Instruct) |\n| Synthetic Multilingual Data from Common Crawl from Qwen3-30B-A3B | Text | Undisclosed | [Common Crawl](https://commoncrawl.org/) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) |\n| Synthetic Multilingual Data from Wikimedia from Qwen3-30B-A3B | Text | Undisclosed | [Wikimedia](https://dumps.wikimedia.org/) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) |\n| Synthetic Math Data from Wikimedia from Nemotron-4-340B-Instruct | Text | Undisclosed | \\- | [Nemotron-4-340B-Instruct](https://huggingface.co/nvidia/Nemotron-4-340B-Instruct) |\n| Synthetic Common Crawl Code from phi-4 | Text | 427.9B | [Common Crawl](https://commoncrawl.org/latest-crawl) | [phi-4](https://huggingface.co/microsoft/phi-4) |\n| Synthetic Scientific Coding from Qwen3-235B-A22B | Text | 1.2B | [Wikimedia](https://dumps.wikimedia.org/) | [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-2507) |\n| Tool Calling Data | Text | 26.2B |  | [Qwen3-235B-A22B-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-2507); [gpt-oss-120b](https://huggingface.co/openai/gpt-oss-120b) |\n| Synthetic Essential-Web from QwQ-32B | Text | 28.1B | [Essential-Web](https://huggingface.co/datasets/EssentialAI/essential-web-v1.0) |  [QwQ-32B](https://huggingface.co/Qwen/QwQ-32B) |\n| Translated Synthetic Crawl | Text | 389.9B | [Common Crawl](https://commoncrawl.org/) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) |\n| Translated Synthetic Wikipedia | Text | 7.9B | [Wikimedia](https://dumps.wikimedia.org/) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) |\n| Synthetic Long Context from Qwen3-235B-A22B-Instruct-2507 | Text | Undisclosed | [CORE](https://core.ac.uk/documentation/dataset); [PG-19](https://github.com/google-deepmind/pg19); [DOAB CC BY & CC BY-SA subset](https://www.doabooks.org/en); [NDLTD](https://ndltd.org/thesis-resources/global-etd-search/) | [Qwen3-235B-A22B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-2507) |\n| Synthetic Search STEM OPENQ from DeepSeek-R1-0528 | Text | Undisclosed | - | [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic MCQ from Qwen2.5-32B-Instruct and DeepSeek-R1-0528 | Text | Undisclosed | - | [Qwen2.5-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct); [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic Offline Search MCQA HLE from DeepSeek-R1-0528 | Text | Undisclosed | - | [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic Offline Search MCQA GPQA from Qwen3-235B-A22B and DeepSeek-R1-0528 | Text | Undisclosed | - | [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B); [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic Human Preference from QwQ-32B, Qwen3-30B-A3B, Qwen3-235B-A22B, Qwen3-235B-A22B-Instruct-2507, Mistral-Small-3.1-24B-Instruct-2503, Mistral-Small-3.2-24B-Instruct-2506, MiniMax-M1-80k, MiniMax-M1-40k, Kimi-K2-Instruct, DeepSeek-V3-0324, DeepSeek-R1-0528 | Text | Undisclosed | - | [QwQ-32B](https://huggingface.co/Qwen/QwQ-32B); [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B); [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B); [Qwen3-235B-A22B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-2507); [Mistral-Small-3.1-24B-Instruct-2503](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503); [Mistral-Small-3.2-24B-Instruct-2506](https://huggingface.co/mistralai/Mistral-Small-3.2-24B-Instruct-2506); [MiniMax-M1-80k](https://huggingface.co/MiniMaxAI/MiniMax-M1-80k); [MiniMax-M1-40k](https://huggingface.co/MiniMaxAI/MiniMax-M1-40k); [Kimi-K2-Instruct](https://huggingface.co/moonshotai/Kimi-K2-Instruct); [DeepSeek-V3-0324](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324); [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic Code from Qwen3-32B | Text | Undisclosed | English Common Crawl; English Common Crawl 1.1 | [Qwen3-32B](https://huggingface.co/Qwen/Qwen3-32B) |\n| Synthetic OpenCodeReasoning from DeepSeek-R1 | Text | Undisclosed | [OpenCodeReasoning](https://huggingface.co/datasets/nvidia/OpenCodeReasoning) | [DeepSeek-R1](https://huggingface.co/deepseek-ai/DeepSeek-R1) |\n| Synthetic LIMO from DeepSeek-R1-0528 | Text | Undisclosed | [LIMO](https://huggingface.co/datasets/GAIR/LIMO) | [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic SCP from DeepSeek-R1-0528 | Text | Undisclosed | [SCP-116K](https://huggingface.co/datasets/EricLu/SCP-116K) | [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic Stack Exchange from DeepSeek-R1-0528 | Text | Undisclosed | [Stack Exchange](https://archive.org/details/stackexchange) | [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n| Synthetic Common Crawl from Qwen3-30B-A3B | Text | Undisclosed | [Common Crawl](https://commoncrawl.org/) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) |\n| Synthetic Wikipedia from Qwen3-30B-A3B | Text | Undisclosed | [Wikimedia](https://dumps.wikimedia.org/) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) |\n| Synthetic Essential-Web from Qwen3-30B-A3B and Qwen3-235B-A22B-Thinking-2507 | Text | Undisclosed | [Essential-Web](https://huggingface.co/datasets/EssentialAI/essential-web-v1.0) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B); [Qwen3-235B-A22B-Thinking-2507](https://huggingface.co/Qwen/Qwen3-235B-A22B-Thinking-2507) |\n| Synthetic Textbook Math from Qwen3-30B-A3B, Qwen3-235B-A22B, phi-4 | Text | Undisclosed | [Common Crawl](https://commoncrawl.org/); [FineMath](https://huggingface.co/datasets/HuggingFaceTB/finemath) | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B); [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B); [phi-4](https://huggingface.co/microsoft/phi-4) |\n| Synthetic Math and Code from DeepSeek-R1 and DeepSeek-R1-0528 | Text | Undisclosed | [Magicoder-Evol-Instruct-110K](https://huggingface.co/datasets/ise-uiuc/Magicoder-Evol-Instruct-110K); [opc-sft-stage2](https://huggingface.co/datasets/OpenCoder-LLM/opc-sft-stage2); [TACO](https://huggingface.co/datasets/BAAI/TACO); [OpenCodeReasoning](https://huggingface.co/datasets/nvidia/OpenCodeReasoning); [OpenMathReasoning](https://huggingface.co/datasets/nvidia/OpenMathReasoning); [NuminaMath CoT](https://huggingface.co/datasets/AI-MO/NuminaMath-CoT) | [DeepSeek-R1](https://huggingface.co/deepseek-ai/DeepSeek-R1); [DeepSeek-R1-0528](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |\n\n<br>\n\n## NVIDIA-Sourced Synthetic Datasets (Post-Training)\n| Dataset | Modality | Dataset Size | Seed Dataset | Model(s) used for generation |\n| :---- | :---- | :---- | :---- | :---- |\n| Synthetic Competitive MATH Proofs from DeepSeek-V4-Pro | Text | Undisclosed | [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions] | [deepseek-ai/DeepSeek-V4-Pro] |\n| Synthetic Hermes Agent Reasoning Traces | Text | Undisclosed | [lambda/hermes-agent-reasoning-traces] | [hermes-agent-generator] |\n| Synthetic Competitive Coding from DeepSeek-V4-Pro | Text | Undisclosed | [NVCompetitiveCodingV1] | [deepseek-ai/DeepSeek-V4-Pro] |\n| Synthetic Competitive Science Reasoning from DeepSeek-V4-Pro | Text | Undisclosed | [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [EssentialAI/essential-web-v1.0]; [cdquestions.com]; [Pile-FreeLaw]; [Vedantu]; [askfilo]; [doubtnut]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)]; [AAPT]; [ChemData 700K]; [oMeBench]; [Flavor Analysis and Recognition Transformer]; [ChemCoTBench]; [Llama Nemotron Dataset] | [deepseek-ai/DeepSeek-V4-Pro] |\n| Synthetic Competitive MATH CoT and TIR from Nemotron 5.5 | Text | Undisclosed | [Pile-FreeLaw]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions] | [Nemotron 5.5] |\n| Vendor Terminal Bench-like Tasks from Mercor | Text | Undisclosed | [Terminal bench like tasks curated by the vendor] | [Undisclosed - purchased dataset] |\n| Turing Math Data Pack | Text | Undisclosed | [Turing Math Data Pack dataset] | [Undisclosed - purchased dataset] |\n| Synthetic Holdout, Skywork, DAPO, and Turing Math from GPT-5.5 | Text | Undisclosed | [DocQA-RL-1.6K]; [DAPO-Math-17k] | [GPT-5.5] |\n| Synthetic Long Context RL from QwenLong L1 and DocQA-RL-1.6K | Text | Undisclosed | [DocQA-RL-1.6K] | Undisclosed |\n| Synthetic Competitive Coding Gym Tasks | Text | Undisclosed | [NVCompetitiveCodingV1.1] | Undisclosed |\n| Synthetic Finance SEC Search Agent from GPT-OSS-120B and Qwen3 | Text | Undisclosed | [SEC filings from sec.gov] | [GPT-OSS-120B]; [Qwen3-235B-A22B-Instruct]; [Qwen3-4B-Instruct] |\n| Synthetic Structured Outputs from Qwen3-30B-A3B-Instruct-2507, Qwen3-30B-A3B-Thinking-2507, Qwen3-235B-A22B-Instruct-2507, and Qwen3-235B-A22B-Thinking-2507 | Text | Undisclosed | [Nemotron-RL-agent-structured-outputs-v1] | [Qwen3-30B-A3B-Instruct-2507]; [Qwen3-235B-A22B-Instruct-2507] |\n| Synthetic Long Context Equivalence Rule from Qwen3-235B-A22B-Thinking-2507 and DeepSeek-R1 | Text | Undisclosed | [Long-context SFT data] | [Qwen/Qwen3-235B-A22B-Thinking-2507]; [Deepseek-ai/DeepSeek-R1] |\n| Synthetic Science RL Data Blend from Qwen2.5-32B | Text | Undisclosed | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [Qwen2.5-32B] |\n| Synthetic Abstention Data from Nemotron Super v3 | Text | Undisclosed | [Go abstention Dataset] | [nvidia/nvidia/nemotron-3-super-v3] |\n| Synthetic Chemistry Data from Nemotron Super v3 | Text | Undisclosed | [ChemData 700K] | [nvidia/nvidia/nemotron-3-super-v3] |\n| Synthetic Structured Outputs from Qwen3-30B-A3B-Instruct-2507, Qwen3-30B-A3B-Thinking-2507, Qwen3-235B-A22B-Instruct-2507, and Qwen3-235B-A22B-Thinking-2507 | Text | Undisclosed | [In-house data] | [GPT OSS 120B - Apache 2.0] |\n| Synthetic Tool Call Schema for RL | Text | Undisclosed | [In-house data] | [GPT OSS 120B - Apache 2.0] |\n| Synthetic Freeform Text Formatting from GPT-OSS-120B | Text | Undisclosed | [In-house data] | [GPT OSS 120B - Apache 2.0] |\n| Synthetic Citation Formatting from GPT-OSS-120B | Text | Undisclosed | [In-house data] | [GPT OSS 120B - Apache 2.0] |\n| Droid Harness Pivot Vendor Data | Text | Undisclosed | [Droid Harness Pivot vendor data] | Undisclosed |\n| Synthetic HotpotQA Training Data from Qwen3-235B | Text | Undisclosed | [HotpotQA] | [Qwen3-235B] |\n| Synthetic Natural Language Math Proofs from Nemotron 5.5 | Text | Undisclosed | [AMC8, AMC10, and AIME problem sets hosted on Art of Problem Solving]; [Pile-StackExchange] | [Nemotron 5.5] |\n| Synthetic Stack Overflow OpenQ | Text | Undisclosed | [Pile-FreeLaw] | Undisclosed |\n| Chemistry Ether0 Vendor Data | Text | Undisclosed | [Chemistry ether0 vendor data] | Undisclosed |\n| Synthetic Litmus-Bench Chemistry from ChEMBL | Text | Undisclosed | [ChEMBL]; [Nemo Gym RL dataset generated from ChEMBL with RDKit] | Undisclosed |\n| Synthetic ZINC Chemistry from Nemotron Super v3 | Text | Undisclosed | [ZINC] | [Nemotron Super v3] |\n| ARC-AGI Gym Environment | Text | Undisclosed | [ARC-AGI-2] | [ARC-AGI-2] |\n| Synthetic Agentic Search Tool-Use from DeepSeek-V3.2 | Text | Undisclosed | [Mercor Data] | [DeepSeek-V3.2] |\n| Synthetic Text-To-SQL | Text | Undisclosed | [In-house Text-to-SQL data] | [gpt-oss-120b] |\n| Dialog Memory Vendor Data | Text | Undisclosed | [Patronus external vendor agreement] | Undisclosed |\n| Synthetic Indirect Prompt Injection from Nemotron Super v3 and Qwen3-Next-80B-A3B-Instruct | Text | Undisclosed | [In-house indirect prompt injection data] | [nvidia/nemotron-3-super-v3, qwen/qwen3-next-80b-a3b-instruct.] |\n| Synthetic Malicious Code and Agentic Security | Text | Undisclosed | [In-house malicious-code / agentic-security data] | Undisclosed |\n| Synthetic Single-Step SWE Patch Selection | Text | Undisclosed | [SWE-Gym Dataset]; [SWE Bench Verified Benchmark] | [ground truth and task checks] |\n| Synthetic Natural Language Math Final Answers from Nemotron 5.5 | Text | Undisclosed | [AMC8, AMC10, and AIME problem sets hosted on Art of Problem Solving]; [Pile-StackExchange] | [nemotron 5.5] |\n| Synthetic Simple Math Prompts for Token Efficiency | Text | Undisclosed | [In-house simple math prompts] | Undisclosed |\n| Synthetic Abstention Data from Nemotron Super v3 | Text | Undisclosed | [CRAG] | [nvidia/nvidia/nemotron-3-super-v3] |\n| Synthetic Agentless SWE | Text | 242,536 | [SWE-Rebench-V2]; [SWEbench Training Set]; [R2E-Gym/R2E-Gym-Subset]; [SWE-Gym/SWE-Gym]; [SWE-Rebench] | [openai/gpt-oss-120b] |\n| Synthetic Agentic CUDA Traces from GLM-4.7 | Text | 2,276 | [Internal CUDA task data] | [GLM-4.7] |\n| Synthetic Math Proofs from DeepSeek-V3.2-Speciale | Text | 820,772 | [Nemotron-Math-Proofs-v1] | [SDG: DeepSeek-V3.2-Speciale]; [Filter: proof validation] |\n| Synthetic Multilingual SFT from DeepSeek-V3 | Text | 1,245,284 | [Nano v3 SFT data] | [DeepSeek-V3] |\n| Synthetic Agentic Code from gpt-oss-120b | Text | 109,086 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1]; [NVAgenticCLIMultiTurnPrompts-v1] | [openai/gpt-oss-120b] |\n| Synthetic Agentic CLI and Web Skills from gpt-oss-120b | Text | 27,418 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1]; [NVAgenticCLIMultiTurnPrompts-v1]; [NVAgenticCLIPrompts-Web-v1] | [openai/gpt-oss-120b] |\n| Synthetic Agentic Coding from gpt-oss-120b | Text | 160,531 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1]; [NVAgenticCLIMultiTurnPrompts-v1]; [NVAgenticCLIPrompts-Web-v1] | [openai/gpt-oss-120b] |\n| Synthetic OpenCode Agentic Tasks from gpt-oss-120b | Text | 614,773 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1]; [NVAgenticCLIMultiTurnPrompts-v1]; [NVAgenticCLIPrompts-Web-v1] | [openai/gpt-oss-120b] |\n| Synthetic ARC-AGI Ultra Data | Text | 192,016 | [ARC-AGI-2]; [arc dataset collection] | [ARC-AGI-2] |\n| Synthetic LiveCodeBench TIR from DeepSeek-R1-0528 | Text | 1,283,398 | [Nemotron-X training datasets] | [DeepSeek-R1-0528] |\n| Synthetic Verilog and SystemVerilog Code from DeepSeek-R1-0528 and GPT-OSS-120B | Text | 1,233,247 | [Verilog/SystemVerilog seed code] | [SDR: DeepSeek R1 0528 and GPT-OSS-120B]; [Filtering: Claude 4 Sonnet] |\n| Synthetic Aider Python Tasks from DeepSeek-R1-0528 | Text | 236,099 | [Exercism (GitHub Python)] | [Deepseek R1 0528] |\n| Synthetic Chat Reasoning-Off Data from GLM-5 | Text | 646,738 | [lmarena-ai/repochat-arena-preference-4k user prompts] | [Multi-turn conversations generated by GLM-5 with best-of-4 selection via Qwen3-Nemotron-235B-A22B-GenRM:] |\n| Synthetic Chat Reasoning-On Data from GLM-5 | Text | 644,286 | [lmarena-ai/repochat-arena-preference-4k user prompts]; [lmarena-ai/arena-expert-5k user prompts]; [lmarena-ai/arena-human-preference-55k user prompts]; [lmarena-ai/arena-human-preference-100k user prompts]; [lmarena-ai/arena-human-preference-140k user prompts] | [Multi-turn conversations generated by GLM-5 with best-of-4 selection via Qwen3-Nemotron-235B-A22B-GenRM:] |\n| Synthetic Multilingual Safety from Riva-Translate-4B-Instruct-v1.1 | Text | 132,067 | [Safety SFT Data: Ultra] | [nvidia/Riva-Translate-4B-Instruct-v1.1] |\n| Synthetic Science Reasoning Effort Medium | Text | 502,722 | [science-reasoning-effort-medium-v0] | Undisclosed |\n| Synthetic Telecom Tool-Use Trajectories from gpt-oss-120b | Text | 12,455 | [Existing Tau2 telecom trajectories originally generated with DeepSeek V3.2] | [gpt-oss-120b] |\n| Synthetic Terminal Bench Data from OpenReasoningv2 | Text | Undisclosed | [OpenCodeReasoningv2]; [OpenMathReasoning]; [nemo-swe-bench-repos]; [SWE-Rebench]; [SWE-Fixer-110K] | [OpenReasoningv2] |\n| Synthetic Tulu Instruction Following from DeepSeek-R1-0528 | Text | 105,361 | [Nemotron-X training datasets] | [DeepSeek-R1-0528] |\n| Synthetic SWE Unverified | Text | Undisclosed | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1]; [NVAgenticCLIMultiTurnPrompts-v1]; [NVAgenticCLIPrompts-Web-v1] | [gpt-oss-120b] |\n| Synthetic Instruction Following from gpt-oss-120b | Text | 151,988 | [IFEval]; [IFEvalG] | [gpt-oss-120b] |\n| Synthetic Identity Data from Qwen3-Next-80B-A3B-Instruct and Qwen3-235B-A22B-Instruct-2507 | Text | 25,992 | [Hand-written prompts] | [Qwen3-Next-80B-A3B-Instruct]; [Qwen3-235B-A22B-Instruct-2507] |\n| Synthetic Terminus Ultra Agentic Reasoning Blend | Text | 96,881 | [ARC-AGI-2]; [OpenCodeReasoningv2]; [OpenMathReasoning]; [SWE-Fixer-110K]; [SWE-Rebench]; [SWE-Smith] | [DeepSeek-V3.2]; [Qwen3-235B-A22B-Thinking-2507]; [Ring-1T]; [Kimi-K2.5]; [GLM-4.7-FP8]; [Qwen3-Next-80B-A3B-Thinking]; [gpt-oss-120b]; [Ministral-3-14B-Reasoning-2512]; [LM-4.5-Air-FP8] |\n| Synthetic STEM from Qwen3-235B-A22B-Thinking-2507 | Text | 1,174,694 | [IChO-IPhO-RL-v2]; [Physics-Big Dataset] | Undisclosed |\n| Translation Data from TAUS | Text | 1,618,055 | [TAUS proprietary dataset] | Undisclosed |\n| Synthetic Art of Problem Solving and Stack Exchange from gpt-oss-120b, Qwen2.5-32B-Instruct, and Goedel-Prover-V2-32B | Text | 860,469 | [Nemotron-Math-Proofs-v1] | [Goedel-Prover-V2-32B] |\n| Synthetic Art of Problem Solving and Stack Exchange from gpt-oss-120b, Qwen2.5-32B-Instruct, and Goedel-Prover-V2-32B | Text | 1,201,815 | [Upstream released math dataset]; [AoPS]; [StackOverflow / StackExchange] | [gpt-oss-120b] |\n| Synthetic Art of Problem Solving and Stack Exchange from gpt-oss-120b, Qwen2.5-32B-Instruct, and Goedel-Prover-V2-32B | Text | 1,296,676 | [Upstream released math dataset]; [AoPS]; [StackOverflow / StackExchange] | [gpt-oss-120b] |\n| Synthetic Instruction Following for RL | Text | Undisclosed | [WildChat-1M]; [LMSYS-340B-Eval Dataset]; [LMSYS-Chat-1M Prompts]; [IFEval]; [IFEvalG] | [Qwen/Qwen3-235B-A22B-Thinking-2507]; [gpt-oss-120b]; [Qwen3-235B-A22B-Instruct-2507] |\n| Synthetic Instruction Following for RL | Text | Undisclosed | [WildChat-1M]; [LMSYS-340B-Eval Dataset]; [LMSYS-Chat-1M Prompts]; [IFEval]; [IFEvalG] | [Qwen/Qwen3-235B-A22B-Thinking-2507]; [gpt-oss-120b]; [Qwen3-235B-A22B-Instruct-2507] |\n| Synthetic Multilingual Science and Code data from DeepSeek-R1, DeepSeek-R1-0528, Qwen2.5-32B-Instruct, and Qwen3-235B-A22B, translated with Qwen2.5-32B-Instruct and Qwen2.5-14B-Instruct | Text | Undisclosed | [Nano-V3 SFT Data (without tool call)] | [Qwen/Qwen2.5-14B-Instruct]; [Qwen/Qwen3-4B-Thinking-2507] |\n| Synthetic Search Graph Walk | Text | 6,977 | [Wikidata / Wikipedia KnowledgeBase] | [MiniMaxAI/MiniMax-M2] |\n| Synthetic Agentic Diverse Domains | Text | 281,537 | [Handwritten prompts (synthetic; no external seed data used)] | [SDG model: deepseek-ai/DeepSeek-V3.2, deepseek-ai/DeepSeek-R1-0528, Qwen/Qwen3-235B-A22B-Thinking-2507, Qwen/Qwen3-32B]; [Filtering model: openai/gpt-oss-120b, Qwen/Qwen3-32B, Qwen/Qwen3-235B-A22B-Instruct-2507] |\n| Synthetic Long Context from Qwen3-235B-A22B-Instruct-2507 | Text | 65,608 | [Long-context SFT seed blend (pre-training blend + nano-v1 post-training data)] | [Qwen/Qwen3-235B-A22B-Thinking-2507 and deepseek-ai/DeepSeek-R1] |\n| Synthetic Agentless SWE | Text | 209,976 | [SWE-Bench-Train]; [SWE-Fixer-Train]; [SWE-reBench]; [SWE-Smith] | [deepseek-ai/DeepSeek-R1-0528] |\n| Synthetic Nemotron Math SFT from DeepSeek-V3.2-Speciale | Text | 1,900,553 | [Nemotron-Math-v2 (AOPS and StackExchange-math problems)] | [DeepSeek-V3.2-Speciale] |\n| Synthetic Nemotron Math TIR from DeepSeek-V3.2 | Text | 1,789,258 | [Nemotron-Math-v2 (AOPS and StackExchange-math problems)] | [DeepSeek-V3.2] |\n| Synthetic SWE Unverified | Text | 27,911 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1] | [gpt-oss-120b] |\n| Synthetic SWE Unverified | Text | 28,116 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1] | [Qwen3-Coder-480B-A35B-Instruct] |\n| Synthetic NemoCascade OCR Distillation from gpt-oss-120b | Text | 682,864 | [Nemotron-X training datasets] | [gpt-oss-120b] |\n| Synthetic SWE Unverified | Text | 26,865 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1] | [gpt-oss-120b]; [Qwen/Qwen3-Coder-480B-A35B-Instruct]; [GLM-4.7-Flash] |\n| Synthetic CUDA 100k | Text | 93,086 | [KernelBook]; [HuggingFace Transformers]; [FlashInfer] | [gpt-oss-120b]; [DeepSeek-R1-0528] |\n| Synthetic Science MCQ and QA Diversity from GPT-OSS and Kimi-K2 | Text | 30,358 | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [GPT-OSS]; [Kimi-K2] |\n| Synthetic Science HLE with Python from GPT-OSS and Kimi-K2 | Text | 85,184 | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [GPT-OSS]; [Kimi-K2] |\n| Synthetic Science Search and Python from GPT-OSS and Kimi-K2 | Text | 6,179 | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [GPT-OSS]; [Kimi-K2] |\n| Synthetic Science Search from GPT-OSS and Kimi-K2 | Text | 32,554 | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [GPT-OSS]; [Kimi-K2] |\n| Synthetic Finance Reasoning from GPT-OSS-120B and Qwen3-235B-A22B-Instruct-2507 | Text | 326,700 | [_SEC filings] | [GPT-OSS-120B, Qwen3-235B-A22B-Instruct-2507] |\n| Synthetic Science Diversity MCQ from GPT-OSS and Kimi-K2 | Text | 532,942 | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [GPT-OSS]; [Kimi-K2] |\n| Synthetic Science Diversity OpenQ from GPT-OSS and Kimi-K2 | Text | 131,045 | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [GPT-OSS]; [Kimi-K2] |\n| Synthetic Science Reasoning No-Tool from GPT-OSS and Kimi-K2 | Text | 2,085,600 | [doubtnut]; [Pile-FreeLaw]; [Llama Nemotron Dataset]; [askfilo]; [EssentialAI/essential-web-v1.0]; [Vedantu]; [auxiliary_train]; [cdquestions.com]; [AMC 8 Problems and Solutions, AMC 10 Problems and Solution, and AIME Problems and Solutions]; [AAPT]; [ICHO-IPH0 Dataset]; [LIMO dataset (Less is More for Reasoning)] | [GPT-OSS]; [Kimi-K2] |\n| Synthetic Long Context from Qwen3-235B-A22B-Instruct-2507 | Text | 62,333 | [Long-context SFT data: lc_nothink 256k] | [Qwen/Qwen3-235B-A22B-Thinking-2507 and deepseek-ai/DeepSeek-R1] |\n| Synthetic Long Context from Qwen3-235B-A22B-Instruct-2507 | Text | 49,698 | [Long-context SFT data: MRCR 200k] | [Qwen/Qwen3-235B-A22B-Thinking-2507 and deepseek-ai/DeepSeek-R1] |\n| Synthetic Text-To-SQL | Text | 96,564 | [Undisclosed - no seed data listed] | [gpt-oss-120b] |\n| Synthetic Long Context from Qwen3-235B-A22B-Instruct-2507 | Text | 397,538 | [Long-context SFT data: RULER 256k] | [Qwen/Qwen3-235B-A22B-Thinking-2507 and deepseek-ai/DeepSeek-R1] |\n| Synthetic SWE Unverified | Text | 27,960 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1] | [gpt-oss-120b]; [Qwen/Qwen3-Coder-480B-A35B-Instruct]; [GLM-4.7-Flash] |\n| Synthetic SWE Unverified | Text | 24,632 | [NVAgenticCLIPrompts-v1]; [NVAgenticSkills-v1] | [gpt-oss-120b]; [Qwen/Qwen3-Coder-480B-A35B-Instruct]; [GLM-4.7-Flash] |\n| Synthetic Long Context from Qwen3-235B-A22B-Instruct-2507 | Text | 49,902 | [Long-context SFT data] | [Qwen/Qwen3-235B-A22B-Thinking-2507 and deepseek-ai/DeepSeek-R1] |\n| Synthetic Tool Call Schema for RL | Text | 469,983 | [UltraTool]; [ToolEyes]; [AutoTools]; [API-Bank]; [Nemotron-Personas-USA]; [Salesforce xLAM function-calling]; [Glaive function-calling-v2]; [Agent-Ark/Toucan-1.5M] | [DeepSeek-V3.2]; [GLM-4.6]; [gpt-oss-120b]; [Kimi-K2-Instruct] |\n| Synthetic Tool Call Schema for RL | Text | 707,967 | [UltraTool]; [ToolEyes]; [AutoTools]; [API-Bank]; [Nemotron-Personas-USA]; [Salesforce xLAM function-calling]; [Glaive function-calling-v2]; [Agent-Ark/Toucan-1.5M] | [DeepSeek-V3.2]; [GLM-4.6]; [gpt-oss-120b]; [Kimi-K2-Instruct] |\n| Synthetic Long Context from Qwen3-235B-A22B-Instruct-2507 | Text | 52,630 | [AALCR seed blend: SEC Filings]; [CC]; [Wikipedia]; [FinePDFs]; [ArXiv]; [Pile-NIH ExPorter]; [BioRxiv]; [PMC Article]; [USPTO Backgrounds]; [peS20]; [Global Regulations]; [CORE]; [Gutenberg (PG-19)]; [DOAB CC-BY]; [NDLTD]; [Amps]; [StackExchange]; [MathPile]; [Numinas] | [Qwen3-30B-A3B] |\n| Synthetic Safety from gemma-3-4b-it, Nemotron-Nano-9B-v2, and gpt-oss-120b | Text | 44,091 | [Safety SFT Data] | [google/gemma-3-4b-it]; [Nemotron-Nano-9B-v2]; [gpt-oss-120b] |\n\n## NVIDIA-Sourced Synthetic Datasets (Reward Modeling)\n\nThe preference data blend is an updated version of the previously released [nvidia/Nemotron-RLHF-GenRM-v1](https://huggingface.co/datasets/nvidia/Nemotron-RLHF-GenRM-v1) dataset.\nWe plan to release this updated data under `nvidia/Nemotron-RLHF-GenRM-v2`.\n\n## Language Distribution in Post-Training\n\nFor our post-training recipe, we focused on the following languages in addition to English: French, Spanish, Italian, German, Japanese, Korean, Hindi, Brazilian Portuguese, and Chinese.\n\nThose languages were represented in the form of multilingual reasoning and translation tasks.\n\nThe following table depicts our sample distribution.\n\n| Language | Size |\n|---|---:|\n| English | 8.6M |\n| Italian | 138k |\n| German | 138k |\n| Spanish | 138k |\n| French | 138k |\n| Japanese | 138k |5\n| Chinese | 138k |\n| Hindi | 138k |\n| Korean | 138k |\n| Brazilian Portuguese | 138k |\n\n## Evaluation Datasets:\n\n**Data Collection Method by dataset** <br>\n* Hybrid: Automated, Human, Synthetic\n\n**Labeling Method by dataset** <br>\n* Hybrid: Automated, Human, Synthetic\n\n**Properties:** This corpus comprises a mix of high-quality standard benchmarks and test suites relevant to reward modeling.\n\n## Testing Datasets:\n\n**Data Collection Method by dataset** <br>\n* Hybrid: Automated, Human, Synthetic\n\n**Labeling Method by dataset** <br>\n* Hybrid: Automated, Human, Synthetic\n\n**Properties:** This corpus comprises a mix of high-quality standard benchmarks and test suites relevant to reward modeling.\n\n</details>\n\n## Inference\n\n* **Acceleration Engine:** PyTorch\n* **Test Hardware:**\n    * NVIDIA Hopper\n        * H100\n        * H200\n    * NVIDIA Grace Blackwell\n        * GB200\n        * GB300\n    * NVIDIA Blackwell\n        * B200\n        * B300\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nWe advise against circumvention of any provided safety guardrails contained in the Model without a substantially similar guardrail appropriate for your use case. For more details: [Safety](./safety.md) and [Explainability](./explainability.md) Subcards.\n\nFor more detailed information on ethical considerations for this model, please see the Model Card++ [Bias](./bias.md), and [Privacy](./privacy.md) Subcards.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n## Citation\n\n```bibtex\n@misc{nvidia_nemotron_3_ultra_2026,\n  title  = {Nemotron 3 Ultra: Open, Efficient Mixture-of-Experts Hybrid Mamba-Transformer Model for Agentic Reasoning},\n  author = {{NVIDIA}},\n  year   = {2026},\n  url    = {https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Ultra-Technical-Report.pdf},\n  note   = {White Paper}\n}\n```",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "pytorch",
+      "nemotron-3",
+      "latent-moe",
+      "mtp",
+      "genrm",
+      "reward-model"
+    ],
+    "base_model": "NVIDIA/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
+    "track_downloads": true,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

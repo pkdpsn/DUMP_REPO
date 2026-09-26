@@ -1,0 +1,159 @@
+{
+  "modelId": "nvidia/Nemotron-Research-Reasoning-Qwen-1.5B",
+  "author": "nvidia",
+  "sha": "c62ac5e70bd578a9235aa9d8e11fff2f1f63d4a0",
+  "lastModified": "2025-11-21 17:03:21+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "conversational",
+    "en",
+    "arxiv:2505.24864",
+    "arxiv:2510.01180",
+    "base_model:deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "base_model:finetune:deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "license:cc-by-nc-4.0",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 244,
+  "downloads": 1174,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "cc-by-nc-4.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+      "chat_template": "{% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% set ns = namespace(is_first=false, is_tool=false, is_output_first=true, system_prompt='') %}{%- for message in messages %}{%- if message['role'] == 'system' %}{% set ns.system_prompt = message['content'] %}{%- endif %}{%- endfor %}{{bos_token}}{{ns.system_prompt}}{%- for message in messages %}{%- if message['role'] == 'user' %}{%- set ns.is_tool = false -%}{{'<\uff5cUser\uff5c>' + message['content']}}{%- endif %}{%- if message['role'] == 'assistant' and message['content'] is none %}{%- set ns.is_tool = false -%}{%- for tool in message['tool_calls']%}{%- if not ns.is_first %}{{'<\uff5cAssistant\uff5c><\uff5ctool\u2581calls\u2581begin\uff5c><\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\\n' + '```json' + '\\n' + tool['function']['arguments'] + '\\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{%- set ns.is_first = true -%}{%- else %}{{'\\n' + '<\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\\n' + '```json' + '\\n' + tool['function']['arguments'] + '\\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{{'<\uff5ctool\u2581calls\u2581end\uff5c><\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- endif %}{%- endfor %}{%- endif %}{%- if message['role'] == 'assistant' and message['content'] is not none %}{%- if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>' + message['content'] + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- set ns.is_tool = false -%}{%- else %}{% set content = message['content'] %}{% if '</think>' in content %}{% set content = content.split('</think>')[-1] %}{% endif %}{{'<\uff5cAssistant\uff5c>' + content + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- endif %}{%- endif %}{%- if message['role'] == 'tool' %}{%- set ns.is_tool = true -%}{%- if ns.is_output_first %}{{'<\uff5ctool\u2581outputs\u2581begin\uff5c><\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}{%- set ns.is_output_first = false %}{%- else %}{{'\\n<\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}{%- endif %}{%- endif %}{%- endfor -%}{% if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>'}}{% endif %}{% if add_generation_prompt and not ns.is_tool %}{{'<\uff5cAssistant\uff5c><think>\\n'}}{% endif %}",
+      "eos_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+      "pad_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+      "unk_token": null,
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1682,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 9771,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/deepseek_vs_nvidia102.png",
+      "size": 967192,
+      "lfs": {
+        "size": 967192,
+        "sha256": "76de220ab5b5e2f6f293e92197ad23dfe6fe753515d5165b89cc4bc9390da556",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "config.json",
+      "size": 729,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 147,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4996670464,
+      "lfs": {
+        "size": 4996670464,
+        "sha256": "7dceae630a32102d57f36db0a4ab2f619bd5caf19399a2bc3db79f9b3d13e025",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 2111719976,
+      "lfs": {
+        "size": 2111719976,
+        "sha256": "dae3df30f06f48238c9563b428d598574ff776514475c4bc25a9a94bf416a094",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 27751,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 485,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422778,
+      "lfs": {
+        "size": 11422778,
+        "sha256": "e20ddafc659ba90242154b55275402edeca0715e5dbb30f56815a4ce081f4893",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 6768,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nbase_model:\n- deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B\nlanguage:\n- en\nlicense: cc-by-nc-4.0\npipeline_tag: text-generation\nlibrary_name: transformers\n---\n\n<div align=\"center\">\n<span style=\"font-family: default; font-size: 1.5em;\">Nemotron-Research-Reasoning-Qwen-1.5B</span>\n<div>\n\ud83d\ude80 The leading generalist reasoning model for cutting-edge research and development \ud83c\udf1f\n</div>\n</div>\n\n![Comparison between DeepSeek-R1-1.5B and Nemotron-Research-Reasoning-Qwen-1.5B](./assets/deepseek_vs_nvidia102.png)\n\n## News\n- [2025-11-20] [Nemotron-Research-Reasoning-Qwen-1.5B-BroRL](https://huggingface.co/nvidia/Nemotron-Research-Reasoning-Qwen-1.5B/tree/brorl) is released.\n- [2025-08-11] ProRL V2 blog post is released: [ProRL V2 - Prolonged Training Validates RL Scaling Laws](https://research.nvidia.com/labs/lpr/prorlv2/).\n- [2025-07-23] Nemotron-Research-Reasoning-Qwen-1.5B-v2 is released.\n- [2025-05-29] Nemotron-Research-Reasoning-Qwen-1.5B is released.\n\n## Introduction\nNemotron-Research-Reasoning-Qwen-1.5B is the world\u2019s leading 1.5B open-weight model for complex reasoning tasks such as mathematical problems, coding challenges, scientific questions, and logic puzzles.\nIt is trained using the ProRL algorithm on a diverse and comprehensive set of datasets.\nOur model has achieved impressive results, outperforming Deepseek\u2019s 1.5B model by a large margin on a broad range of tasks, including math, coding, and GPQA.\n\nThis model is for research and development only.\n\n## ProRL: Prolonged Reinforcement Learning\nProRL is designed to enable extended RL training periods that facilitate deeper exploration of reasoning strategies. \nIt enables more than 2k training steps and scale the training data across diverse tasks\u2014from traditional math and code tasks to STEM problems, logical puzzles, and instruction following, which, we hypothesize, are crucial for generalization. \nBased on Group Relative Policy Optimization (GRPO), ProRL introduces three key techniques:\n1. Mitigating Entropy Collapse\n2. Decoupled clip and dynamic sampling policy optimization (DAPO)\n3. KL regularization and reference policy reset \n\nUsing ProRL, we developed the world's best 1.5B reasoning model that significantly outperforms its base model, DeepSeek-R1-1.5B, and matches or even surpasses the performance of DeepSeek-R1-7B across a diverse range of benchmarks. \nNotably, compared to DeepSeek-R1-1.5B, we achieve average pass@1 improvements of 14.7\\% on math benchmarks, 13.9\\% on coding, 54.8\\% on logic puzzles, 25.1\\% on STEM reasoning, and 18.1\\% on instruction-following tasks. \n\n## Training Datasets\n| Dataset                      | Link                                                                                         |\n|---------------------------|-------------------------------------------------------------------------------------------|\n| DeepScaleR-Preview-Dataset  | [Link](https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset)                   |\n| Eurus-2-RL-Data           | [Link](https://huggingface.co/datasets/PRIME-RL/Eurus-2-RL-Data)                             |\n| Reasoning-gym            | [Link](https://github.com/open-thought/reasoning-gym)                                        |\n| IFEval                     | [Link](https://huggingface.co/datasets/nvidia/Llama-Nemotron-Post-Training-Dataset)   |\n| SCP-116K                   | [Link](https://huggingface.co/datasets/EricLu/SCP-116K)                                  |\n\n\n## Evaluation Results\n\nTable 1: Performance (pass@1) comparison for benchmarks across Math domain. \n| Model                          | AIME24 | AIME25 | AMC   | Math  | Minerva | Olympiad | Avg   |\n|-------------------------------|--------|--------|-------|-------|----------|----------|--------|\n| DeepSeek-R1-Distill-Qwen-1.5B | 28.54  | 22.71  | 62.58 | 82.90 | 26.38    | 43.58    | 44.45  |\n| DeepScaleR-1.5B               | 40.21  | 31.46  | 73.04 | 89.36 | 41.57    | 51.63    | 54.54  |\n| *DeepSeek-R1-Distill-Qwen-7B* | 53.54  | 40.83  | 82.83 | 93.68 | 50.60    | 57.66    | 63.19  |\n| **Nemotron-Research-Reasoning-Qwen-1.5B**                 | 48.13 | 33.33 | 79.29 | 91.89 | 47.98 | 60.22 | 60.14 |\n| **Nemotron-Research-Reasoning-Qwen-1.5B-v2**                 | 49.58 | **36.04** | 82.53 | **92.49** | **49.03** | 60.44 | 61.69 |\n| **Nemotron-Research-Reasoning-Qwen-1.5B-BroRL**                 | **60.42** | 35.63 | **83.06** | 92.20 | 48.58 | **62.11** | **63.66** |\n\nTable 2: Performance (pass@1) comparison across benchmarks for Code. We abbreviate benchmarks names for codecontests (cc), codeforces (cf), humanevalplus (human), and livecodebench (LCB).\n| Model                          | apps  | cc    | cf    | taco  | human | LCB   | Avg    |\n|-------------------------------|--------|--------|--------|--------|--------|--------|--------|\n| DeepSeek-R1-Distill-Qwen-1.5B | 20.95  | 16.79 | 14.13 | 8.03  | 61.77 | 16.80 | 23.08  |\n| DeepCoder-1.5B                | 30.37  | 23.76 | 21.70 | 13.76 | 73.40 | 22.76 | 30.96  |\n| *DeepSeek-R1-Distill-Qwen-7B* | 42.08  | 32.76 | 33.08 | 19.08 | 83.32 | 38.04 | 41.39  |\n| **Nemotron-Research-Reasoning-Qwen-1.5B**                 | 41.99 | 31.80 | 34.50 | 20.81 | 72.05 | 23.81 | 37.49 |\n| **Nemotron-Research-Reasoning-Qwen-1.5B-v2**                 | 46.39 | 35.59 | 40.75 | 22.89 | 72.89 | **27.69** | **41.03** |\n| **Nemotron-Research-Reasoning-Qwen-1.5B-BroRL**                 | **50.61** | **38.71** | **45.88** | **25.90** | - | - | - |\n\nTable 3: Performance comparison on STEM reasoning (GPQA Diamond), instruction following (IFEval), and logic puzzles (Reasoning Gym) tasks. We also present results on OOD tasks: acre, boxnet, and game_of_life_halting (game).\n| Model                          | GPQA  | IFEval | Reasoning | acre  | boxnet | game  |\n|-------------------------------|--------|--------|-----------|--------|--------|--------|\n| DeepSeek-R1-Distill-Qwen-1.5B | 15.86  | 44.05  | 4.24      | 5.99  | 0.00   | 3.49  |\n| *DeepSeek-R1-Distill-Qwen-7B* | 35.44  | 58.01  | 28.55     | 20.21 | 1.71   | 12.94 |\n| **Nemotron-Research-Reasoning-Qwen-1.5B**                 | **41.78** | 66.02 | 59.06 | **58.57** | **7.91** | **52.29** |\n| **Nemotron-Research-Reasoning-Qwen-1.5B-v2**                 | 41.32 | **70.85** | **62.49** | - | - | - |\n\n\n## Nemotron-Research-Reasoning-Qwen-1.5B-v2\n\nIn the wake of the release of Nemotron-Research-Reasoning-Qwen-1.5B, we scaling the training steps from 2000 to 3000, resulting in Nemotron-Research-Reasoning-Qwen-1.5B-v2.\nNemotron-Research-Reasoning-Qwen-1.5B-v2 builds on top of REINFORCE++-baseline with dynamic sampling and clip-higher, and proposes several critical enhancements such as periodically refreshing the reference model with the current best checkpoint and imposing the length penalty only in scheduled cycles. \nTogether, these techniques allow model performance to continually improve with more RL training steps and expand LLMs' reasoning boundaries. \nOur latest checkpoint, Nemotron-Research-Reasoning-Qwen-1.5B-v2, trained for 3000 steps, sets a new state-of-the-art (SOTA) among 1.5B reasoning models.\n\nFor the Nemotron-Research-Reasoning-Qwen-1.5B-v2, you can use the following code to load the model:\n```\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\n\ntokenizer = AutoTokenizer.from_pretrained(\"nvidia/Nemotron-Research-Reasoning-Qwen-1.5B\")\nmodel = AutoModelForCausalLM.from_pretrained(\"nvidia/Nemotron-Research-Reasoning-Qwen-1.5B\")\n```\n\nFor the original Nemotron-Research-Reasoning-Qwen-1.5B, you can use the following code to load the model:\n```\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\n\ntokenizer = AutoTokenizer.from_pretrained(\"nvidia/Nemotron-Research-Reasoning-Qwen-1.5B\", revision=\"v1\")\nmodel = AutoModelForCausalLM.from_pretrained(\"nvidia/Nemotron-Research-Reasoning-Qwen-1.5B\", revision=\"v1\")\n```\n\n## BroRL\nIn BroRL, we continued training for 419 steps based on a nearly fully trained ProRLv2 checkpoint, increasing the number of samples per prompt from 16 to 512. We found that the improvement of BroRL over ProRLv2 was greater than that of ProRLv2 over ProRLv1. \n\nLink to the [BroRL 419 steps checkpoint](https://huggingface.co/nvidia/Nemotron-Research-Reasoning-Qwen-1.5B/tree/brorl)\n\n## License/Terms of Use\ncc-by-nc-4.0\n\n## Ethical Considerations\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n## Citation\nIf you find our dataset helpful, please cite the following [ProRL paper](https://arxiv.org/abs/2505.24864) and [BroRL paper](https://arxiv.org/abs/2510.01180):\n\n```\n@article{liu2025prorl,\n  author    = {Mingjie Liu, Shizhe Diao, Ximing Lu, Jian Hu, Xin Dong, Yejin Choi, Jan Kautz, Yi Dong},\n  title={ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in Large Language Models}, \n  journal   = {arXiv preprint},\n  year      = {2025},\n  archivePrefix = {arXiv},\n  primaryClass = {cs.CL},\n  url={https://arxiv.org/abs/2505.24864}, \n}\n\n@article{hu2025brorl,\n  title={Brorl: Scaling reinforcement learning via broadened exploration},\n  author={Hu, Jian and Liu, Mingjie and Lu, Ximing and Wu, Fang and Harchaoui, Zaid and Diao, Shizhe and Choi, Yejin and Molchanov, Pavlo and Yang, Jun and Kautz, Jan and others},\n  journal={arXiv preprint arXiv:2510.01180},\n  year={2025}\n}\n```",
+  "cardDataParsed": {
+    "base_model": [
+      "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    ],
+    "language": [
+      "en"
+    ],
+    "license": "cc-by-nc-4.0",
+    "pipeline_tag": "text-generation",
+    "library_name": "transformers",
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "modelId": "microsoft/swin-base-patch4-window7-224-in22k",
+  "author": "microsoft",
+  "sha": "68dc76680a5bf3bdf670669f3025dc9be2e30781",
+  "lastModified": "2023-06-27 10:46:44+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "safetensors",
+    "swin",
+    "image-classification",
+    "vision",
+    "dataset:imagenet-21k",
+    "arxiv:2103.14030",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-classification",
+  "library_name": "transformers",
+  "likes": 17,
+  "downloads": 7511,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "imagenet-21k"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "image-classification"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/tiger.jpg",
+        "example_title": "Tiger"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/teapot.jpg",
+        "example_title": "Teapot"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/palace.jpg",
+        "example_title": "Palace"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "SwinForImageClassification"
+    ],
+    "model_type": "swin"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1229,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3729,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1666520,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 437039150,
+      "lfs": {
+        "size": 437039150,
+        "sha256": "15a3bd6ffd00ccb907de277fc93681d4646fbcd902e795f4385b97611f306828",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 255,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 437161919,
+      "lfs": {
+        "size": 437161919,
+        "sha256": "dfd8ca7de71e90b8ec52b2437a0915e1b41c8bcd64ad8e190b537a8923ab4bc7",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 437096124,
+      "lfs": {
+        "size": 437096124,
+        "sha256": "b990e3b69a8488de93c7d6373050af3d334238184a9ec019febad8b62136b1cd",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\n- image-classification\ndatasets:\n- imagenet-21k\nwidget:\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/tiger.jpg\n  example_title: Tiger\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/teapot.jpg\n  example_title: Teapot\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/palace.jpg\n  example_title: Palace\n---\n\n# Swin Transformer (large-sized model) \n\nSwin Transformer model pre-trained on ImageNet-21k (14 million images, 21,841 classes) at resolution 224x224. It was introduced in the paper [Swin Transformer: Hierarchical Vision Transformer using Shifted Windows](https://arxiv.org/abs/2103.14030) by Liu et al. and first released in [this repository](https://github.com/microsoft/Swin-Transformer). \n\nDisclaimer: The team releasing Swin Transformer did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nThe Swin Transformer is a type of Vision Transformer. It builds hierarchical feature maps by merging image patches (shown in gray) in deeper layers and has linear computation complexity to input image size due to computation of self-attention only within each local window (shown in red). It can thus serve as a general-purpose backbone for both image classification and dense recognition tasks. In contrast, previous vision Transformers produce feature maps of a single low resolution and have quadratic computation complexity to input image size due to computation of self-attention globally.\n\n![model image](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/swin_transformer_architecture.png)\n\n[Source](https://paperswithcode.com/method/swin-transformer)\n\n## Intended uses & limitations\n\nYou can use the raw model for image classification. See the [model hub](https://huggingface.co/models?search=swin) to look for\nfine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model to classify an image of the COCO 2017 dataset into one of the 1,000 ImageNet classes:\n\n```python\nfrom transformers import AutoImageProcessor, SwinForImageClassification\nfrom PIL import Image\nimport requests\n\nurl = \"http://images.cocodataset.org/val2017/000000039769.jpg\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\nprocessor = AutoImageProcessor.from_pretrained(\"microsoft/swin-base-patch4-window7-224-in22k\")\nmodel = SwinForImageClassification.from_pretrained(\"microsoft/swin-base-patch4-window7-224-in22k\")\n\ninputs = processor(images=image, return_tensors=\"pt\")\noutputs = model(**inputs)\nlogits = outputs.logits\n# model predicts one of the 1000 ImageNet classes\npredicted_class_idx = logits.argmax(-1).item()\nprint(\"Predicted class:\", model.config.id2label[predicted_class_idx])\n```\n\nFor more code examples, we refer to the [documentation](https://huggingface.co/transformers/model_doc/swin.html#).\n\n### BibTeX entry and citation info\n\n```bibtex\n@article{DBLP:journals/corr/abs-2103-14030,\n  author    = {Ze Liu and\n               Yutong Lin and\n               Yue Cao and\n               Han Hu and\n               Yixuan Wei and\n               Zheng Zhang and\n               Stephen Lin and\n               Baining Guo},\n  title     = {Swin Transformer: Hierarchical Vision Transformer using Shifted Windows},\n  journal   = {CoRR},\n  volume    = {abs/2103.14030},\n  year      = {2021},\n  url       = {https://arxiv.org/abs/2103.14030},\n  eprinttype = {arXiv},\n  eprint    = {2103.14030},\n  timestamp = {Thu, 08 Apr 2021 07:53:26 +0200},\n  biburl    = {https://dblp.org/rec/journals/corr/abs-2103-14030.bib},\n  bibsource = {dblp computer science bibliography, https://dblp.org}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision",
+      "image-classification"
+    ],
+    "datasets": [
+      "imagenet-21k"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/tiger.jpg",
+        "example_title": "Tiger"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/teapot.jpg",
+        "example_title": "Teapot"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/palace.jpg",
+        "example_title": "Palace"
+      }
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "image-classification",
+    "processor": "AutoImageProcessor"
+  }
+}

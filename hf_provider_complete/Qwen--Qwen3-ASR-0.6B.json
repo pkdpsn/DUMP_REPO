@@ -1,0 +1,111 @@
+{
+  "modelId": "Qwen/Qwen3-ASR-0.6B",
+  "author": "Qwen",
+  "sha": "5eb144179a02acc5e5ba31e748d22b0cf3e303b0",
+  "lastModified": "2026-01-30 03:00:21+00:00",
+  "tags": [
+    "safetensors",
+    "qwen3_asr",
+    "automatic-speech-recognition",
+    "arxiv:2601.21337",
+    "license:apache-2.0",
+    "eval-results",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "automatic-speech-recognition",
+  "library_name": null,
+  "likes": 365,
+  "downloads": 553397,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "automatic-speech-recognition",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen3ASRForConditionalGeneration"
+    ],
+    "model_type": "qwen3_asr",
+    "processor_config": {
+      "chat_template": "{%- set ns = namespace(system_text=\"\") -%}\n{%- for m in messages -%}\n  {%- if m.role == 'system' -%}\n    {%- if m.content is string -%}\n      {%- set ns.system_text = ns.system_text + m.content -%}\n    {%- else -%}\n      {%- for c in m.content -%}\n        {%- if c.type == 'text' and (c.text is defined) -%}\n          {%- set ns.system_text = ns.system_text + c.text -%}\n        {%- endif -%}\n      {%- endfor -%}\n    {%- endif -%}\n  {%- endif -%}\n{%- endfor -%}\n\n{%- set ns2 = namespace(audio_tokens=\"\") -%}\n{%- for m in messages -%}\n  {%- if m.content is not string -%}\n    {%- for c in m.content -%}\n      {%- if c.type == 'audio' or ('audio' in c) or ('audio_url' in c) -%}\n        {%- set ns2.audio_tokens = ns2.audio_tokens + \"<|audio_start|><|audio_pad|><|audio_end|>\" -%}\n      {%- endif -%}\n    {%- endfor -%}\n  {%- endif -%}\n{%- endfor -%}\n\n{{- '<|im_start|>system\\n' + (ns.system_text if ns.system_text is string else '') + '<|im_end|>\\n' -}}\n{{- '<|im_start|>user\\n' + ns2.audio_tokens + '<|im_end|>\\n' -}}\n{%- if add_generation_prompt -%}\n{{- '<|im_start|>assistant\\n' -}}\n{%- endif -%}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 57456,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1161,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 6193,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 142,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 1876091704,
+      "lfs": {
+        "size": 1876091704,
+        "sha256": "79d6cbd4c98c7bbffe9db2edac07f56cd6637d0d5944b27f6c2b8353840323ea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 330,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 12487,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}

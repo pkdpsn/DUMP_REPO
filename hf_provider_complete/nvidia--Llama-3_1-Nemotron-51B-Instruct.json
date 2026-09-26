@@ -1,0 +1,398 @@
+{
+  "modelId": "nvidia/Llama-3_1-Nemotron-51B-Instruct",
+  "author": "nvidia",
+  "sha": "f4d9431910e03eaffbe351ede20cdbb25d9765c2",
+  "lastModified": "2025-07-06 15:52:27+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron-nas",
+    "text-generation",
+    "nvidia",
+    "llama-3",
+    "pytorch",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2306.05685",
+    "arxiv:2009.03300",
+    "arxiv:2110.14168",
+    "arxiv:2404.05993",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 210,
+  "downloads": 1092,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "DeciLMForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_decilm.DeciLMConfig",
+      "AutoModelForCausalLM": "modeling_decilm.DeciLMForCausalLM"
+    },
+    "model_type": "nemotron-nas",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- set date_string = \"26 Jul 2024\" %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = none %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message + builtin tools #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{%- if builtin_tools is defined or tools is not none %}\n    {{- \"Environment: ipython\\n\" }}\n{%- endif %}\n{%- if builtin_tools is defined %}\n    {{- \"Tools: \" + builtin_tools | reject('equalto', 'code_interpreter') | join(\", \") + \"\\n\\n\"}}\n{%- endif %}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{%- if tools is not none and not tools_in_user_message %}\n    {{- \"You have access to the following functions. To call a function, please respond with JSON for a function call.\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n{%- endif %}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{#- Custom tools are passed in a user message with some extra guidance #}\n{%- if tools_in_user_message and not tools is none %}\n    {#- Extract the first user message so we can plug it in here #}\n    {%- if messages | length != 0 %}\n        {%- set first_user_message = messages[0]['content']|trim %}\n        {%- set messages = messages[1:] %}\n    {%- else %}\n        {{- raise_exception(\"Cannot put tools in the first user message when there's no first user message!\") }}\n{%- endif %}\n    {{- '<|start_header_id|>user<|end_header_id|>\\n\\n' -}}\n    {{- \"Given the following functions, please respond with a JSON for a function call \" }}\n    {{- \"with its proper arguments that best answers the given prompt.\\n\\n\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n    {{- first_user_message + \"<|eot_id|>\"}}\n{%- endif %}\n\n{%- for message in messages %}\n    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n    {%- elif 'tool_calls' in message %}\n        {%- if not message.tool_calls|length == 1 %}\n            {{- raise_exception(\"This model only supports single tool-calls at once!\") }}\n        {%- endif %}\n        {%- set tool_call = message.tool_calls[0].function %}\n        {%- if builtin_tools is defined and tool_call.name in builtin_tools %}\n            {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n            {{- \"<|python_tag|>\" + tool_call.name + \".call(\" }}\n            {%- for arg_name, arg_val in tool_call.arguments | items %}\n                {{- arg_name + '=\"' + arg_val + '\"' }}\n                {%- if not loop.last %}\n                    {{- \", \" }}\n                {%- endif %}\n                {%- endfor %}\n            {{- \")\" }}\n        {%- else  %}\n            {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n            {{- '{\"name\": \"' + tool_call.name + '\", ' }}\n            {{- '\"parameters\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- \"}\" }}\n        {%- endif %}\n        {%- if builtin_tools is defined %}\n            {#- This means we're in ipython mode #}\n            {{- \"<|eom_id|>\" }}\n        {%- else %}\n            {{- \"<|eot_id|>\" }}\n        {%- endif %}\n    {%- elif message.role == \"tool\" or message.role == \"ipython\" %}\n        {{- \"<|start_header_id|>ipython<|end_header_id|>\\n\\n\" }}\n        {%- if message.content is mapping or message.content is iterable %}\n            {{- message.content | tojson }}\n        {%- else %}\n            {{- message.content }}\n        {%- endif %}\n        {{- \"<|eot_id|>\" }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "NOTICE",
+      "size": 571,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7506,
+      "lfs": null
+    },
+    {
+      "rfilename": "__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 20748,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_decilm.py",
+      "size": 3974,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00022.safetensors",
+      "size": 4987128904,
+      "lfs": {
+        "size": 4987128904,
+        "sha256": "b2990306c9e4715b943eaf3f91473a801dfe04392f3f8768b31edecd8d0eb755",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00022.safetensors",
+      "size": 4873899312,
+      "lfs": {
+        "size": 4873899312,
+        "sha256": "6662e17eca5fb9bd4d5a29c3fe5b6bb0ea9a38395da47d6d11d6b85a3f3061de",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00022.safetensors",
+      "size": 4899116128,
+      "lfs": {
+        "size": 4899116128,
+        "sha256": "1deba9fb520b3e46ebf0876ea68a913664be24ff542f4ea40d59398f4cafa89a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00022.safetensors",
+      "size": 4567782440,
+      "lfs": {
+        "size": 4567782440,
+        "sha256": "fe288cee7ef3dcf45f6b36ecd53c953f07ae01370fb3bb1383c230057fade1b5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00022.safetensors",
+      "size": 4999695232,
+      "lfs": {
+        "size": 4999695232,
+        "sha256": "d1387ab2cf92336e52fe7bbf221c6f87a1df82982a795832f2a0564279ab57fd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00022.safetensors",
+      "size": 4966157072,
+      "lfs": {
+        "size": 4966157072,
+        "sha256": "aeb46455878ff7356a6b1be8e028741a4c3d236e00c9336c40390a062c6e1e2c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00022.safetensors",
+      "size": 4664150920,
+      "lfs": {
+        "size": 4664150920,
+        "sha256": "d3c86e900f62463d453585887f1c087d7b9d235fe5c29251409040442d77826d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00022.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "d983395fcc42fdb792e2f7ad0816705b6bb229697a1df1c889f1ad6e1cc17cc5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00022.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "817460bbcb2878d86051545cf77c87653e53ee20f5db702b8fcda581f6d8c0ba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00022.safetensors",
+      "size": 4999695232,
+      "lfs": {
+        "size": 4999695232,
+        "sha256": "984f9ec95ae6003feb2f31397a10a01837254ebf8fe6cd32c7c1f98af91d34fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00022.safetensors",
+      "size": 4966157072,
+      "lfs": {
+        "size": 4966157072,
+        "sha256": "742ac2ff2d5b8bed496565c687ad1145d251f9685d780b3566756dfa21585cfe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00022.safetensors",
+      "size": 4664150920,
+      "lfs": {
+        "size": 4664150920,
+        "sha256": "e06f3f256c108db9370fa30faca1335de8f7001c06a3a0f676dd9793d3d6e7ea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00022.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "9c8a5930428eae56a7b86bcff24dc395005f23e8b2b66a062014306ac4c001e2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00022.safetensors",
+      "size": 4731276160,
+      "lfs": {
+        "size": 4731276160,
+        "sha256": "a8fb07d4f8176b5ad0fa65bd0094b0bcc2e39eed43e7d7824da7249f9bc8dfd9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00022.safetensors",
+      "size": 4899114336,
+      "lfs": {
+        "size": 4899114336,
+        "sha256": "4c81cac17603aeb4daba647542d5d31fed2ddf14f92664db8db158ee92e5e362",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00022.safetensors",
+      "size": 4983018288,
+      "lfs": {
+        "size": 4983018288,
+        "sha256": "8a8bd6808d8525e29c163b8f2acc4a5dc48da7de3110e6c47ae3dd19752b5ea0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00022.safetensors",
+      "size": 4899198680,
+      "lfs": {
+        "size": 4899198680,
+        "sha256": "3955e1d2905da27e1bb86df0d1f4cb380644c7d55d576276f52adc38c6e537d0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00022.safetensors",
+      "size": 4647456992,
+      "lfs": {
+        "size": 4647456992,
+        "sha256": "fd3ce3dbde6831dcb280b89e1eeef52b976133091c7b2edb077d46c5b7133144",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00022.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "f02a07b21d517079feafeedf6192b703dbf15aae712deafdc8cdaa82ba7a5b1f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00022.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "25ae2c6845e6108324d68c52bfcf520ddd24c6ad3ec90e32ec7e4a4ee4dda167",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00022.safetensors",
+      "size": 4831922696,
+      "lfs": {
+        "size": 4831922696,
+        "sha256": "0234aebf14d4cb42d483335a984cedb920d6c4285ccefcd4cbe6841c1c1f09c7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00022.safetensors",
+      "size": 2101346432,
+      "lfs": {
+        "size": 2101346432,
+        "sha256": "84a87a2039ad882e51b0b10c1b59f342a9d2efc18c95291d7ae5926d50a195cf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 51910,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_decilm.py",
+      "size": 80405,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 296,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 9085630,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_chat_template.jinja",
+      "size": 685,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 55351,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__activations.py",
+      "size": 8189,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__cache_utils.py",
+      "size": 14818,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__configuration_llama.py",
+      "size": 11066,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_attn_mask_utils.py",
+      "size": 21330,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_flash_attention_utils_backward_compat.py",
+      "size": 15751,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_outputs.py",
+      "size": 112579,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_rope_utils.py",
+      "size": 28067,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__pytorch_utils.py",
+      "size": 666,
+      "lfs": null
+    },
+    {
+      "rfilename": "variable_cache.py",
+      "size": 4730,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- llama-3\n- pytorch\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf\n---\n\n# Llama-3_1-Nemotron-51B-instruct\n\n\n\n## Model Overview\nLlama-3_1-Nemotron-51B-instruct is a model which offers a great tradeoff between model accuracy and efficiency. Efficiency (throughput) directly translates to price, providing great \u2018quality-per-dollar\u2019. Using a novel Neural Architecture Search (NAS) approach we greatly reduce the model\u2019s memory footprint, enabling larger workloads, as well as fitting the model on a single GPU at high workloads (H100-80GB). This NAS approach enables the selection of a desired point in the accuracy-efficiency tradeoff. This model is ready for commercial use.\n\n\n## License\nYour use of this model is governed by the [NVIDIA Open Model License](https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf).\nAdditional Information: [Llama 3.1 Community License Agreement](https://www.llama.com/llama3_1/license/). Built with Llama.\n\n## How was the model developed\n\nLlama-3_1-Nemotron-51B-instruct is a large language model (LLM) which is a derivative of Llama-3.1-70B-instruct (AKA the reference model). We utilize a block-wise distillation of the reference model, where for each block we create multiple variants providing different tradeoffs of quality vs. computational complexity. We then search over the blocks to create a model which meets the required throughput and memory (optimized for a single H100-80GB GPU) while minimizing the quality degradation. The model then undergoes knowledge distillation (KD), with a focus on English single and multi-turn chat use-cases.\nThe KD step included 40 billion tokens consisting of a mixture of 3 datasets - FineWeb, Buzz-V1.2 and Dolma.\n\nLinks to [NIM](https://build.nvidia.com/nvidia/llama-3_1-nemotron-51b-instruct), [blog](https://developer.nvidia.com/blog/advancing-the-accuracy-efficiency-frontier-with-llama-3-1-nemotron-51b/) and [huggingface](https://huggingface.co/nvidia/Llama-3_1-Nemotron-51B-Instruct)\n\n\n\nThis results in a final model that is aligned for human chat preferences.\n\n**Model Developers:** NVIDIA\n\n**Model Input:** Text only\n\n**Model Output:** Text only\n\n**Model Dates:** Llama-3_1-Nemotron-51B-instruct was trained between August and September 2024\n\n**Data Freshness:** The pretraining data has a cutoff of 2023\n\n**Sequence Length Used During Distillation:** 8192\n\n\n## Quick Start\nOur code requires the `transformers` package version to be 4.44.2 or higher\n\nSee the snippet below for usage with transformers:\n```python\nimport torch\nimport transformers\n\nmodel_id = \"nvidia/Llama-3_1-Nemotron-51B-Instruct\"\nmodel_kwargs = {\"torch_dtype\": torch.bfloat16, \"trust_remote_code\": True, \"device_map\": \"auto\"}\ntokenizer = transformers.AutoTokenizer.from_pretrained(model_id)\ntokenizer.pad_token_id = tokenizer.eos_token_id\n\npipeline = transformers.pipeline(\n    \"text-generation\", \n    model=model_id, \n    tokenizer=tokenizer, \n    max_new_tokens=20, \n    **model_kwargs\n)\nprint(pipeline([{\"role\": \"user\", \"content\": \"Hey how are you?\"}]))\n```\n\n\n\n## Required Hardware\n\nFP8 Inference (recommended):\n- 1x H100-80GB GPU\n\nBF16 Inference:\n- 2x H100-80GB GPUs\n- 2x A100-80GB GPUs\n\n\n## Model Architecture\nThe model is a derivative of Llama-3.1-70B, using Neural Architecture Search (NAS). The NAS algorithm results in non-standard and non-repetitive blocks. This includes the following: \n* Variable Grouped Query Attention (VGQA) - each block can have a different number of KV (keys and values) heads, ranging from 1 to Llama\u2019s typical 8.\n* Skip attention - in some blocks the attention is skipped entirely, or replaced with a single linear layer.\n* Variable FFN - the expansion/compression ratio in the FFN layer is different between blocks. \n\n\n**Architecture Type:** Transformer Decoder (auto-regressive language model)\n\n## Software Integration\n**Runtime Engine(s):** \n* NeMo 24.05 <br>\n\n\n**Supported Hardware Architecture Compatibility:** NVIDIA H100, A100 80GB (BF16 quantization).\n\n**[Preferred/Supported] Operating System(s):** <br>\n* Linux <br>\n\n## Intended use\n\nLlama-3_1-Nemotron-51B-Instruct  is a general purpose chat model intended to be used in English and coding languages. Other non-English languages are also supported.\n\n## Evaluation Results\n\n**Data Collection Method by dataset** <br>\n* Automated <br>\n\n\n### MT-Bench\n\nEvaluated using select datasets from the [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/pdf/2306.05685v4)\nMT-bench - 8.99\n\n\n### MMLU\n\nEvaluated using the Multi-task Language Understanding benchmarks as introduced in [Measuring Massive Multitask Language Understanding](https://arxiv.org/pdf/2009.03300)\n\n|MMLU (5-shot) |\n| :----------------- |\n| 80.2%  | \n\n### GSM8K\n\nEvaluated using the Grade School Math 8K (GSM8K) benchmark as introduced in [Training Verifiers to Solve Math Word Problems](https://arxiv.org/pdf/2110.14168v2)\n\n|GSM8K (5-shot) |\n| :----------------- |\n| 91.43%  | \n\n### Winogrande\n\n|Winogrande (5-shot) |\n| :----------------- |\n| 84.53%  | \n\n### Arc-C\n\n|Arc challenge (25-shot) |\n| :----------------- |\n| 69.20%  | \n\n### Hellaswag\n\n|Hellaswag (10-shot) |\n| :----------------- |\n| 85.58%  | \n\n### Truthful QA\n\n|TruthfulQA (0-shot) |\n| :----------------- |\n| 58.63%%  | \n\n## Limitations\n\nThe model was trained on data that contains toxic language, unsafe content, and societal biases originally crawled from the internet. Therefore, the model may amplify those biases and return toxic responses especially when prompted with toxic prompts. The model may generate answers that may be inaccurate, omit key information, or include irrelevant or redundant text producing socially unacceptable or undesirable text, even if the prompt itself does not include anything explicitly offensive.\n\nThe model demonstrates weakness to alignment-breaking attacks. Users are advised to deploy language model guardrails alongside this model to prevent potentially harmful outputs.\n\n## Adversarial Testing and Red Teaming Efforts \n\nThe Llama-3_1-Nemotron-51B-instruct model underwent extensive safety evaluation including adversarial testing via three distinct methods: \n* [Garak](https://docs.garak.ai/garak), is an automated LLM vulnerability scanner that probes for common weaknesses, including prompt injection and data leakage. \n* [AEGIS](https://arxiv.org/pdf/2404.05993), is a content safety evaluation dataset and LLM based content safety classifier model, that adheres to a broad taxonomy of 13 categories of critical risks in human-LLM interactions.\n* Human Content Red Teaming leveraging human interaction and evaluation of the models' responses.\n\n\n## Inference\n**Engine:** Tensor(RT) <br>\n**Test Hardware** H100-80GB <br>\n\n\n## Ethical Considerations\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. \n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ],
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_decilm.DeciLMForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

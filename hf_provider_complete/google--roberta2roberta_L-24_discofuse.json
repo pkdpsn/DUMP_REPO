@@ -1,0 +1,106 @@
+{
+  "modelId": "google/roberta2roberta_L-24_discofuse",
+  "author": "google",
+  "sha": "9f28bbb3a3da571724223dd178a5b7c4802d0b01",
+  "lastModified": "2023-01-24 16:43:18+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "encoder-decoder",
+    "text2text-generation",
+    "en",
+    "dataset:discofuse",
+    "arxiv:1907.12461",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 2,
+  "downloads": 259,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "discofuse"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "EncoderDecoderModel"
+    ],
+    "model_type": "encoder-decoder"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 1596,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3435,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 207,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1821418078,
+      "lfs": {
+        "size": 1821418078,
+        "sha256": "82568c86e1b45130efa9573d4734bc2c65d5307a2b6a55886126e4297ea087e0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 845717,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\nlicense: apache-2.0\ndatasets:\n- discofuse\n---\n\n# Roberta2Roberta_L-24_discofuse EncoderDecoder model\n\nThe model was introduced in \n[this paper](https://arxiv.org/abs/1907.12461) by Sascha Rothe, Shashi Narayan, Aliaksei Severyn and first released in [this repository](https://tfhub.dev/google/bertseq2seq/roberta24_discofuse/1). \n\nThe model is an encoder-decoder model that was initialized on the `roberta-large` checkpoints for both the encoder \nand decoder and fine-tuned on sentencefusion on the discofuse dataset, which is linked above.\n\nDisclaimer: The model card has been written by the Hugging Face team.\n\n## How to use\n\nYou can use this model for sentence fusion, *e.g.*\n\nIMPORTANT: The model was not trained on the `\"` (double quotation mark) character -> so the before tokenizing the text, it is advised to replace all `\"` (double quotation marks) with a single `` ` `` (single back tick).\n\n```python\nfrom transformers import AutoTokenizer, AutoModelForSeq2SeqLM\n\ntokenizer = AutoTokenizer.from_pretrained(\"google/roberta2roberta_L-24_discofuse\")\nmodel = AutoModelForSeq2SeqLM.from_pretrained(\"google/roberta2roberta_L-24_discofuse\")\n\ndiscofuse = \"\"\"As a run-blocker, Zeitler moves relatively well. Zeitler often struggles at the point of contact in space.\"\"\"\n\ninput_ids = tokenizer(discofuse, return_tensors=\"pt\").input_ids\noutput_ids = model.generate(input_ids)[0]\nprint(tokenizer.decode(output_ids, skip_special_tokens=True))\n# should output\n# As a run-blocker, Zeitler moves relatively well. However, Zeitler often struggles at the point of contact in space.  \n```\n",
+  "cardDataParsed": {
+    "language": "en",
+    "license": "apache-2.0",
+    "datasets": [
+      "discofuse"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "modelId": "nvidia/Nemotron-Labs-Diffusion-3B-Base",
+  "author": "nvidia",
+  "sha": "4bd78816ba988ca8b71b8f432b00b682572b236c",
+  "lastModified": "2026-06-03 17:59:11+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron_labs_diffusion",
+    "feature-extraction",
+    "nvidia",
+    "pytorch",
+    "text-generation",
+    "conversational",
+    "custom_code",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 11,
+  "downloads": 817,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-nemotron-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-nemotron-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "NemotronLabsDiffusionModel"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_nemotron_labs_diffusion.NemotronLabsDiffusionConfig",
+      "AutoModel": "modeling_nemotron_labs_diffusion.NemotronLabsDiffusionModel"
+    },
+    "model_type": "nemotron_labs_diffusion",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "<|im_end|>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{% macro render_extra_keys(json_dict, handled_keys) %}\n    {%- if json_dict is mapping %}\n        {%- for json_key in json_dict if json_key not in handled_keys %}\n            {%- if json_dict[json_key] is mapping or (json_dict[json_key] is sequence and json_dict[json_key] is not string) %}\n                {{- '\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | tojson | safe) ~ '</' ~ json_key ~ '>' }}\n            {%- else %}\n                {{-'\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | string) ~ '</' ~ json_key ~ '>' }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{% endmacro %}\n{%- set enable_thinking = enable_thinking if enable_thinking is defined else False %}\n{%- set truncate_history_thinking = truncate_history_thinking if truncate_history_thinking is defined else True %}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- set loop_messages = messages %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n{%- if messages[0][\"role\"] == \"system\" %}\n    {%- set system_message = messages[0][\"content\"] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = [] %}\n{%- endif %}\n{# Recompute last_user_idx relative to loop_messages after handling system #}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n{%- if system_message is defined %}\n    {{- \"<|im_start|>system\\n\" + system_message }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- \"<|im_start|>system\\n\" }}\n    {%- endif %}\n{%- endif %}\n{%- if tools is iterable and tools | length > 0 %}\n    {%- if system_message is defined and system_message | length > 0 %}\n        {{- \"\\n\\n\" }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n\" }}\n    {{- \"<tools>\" }}\n    {%- for tool in tools %}\n        {%- if tool.function is defined %}\n            {%- set tool = tool.function %}\n        {%- endif %}\n        {{- \"\\n<function>\\n<name>\" ~ tool.name ~ \"</name>\" }}\n        {%- if tool.description is defined %}\n            {{- '\\n<description>' ~ (tool.description | trim) ~ '</description>' }}\n        {%- endif %}\n        {{- '\\n<parameters>' }}\n        {%- if tool.parameters is defined and tool.parameters is mapping and tool.parameters.properties is defined and tool.parameters.properties is mapping %}\n            {%- for param_name, param_fields in tool.parameters.properties|items %}\n                {{- '\\n<parameter>' }}\n                {{- '\\n<name>' ~ param_name ~ '</name>' }}\n                {%- if param_fields.type is defined %}\n                    {{- '\\n<type>' ~ (param_fields.type | string) ~ '</type>' }}\n                {%- endif %}\n                {%- if param_fields.description is defined %}\n                    {{- '\\n<description>' ~ (param_fields.description | trim) ~ '</description>' }}\n                {%- endif %}\n                {%- if param_fields.enum is defined %}\n                    {{- '\\n<enum>' ~ (param_fields.enum | tojson | safe) ~ '</enum>' }}\n                {%- endif %}\n                {%- set handled_keys = ['name', 'type', 'description', 'enum'] %}\n                {{- render_extra_keys(param_fields, handled_keys) }}\n                {{- '\\n</parameter>' }}\n            {%- endfor %}\n        {%- endif %}\n        {% set handled_keys = ['type', 'properties', 'required'] %}\n        {{- render_extra_keys(tool.parameters, handled_keys) }}\n        {%- if tool.parameters is defined and tool.parameters.required is defined %}\n            {{- '\\n<required>' ~ (tool.parameters.required | tojson | safe) ~ '</required>' }}\n        {%- endif %}\n        {{- '\\n</parameters>' }}\n        {%- set handled_keys = ['type', 'name', 'description', 'parameters'] %}\n        {{- render_extra_keys(tool, handled_keys) }}\n        {{- '\\n</function>' }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n{%- endif %}\n{%- if system_message is defined %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in loop_messages %}\n    {%- if message.role == \"assistant\" %}\n        {# Add reasoning content in to content field for unified processing below. #}\n        {%- if message.reasoning_content is defined and message.reasoning_content is string and message.reasoning_content | trim | length > 0 %}\n            {%- set content = \"<think>\\n\" ~ message.reasoning_content ~ \"\\n</think>\\n\" ~ (message.content | default('', true)) %}\n        {%- else %}\n            {%- set content = message.content | default('', true) %}\n            {%- if content is string -%}\n                {# Allow downstream logic to to take care of broken thought, only handle coherent reasoning here. #}\n                {%- if '<think>' not in content and '</think>' not in content -%}\n                    {%- set content = \"<think></think>\" ~ content -%}\n                {%- endif -%}\n            {%- else -%}\n                {%- set content = content -%}\n            {%- endif -%}\n        {%- endif %}\n        {%- if message.tool_calls is defined and message.tool_calls is iterable and message.tool_calls | length > 0 %}\n            {# Assistant message has tool calls. #}\n            {{- '<|im_start|>assistant\\n' }}\n                {%- set include_content = not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {%- if content is string and content | trim | length > 0 %}\n                    {%- if include_content %}\n                        {{- (content | trim) ~ '\\n' -}}\n                    {%- else %}\n                        {%- set c = (content | string) %}\n                        {%- if '</think>' in c %}\n                            {# Keep only content after the last closing think. Also generation prompt causes this. #}\n                            {%- set c = c.split('</think>')[-1] %}\n                        {%- elif '<think>' in c %}\n                            {# If <think> was opened but never closed, drop the trailing think segment #}\n                            {%- set c = c.split('<think>')[0] %}\n                        {%- endif %}\n                        {%- set c = \"<think></think>\" ~ c | trim %}\n                        {%- if c | length > 0 %}\n                            {{- c ~ '\\n' -}}\n                        {%- endif %}\n                    {%- endif %}\n                {%- else %}\n                    {{- \"<think></think>\" -}}\n                {%- endif %}\n                {%- for tool_call in message.tool_calls %}\n                    {%- if tool_call.function is defined %}\n                        {%- set tool_call = tool_call.function %}\n                    {%- endif %}\n                    {{- '<tool_call>\\n<function=' ~ tool_call.name ~ '>\\n' -}}\n                        {%- if tool_call.arguments is defined %}\n                            {%- for args_name, args_value in tool_call.arguments|items %}\n                                {{- '<parameter=' ~ args_name ~ '>\\n' -}}\n                                    {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                                {{- args_value ~ '\\n</parameter>\\n' -}}\n                            {%- endfor %}\n                        {%- endif %}\n                    {{- '</function>\\n</tool_call>\\n' -}}\n                {%- endfor %}\n                {{- '<|im_end|>\\n' }}\n        {%- else %}\n            {# Assistant message doesn't have tool calls. #}\n            {%- if not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {{- '<|im_start|>assistant\\n' ~ (content | default('', true) | string | trim) ~ '<|im_end|>\\n' }}\n            {%- else %}\n                {%- set c = (content | default('', true) | string) %}\n                {%- if '<think>' in c and '</think>' in c %}\n                    {%- set c = \"<think></think>\" ~ c.split('</think>')[-1] %}\n                {%- endif %}\n                {%- set c = c | trim %}\n                {%- if c | length > 0 %}\n                    {{- '<|im_start|>assistant\\n' ~ c ~ '<|im_end|>\\n' }}\n                {%- else %}\n                    {{- '<|im_start|>assistant\\n<|im_end|>\\n' }}\n                {%- endif %}\n            {%- endif %}\n        {%- endif %}\n    {%- elif message.role == \"user\" or message.role == \"system\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- set content = message.content | string %}\n        {{- content }}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user\\n' }}\n        {%- endif %}\n        {{- '<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>\\n' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {%- if enable_thinking %}\n        {{- '<|im_start|>assistant\\n<think>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>assistant\\n<think></think>' }}\n    {%- endif %}\n{%- endif %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1851,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 8011,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/demo.gif",
+      "size": 8247856,
+      "lfs": {
+        "size": 8247856,
+        "sha256": "0d09264e272ac0f82dee36417f6a16511287ec1f8dee3b5dba3da222d791fd2c",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/demo.mp4",
+      "size": 9454873,
+      "lfs": {
+        "size": 9454873,
+        "sha256": "666d8785ac4af75931d9c677757c4ef9945bf114d07f1c4e2ebb7b893ac39006",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/result_acc.png",
+      "size": 404576,
+      "lfs": {
+        "size": 404576,
+        "sha256": "992aa22ca9eca3d0bddbcd9f49837e2a9f377bbc0f7545563b129a50b3811448",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/result_efficiency.png",
+      "size": 801194,
+      "lfs": {
+        "size": 801194,
+        "sha256": "4f6161912e2aa703e0ef1bdccbb85039529b97e759d6247c33afa2a209806ede",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/teaser.png",
+      "size": 580933,
+      "lfs": {
+        "size": 580933,
+        "sha256": "6c94aa7b0c6cf8fb739724d0c1ce45749c76443c592eeab94d7cbb9083c6c6b1",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 10498,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1316,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nemotron_labs_diffusion.py",
+      "size": 8268,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 132,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 7663347000,
+      "lfs": {
+        "size": 7663347000,
+        "sha256": "cf9ef7826f4d23f1c7029720ca07bbb56d36fcfdefe93eaf42ddc14bb61f3db8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model_cards/bias.md",
+      "size": 512,
+      "lfs": null
+    },
+    {
+      "rfilename": "model_cards/explainability.md",
+      "size": 2032,
+      "lfs": null
+    },
+    {
+      "rfilename": "model_cards/privacy.md",
+      "size": 1582,
+      "lfs": null
+    },
+    {
+      "rfilename": "model_cards/safety.md",
+      "size": 626,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_ministral.py",
+      "size": 20497,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_nemotron_labs_diffusion.py",
+      "size": 36286,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 420,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077484,
+      "lfs": {
+        "size": 17077484,
+        "sha256": "623c34567aebb18582765289fbe23d901c62704d6518d71866e0e58db892b5b7",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 177180,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: nvidia-nemotron-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-nemotron-open-model-license/\npipeline_tag: text-generation\ntags:\n- nvidia\n- pytorch\n---\n\n# Nemotron-Labs-Diffusion-3B-Base\n\n\n<div align=\"center\" style=\"line-height: 1;\">\n<a href=\"https://d1qx31qr3h6wln.cloudfront.net/publications/Nemotron_Diffusion_Tech_Report.pdf?VersionId=1tm4XZATEzGV7cs51XAf.xmWupU20vYW\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/\ud83d\udcddPaper-Read Now!-536af5?color=76B900&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://huggingface.co/collections/nvidia/nemotron-labs-diffusion\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Nemotron-Labs-Diffusion Model Family\" src=\"https://img.shields.io/badge/%F0%9F%A4%97-Nemotron--Labs--Diffusion_Model_Family-76B900\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://github.com/NVlabs/Nemotron-Labs-Diffusion\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"GitHub\" src=\"https://img.shields.io/badge/GitHub-Github Repository-76B900?logo=github&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n<a href=\"https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-nemotron-open-model-license/\" style=\"margin: 2px;\">\n  <img alt=\"License\" src=\"https://img.shields.io/badge/License-NVIDIA Open Model License-f5de53?&color=f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n</div>\n\n\n[![Demo](./assets/demo.gif)](./assets/demo.mp4)\n\n\n## Model Overview\n\nNemotron-Labs-Diffusion is a tri-mode language model that supports both AR decoding and diffusion-based parallel decoding by simply switching the attention pattern of the same model during inference. The synergy between these two modes enables a third mode, called self-speculation: the same model performs diffusion-based parallel drafting and AR verification with shared KV cache, achieving high acceptance lengths and decoding efficiency. The seamless mode switching by simply changing attention patterns enables high efficiency at different concurrency levels in varying deployment scenarios with one single model.\n\n<div align=\"center\">\n<img src=\"./assets/teaser.png\" alt=\"An illustration of Tri-Mode LMs\" width=\"500\">\n</div>\n\n\n## Highlights\n\n- SOTA 3B, 8B, 14B dense LM family (base, instruct, and vision-language variants) supporting AR, diffusion, and self-speculation with the focus on decode efficiency. \n- Generation moved from a memory-bound regime toward a compute-bound regime. Model weights are loaded once and reused to compute multiple tokens during generation.\n- Self-speculation uses diffusion for drafting and AR for verification, providing a stronger alternative to MTP approaches:\n  * 3x higher acceptance length and 2.2x speed-up vs. Qwen3-8B-Eagle3 in SGLang.\n  * 5.9\u00d7 tokens per forward over Qwen3-8B (no MTP) with the same accuracy.\n- Real-device speed-up across platforms:\n  * DGX Spark (8B, concurrency 1): 2.7x faster with 112 tok/sec vs. 41.8 tok/sec AR using w4a16.\n  * GB200 (8B, concurrency 1): 3.3x faster with 850 tok/sec vs. 253 tok/sec AR and 360 tok/sec Eagle3. Custom CUDA kernels boost to 1015 tok/sec (4x). \n- Diffusion speedup-of-light analysis shows that throughput can be further doubled (vs. current best) for a single user with better sampling - future research. \n\n\n<div align=\"center\">\n<img src=\"./assets/result_acc.png\" alt=\"Efficiency Results\" width=\"800\">\n</div>\n\n<div align=\"center\">\n<img src=\"./assets/result_efficiency.png\" alt=\"Acc Results\" width=\"800\">\n</div>\n\n\n## License/Terms of Use\n\nUse of this model is governed by the [NVIDIA Nemotron Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-nemotron-open-model-license/).\n\n\n## Environment\n\n```bash\ntransformers>=5.0.0\n```\n\n## Chat with Our Model\n\n\n```\nfrom transformers import AutoModel, AutoTokenizer\nimport torch\n\nrepo_name = \"nvidia/Nemotron-Labs-Diffusion-3B-Base\"\n\ntokenizer = AutoTokenizer.from_pretrained(repo_name, trust_remote_code=True)\nmodel = AutoModel.from_pretrained(repo_name, trust_remote_code=True)\nmodel = model.cuda().to(torch.bfloat16)\n\nhistory = []\n\nuser_input = input(\"User: \").strip()\nhistory.append({\"role\": \"user\", \"content\": user_input})\n\nprompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)\nprompt_ids = tokenizer(prompt, return_tensors='pt').input_ids.to(device='cuda')\n\n## Chat in AR Mode\nout_ids, nfe = model.ar_generate(inputs.input_ids, max_new_tokens=512)\n\n## Chat in dLM Mode\nout_ids, nfe = model.generate(prompt_ids, max_new_tokens=512, block_length=32, threshold=0.9, eos_token_id=tokenizer.eos_token_id)\n\n## Chat in Linear Self-Speculation Mode\nout_ids, nfe = model.linear_spec_generate(prompt_ids, max_new_tokens=512, block_length=32, eos_token_id=tokenizer.eos_token_id)\n\ntokenized_out = tokenizer.batch_decode(out_ids[:, prompt_ids.shape[1]:], skip_special_tokens=True)[0]\nprint(f\"Model: {tokenized_out}\")\nprint(f\"[Num Function Eval (NFE)={nfe}]\")\n```\n\n\n\n## Inference with Linear Self-Speculation + LoRA-enhanced Drafter\n\nAn optional LoRA adatper can be applied to the diffusion drafter in the linear self-speculation mode to further increase the acceptance length:\n\n\n```python\nimport torch\nfrom transformers import AutoModel, AutoTokenizer\nfrom peft import PeftModel\n\nrepo = \"nvidia/Nemotron-Labs-Diffusion-3B-Base\"\ntokenizer = AutoTokenizer.from_pretrained(repo, trust_remote_code=True)\nmodel = AutoModel.from_pretrained(repo, trust_remote_code=True)\nmodel = model.cuda().to(torch.bfloat16)\n\n# Attach the linear_spec LoRA adapter.\nmodel = PeftModel.from_pretrained(model, repo, subfolder=\"linear_spec_lora\").eval()\n# Unwrap so we can call linear_spec_generate directly (it toggles LoRA internally).\nbase = model.model\n\nhistory = [{\"role\": \"user\", \"content\": \"Solve: What is 15% of 240?\"}]\nprompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)\nprompt_ids = tokenizer(prompt, return_tensors=\"pt\").input_ids.cuda()\n\nout_ids, nfe = base.linear_spec_generate(\n    prompt_ids, max_new_tokens=512, block_length=32,\n    eos_token_id=tokenizer.eos_token_id,\n)\nprint(tokenizer.decode(out_ids[0, prompt_ids.shape[1]:], skip_special_tokens=True))\nprint(f\"[NFE={nfe}]\")\n```\n\n\n## Ethical Considerations\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. For more detailed information on ethical considerations for this model, please see the [bias](./model_cards/bias.md), [explainability](./model_cards/explainability.md), [safety & security](./model_cards/safety.md), and [privacy](./model_cards/privacy.md) subcards.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n\n## Citations\n\n```bibtex\n@techreport{fu2026nemotronlabsdiffusion,\n  title       = {Nemotron-Labs-Diffusion: A Tri-Mode Language Model Unifying Autoregressive, Diffusion, and Self-Speculation Decoding},\n  author      = {Yonggan Fu and Lexington Whalen and Abhinav Garg and Chengyue Wu and Maksim Khadkevich and Nicolai Oswald and Enze Xie and Daniel Egert and Sharath Turuvekere Sreenivas and Shizhe Diao and Chenhan Yu and Ye Yu and Weijia Chen and Sajad Norouzi and Jingyu Liu and Shiyi Lan and Ligeng Zhu and Jin Wang and Jindong Jiang and Morteza Mardani and Mehran Maghoumi and Song Han and Ante Jukic and Nima Tajbakhsh and Jan Kautz and Pavlo Molchanov},\n  institution = {NVIDIA},\n  year        = {2026},\n  note        = {Technical report}\n}\n```\n",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-nemotron-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-nemotron-open-model-license/",
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "pytorch"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_nemotron_labs_diffusion.NemotronLabsDiffusionModel",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

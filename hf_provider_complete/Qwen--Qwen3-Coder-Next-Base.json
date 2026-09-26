@@ -1,0 +1,496 @@
+{
+  "modelId": "Qwen/Qwen3-Coder-Next-Base",
+  "author": "Qwen",
+  "sha": "1b6df59d5f75ab51edb9ad8cb3ea69c5d0aedd57",
+  "lastModified": "2026-02-03 14:14:04+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_next",
+    "text-generation",
+    "conversational",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 73,
+  "downloads": 2197,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": "https://huggingface.co/Qwen/Qwen3-Coder-Next-Base/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen3NextForCausalLM"
+    ],
+    "model_type": "qwen3_next",
+    "num_experts": 512,
+    "num_experts_per_tok": 10,
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% macro render_extra_keys(json_dict, handled_keys) %}\n    {%- if json_dict is mapping %}\n        {%- for json_key in json_dict if json_key not in handled_keys %}\n            {%- if json_dict[json_key] is string %}\n                {{-'\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | string) ~ '</' ~ json_key ~ '>' }}\n            {%- else %}\n                {{- '\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | tojson | safe) ~ '</' ~ json_key ~ '>' }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{%- endmacro %}\n\n{%- if messages[0][\"role\"] == \"system\" %}\n    {%- set system_message = messages[0][\"content\"] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n\n{%- if not tools is defined %}\n    {%- set tools = [] %}\n{%- endif %}\n\n{%- if system_message is defined %}\n    {{- \"<|im_start|>system\\n\" + system_message }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- \"<|im_start|>system\\nYou are Qwen, a helpful AI assistant that can interact with a computer to solve tasks.\" }}\n    {%- endif %}\n{%- endif %}\n{%- if tools is iterable and tools | length > 0 %}\n    {{- \"\\n\\n# Tools\\n\\nYou have access to the following functions:\\n\\n\" }}\n    {{- \"<tools>\" }}\n    {%- for tool in tools %}\n        {%- if tool.function is defined %}\n            {%- set tool = tool.function %}\n        {%- endif %}\n        {{- \"\\n<function>\\n<name>\" ~ tool.name ~ \"</name>\" }}\n        {%- if tool.description is defined %}\n            {{- '\\n<description>' ~ (tool.description | trim) ~ '</description>' }}\n        {%- endif %}\n        {{- '\\n<parameters>' }}\n        {%- if tool.parameters is defined and tool.parameters is mapping and tool.parameters.properties is defined and tool.parameters.properties is mapping %}\n            {%- for param_name, param_fields in tool.parameters.properties|items %}\n                {{- '\\n<parameter>' }}\n                {{- '\\n<name>' ~ param_name ~ '</name>' }}\n                {%- if param_fields.type is defined %}\n                    {{- '\\n<type>' ~ (param_fields.type | string) ~ '</type>' }}\n                {%- endif %}\n                {%- if param_fields.description is defined %}\n                    {{- '\\n<description>' ~ (param_fields.description | trim) ~ '</description>' }}\n                {%- endif %}\n                {%- set handled_keys = ['name', 'type', 'description'] %}\n                {{- render_extra_keys(param_fields, handled_keys) }}\n                {{- '\\n</parameter>' }}\n            {%- endfor %}\n        {%- endif %}\n        {%- set handled_keys = ['type', 'properties'] %}\n        {{- render_extra_keys(tool.parameters, handled_keys) }}\n        {{- '\\n</parameters>' }}\n        {%- set handled_keys = ['type', 'name', 'description', 'parameters'] %}\n        {{- render_extra_keys(tool, handled_keys) }}\n        {{- '\\n</function>' }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n{%- endif %}\n{%- if system_message is defined %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in loop_messages %}\n    {%- if message.role == \"assistant\" and message.tool_calls is defined and message.tool_calls is iterable and message.tool_calls | length > 0 %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content is defined and message.content is string and message.content | trim | length > 0 %}\n            {{- '\\n' + message.content | trim + '\\n' }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n            {%- if tool_call.arguments is defined %}\n                {%- for args_name, args_value in tool_call.arguments|items %}\n                    {{- '<parameter=' + args_name + '>\\n' }}\n                    {%- set args_value = args_value if args_value is string else args_value | tojson | safe %}\n                    {{- args_value }}\n                    {{- '\\n</parameter>\\n' }}\n                {%- endfor %}\n            {%- endif %}\n            {{- '</function>\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"user\" or message.role == \"system\" or message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% macro render_extra_keys(json_dict, handled_keys) %}\n    {%- if json_dict is mapping %}\n        {%- for json_key in json_dict if json_key not in handled_keys %}\n            {%- if json_dict[json_key] is string %}\n                {{-'\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | string) ~ '</' ~ json_key ~ '>' }}\n            {%- else %}\n                {{- '\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | tojson | safe) ~ '</' ~ json_key ~ '>' }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{%- endmacro %}\n\n{%- if messages[0][\"role\"] == \"system\" %}\n    {%- set system_message = messages[0][\"content\"] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n\n{%- if not tools is defined %}\n    {%- set tools = [] %}\n{%- endif %}\n\n{%- if system_message is defined %}\n    {{- \"<|im_start|>system\\n\" + system_message }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- \"<|im_start|>system\\nYou are Qwen, a helpful AI assistant that can interact with a computer to solve tasks.\" }}\n    {%- endif %}\n{%- endif %}\n{%- if tools is iterable and tools | length > 0 %}\n    {{- \"\\n\\n# Tools\\n\\nYou have access to the following functions:\\n\\n\" }}\n    {{- \"<tools>\" }}\n    {%- for tool in tools %}\n        {%- if tool.function is defined %}\n            {%- set tool = tool.function %}\n        {%- endif %}\n        {{- \"\\n<function>\\n<name>\" ~ tool.name ~ \"</name>\" }}\n        {%- if tool.description is defined %}\n            {{- '\\n<description>' ~ (tool.description | trim) ~ '</description>' }}\n        {%- endif %}\n        {{- '\\n<parameters>' }}\n        {%- if tool.parameters is defined and tool.parameters is mapping and tool.parameters.properties is defined and tool.parameters.properties is mapping %}\n            {%- for param_name, param_fields in tool.parameters.properties|items %}\n                {{- '\\n<parameter>' }}\n                {{- '\\n<name>' ~ param_name ~ '</name>' }}\n                {%- if param_fields.type is defined %}\n                    {{- '\\n<type>' ~ (param_fields.type | string) ~ '</type>' }}\n                {%- endif %}\n                {%- if param_fields.description is defined %}\n                    {{- '\\n<description>' ~ (param_fields.description | trim) ~ '</description>' }}\n                {%- endif %}\n                {%- set handled_keys = ['name', 'type', 'description'] %}\n                {{- render_extra_keys(param_fields, handled_keys) }}\n                {{- '\\n</parameter>' }}\n            {%- endfor %}\n        {%- endif %}\n        {%- set handled_keys = ['type', 'properties'] %}\n        {{- render_extra_keys(tool.parameters, handled_keys) }}\n        {{- '\\n</parameters>' }}\n        {%- set handled_keys = ['type', 'name', 'description', 'parameters'] %}\n        {{- render_extra_keys(tool, handled_keys) }}\n        {{- '\\n</function>' }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n{%- endif %}\n{%- if system_message is defined %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in loop_messages %}\n    {%- if message.role == \"assistant\" and message.tool_calls is defined and message.tool_calls is iterable and message.tool_calls | length > 0 %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content is defined and message.content is string and message.content | trim | length > 0 %}\n            {{- '\\n' + message.content | trim + '\\n' }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n            {%- if tool_call.arguments is defined %}\n                {%- for args_name, args_value in tool_call.arguments|items %}\n                    {{- '<parameter=' + args_name + '>\\n' }}\n                    {%- set args_value = args_value if args_value is string else args_value | tojson | safe %}\n                    {{- args_value }}\n                    {{- '\\n</parameter>\\n' }}\n                {%- endfor %}\n            {%- endif %}\n            {{- '</function>\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"user\" or message.role == \"system\" or message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2747,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 6068,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1178,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00040.safetensors",
+      "size": 3999619288,
+      "lfs": {
+        "size": 3999619288,
+        "sha256": "4154d3f07228c9f8445e5f67c816cb9b11936601b528bd12a956b57ec716eb50",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00040.safetensors",
+      "size": 3999841816,
+      "lfs": {
+        "size": 3999841816,
+        "sha256": "2b64b32e3dbb7d14e004db9b8bf211f8bb4220c216609d8a2a7648d0d2b833ae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00040.safetensors",
+      "size": 3999515608,
+      "lfs": {
+        "size": 3999515608,
+        "sha256": "619c5131f2d46e272a74a5d7b2be176c2dae464a79ab089fccae4281e8a9105e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00040.safetensors",
+      "size": 3999842032,
+      "lfs": {
+        "size": 3999842032,
+        "sha256": "c496fe649cd1e98fcf08e46d8429fc353447cc403065b0dfd27eb67cc8145c65",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00040.safetensors",
+      "size": 3999842240,
+      "lfs": {
+        "size": 3999842240,
+        "sha256": "b9a09bd4d14d02a6b95d17e651f9cffb881a11c14d8fcdb80a9d1811ed8f7f6c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00040.safetensors",
+      "size": 3999853248,
+      "lfs": {
+        "size": 3999853248,
+        "sha256": "1c456d137bc9368de5818bb7c67a2ef265529cbfcb67ce3d555c9adb1ee42e9e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00040.safetensors",
+      "size": 3999841944,
+      "lfs": {
+        "size": 3999841944,
+        "sha256": "ccce4c7a4e4f37fc02e8ce3fe4578f9e67e7956cbc0fc7b37be7ae3a3001b8e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00040.safetensors",
+      "size": 3999842032,
+      "lfs": {
+        "size": 3999842032,
+        "sha256": "7e99fa7af0028ca68a5018346a789e90b892c5c5862efdc7644b18d61c5be64c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00040.safetensors",
+      "size": 3999843224,
+      "lfs": {
+        "size": 3999843224,
+        "sha256": "c21d18a25e64d1ed0a65a11a4bea05f160cec40fc2e4192c686610eebe4fec46",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00040.safetensors",
+      "size": 3999517840,
+      "lfs": {
+        "size": 3999517840,
+        "sha256": "51a5e58c6d182b4f0fffe44b0833cb979b45f2db99369d17871d95dec036fa0a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00040.safetensors",
+      "size": 4000181328,
+      "lfs": {
+        "size": 4000181328,
+        "sha256": "8e5c1701f67de6792a579ff5620bf168bda982ce05a48f9cceb9e6273f20ac92",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00040.safetensors",
+      "size": 3999843912,
+      "lfs": {
+        "size": 3999843912,
+        "sha256": "5fc238d0999010dbd07ac6590d94ea0dbd53ec81e3a7b04c3580e0e9afc52baa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00040.safetensors",
+      "size": 3999517504,
+      "lfs": {
+        "size": 3999517504,
+        "sha256": "6d29d706020a54482312b304c61bf3d7d39570cec001a413604c43bc41440bad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00040.safetensors",
+      "size": 3999844016,
+      "lfs": {
+        "size": 3999844016,
+        "sha256": "8f0791fdcc9d2adfeb1d1090751bf45bc4001a0667dc61ff99497fd0769c27d0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00040.safetensors",
+      "size": 4000181768,
+      "lfs": {
+        "size": 4000181768,
+        "sha256": "daf29f3820eb08934ccb2c500985dd4c95d6464e61aee18ecf216b2a65c1efbd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00040.safetensors",
+      "size": 3999517280,
+      "lfs": {
+        "size": 3999517280,
+        "sha256": "ddbbde7fb22d53ba49d10a36171adfbec92354654fd3effd5883920aa749c14e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00040.safetensors",
+      "size": 3999843912,
+      "lfs": {
+        "size": 3999843912,
+        "sha256": "6fde8437d71cf5e2f44d2f860fdcdaa50bbce87bf6b8357aedf3880eed11c8b6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00040.safetensors",
+      "size": 3999843912,
+      "lfs": {
+        "size": 3999843912,
+        "sha256": "f9447b461373298d48febcebdaf2b7a68615199546c474a7fab1665f94b28c37",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00040.safetensors",
+      "size": 3999844120,
+      "lfs": {
+        "size": 3999844120,
+        "sha256": "1c2c96bb51520ef6fb626a7c6a5e70816bebe10cf335cac769531fe34921cb7c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00040.safetensors",
+      "size": 3999855064,
+      "lfs": {
+        "size": 3999855064,
+        "sha256": "e922c9f9885f6a41bf76e80d54079b501218e993cde584872b37ae2c6f753d39",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00040.safetensors",
+      "size": 3999843824,
+      "lfs": {
+        "size": 3999843824,
+        "sha256": "84ff130604b8ead1b441445d5b652fa6c2687997eb72a3f5c49247a781425b77",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00040.safetensors",
+      "size": 3999843912,
+      "lfs": {
+        "size": 3999843912,
+        "sha256": "0dcd0e80116cfe9d5c70d94c63c5b46ab2426784d58666f5a4592dd22717d38f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00040.safetensors",
+      "size": 3999517496,
+      "lfs": {
+        "size": 3999517496,
+        "sha256": "753b5e44df6b7e8f324dfa9f17754e1425b4db75ceca590b742c2218b17e0a99",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00040.safetensors",
+      "size": 3999844296,
+      "lfs": {
+        "size": 3999844296,
+        "sha256": "531f06f424f3a0c8823fa481e0012c429907fcab1e13ef421fb2dd891c0cdbc5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00040.safetensors",
+      "size": 4000181328,
+      "lfs": {
+        "size": 4000181328,
+        "sha256": "d6ad6f8d6930b49e700f39e8be514d45a3166e124d007802c5c4c82e5cd435b8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00040.safetensors",
+      "size": 3999517504,
+      "lfs": {
+        "size": 3999517504,
+        "sha256": "86594609634418a19dbca114cf272413f7a79b70b80f50154c0d71668233efd7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00040.safetensors",
+      "size": 3999843912,
+      "lfs": {
+        "size": 3999843912,
+        "sha256": "ce1cb0ed0fa6be9368c55f4eac22f27c06c640d14b1d97903485c52700b7ccd7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00040.safetensors",
+      "size": 3999844016,
+      "lfs": {
+        "size": 3999844016,
+        "sha256": "e045632a406ff76b543c2ceb1b4755c4a0d01305f146487ba6a548f60a28d49e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00040.safetensors",
+      "size": 3999855352,
+      "lfs": {
+        "size": 3999855352,
+        "sha256": "4f902d3a827acd2dd38cf30468260f494be1508d6ccfcd2eb6a41021f7416e16",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00040.safetensors",
+      "size": 3999843704,
+      "lfs": {
+        "size": 3999843704,
+        "sha256": "306064928813a0bf8f6fe192de9d67dae870adafa8b112072a7834a1a29a6371",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00040.safetensors",
+      "size": 3999843912,
+      "lfs": {
+        "size": 3999843912,
+        "sha256": "fda4170c97a2412c01e9341a20500972fbc5b603cc52f2cbfe9c8776c24ec53d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00040.safetensors",
+      "size": 3999843912,
+      "lfs": {
+        "size": 3999843912,
+        "sha256": "ca0e08919effe195be303e54fa3502ab4975dbd0687f9a4aeae17b59344415a5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00040.safetensors",
+      "size": 3999517720,
+      "lfs": {
+        "size": 3999517720,
+        "sha256": "a24e90d5e458c6dd47f97ae4da448f541113d4a4114bc75952dec613ac9d8836",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00040.safetensors",
+      "size": 4000181528,
+      "lfs": {
+        "size": 4000181528,
+        "sha256": "c55e63b390214b1681d5c64c8c657dc9bcc153739781dcdb37b03a29adee4ad7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00040.safetensors",
+      "size": 3999843824,
+      "lfs": {
+        "size": 3999843824,
+        "sha256": "c26a4edbe6a47e40c1b71fe23ad6e49b1a556ed1d60c2a96e9240a6ef773e701",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00040.safetensors",
+      "size": 3999517504,
+      "lfs": {
+        "size": 3999517504,
+        "sha256": "d5b79b898c31611413caf773e188d7f978312ae5d1cd100e16233027a2b0d6ec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00040.safetensors",
+      "size": 3999843904,
+      "lfs": {
+        "size": 3999843904,
+        "sha256": "d290b04adc6c108b2312c01a61cf246927eb9c13ba6f0405086d771b2fb84990",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00040.safetensors",
+      "size": 3999844296,
+      "lfs": {
+        "size": 3999844296,
+        "sha256": "03da644a2e3a7abd04bbce353fd124385bc4328364617fecb94a8b3829992f09",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00040.safetensors",
+      "size": 3999854920,
+      "lfs": {
+        "size": 3999854920,
+        "sha256": "837747b4657851a8e8f168393c71dab8058da7161c685bceb46bfbc0cec748f4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00040.safetensors",
+      "size": 3365572528,
+      "lfs": {
+        "size": 3365572528,
+        "sha256": "3e77aae3fa20022fb16d41e13b3bcf31a030b53855ac75d6158727fe22b83aeb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 6759619,
+      "lfs": null
+    },
+    {
+      "rfilename": "qwen3_coder_detector_sgl.py",
+      "size": 19855,
+      "lfs": null
+    },
+    {
+      "rfilename": "qwen3coder_tool_parser_vllm.py",
+      "size": 31680,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7032399,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 11681,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: apache-2.0\nlicense_link: https://huggingface.co/Qwen/Qwen3-Coder-Next-Base/blob/main/LICENSE\npipeline_tag: text-generation\n---\n\n# Qwen3-Coder-Next-Base\n\n## Highlights\n\nToday, we're announcing **Qwen3-Coder-Next-Base**, an open-weight language model designed specifically for coding agents and local development. It features the following key enhancements:  \n\n- **Advanced architecture**: It integrates the Hybrid Attention with highly sparse MoE, enabling high throughput and strong ultra-long-context modeling.\n\n- **Robust data foundation**: Trained on highly diverse, broad-coverage corpora, with native 256K context and support for 370+ languages, it leaves ample headroom for post-training.\n\n- **Agentic coding capability**: With a carefully designed training recipe, it has strong capabilities in tool calling, scaffold/template adaptation, and error detection/recovery, making it a strong backbone for reliable coding agents.\n\n## Model Overview\n\n**Qwen3-Coder-Next-Base** has the following features:\n- Type: Causal Language Models\n- Training Stage: Pretraining\n- Number of Parameters: 80B in total and 3B activated\n- Number of Parameters (Non-Embedding): 79B\n- Hidden Dimension: 2048\n- Number of Layers: 48\n  - Hybrid Layout: 12 \\* (3 \\* (Gated DeltaNet -> MoE) -> 1 \\* (Gated Attention -> MoE))\n- Gated Attention:\n  - Number of Attention Heads: 16 for Q and 2 for KV\n  - Head Dimension: 256\n  - Rotary Position Embedding Dimension: 64\n- Gated DeltaNet:\n  - Number of Linear Attention Heads: 32 for V and 16 for QK\n  - Head Dimension: 128\n- Mixture of Experts:\n  - Number of Experts: 512\n  - Number of Activated Experts: 10\n  - Number of Shared Experts: 1\n  - Expert Intermediate Dimension: 512\n- Context Length: 262,144 natively\n\n**NOTE: This model supports only non-thinking mode and does not generate ``<think></think>`` blocks in its output. Meanwhile, specifying `enable_thinking=False` is no longer required.**\n\nFor more details, including benchmark evaluation, hardware requirements, and inference performance, please refer to our [blog](https://qwen.ai/blog?id=qwen3-coder-next), [GitHub](https://github.com/QwenLM/Qwen3-Coder), and [Documentation](https://qwen.readthedocs.io/en/latest/).\n\n## Best Practices\n\nTo achieve optimal performance, we recommend the following sampling parameters: `temperature=1.0`, `top_p=0.95`, `top_k=40`.\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@techreport{qwen_qwen3_coder_next_tech_report,\n  title        = {Qwen3-Coder-Next Technical Report},\n  author       = {{Qwen Team}},\n  url          = {https://github.com/QwenLM/Qwen3-Coder/blob/main/qwen3_coder_next_tech_report.pdf},\n  note         = {Accessed: 2026-02-03}\n}\n```",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_link": "https://huggingface.co/Qwen/Qwen3-Coder-Next-Base/blob/main/LICENSE",
+    "pipeline_tag": "text-generation",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

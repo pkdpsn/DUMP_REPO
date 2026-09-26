@@ -1,0 +1,168 @@
+{
+  "modelId": "nvidia/audio-flamingo-next-think-hf",
+  "author": "nvidia",
+  "sha": "e3b98384d4daae6f6e31c168393681269dbe8d7d",
+  "lastModified": "2026-05-13 18:38:05+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "musicflamingo",
+    "text2text-generation",
+    "audio",
+    "speech",
+    "sound",
+    "music",
+    "reasoning",
+    "chain-of-thought",
+    "audio understanding",
+    "ASR",
+    "audio captioning",
+    "long-context",
+    "audio-language-model",
+    "long-audio",
+    "timestamp-grounding",
+    "audio-text-to-text",
+    "en",
+    "dataset:nvidia/LongAudio",
+    "dataset:nvidia/AF-Skills",
+    "dataset:nvidia/AF-Chat",
+    "dataset:nvidia/AF-Think",
+    "arxiv:2604.10905",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "audio-text-to-text",
+  "library_name": "transformers",
+  "likes": 9,
+  "downloads": 1063,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "nvidia/LongAudio",
+      "nvidia/AF-Skills",
+      "nvidia/AF-Chat",
+      "nvidia/AF-Think"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "audio-text-to-text",
+    "tags": [
+      "audio",
+      "speech",
+      "sound",
+      "music",
+      "reasoning",
+      "chain-of-thought",
+      "audio understanding",
+      "ASR",
+      "audio captioning",
+      "long-context",
+      "audio-language-model",
+      "long-audio",
+      "timestamp-grounding"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "MusicFlamingoForConditionalGeneration"
+    ],
+    "model_type": "musicflamingo",
+    "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "<|im_end|>",
+      "pad_token": "[PAD]",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% if messages[0]['role'] != 'system' %}<|im_start|>system\nYou are Audio Flamingo-Next, a multimodal assistant for language and audio. On each turn you receive an optional audio clip which may contain speech, music, or ambient sounds and optional text, you will receive at least one or both; use your world knowledge and reasoning to help the user with any task. Interpret the entirety of the content of any input audio\u2014regardless of whether the user calls it audio, speech, music, or sound.<|im_end|>\n{% endif %}{% for m in messages if m['content'] is not none %}<|im_start|>{{ m['role'] }}\n{% if m['content'] is string %}{{ m['content'] }}{% else %}{% set audio = namespace(found=False) %}{% set text_buf = namespace(v='') %}{% for c in m['content'] %}{% if c.get('type') == 'audio' or 'audio' in c %}{% set audio.found = True %}{% elif c.get('type') == 'text' or 'text' in c %}{% set text_buf.v = text_buf.v + c['text'] %}{% endif %}{% endfor %}{% if audio.found %}{{ '<sound>' }}{% endif %}{{ text_buf.v }}{% endif %}<|im_end|>\n{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 12317,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1109,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2391,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 147,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 16534531504,
+      "lfs": {
+        "size": 16534531504,
+        "sha256": "2a488a10d7635182436253a968dddbf5eee6afab3cb0897ebba8aed7f9700bd5",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 544,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/NVIDIA OneWay Noncommercial License_22Mar2022 (academic).docx",
+      "size": 20697,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/NVIDIA-OneWay-Noncommercial-License_22Mar2022-academic.docx",
+      "size": 20697,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/afnext_logo.webp",
+      "size": 56200,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11423197,
+      "lfs": {
+        "size": 11423197,
+        "sha256": "a64cc913679c6eaf01ba137504e15a55d174d590944fe06f7b3899b2ae82de31",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 510,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoProcessor"
+  }
+}

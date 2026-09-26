@@ -1,0 +1,264 @@
+{
+  "modelId": "google/translategemma-27b-it",
+  "author": "google",
+  "sha": "7d10f0b72f89a2d0f268cea30727d8b77c0d25c2",
+  "lastModified": "2026-01-28 17:26:56+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "gemma3",
+    "image-text-to-text",
+    "conversational",
+    "arxiv:2601.09012",
+    "arxiv:2503.19786",
+    "license:gemma",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 400,
+  "downloads": 12344,
+  "private": false,
+  "gated": "manual",
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "gemma",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": null,
+    "extra_gated_heading": "Access Gemma on Hugging Face",
+    "extra_gated_prompt": "To access Gemma on Hugging Face, you\u2019re required to review and agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license"
+  },
+  "config": {
+    "architectures": [
+      "Gemma3ForConditionalGeneration"
+    ],
+    "model_type": "gemma3",
+    "tokenizer_config": {
+      "bos_token": "<bos>",
+      "eos_token": "<eos>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    },
+    "chat_template_jinja": "{%- set languages = {\n    \"aa\": \"Afar\",\n    \"aa-DJ\": \"Afar\",\n    \"aa-ER\": \"Afar\",\n    \"ab\": \"Abkhazian\",\n    \"af\": \"Afrikaans\",\n    \"af-NA\": \"Afrikaans\",\n    \"ak\": \"Akan\",\n    \"am\": \"Amharic\",\n    \"an\": \"Aragonese\",\n    \"ar\": \"Arabic\",\n    \"ar-AE\": \"Arabic\",\n    \"ar-BH\": \"Arabic\",\n    \"ar-DJ\": \"Arabic\",\n    \"ar-DZ\": \"Arabic\",\n    \"ar-EG\": \"Arabic\",\n    \"ar-EH\": \"Arabic\",\n    \"ar-ER\": \"Arabic\",\n    \"ar-IL\": \"Arabic\",\n    \"ar-IQ\": \"Arabic\",\n    \"ar-JO\": \"Arabic\",\n    \"ar-KM\": \"Arabic\",\n    \"ar-KW\": \"Arabic\",\n    \"ar-LB\": \"Arabic\",\n    \"ar-LY\": \"Arabic\",\n    \"ar-MA\": \"Arabic\",\n    \"ar-MR\": \"Arabic\",\n    \"ar-OM\": \"Arabic\",\n    \"ar-PS\": \"Arabic\",\n    \"ar-QA\": \"Arabic\",\n    \"ar-SA\": \"Arabic\",\n    \"ar-SD\": \"Arabic\",\n    \"ar-SO\": \"Arabic\",\n    \"ar-SS\": \"Arabic\",\n    \"ar-SY\": \"Arabic\",\n    \"ar-TD\": \"Arabic\",\n    \"ar-TN\": \"Arabic\",\n    \"ar-YE\": \"Arabic\",\n    \"as\": \"Assamese\",\n    \"az\": \"Azerbaijani\",\n    \"az-Arab\": \"Azerbaijani\",\n    \"az-Arab-IQ\": \"Azerbaijani\",\n    \"az-Arab-TR\": \"Azerbaijani\",\n    \"az-Cyrl\": \"Azerbaijani\",\n    \"az-Latn\": \"Azerbaijani\",\n    \"ba\": \"Bashkir\",\n    \"be\": \"Belarusian\",\n    \"be-tarask\": \"Belarusian\",\n    \"bg\": \"Bulgarian\",\n    \"bg-BG\": \"Bulgarian\",\n    \"bm\": \"Bambara\",\n    \"bm-Nkoo\": \"Bambara\",\n    \"bn\": \"Bengali\",\n    \"bn-IN\": \"Bengali\",\n    \"bo\": \"Tibetan\",\n    \"bo-IN\": \"Tibetan\",\n    \"br\": \"Breton\",\n    \"bs\": \"Bosnian\",\n    \"bs-Cyrl\": \"Bosnian\",\n    \"bs-Latn\": \"Bosnian\",\n    \"ca\": \"Catalan\",\n    \"ca-AD\": \"Catalan\",\n    \"ca-ES\": \"Catalan\",\n    \"ca-FR\": \"Catalan\",\n    \"ca-IT\": \"Catalan\",\n    \"ce\": \"Chechen\",\n    \"co\": \"Corsican\",\n    \"cs\": \"Czech\",\n    \"cs-CZ\": \"Czech\",\n    \"cv\": \"Chuvash\",\n    \"cy\": \"Welsh\",\n    \"da\": \"Danish\",\n    \"da-DK\": \"Danish\",\n    \"da-GL\": \"Danish\",\n    \"de\": \"German\",\n    \"de-AT\": \"German\",\n    \"de-BE\": \"German\",\n    \"de-CH\": \"German\",\n    \"de-DE\": \"German\",\n    \"de-IT\": \"German\",\n    \"de-LI\": \"German\",\n    \"de-LU\": \"German\",\n    \"dv\": \"Divehi\",\n    \"dz\": \"Dzongkha\",\n    \"ee\": \"Ewe\",\n    \"ee-TG\": \"Ewe\",\n    \"el\": \"Greek\",\n    \"el-CY\": \"Greek\",\n    \"el-GR\": \"Greek\",\n    \"el-polyton\": \"Greek\",\n    \"en\": \"English\",\n    \"en-AE\": \"English\",\n    \"en-AG\": \"English\",\n    \"en-AI\": \"English\",\n    \"en-AS\": \"English\",\n    \"en-AT\": \"English\",\n    \"en-AU\": \"English\",\n    \"en-BB\": \"English\",\n    \"en-BE\": \"English\",\n    \"en-BI\": \"English\",\n    \"en-BM\": \"English\",\n    \"en-BS\": \"English\",\n    \"en-BW\": \"English\",\n    \"en-BZ\": \"English\",\n    \"en-CA\": \"English\",\n    \"en-CC\": \"English\",\n    \"en-CH\": \"English\",\n    \"en-CK\": \"English\",\n    \"en-CM\": \"English\",\n    \"en-CX\": \"English\",\n    \"en-CY\": \"English\",\n    \"en-CZ\": \"English\",\n    \"en-DE\": \"English\",\n    \"en-DG\": \"English\",\n    \"en-DK\": \"English\",\n    \"en-DM\": \"English\",\n    \"en-ER\": \"English\",\n    \"en-ES\": \"English\",\n    \"en-FI\": \"English\",\n    \"en-FJ\": \"English\",\n    \"en-FK\": \"English\",\n    \"en-FM\": \"English\",\n    \"en-FR\": \"English\",\n    \"en-GB\": \"English\",\n    \"en-GD\": \"English\",\n    \"en-GG\": \"English\",\n    \"en-GH\": \"English\",\n    \"en-GI\": \"English\",\n    \"en-GM\": \"English\",\n    \"en-GS\": \"English\",\n    \"en-GU\": \"English\",\n    \"en-GY\": \"English\",\n    \"en-HK\": \"English\",\n    \"en-HU\": \"English\",\n    \"en-ID\": \"English\",\n    \"en-IE\": \"English\",\n    \"en-IL\": \"English\",\n    \"en-IM\": \"English\",\n    \"en-IN\": \"English\",\n    \"en-IO\": \"English\",\n    \"en-IT\": \"English\",\n    \"en-JE\": \"English\",\n    \"en-JM\": \"English\",\n    \"en-KE\": \"English\",\n    \"en-KI\": \"English\",\n    \"en-KN\": \"English\",\n    \"en-KY\": \"English\",\n    \"en-LC\": \"English\",\n    \"en-LR\": \"English\",\n    \"en-LS\": \"English\",\n    \"en-MG\": \"English\",\n    \"en-MH\": \"English\",\n    \"en-MO\": \"English\",\n    \"en-MP\": \"English\",\n    \"en-MS\": \"English\",\n    \"en-MT\": \"English\",\n    \"en-MU\": \"English\",\n    \"en-MV\": \"English\",\n    \"en-MW\": \"English\",\n    \"en-MY\": \"English\",\n    \"en-NA\": \"English\",\n    \"en-NF\": \"English\",\n    \"en-NG\": \"English\",\n    \"en-NL\": \"English\",\n    \"en-NO\": \"English\",\n    \"en-NR\": \"English\",\n    \"en-NU\": \"English\",\n    \"en-NZ\": \"English\",\n    \"en-PG\": \"English\",\n    \"en-PH\": \"English\",\n    \"en-PK\": \"English\",\n    \"en-PL\": \"English\",\n    \"en-PN\": \"English\",\n    \"en-PR\": \"English\",\n    \"en-PT\": \"English\",\n    \"en-PW\": \"English\",\n    \"en-RO\": \"English\",\n    \"en-RW\": \"English\",\n    \"en-SB\": \"English\",\n    \"en-SC\": \"English\",\n    \"en-SD\": \"English\",\n    \"en-SE\": \"English\",\n    \"en-SG\": \"English\",\n    \"en-SH\": \"English\",\n    \"en-SI\": \"English\",\n    \"en-SK\": \"English\",\n    \"en-SL\": \"English\",\n    \"en-SS\": \"English\",\n    \"en-SX\": \"English\",\n    \"en-SZ\": \"English\",\n    \"en-TC\": \"English\",\n    \"en-TK\": \"English\",\n    \"en-TO\": \"English\",\n    \"en-TT\": \"English\",\n    \"en-TV\": \"English\",\n    \"en-TZ\": \"English\",\n    \"en-UG\": \"English\",\n    \"en-UM\": \"English\",\n    \"en-VC\": \"English\",\n    \"en-VG\": \"English\",\n    \"en-VI\": \"English\",\n    \"en-VU\": \"English\",\n    \"en-WS\": \"English\",\n    \"en-ZA\": \"English\",\n    \"en-ZM\": \"English\",\n    \"en-ZW\": \"English\",\n    \"eo\": \"Esperanto\",\n    \"es\": \"Spanish\",\n    \"es-AR\": \"Spanish\",\n    \"es-BO\": \"Spanish\",\n    \"es-BR\": \"Spanish\",\n    \"es-BZ\": \"Spanish\",\n    \"es-CL\": \"Spanish\",\n    \"es-CO\": \"Spanish\",\n    \"es-CR\": \"Spanish\",\n    \"es-CU\": \"Spanish\",\n    \"es-DO\": \"Spanish\",\n    \"es-EA\": \"Spanish\",\n    \"es-EC\": \"Spanish\",\n    \"es-ES\": \"Spanish\",\n    \"es-GQ\": \"Spanish\",\n    \"es-GT\": \"Spanish\",\n    \"es-HN\": \"Spanish\",\n    \"es-IC\": \"Spanish\",\n    \"es-MX\": \"Spanish\",\n    \"es-NI\": \"Spanish\",\n    \"es-PA\": \"Spanish\",\n    \"es-PE\": \"Spanish\",\n    \"es-PH\": \"Spanish\",\n    \"es-PR\": \"Spanish\",\n    \"es-PY\": \"Spanish\",\n    \"es-SV\": \"Spanish\",\n    \"es-US\": \"Spanish\",\n    \"es-UY\": \"Spanish\",\n    \"es-VE\": \"Spanish\",\n    \"et\": \"Estonian\",\n    \"et-EE\": \"Estonian\",\n    \"eu\": \"Basque\",\n    \"fa\": \"Persian\",\n    \"fa-AF\": \"Persian\",\n    \"fa-IR\": \"Persian\",\n    \"ff\": \"Fulah\",\n    \"ff-Adlm\": \"Fulah\",\n    \"ff-Adlm-BF\": \"Fulah\",\n    \"ff-Adlm-CM\": \"Fulah\",\n    \"ff-Adlm-GH\": \"Fulah\",\n    \"ff-Adlm-GM\": \"Fulah\",\n    \"ff-Adlm-GW\": \"Fulah\",\n    \"ff-Adlm-LR\": \"Fulah\",\n    \"ff-Adlm-MR\": \"Fulah\",\n    \"ff-Adlm-NE\": \"Fulah\",\n    \"ff-Adlm-NG\": \"Fulah\",\n    \"ff-Adlm-SL\": \"Fulah\",\n    \"ff-Adlm-SN\": \"Fulah\",\n    \"ff-Latn\": \"Fulah\",\n    \"ff-Latn-BF\": \"Fulah\",\n    \"ff-Latn-CM\": \"Fulah\",\n    \"ff-Latn-GH\": \"Fulah\",\n    \"ff-Latn-GM\": \"Fulah\",\n    \"ff-Latn-GN\": \"Fulah\",\n    \"ff-Latn-GW\": \"Fulah\",\n    \"ff-Latn-LR\": \"Fulah\",\n    \"ff-Latn-MR\": \"Fulah\",\n    \"ff-Latn-NE\": \"Fulah\",\n    \"ff-Latn-NG\": \"Fulah\",\n    \"ff-Latn-SL\": \"Fulah\",\n    \"fi\": \"Finnish\",\n    \"fi-FI\": \"Finnish\",\n    \"fil-PH\": \"Filipino\",\n    \"fo\": \"Faroese\",\n    \"fo-DK\": \"Faroese\",\n    \"fr\": \"French\",\n    \"fr-BE\": \"French\",\n    \"fr-BF\": \"French\",\n    \"fr-BI\": \"French\",\n    \"fr-BJ\": \"French\",\n    \"fr-BL\": \"French\",\n    \"fr-CA\": \"French\",\n    \"fr-CD\": \"French\",\n    \"fr-CF\": \"French\",\n    \"fr-CG\": \"French\",\n    \"fr-CH\": \"French\",\n    \"fr-CI\": \"French\",\n    \"fr-CM\": \"French\",\n    \"fr-DJ\": \"French\",\n    \"fr-DZ\": \"French\",\n    \"fr-FR\": \"French\",\n    \"fr-GA\": \"French\",\n    \"fr-GF\": \"French\",\n    \"fr-GN\": \"French\",\n    \"fr-GP\": \"French\",\n    \"fr-GQ\": \"French\",\n    \"fr-HT\": \"French\",\n    \"fr-KM\": \"French\",\n    \"fr-LU\": \"French\",\n    \"fr-MA\": \"French\",\n    \"fr-MC\": \"French\",\n    \"fr-MF\": \"French\",\n    \"fr-MG\": \"French\",\n    \"fr-ML\": \"French\",\n    \"fr-MQ\": \"French\",\n    \"fr-MR\": \"French\",\n    \"fr-MU\": \"French\",\n    \"fr-NC\": \"French\",\n    \"fr-NE\": \"French\",\n    \"fr-PF\": \"French\",\n    \"fr-PM\": \"French\",\n    \"fr-RE\": \"French\",\n    \"fr-RW\": \"French\",\n    \"fr-SC\": \"French\",\n    \"fr-SN\": \"French\",\n    \"fr-SY\": \"French\",\n    \"fr-TD\": \"French\",\n    \"fr-TG\": \"French\",\n    \"fr-TN\": \"French\",\n    \"fr-VU\": \"French\",\n    \"fr-WF\": \"French\",\n    \"fr-YT\": \"French\",\n    \"fy\": \"Western Frisian\",\n    \"ga\": \"Irish\",\n    \"ga-GB\": \"Irish\",\n    \"gd\": \"Scottish Gaelic\",\n    \"gl\": \"Galician\",\n    \"gn\": \"Guarani\",\n    \"gu\": \"Gujarati\",\n    \"gu-IN\": \"Gujarati\",\n    \"gv\": \"Manx\",\n    \"ha\": \"Hausa\",\n    \"ha-Arab\": \"Hausa\",\n    \"ha-Arab-SD\": \"Hausa\",\n    \"ha-GH\": \"Hausa\",\n    \"ha-NE\": \"Hausa\",\n    \"he\": \"Hebrew\",\n    \"he-IL\": \"Hebrew\",\n    \"hi\": \"Hindi\",\n    \"hi-IN\": \"Hindi\",\n    \"hi-Latn\": \"Hindi\",\n    \"hr\": \"Croatian\",\n    \"hr-BA\": \"Croatian\",\n    \"hr-HR\": \"Croatian\",\n    \"ht\": \"Haitian\",\n    \"hu\": \"Hungarian\",\n    \"hu-HU\": \"Hungarian\",\n    \"hy\": \"Armenian\",\n    \"ia\": \"Interlingua\",\n    \"id\": \"Indonesian\",\n    \"id-ID\": \"Indonesian\",\n    \"ie\": \"Interlingue\",\n    \"ig\": \"Igbo\",\n    \"ii\": \"Sichuan Yi\",\n    \"ik\": \"Inupiaq\",\n    \"io\": \"Ido\",\n    \"is\": \"Icelandic\",\n    \"it\": \"Italian\",\n    \"it-CH\": \"Italian\",\n    \"it-IT\": \"Italian\",\n    \"it-SM\": \"Italian\",\n    \"it-VA\": \"Italian\",\n    \"iu\": \"Inuktitut\",\n    \"iu-Latn\": \"Inuktitut\",\n    \"ja\": \"Japanese\",\n    \"ja-JP\": \"Japanese\",\n    \"jv\": \"Javanese\",\n    \"ka\": \"Georgian\",\n    \"ki\": \"Kikuyu\",\n    \"kk\": \"Kazakh\",\n    \"kk-Arab\": \"Kazakh\",\n    \"kk-Cyrl\": \"Kazakh\",\n    \"kk-KZ\": \"Kazakh\",\n    \"kl\": \"Kalaallisut\",\n    \"km\": \"Central Khmer\",\n    \"kn\": \"Kannada\",\n    \"kn-IN\": \"Kannada\",\n    \"ko\": \"Korean\",\n    \"ko-CN\": \"Korean\",\n    \"ko-KP\": \"Korean\",\n    \"ko-KR\": \"Korean\",\n    \"ks\": \"Kashmiri\",\n    \"ks-Arab\": \"Kashmiri\",\n    \"ks-Deva\": \"Kashmiri\",\n    \"ku\": \"Kurdish\",\n    \"kw\": \"Cornish\",\n    \"ky\": \"Kyrgyz\",\n    \"la\": \"Latin\",\n    \"lb\": \"Luxembourgish\",\n    \"lg\": \"Ganda\",\n    \"ln\": \"Lingala\",\n    \"ln-AO\": \"Lingala\",\n    \"ln-CF\": \"Lingala\",\n    \"ln-CG\": \"Lingala\",\n    \"lo\": \"Lao\",\n    \"lt\": \"Lithuanian\",\n    \"lt-LT\": \"Lithuanian\",\n    \"lu\": \"Luba-Katanga\",\n    \"lv\": \"Latvian\",\n    \"lv-LV\": \"Latvian\",\n    \"mg\": \"Malagasy\",\n    \"mi\": \"Maori\",\n    \"mk\": \"Macedonian\",\n    \"ml\": \"Malayalam\",\n    \"ml-IN\": \"Malayalam\",\n    \"mn\": \"Mongolian\",\n    \"mn-Mong\": \"Mongolian\",\n    \"mn-Mong-MN\": \"Mongolian\",\n    \"mr\": \"Marathi\",\n    \"mr-IN\": \"Marathi\",\n    \"ms\": \"Malay\",\n    \"ms-Arab\": \"Malay\",\n    \"ms-Arab-BN\": \"Malay\",\n    \"ms-BN\": \"Malay\",\n    \"ms-ID\": \"Malay\",\n    \"ms-SG\": \"Malay\",\n    \"mt\": \"Maltese\",\n    \"my\": \"Burmese\",\n    \"nb\": \"Norwegian Bokm\u00e5l\",\n    \"nb-SJ\": \"Norwegian Bokm\u00e5l\",\n    \"nd\": \"North Ndebele\",\n    \"ne\": \"Nepali\",\n    \"ne-IN\": \"Nepali\",\n    \"nl\": \"Dutch\",\n    \"nl-AW\": \"Dutch\",\n    \"nl-BE\": \"Dutch\",\n    \"nl-BQ\": \"Dutch\",\n    \"nl-CW\": \"Dutch\",\n    \"nl-NL\": \"Dutch\",\n    \"nl-SR\": \"Dutch\",\n    \"nl-SX\": \"Dutch\",\n    \"nn\": \"Norwegian Nynorsk\",\n    \"no\": \"Norwegian\",\n    \"no-NO\": \"Norwegian\",\n    \"nr\": \"South Ndebele\",\n    \"nv\": \"Navajo\",\n    \"ny\": \"Chichewa\",\n    \"oc\": \"Occitan\",\n    \"oc-ES\": \"Occitan\",\n    \"om\": \"Oromo\",\n    \"om-KE\": \"Oromo\",\n    \"or\": \"Oriya\",\n    \"os\": \"Ossetian\",\n    \"os-RU\": \"Ossetian\",\n    \"pa\": \"Punjabi\",\n    \"pa-IN\": \"Punjabi\",\n    \"pa-Arab\": \"Punjabi\",\n    \"pa-Guru\": \"Punjabi\",\n    \"pl\": \"Polish\",\n    \"pl-PL\": \"Polish\",\n    \"ps\": \"Pashto\",\n    \"ps-PK\": \"Pashto\",\n    \"pt\": \"Portuguese\",\n    \"pt-AO\": \"Portuguese\",\n    \"pt-BR\": \"Portuguese\",\n    \"pt-CH\": \"Portuguese\",\n    \"pt-CV\": \"Portuguese\",\n    \"pt-GQ\": \"Portuguese\",\n    \"pt-GW\": \"Portuguese\",\n    \"pt-LU\": \"Portuguese\",\n    \"pt-MO\": \"Portuguese\",\n    \"pt-MZ\": \"Portuguese\",\n    \"pt-PT\": \"Portuguese\",\n    \"pt-ST\": \"Portuguese\",\n    \"pt-TL\": \"Portuguese\",\n    \"qu\": \"Quechua\",\n    \"qu-BO\": \"Quechua\",\n    \"qu-EC\": \"Quechua\",\n    \"rm\": \"Romansh\",\n    \"rn\": \"Rundi\",\n    \"ro\": \"Romanian\",\n    \"ro-MD\": \"Romanian\",\n    \"ro-RO\": \"Romanian\",\n    \"ru\": \"Russian\",\n    \"ru-BY\": \"Russian\",\n    \"ru-KG\": \"Russian\",\n    \"ru-KZ\": \"Russian\",\n    \"ru-MD\": \"Russian\",\n    \"ru-RU\": \"Russian\",\n    \"ru-UA\": \"Russian\",\n    \"rw\": \"Kinyarwanda\",\n    \"sa\": \"Sanskrit\",\n    \"sc\": \"Sardinian\",\n    \"sd\": \"Sindhi\",\n    \"sd-Arab\": \"Sindhi\",\n    \"sd-Deva\": \"Sindhi\",\n    \"se\": \"Northern Sami\",\n    \"se-FI\": \"Northern Sami\",\n    \"se-SE\": \"Northern Sami\",\n    \"sg\": \"Sango\",\n    \"si\": \"Sinhala\",\n    \"sk\": \"Slovak\",\n    \"sk-SK\": \"Slovak\",\n    \"sl\": \"Slovenian\",\n    \"sl-SI\": \"Slovenian\",\n    \"sn\": \"Shona\",\n    \"so\": \"Somali\",\n    \"so-DJ\": \"Somali\",\n    \"so-ET\": \"Somali\",\n    \"so-KE\": \"Somali\",\n    \"sq\": \"Albanian\",\n    \"sq-MK\": \"Albanian\",\n    \"sq-XK\": \"Albanian\",\n    \"sr\": \"Serbian\",\n    \"sr-RS\": \"Serbian\",\n    \"sr-Cyrl\": \"Serbian\",\n    \"sr-Cyrl-BA\": \"Serbian\",\n    \"sr-Cyrl-ME\": \"Serbian\",\n    \"sr-Cyrl-XK\": \"Serbian\",\n    \"sr-Latn\": \"Serbian\",\n    \"sr-Latn-BA\": \"Serbian\",\n    \"sr-Latn-ME\": \"Serbian\",\n    \"sr-Latn-XK\": \"Serbian\",\n    \"ss\": \"Swati\",\n    \"ss-SZ\": \"Swati\",\n    \"st\": \"Southern Sotho\",\n    \"st-LS\": \"Southern Sotho\",\n    \"su\": \"Sundanese\",\n    \"su-Latn\": \"Sundanese\",\n    \"sv\": \"Swedish\",\n    \"sv-AX\": \"Swedish\",\n    \"sv-FI\": \"Swedish\",\n    \"sv-SE\": \"Swedish\",\n    \"sw\": \"Swahili\",\n    \"sw-CD\": \"Swahili\",\n    \"sw-KE\": \"Swahili\",\n    \"sw-TZ\": \"Swahili\",\n    \"sw-UG\": \"Swahili\",\n    \"ta\": \"Tamil\",\n    \"ta-IN\": \"Tamil\",\n    \"ta-LK\": \"Tamil\",\n    \"ta-MY\": \"Tamil\",\n    \"ta-SG\": \"Tamil\",\n    \"te\": \"Telugu\",\n    \"te-IN\": \"Telugu\",\n    \"tg\": \"Tajik\",\n    \"th\": \"Thai\",\n    \"th-TH\": \"Thai\",\n    \"ti\": \"Tigrinya\",\n    \"ti-ER\": \"Tigrinya\",\n    \"tk\": \"Turkmen\",\n    \"tl\": \"Tagalog\",\n    \"tn\": \"Tswana\",\n    \"tn-BW\": \"Tswana\",\n    \"to\": \"Tonga\",\n    \"tr\": \"Turkish\",\n    \"tr-CY\": \"Turkish\",\n    \"tr-TR\": \"Turkish\",\n    \"ts\": \"Tsonga\",\n    \"tt\": \"Tatar\",\n    \"ug\": \"Uyghur\",\n    \"uk\": \"Ukrainian\",\n    \"uk-UA\": \"Ukrainian\",\n    \"ur\": \"Urdu\",\n    \"ur-IN\": \"Urdu\",\n    \"ur-PK\": \"Urdu\",\n    \"uz\": \"Uzbek\",\n    \"uz-Arab\": \"Uzbek\",\n    \"uz-Cyrl\": \"Uzbek\",\n    \"uz-Latn\": \"Uzbek\",\n    \"ve\": \"Venda\",\n    \"vi\": \"Vietnamese\",\n    \"vi-VN\": \"Vietnamese\",\n    \"vo\": \"Volap\u00fck\",\n    \"wa\": \"Walloon\",\n    \"wo\": \"Wolof\",\n    \"xh\": \"Xhosa\",\n    \"yi\": \"Yiddish\",\n    \"yo\": \"Yoruba\",\n    \"yo-BJ\": \"Yoruba\",\n    \"za\": \"Zhuang\",\n    \"zh\": \"Chinese\",\n    \"zh-CH\": \"Chinese\",\n    \"zh-TW\": \"Chinese\",\n    \"zh-Hans\": \"Chinese\",\n    \"zh-Hans-HK\": \"Chinese\",\n    \"zh-Hans-MO\": \"Chinese\",\n    \"zh-Hans-MY\": \"Chinese\",\n    \"zh-Hans-SG\": \"Chinese\",\n    \"zh-Hant\": \"Chinese\",\n    \"zh-Hant-HK\": \"Chinese\",\n    \"zh-Hant-MO\": \"Chinese\",\n    \"zh-Hant-MY\": \"Chinese\",\n    \"zh-Latn\": \"Chinese\",\n    \"zu\": \"Zulu\",\n    \"zu-ZA\": \"Zulu\",\n}\n-%}\n{{ bos_token }}\n{%- if (messages[0]['role'] != 'user') -%}\n    {{ raise_exception(\"Conversations must start with a user prompt.\") }}\n{%- endif -%}\n{%- for message in messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- if message['content'] is none or message['content'] is not string -%}\n            {{ raise_exception(\"Assistant role must provide content as a string\") }}\n        {%- endif -%}\n        {{ '<start_of_turn>model\\n'}}\n        {{ message[\"content\"] | trim }}\n    {%- elif (message['role'] == 'user') -%}\n        {%- if message['content'] is none or message['content'] is not iterable or message['content'] | length != 1 -%}\n            {{ raise_exception(\n                \"User role must provide `content` as an iterable with exactly one item. That item must be a \" +\n                \"`mapping(type:'text' | 'image', source_lang_code:string, target_lang_code:string, \" +\n                \"text:string | none, image:string | none)`.\"\n            ) }}\n        {%- endif -%}\n        {%- set content = message[\"content\"][0] -%}\n        {%- set source_lang_code = content[\"source_lang_code\"] | replace(\"_\", \"-\")  -%}\n        {%- set source_lang = languages[source_lang_code] -%}\n        {%- set target_lang_code = content[\"target_lang_code\"] | replace(\"_\", \"-\") -%}\n        {%- set target_lang = languages[target_lang_code] -%}\n        {{ '<start_of_turn>user\\nYou are a professional ' + source_lang + ' (' + source_lang_code + ') to ' +\n           target_lang + ' (' + target_lang_code + ') translator. Your goal is to accurately convey the meaning and '\n           'nuances of the original ' + source_lang + ' text while adhering to ' + target_lang + ' grammar, '\n           'vocabulary, and cultural sensitivities.\\n'\n        }}\n        {%- if content[\"type\"] == 'text' -%}\n            {{\n                'Produce only the ' + target_lang + ' translation, without any additional explanations or ' +\n                'commentary. Please translate the following ' + source_lang + ' text into ' + target_lang + ':\\n\\n\\n' +\n                content[\"text\"] | trim\n            }}\n        {%- elif content[\"type\"] == 'image' -%}\n            {{\n                'Please translate the ' + source_lang + ' text in the provided image into ' + target_lang + '. ' +\n                'Produce only the ' + target_lang + ' translation, without any additional explanations, ' +\n                'alternatives or commentary. Focus only on the text, do not output where the text is located, ' +\n                'surrounding objects or any other explanation about the picture. Ignore symbols, pictogram, and ' +\n                'arrows!\\n\\n\\n<start_of_image>'\n            }}\n        {%- else -%}\n            {{ raise_exception(\"User role `content` can contain either `text` or `image` data.\") }}\n        {%- endif -%}\n    {%- else -%}\n        {{ raise_exception(\"Conversations must only contain user or assistant roles.\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\\n'}}\n{%- endif -%}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 17510,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 35,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 16982,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3361,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 156,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00012.safetensors",
+      "size": 4854573696,
+      "lfs": {
+        "size": 4854573696,
+        "sha256": "fd8507bc2a908f4bdb067d9089ce8453324e4c3f6b232367298db1148a093a42",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00012.safetensors",
+      "size": 4954792944,
+      "lfs": {
+        "size": 4954792944,
+        "sha256": "37eea7042757ddaec950aabf42b11cdb9e2bbc9d1f8c0d47605a5951692a637a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00012.safetensors",
+      "size": 4954792976,
+      "lfs": {
+        "size": 4954792976,
+        "sha256": "cbddf3dcf266808bb766c6bc9080b79f1a3b2fdc7ae0acdb9f429ac94cc3c156",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "e17c1f5b9c427b4fe62b0c1930434d5b3ec4a4ffe5a3bec17cf12903e1d28a8e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "e2d1a2f4123b357f0e8e8bae1ac3aa0f3234deceac682a90a30f8c44a0b9b732",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "6fb713bb725210d68b96612a39d768bf00ac5c7c0909c263664b727e7d72b4d3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "dc08e623fd7bf9f6ed3ab5e9816fccde0fd0deaed3055dd07b45f7739fde9961",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "ac2a1677e0a728713d87e270593a3427ab0ee944b177d35120d929b11a777be8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "bbd452a1be7435dbc3495ee4c10b93ffc7fdc6389d105ce74db7f6410de77892",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "8bfe2a32c09a5696e32a3d418b1fd27e4d68656555da94f2e217432681037813",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00012.safetensors",
+      "size": 4954793016,
+      "lfs": {
+        "size": 4954793016,
+        "sha256": "f706ea1595eb1058f83c207ad395568bb2513332fff6ee6f791f125f4c99fb99",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00012.safetensors",
+      "size": 462476696,
+      "lfs": {
+        "size": 462476696,
+        "sha256": "f5f3fb21b08157e13e977e1c6b7575cd22104336b89e49b7767264dddc960e91",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 126688,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 570,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 70,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 662,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 33384570,
+      "lfs": {
+        "size": 33384570,
+        "sha256": "7d4046bf0505a327dd5a0abbb427ecd4fc82f99c2ceaa170bc61ecde12809b0c",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4689074,
+      "lfs": {
+        "size": 4689074,
+        "sha256": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1155415,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: gemma\nlibrary_name: transformers\npipeline_tag: image-text-to-text\nextra_gated_heading: Access Gemma on Hugging Face\nextra_gated_prompt: To access Gemma on Hugging Face, you\u2019re required to review and\n  agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging\n  Face and click below. Requests are processed immediately.\nextra_gated_button_content: Acknowledge license\n---\n\n# TranslateGemma model card\n\n**Resources and Technical Documentation**:\n\n+   [Technical Report](https://arxiv.org/pdf/2601.09012) \n+   [Responsible Generative AI Toolkit](https://ai.google.dev/responsible)\n+   [TranslateGemma on Kaggle](https://www.kaggle.com/models/google/translategemma/)\n+   [TranslateGemma on Vertex Model Garden](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/translategemma)\n\n**Terms of Use**: [Terms](https://ai.google.dev/gemma/terms)  \n**Authors**: Google Translate\n\n## Model Information\n\nSummary description and brief definition of inputs and outputs.\n\n### Description\n\nTranslateGemma is a family of lightweight, state-of-the-art open translation models from Google, based on the Gemma 3 family of models.   \nTranslateGemma models are designed to handle translation tasks across 55 languages. Their relatively small size makes it possible to deploy them in environments with limited resources such as laptops, desktops or your own cloud infrastructure, democratizing access to state of the art translation models and helping foster innovation for everyone.\n\n### Inputs and outputs\n\n+   **Input:** \n\n    +   Text string, representing the text to be translated\n    +   Images, normalized to 896 x 896 resolution and encoded to 256 tokens each\n    +   Total input context of 2K tokens\n\n+   **Output:** \n\n    +   Text translated into the target language\n\n### Usage\n\nTranslateGemma is designed to work with a specific chat template that supports direct translation of a text input, or text-extraction-and-translation from an image input. This chat template has been implemented with Hugging Face transformers' [chat templating](https://huggingface.co/docs/transformers/en/chat_templating) system and is compatible with the [apply_chat_template() function](https://huggingface.co/docs/transformers/en/chat_templating#using-applychattemplate) provided by the [Gemma tokenizer](https://huggingface.co/docs/transformers/en/model_doc/gemma#transformers.GemmaTokenizer) and [Gemma 3 processor](https://huggingface.co/docs/transformers/en/model_doc/gemma3#transformers.Gemma3Processor). Notable differences from other models' chat templates include:\n\n+   TranslateGemma supports only User and Assistant roles. \n+   TranslateGemma's User role is highly opinionated:\n\n    +   The content property must be provided as a list with exactly one entry.\n    +   The content list entry must provide:\n\n        +   A \"type\" property where the value must be either \"text\" or \"image\". \n        +   A \"source_lang_code\" property as a string\n        +   A \"target_lang_code\" property as a string\n\n    +   The content list entry should provide one of these:\n\n        +   A \"url\" property, if the entry's type is \"image\", from which the image will be loaded\n        +   A \"text\" property, if the entry's type is \"text\", containing only the text to translate\n\n    +   The \"source_lang_code\" and \"target_lang_code\" property values can take one of one of two forms: \n\n        +   An [ISO 639-1 Alpha-2 language code](https://en.wikipedia.org/wiki/ISO_639-1), e.g., `en`; or \n        +   A \"regionalized\" variant as an ISO 639-1 Alpha-2 language code and an [ISO 3166-1 Alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) pair separated by a dash or an underscore, e.g., en_US` or `en-GB, similar to the [Unicode Common Locale Data Repository format](https://cldr.unicode.org/). \n\n    +   If the \"source_lang_code\" and \"target_lang_code\" property value is not supported by the model, an error will be raised when the template is applied. \n\nAdditionally, TranslateGemma may respond well to other prompting techniques to support use cases that go beyond the provided chat template, such as Automatic Translation Post-Editing. As these are not officially supported, they should be crafted manually using the special control tokens and structures specified in the [Gemma 3 Technical Report](https://arxiv.org/abs/2503.19786), and sent directly to the tokenizer or processor instead of using the apply_chat_template() function. The TranslateGemma team is interested in hearing about your experiences with alternate prompts, please reach out with any questions and feedback.\n\n#### With Pipelines\n\n```python\nfrom transformers import pipeline\nimport torch\n\npipe = pipeline(\n    \"image-text-to-text\",\n    model=\"google/translategemma-27b-it\",\n    device=\"cuda\",\n    dtype=torch.bfloat16\n)\n\n# ---- Text Translation ----\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"source_lang_code\": \"cs\",\n                \"target_lang_code\": \"de-DE\",\n                \"text\": \"V nejhor\u0161\u00edm p\u0159\u00edpad\u011b i k prasknut\u00ed \u010do\u010dky.\",\n            }\n        ],\n    }\n]\n\noutput = pipe(text=messages, max_new_tokens=200)\nprint(output[0][\"generated_text\"][-1][\"content\"])\n\n# ---- Text Extraction and Translation ----\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"source_lang_code\": \"cs\",\n                \"target_lang_code\": \"de-DE\",\n                \"url\": \"https://c7.alamy.com/comp/2YAX36N/traffic-signs-in-czech-republic-pedestrian-zone-2YAX36N.jpg\",\n            },\n        ],\n    }\n]\n\noutput = pipe(text=messages, max_new_tokens=200)\nprint(output[0][\"generated_text\"][-1][\"content\"])\n\n```\n\n#### With direct initialization\n\n```python\nimport torch\nfrom transformers import AutoModelForImageTextToText, AutoProcessor\n\nmodel_id = \"google/translategemma-27b-it\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = AutoModelForImageTextToText.from_pretrained(model_id, device_map=\"auto\")\n\n\n# ---- Text Translation ----\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"source_lang_code\": \"cs\",\n                \"target_lang_code\": \"de-DE\",\n                \"text\": \"V nejhor\u0161\u00edm p\u0159\u00edpad\u011b i k prasknut\u00ed \u010do\u010dky.\",\n            }\n        ],\n    }\n]\n\ninputs = processor.apply_chat_template(\n    messages, tokenize=True, add_generation_prompt=True, return_dict=True, return_tensors=\"pt\"\n).to(model.device, dtype=torch.bfloat16)\ninput_len = len(inputs['input_ids'][0])\n\nwith torch.inference_mode():\n    generation = model.generate(**inputs, do_sample=False)\n\ngeneration = generation[0][input_len:]\ndecoded = processor.decode(generation, skip_special_tokens=True)\nprint(decoded)\n\n# ---- Text Extraction and Translation ----\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"source_lang_code\": \"cs\",\n                \"target_lang_code\": \"de-DE\",\n                \"url\": \"https://c7.alamy.com/comp/2YAX36N/traffic-signs-in-czech-republic-pedestrian-zone-2YAX36N.jpg\",\n            },\n        ],\n    }\n]\n\ninputs = processor.apply_chat_template(\n    messages, tokenize=True, add_generation_prompt=True, return_dict=True, return_tensors=\"pt\"\n).to(model.device, dtype=torch.bfloat16)\n\nwith torch.inference_mode():\n    generation = model.generate(**inputs, do_sample=False)\n\ngeneration = generation[0][input_len:]\ndecoded = processor.decode(generation, skip_special_tokens=True)\nprint(decoded)\n\n```\n\n### Citation\n\n```\n@article{gemmatranslate2026,\n    title={{TranslateGemma Technical Report}},\n    url={https://arxiv.org/pdf/2601.09012},\n    publisher={Google DeepMind},\n    author={{Google Translate Research Team} and\n\tFinkelstein, Mara and\n\tCaswell, Isaac and\n\tDomhan, Tobias and\n\tPeter, Jan-Thorsten and\n\tJuraska, Juraj and\n\tRiley, Parker and\n\tDeutsch, Daniel and\n\tDilanni, Cole and\n\tCherry, Colin and\n\tBriakou, Eleftheria and\n\tNielsen, Elizabeth and\n\tLuo, Jiaming and\n\tAgrawal, Sweta and\n\tXu, Wenda and\n\tKats, Erin and\n\tJaskiewicz, Stephane and\n\tFreitag, Markus and\n\tVilar, David\n},\n    year={2026}\n}\n```\n\n\n## Model Data\n\nData used for model training and how the data was processed.\n\n### Training Dataset\n\nThe models were fine-tuned from the original Gemma 3 checkpoints using parallel data from a wide variety of sources. The TranslateGemma models used 4.3 billion tokens during SFT and 10.2 million tokens during the reinforcement learning phase. The key components were:\n\n+   Monolingual web documents paired with high-quality translations into a variety of languages, generated by Gemini.\n+   Publicly available parallel documents.\n\n## Implementation Information\n\nDetails about the model internals.\n\n### Hardware\n\nTranslateGemma was trained using [Tensor Processing Unit (TPU)](https://cloud.google.com/tpu/docs/intro-to-tpu) hardware (TPUv4p, TPUv5p and TPUv5e). TPUs, designed specifically for matrix operations common in machine learning, offer several advantages in this domain:\n\n+   Performance: TPUs are specifically designed to handle the massive computations involved in training VLMs. They can speed up training considerably compared to CPUs.\n+   Memory: TPUs often come with large amounts of high-bandwidth memory, allowing for the handling of large models and batch sizes during training. This can lead to better model quality.\n+   Scalability: TPU Pods (large clusters of TPUs) provide a scalable solution for handling the growing complexity of large foundation models. You can distribute training across multiple TPU devices for faster and more efficient processing.\n+   Cost-effectiveness: In many scenarios, TPUs can provide a more cost-effective solution for training large models compared to CPU-based infrastructure, especially when considering the time and resources saved due to faster training.\n+   These advantages are aligned with [Google's commitments to operate sustainably](https://sustainability.google/operating-sustainably/).\n\n### Software\n\nTraining was done using [JAX](https://github.com/jax-ml/jax) and [ML Pathways](https://blog.google/technology/ai/introducing-pathways-next-generation-ai-architecture/). JAX allows researchers to take advantage of the latest generation of hardware, including TPUs, for faster and more efficient training of large models. ML Pathways is Google's latest effort to build artificially intelligent systems capable of generalizing across multiple tasks. This is specially suitable for foundation models, including large language models like these ones.  \nTogether, JAX and ML Pathways are used as described in the [paper about the Gemini family of models](https://goo.gle/gemma2report); _\"the 'single controller' programming model of Jax and Pathways allows a single Python process to orchestrate the entire training run, dramatically simplifying the development workflow.\"_\n\n## Evaluation\n\nModel evaluation metrics and results.\n\n### Benchmark Results\n\nThese models were evaluated against a large collection of different datasets and metrics to cover different aspects of text generation.\n\n|                                                | **4B** | **12B** | **27B** |\n| ---------------------------------------------- | ------ | ------- | ------- |\n| **WMT24++ (55 langs)**                         |        |         |         |\n|     MetricX \u2193                                  | 5.32   | 3.60    | 3.09    |\n|     Comet \u2191                                    | 81.6   | 83.5    | 84.4    |\n| **WMT25 (10 langs)**                           |        |         |         |\n| **    **MQM \u2193                                  | N/A    | 7.94    | 5.86    |\n| **Vistra* (4 langs)**                          |        |         |         |\n| **    **MetricX \u2193                              | 2.57   | 2.08    | 1.57    |\n\n* The Vistra corpus was filtered for images that contain a single text.\n\n## Ethics and Safety\n\nEthics and safety evaluation approach and results.\n\n### Evaluation Approach\n\nOur evaluation methods include structured evaluations and internal red-teaming testing of relevant content policies. Red-teaming was conducted by a number of different teams, each with different goals and human evaluation metrics. These models were evaluated against a number of different categories relevant to ethics and safety, including:\n\n+   **Child Safety**: Evaluation of text-to-text and image to text prompts covering child safety policies, including child sexual abuse and exploitation.\n+   **Content Safety:** Evaluation of text-to-text and image to text prompts covering safety policies including, harassment, violence and gore, and hate speech.\n+   **Representational Harms**: Evaluation of text-to-text and image to text prompts covering safety policies including bias, stereotyping, and harmful associations or inaccuracies.\n\n### Evaluation Results\n\nFor all areas of safety testing, we saw major improvements in the categories of child safety, content safety, and representational harms relative to previous Gemma models. All testing was conducted without safety filters to evaluate the model capabilities and behaviors. For both text-to-text and image-to-text, and across all model sizes, the model produced minimal policy violations, and showed significant  improvements over previous Gemma models' performance with respect to ungrounded inferences.\n\n## Usage and Limitations\n\nThese models have certain limitations that users should be aware of.\n\n### Intended Usage\n\nThe models have been trained with the explicit goal of producing text translation from textual or image output. No claims about other capabilities are made about these models.\n\n### Limitations\n\n+   Training Data\n\n    +   The quality and diversity of the training data significantly influence the model's capabilities. Biases or gaps in the training data can lead to limitations in the model's responses.\n    +   The scope of the training dataset determines the subject areas the model can handle effectively.\n\n+   Context and Task Complexity\n\n    +   Models are better at tasks that can be framed with clear prompts and instructions. Open-ended or highly complex tasks might be challenging.\n    +   A model's performance can be influenced by the amount of context provided (longer context generally leads to better outputs, up to a certain point).\n\n+   Language Ambiguity and Nuance\n\n    +   Natural language is inherently complex. Models might struggle to grasp subtle nuances, sarcasm, or figurative language.\n\n+   Factual Accuracy\n\n    +   Models generate responses based on information they learned from their training datasets, but they are not knowledge bases. They may generate incorrect or outdated factual statements.\n\n+   Common Sense\n\n    +   Models rely on statistical patterns in language. They might lack the ability to apply common sense reasoning in certain situations.\n\n### Ethical Considerations and Risks\n\nThe development of vision-language models (VLMs) raises several ethical concerns. In creating an open model, we have carefully considered the following:\n\n+   Bias and Fairness\n\n    +   VLMs trained on large-scale, real-world text and image data can reflect socio-cultural biases embedded in the training material. These models underwent careful scrutiny, input data pre-processing described and posterior evaluations reported in this card.\n\n+   Misinformation and Misuse\n\n    +   VLMs can be misused to generate text that is false, misleading, or harmful.\n    +   Guidelines are provided for responsible use with the model, see the [Responsible Generative AI Toolkit](https://ai.google.dev/responsible).\n\n+   Transparency and Accountability:\n\n    +   This model card summarizes details on the models' architecture, capabilities, limitations, and evaluation processes.\n    +   A responsibly developed open model offers the opportunity to share innovation by making VLM technology accessible to developers and researchers across the AI ecosystem.\n\nRisks identified and mitigations:\n\n+   **Perpetuation of biases**: It's encouraged to perform continuous monitoring (using evaluation metrics, human review) and the exploration of de-biasing techniques during model training, fine-tuning, and other use cases.\n+   **Generation of harmful content**: Mechanisms and guidelines for content safety are essential. Developers are encouraged to exercise caution and implement appropriate content safety safeguards based on their specific product policies and application use cases.\n+   **Misuse for malicious purposes**: Technical limitations and developer and end-user education can help mitigate against malicious applications of VLMs. Educational resources and reporting mechanisms for users to flag misuse are provided. Prohibited uses of Gemma models are outlined in the [Gemma Prohibited Use Policy](https://ai.google.dev/gemma/prohibited_use_policy).\n+   **Privacy violations**: Models were trained on data filtered for removal of certain personal information and other sensitive data. Developers are encouraged to adhere to privacy regulations with privacy-preserving techniques.\n\n### Benefits\n\nAt the time of release, this family of models provides high-performance translation model implementations fine-tuned from Gemma 3 models.  \nUsing the benchmark evaluation metrics described in this document, these models have shown to provide superior performance to other, comparably-sized open model alternatives.\n",
+  "cardDataParsed": {
+    "license": "gemma",
+    "library_name": "transformers",
+    "pipeline_tag": "image-text-to-text",
+    "extra_gated_heading": "Access Gemma on Hugging Face",
+    "extra_gated_prompt": "To access Gemma on Hugging Face, you\u2019re required to review and agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

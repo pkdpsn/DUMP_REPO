@@ -1,0 +1,208 @@
+{
+  "modelId": "nvidia/Nemotron-Orchestrator-8B",
+  "author": "nvidia",
+  "sha": "26df4b9aad5abdc5b7871ee4c71063ce888feb26",
+  "lastModified": "2025-12-02 06:56:58+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3",
+    "text-generation",
+    "conversational",
+    "arxiv:2511.21689",
+    "base_model:Qwen/Qwen3-8B",
+    "base_model:finetune:Qwen/Qwen3-8B",
+    "eval-results",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 598,
+  "downloads": 2880,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-8B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen3ForCausalLM"
+    ],
+    "model_type": "qwen3",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 4086,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4744,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 729,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00007.safetensors",
+      "size": 4972454376,
+      "lfs": {
+        "size": 4972454376,
+        "sha256": "c980bfee5b622951e9a535e410262faeb450cfb99baa7afda6267398f57edcae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00007.safetensors",
+      "size": 4832048608,
+      "lfs": {
+        "size": 4832048608,
+        "sha256": "bd7709916660eb9f50c390ac53debd6051d0f2bd73421b1ff94daea0afe430d5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00007.safetensors",
+      "size": 4832048656,
+      "lfs": {
+        "size": 4832048656,
+        "sha256": "a5157adc87c0f6af371f1175c5882083b40dc5fe38de596fa6b80ff72a372353",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00007.safetensors",
+      "size": 4999855528,
+      "lfs": {
+        "size": 4999855528,
+        "sha256": "332dbb18fed6c31c03102dddddfd31d123b4783041ed8c0fa3d8fdcd92544b8a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00007.safetensors",
+      "size": 4832048672,
+      "lfs": {
+        "size": 4832048672,
+        "sha256": "b1783c27dd23dddf54905daf93c24f24822565a7a5744739c2896138f64a7ece",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00007.safetensors",
+      "size": 4832048672,
+      "lfs": {
+        "size": 4832048672,
+        "sha256": "d25125bf77a0611d47eeb662bb269e22462b4e863ca07572790e0d5f393c6216",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00007.safetensors",
+      "size": 3462482728,
+      "lfs": {
+        "size": 3462482728,
+        "sha256": "68a156a5be28fa328d7375ee96670e365b29d192a7511a7ad522a8ac2a3bb02a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 32878,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9762,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nbase_model:\n- Qwen/Qwen3-8B\n---\n# ToolOrchestra: Elevating Intelligence via Efficient Model and Tool Orchestration\n\n[![Paper](https://img.shields.io/badge/ArXiv-Paper-brown)](https://arxiv.org/abs/2511.21689)\n[![Code](https://img.shields.io/badge/GitHub-Link-orange)](https://github.com/NVlabs/ToolOrchestra/)\n[![Model](https://img.shields.io/badge/HuggingFace-Model-green)](https://huggingface.co/nvidia/Orchestrator-8B)\n[![Data](https://img.shields.io/badge/HuggingFace-Data-blue)](https://huggingface.co/datasets/nvidia/ToolScale)\n[![Website](https://img.shields.io/badge/Web-Page-purple)](https://research.nvidia.com/labs/lpr/ToolOrchestra/)\n\n\n### Description\n\nOrchestrator-8B is a state-of-the-art 8B parameter orchestration model designed to solve complex, multi-turn agentic tasks by coordinating a diverse set of expert models and tools.\n<p align=\"center\">\n    <img src=\"https://raw.githubusercontent.com/NVlabs/ToolOrchestra/main/assets/method.png\" width=\"100%\"/>\n<p>\n\n\nOn the Humanity's Last Exam (HLE) benchmark, ToolOrchestrator-8B achieves a score of 37.1%, outperforming GPT-5 (35.1%) while being approximately 2.5x more efficient.\n\n<p align=\"center\">\n    <img src=\"https://raw.githubusercontent.com/NVlabs/ToolOrchestra/main/assets/HLE_benchmark.png\" width=\"80%\"/>\n<p>\n\nThis model is for research and development only.\n\n\n### Key Features\n\n- Intelligent Orchestration: Capable of managing heterogeneous toolsets including basic tools (search, code execution) and other LLMs (specialized and generalist).\n- Multi-Objective RL Training: Trained via Group Relative Policy Optimization (GRPO) with a novel reward function that optimizes for accuracy, latency/cost, and adherence to user preferences.\n- Efficiency: Delivers higher accuracy at significantly lower computational cost compared to monolithic frontier models.\n- Robust Generalization: Demonstrated ability to generalize to unseen tools and pricing configurations.\n\n### Benchmark\nOn Humanity\u2019s Last Exam, Orchestrator-8B achieves 37.1%, surpassing GPT-5 (35.1%) with only 30% monetary cost and 2.5x faster. On FRAMES and \u03c4\u00b2-Bench, Orchestrator-8B consistently outperforms strong monolithic systems, demonstrating versatile reasoning and robust tool orchestration.\n\n<p align=\"center\">\n    <img src=\"https://raw.githubusercontent.com/NVlabs/ToolOrchestra/main/assets/results.png\" width=\"100%\"/>\n<p>\n\nOrchestrator-8B consistently outperforms GPT-5, Claude Opus 4.1 and Qwen3-235B-A22B on HLE with substantially lower cost.\n<p align=\"center\">\n    <img src=\"https://raw.githubusercontent.com/NVlabs/ToolOrchestra/main/assets/cost_performance.png\" width=\"60%\"/>\n<p>\n\n\n### Model Details\n\n- Developed by: NVIDIA & University of Hong Kong \n- Model Type: Decoder-only Transformer\n- Base Model: [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) \n- Parameters: 8B\n- Language(s): English\n- License: NVIDIA License\n\n### Model Version(s):\n1.0 <br>\n\n### Training Dataset:\n**Link:** \n| Dataset                      | Link                                                                                         | \n|---------------------------|-------------------------------------------------------------------------------------------|\n| GeneralThought-430K  | [Link](https://huggingface.co/datasets/natolambert/GeneralThought-430K-filtered)                   |\n| ToolScale           | [Link](https://huggingface.co/datasets/nvidia/ToolScale)                            |\n\n\n\n### Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br> \n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://app.intigriti.com/programs/nvidia/nvidiavdp/detail).\n\n\n### License/Terms of Use\n[NVIDIA License](LICENSE)\n\n\n### Citation\nIf you find this model useful, please cite our [paper](https://arxiv.org/abs/2511.21689):\n```\n@misc{toolorchestra,\n      title={ToolOrchestra: Elevating Intelligence via Efficient Model and Tool Orchestration}, \n      author={Hongjin Su and Shizhe Diao and Ximing Lu and Mingjie Liu and Jiacheng Xu and Xin Dong and Yonggan Fu and Peter Belcak and Hanrong Ye and Hongxu Yin and Yi Dong and Evelina Bakhturina and Tao Yu and Yejin Choi and Jan Kautz and Pavlo Molchanov},\n      year={2025},\n      eprint={2511.21689},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2511.21689}, \n}\n```",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "base_model": [
+      "Qwen/Qwen3-8B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

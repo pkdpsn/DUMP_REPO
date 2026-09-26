@@ -1,0 +1,197 @@
+{
+  "modelId": "microsoft/xclip-base-patch16-hmdb-8-shot",
+  "author": "microsoft",
+  "sha": "219d5360ef754b404f49447d0b8937cc93bdead3",
+  "lastModified": "2022-09-08 11:47:18+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "xclip",
+    "feature-extraction",
+    "vision",
+    "video-classification",
+    "en",
+    "arxiv:2208.02816",
+    "license:mit",
+    "model-index",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "video-classification",
+  "library_name": "transformers",
+  "likes": 1,
+  "downloads": 95,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": [
+      {
+        "task_type": "video-classification",
+        "dataset_type": "hmdb-51",
+        "dataset_name": "HMDB-51",
+        "metric_type": "top-1 accuracy",
+        "metric_value": 62.8,
+        "task_name": null,
+        "dataset_config": null,
+        "dataset_split": null,
+        "dataset_revision": null,
+        "dataset_args": null,
+        "metric_name": null,
+        "metric_config": null,
+        "metric_args": null,
+        "verified": false,
+        "verify_token": null,
+        "source_name": null,
+        "source_url": null
+      }
+    ],
+    "language": "en",
+    "library_name": null,
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": "nielsr/xclip-base-patch16-hmdb-8-shot",
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "video-classification"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "XCLIPModel"
+    ],
+    "model_type": "xclip",
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<|startoftext|>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "<|endoftext|>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": "<|endoftext|>",
+      "unk_token": {
+        "__type": "AddedToken",
+        "content": "<|endoftext|>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1384,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2721,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 8899,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 524619,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 310,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 779959711,
+      "lfs": {
+        "size": 779959711,
+        "sha256": "409cba200065ca1a9fc2a74980b5c164f29d524b41811cc0e2e672b88ac61668",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 472,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 2224208,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 927,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 1059962,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\nlicense: mit\ntags:\n- vision\n- video-classification\nmodel-index:\n- name: nielsr/xclip-base-patch16-hmdb-8-shot\n  results:\n  - task:\n      type: video-classification\n    dataset:\n      name: HMDB-51\n      type: hmdb-51\n    metrics:\n    - type: top-1 accuracy\n      value: 62.8\n---\n\n# X-CLIP (base-sized model) \n\nX-CLIP model (base-sized, patch resolution of 16) trained in a few-shot fashion (K=8) on [HMDB-51](https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/). It was introduced in the paper [Expanding Language-Image Pretrained Models for General Video Recognition](https://arxiv.org/abs/2208.02816) by Ni et al. and first released in [this repository](https://github.com/microsoft/VideoX/tree/master/X-CLIP).\n\nThis model was trained using 32 frames per video, at a resolution of 224x224.\n\nDisclaimer: The team releasing X-CLIP did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nX-CLIP is a minimal extension of [CLIP](https://huggingface.co/docs/transformers/model_doc/clip) for general video-language understanding. The model is trained in a contrastive way on (video, text) pairs. \n\n![X-CLIP architecture](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/model_doc/xclip_architecture.png)\n\nThis allows the model to be used for tasks like zero-shot, few-shot or fully supervised video classification and video-text retrieval.\n\n## Intended uses & limitations\n\nYou can use the raw model for determining how well text goes with a given video. See the [model hub](https://huggingface.co/models?search=microsoft/xclip) to look for\nfine-tuned versions on a task that interests you.\n\n### How to use\n\nFor code examples, we refer to the [documentation](https://huggingface.co/transformers/main/model_doc/xclip.html#).\n\n## Training data\n\nThis model was trained on [HMDB-51](https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/).\n\n### Preprocessing\n\nThe exact details of preprocessing during training can be found [here](https://github.com/microsoft/VideoX/blob/40f6d177e0a057a50ac69ac1de6b5938fd268601/X-CLIP/datasets/build.py#L247).\n\nThe exact details of preprocessing during validation can be found [here](https://github.com/microsoft/VideoX/blob/40f6d177e0a057a50ac69ac1de6b5938fd268601/X-CLIP/datasets/build.py#L285).\n\nDuring validation, one resizes the shorter edge of each frame, after which center cropping is performed to a fixed-size resolution (like 224x224). Next, frames are normalized across the RGB channels with the ImageNet mean and standard deviation.\n\n## Evaluation results\n\nThis model achieves a top-1 accuracy of 62.8%.\n",
+  "cardDataParsed": {
+    "language": "en",
+    "license": "mit",
+    "tags": [
+      "vision",
+      "video-classification"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": [
+      {
+        "task_type": "video-classification",
+        "dataset_type": "hmdb-51",
+        "dataset_name": "HMDB-51",
+        "metric_type": "top-1 accuracy",
+        "metric_value": 62.8,
+        "task_name": null,
+        "dataset_config": null,
+        "dataset_split": null,
+        "dataset_revision": null,
+        "dataset_args": null,
+        "metric_name": null,
+        "metric_config": null,
+        "metric_args": null,
+        "verified": null,
+        "verify_token": null,
+        "source_name": null,
+        "source_url": null
+      }
+    ],
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": "nielsr/xclip-base-patch16-hmdb-8-shot",
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoTokenizer"
+  }
+}

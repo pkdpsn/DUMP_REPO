@@ -1,0 +1,238 @@
+{
+  "modelId": "Qwen/WebWorld-8B",
+  "author": "Qwen",
+  "sha": "26c65891f0a59c9b1dcc435eaadcc08ce6102a94",
+  "lastModified": "2026-05-08 12:10:29+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3",
+    "text-generation",
+    "WebWorld",
+    "web-agent",
+    "world-model",
+    "simulator",
+    "browser",
+    "a11y",
+    "html",
+    "xml",
+    "markdown",
+    "long-horizon",
+    "long-context",
+    "synthetic-trajectories",
+    "instruction-tuning",
+    "conversational",
+    "en",
+    "zh",
+    "dataset:Qwen/WebWorldData",
+    "arxiv:2602.14721",
+    "base_model:Qwen/Qwen3-8B",
+    "base_model:finetune:Qwen/Qwen3-8B",
+    "license:apache-2.0",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 73,
+  "downloads": 1029,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-8B"
+    ],
+    "datasets": [
+      "Qwen/WebWorldData"
+    ],
+    "eval_results": null,
+    "language": [
+      "en",
+      "zh"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": "https://www.apache.org/licenses/LICENSE-2.0",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "WebWorld",
+      "web-agent",
+      "world-model",
+      "simulator",
+      "browser",
+      "a11y",
+      "html",
+      "xml",
+      "markdown",
+      "long-horizon",
+      "long-context",
+      "synthetic-trajectories",
+      "instruction-tuning"
+    ],
+    "base_model_relation": "finetune"
+  },
+  "config": {
+    "architectures": [
+      "Qwen3ForCausalLM"
+    ],
+    "model_type": "qwen3",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set content = message.content %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is not none %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in message.content %}\n                {%- set content = message.content.split('</think>')[-1].lstrip('\\n') %}\n                {%- set reasoning_content = message.content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1633,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11343,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 11715,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 730,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4902257696,
+      "lfs": {
+        "size": 4902257696,
+        "sha256": "3c919aeb4f246afb659ffcd65600dbe6b3173d21e9ad3e12a5a07d42ae4efed7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4915960368,
+      "lfs": {
+        "size": 4915960368,
+        "sha256": "48ad86637ad59fb791de9f8950dba50d15e194ec060b50e759ae201bb6146a00",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4983068496,
+      "lfs": {
+        "size": 4983068496,
+        "sha256": "0f8dcaf2a6ce2326804c999ac5706edbb030de9ef71373c9c956d7e159f37020",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1580230264,
+      "lfs": {
+        "size": 1580230264,
+        "sha256": "d7e8198f43d1a6e3dde891a1b4edeb507742d02a0b096199e630fabc100f7a51",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 32878,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9732,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense_link: https://www.apache.org/licenses/LICENSE-2.0\nlicense: apache-2.0\nlanguage:\n- en\n- zh\npipeline_tag: text-generation\nlibrary_name: transformers\ntags:\n- WebWorld\n- web-agent\n- world-model\n- simulator\n- browser\n- a11y\n- html\n- xml\n- markdown\n- long-horizon\n- long-context\n- synthetic-trajectories\n- instruction-tuning\nbase_model_relation: finetune\nbase_model:\n- Qwen/Qwen3-8B\ndatasets:\n- Qwen/WebWorldData\n---\n\n# WebWorld \ud83c\udf10\n\n[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/LICENSE-2.0) \n[![GitHub](https://img.shields.io/badge/GitHub-WebWorld-4b32c3?logo=github)](https://github.com/QwenLM/WebWorld) \n[![Dataset](https://img.shields.io/badge/HF%20Dataset-WebWorldData-yellow?logo=huggingface)](https://huggingface.co/datasets/Qwen/WebWorldData) \n[![MS Dataset](https://img.shields.io/badge/ModelScope-Dataset-7B42BC)](https://modelscope.cn/datasets/Qwen/WebWorldData) \n[![8B](https://img.shields.io/badge/Model-8B-green?logo=huggingface)](https://huggingface.co/Qwen/WebWorld-8B) \n[![MS 8B](https://img.shields.io/badge/ModelScope-8B-7B42BC)](https://modelscope.cn/models/Qwen/WebWorld-8B) \n[![14B](https://img.shields.io/badge/Model-14B-green?logo=huggingface)](https://huggingface.co/Qwen/WebWorld-14B) \n[![MS 14B](https://img.shields.io/badge/ModelScope-14B-7B42BC)](https://modelscope.cn/models/Qwen/WebWorld-14B) \n[![32B](https://img.shields.io/badge/Model-32B-green?logo=huggingface)](https://huggingface.co/Qwen/WebWorld-32B) \n[![MS 32B](https://img.shields.io/badge/ModelScope-32B-7B42BC)](https://modelscope.cn/models/Qwen/WebWorld-32B)\n\n\n## \ud83d\udcda Introduction\n\n**WebWorld** is a large-scale **open-web world model** series for training and evaluating web agents. It is trained on **1M+ real-world web interaction trajectories** via a scalable hierarchical data pipeline, supporting:\n\n- **Long-horizon simulation** (30+ steps)\n- **Multi-format state representations**: A11y Tree, HTML, XML, Markdown, and natural language\n- **CoT-activated reasoning** for transition prediction\n- **Cross-domain generalization** to code, GUI, and game environments\n\nAgents trained on WebWorld-synthesized trajectories achieve **+9.9% on MiniWob++** and **+10.9% on WebArena**. When used for inference-time lookahead search, WebWorld **outperforms GPT-5** as a world model.\n\n## \ud83c\udfaf Model Series\n\n| Model | Base Model | HuggingFace Link | ModelScope Link |\n|---|---|---|---|\n| **WebWorld-8B** | [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/Qwen/WebWorld-8B) | [\ud83e\udd16 ModelScope](https://modelscope.cn/models/Qwen/WebWorld-8B) |\n| **WebWorld-14B** | [Qwen3-14B](https://huggingface.co/Qwen/Qwen3-14B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/Qwen/WebWorld-14B) | [\ud83e\udd16 ModelScope](https://modelscope.cn/models/Qwen/WebWorld-14B) |\n| **WebWorld-32B** | [Qwen3-32B](https://huggingface.co/Qwen/Qwen3-32B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/Qwen/WebWorld-32B) | [\ud83e\udd16 ModelScope](https://modelscope.cn/models/Qwen/WebWorld-32B) |\n\n**WebWorldData**: [Huggingface: Qwen/WebWorldData](https://huggingface.co/datasets/Qwen/WebWorldData), [ModelScope: Qwen/WebWorldData](https://modelscope.cn/datasets/Qwen/WebWorldData)\n\n\ud83d\udca1 **Recommendation**: Use 8B for fast simulation and data synthesis; use 14B/32B for higher-fidelity simulation and better long-horizon robustness. For best results in a specific environment, we recommend task-specific fine-tuning on in-domain trajectories.\n\n## \ud83d\udee0\ufe0f Requirements\n\n- `transformers` (recommended: latest version)\n- `torch`\n- Optional: `accelerate`, `vllm` for efficient serving\n\n## \ud83d\ude80 Quick Start\n\n**Key Notes:**\n- WebWorld predicts the next page state given the current state and an action.\n- It strictly preserves the input/output format (A11y / HTML / XML / Markdown / NL).\n- Supports multi-turn trajectory simulation up to 30+ steps.\n\n### Single-Step Prediction\n\n<details>\n<summary>\ud83d\udcbb Click to expand code</summary>\n\n```python\nimport torch\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\n\nmodel_name = \"Qwen/WebWorld-8B\"  # or WebWorld-14B, WebWorld-32B\ntokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    device_map=\"auto\",\n    torch_dtype=torch.bfloat16,\n    trust_remote_code=True,\n).eval()\n\nsystem_prompt = (\n    \"You are a web world model. I will provide you with an initial page state \"\n    \"and a sequence of actions. For each action, predict the resulting page state.\\n\"\n    \"Strictly maintain the original format. Output only the full page state \"\n    \"without explanations, code, or truncation.\"\n)\n\ncurrent_state = \"\"\"RootWebArea 'Global Start - Your Daily Portal', focused\n\\t[1] banner 'Top Header', visible\n\\t\\t[2] link 'Set as Homepage', clickable, visible\n\\t\\t[3] link 'Feedback', clickable, visible\n\\t\\t[5] region 'Weather Widget', visible\n\\t\\t\\tStaticText 'New York, USA'\n\\t\\t\\t[6] image 'Sunny', visible\n\\t\\t\\tStaticText '24\u00b0C'\n\\t\\t[8] link 'Sign In', clickable, visible\n\\t[10] region 'Search Area', visible\n\\t\\t[11] image 'Global Start Logo', visible\n\\t\\tStaticText 'Search the entire web'\n\\t\\t[12] tablist 'Search Engine Selector', orientation='horizontal'\n\\t\\t\\t[13] tab 'Google', selected=True, clickable\n\\t\\t\\t[14] tab 'Bing', selected=False, clickable\n\\t\\t\\t[15] tab 'DuckDuckGo', selected=False, clickable\n\\t\\t[18] combobox 'Web Search', clickable, visible, autocomplete='both', expanded=False\n\\t\\t\\t[19] textbox 'Type keywords or URL...', clickable, visible, editable, value=''\n\\t\\t[20] button 'Search', clickable, visible\n\\t[30] navigation 'Category Bar', visible\n\\t\\t[31] link 'Home', clickable, selected=True\n\\t\\t[32] link 'News', clickable\n\\t\\t[33] link 'Video', clickable\n\\t\\t[34] link 'Shopping', clickable\n\\t\\t[35] link 'Social', clickable\n\\t[50] main 'Site Directory', visible\n\\t\\t[51] region 'Top Recommended', visible\n\\t\\t\\t[52] heading 'Most Popular', visible\n\\t\\t\\t[53] list 'Top Sites Grid', visible\n\\t\\t\\t\\t[54] link 'Facebook', clickable\n\\t\\t\\t\\t[56] link 'YouTube', clickable\n\\t\\t\\t\\t[58] link 'Amazon', clickable\n\\t\\t\\t\\t[60] link 'Twitter / X', clickable\n\\t\\t\\t\\t[62] link 'Instagram', clickable\n\\t\\t\\t\\t[64] link 'Wikipedia', clickable\n\\t\\t\\t\\t[66] link 'Netflix', clickable\n\\t\\t\\t\\t[68] link 'LinkedIn', clickable\n\\t\\t[80] region 'News & Media', visible\n\\t\\t\\t[81] heading 'Latest News', visible\n\\t\\t\\t[82] link 'CNN', clickable\n\\t\\t\\t[83] link 'BBC', clickable\n\\t\\t\\t[84] link 'The Verge', clickable\n\\t\\t[90] region 'Shopping', visible\n\\t\\t\\t[91] heading 'E-Commerce', visible\n\\t\\t\\t[92] link 'eBay', clickable\n\\t\\t\\t[93] link 'Walmart', clickable\n\\t\\t\\t[94] link 'Best Buy', clickable\n\\t[200] complementary 'Ads', visible\n\\t\\t[201] image 'Ad: Travel to Japan'\n\\t\\t[202] link 'Book Now', clickable\n\\t[300] contentinfo 'Footer', visible\n\\t\\tStaticText '\u00a9 2026 Global Start Inc.'\"\"\"\n\nuser_message = (\n    f\"Initial Page State:\\n{current_state}\\n\\n\"\n    f\"First Action: 'click([32])'\\n\\n\"\n    f\"Next Page State:\"\n)\n\nmessages = [\n    {\"role\": \"system\", \"content\": system_prompt},\n    {\"role\": \"user\", \"content\": user_message},\n]\n\ntext = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)\ninputs = tokenizer(text, return_tensors=\"pt\").to(model.device)\n\nwith torch.no_grad():\n    outputs = model.generate(\n        **inputs,\n        max_new_tokens=4096,\n        do_sample=False,\n    )\n\nresponse = tokenizer.decode(outputs[0][inputs[\"input_ids\"].shape[-1]:], skip_special_tokens=True)\nprint(response)\n```\n\n</details>\n\n### Multi-Turn Simulation\n\nThe first turn provides the initial state and first action. Each subsequent turn uses a fixed continuation prompt:\n\n<details>\n<summary>\ud83d\udcbb Click to expand code</summary>\n\n```python\nCONTINUE_PROMPT = (\n    \"Continue the trajectory. Given the previous state, \"\n    \"predict the next page state after this action.\\n\\n\"\n    \"Action: '{action}'\\n\\nNext Page State:\"\n)\n\n# Turn 1\nmessages = [\n    {\"role\": \"system\", \"content\": system_prompt},\n    {\"role\": \"user\", \"content\": f\"Initial Page State:\\n{state_0}\\n\\nFirst Action: '{action_0}'\\n\\nNext Page State:\"},\n]\nstate_1 = generate(messages)  # your generate function\n\n# Turn 2\nmessages.append({\"role\": \"assistant\", \"content\": state_1})\nmessages.append({\"role\": \"user\", \"content\": CONTINUE_PROMPT.format(action=action_1)})\nstate_2 = generate(messages)\n\n# Turn 3, 4, ... up to 30+ turns: repeat the same pattern\nmessages.append({\"role\": \"assistant\", \"content\": state_2})\nmessages.append({\"role\": \"user\", \"content\": CONTINUE_PROMPT.format(action=action_2)})\nstate_3 = generate(messages)\n```\n\n</details>\n\n## \ud83c\udfae Action Space\n\nWebWorld supports a unified action space as Python-style function calls:\n\n| Category | Action | Description |\n|---|---|---|\n| **Element** | `click(bid, button, modifiers)` | Click a DOM element by its ID |\n| | `fill(bid, text, press_enter)` | Type text into an input field |\n| | `select_option(bid, options)` | Select from a dropdown / combobox |\n| | `hover(bid)` | Hover over an element |\n| **Mouse** | `mouse_move(x, y)` | Move cursor to coordinates |\n| | `mouse_click(x, y, button)` | Click at coordinates |\n| | `mouse_down(x, y)` / `mouse_up(x, y)` | Press / release (drag-and-drop) |\n| **Keyboard** | `keyboard_press(key)` | Press a key (e.g., `Enter`, `Tab`) |\n| | `keyboard_type(text)` | Type a string sequentially |\n| **Browser** | `scroll(dx, dy)` | Scroll the viewport |\n| | `goto(url)` | Navigate to a URL |\n| | `go_back()` / `go_forward()` | Browser history navigation |\n| | `tab_new()` / `tab_close()` / `tab_focus(index)` | Manage browser tabs |\n| **Meta** | `send_msg_to_user(text)` | Send a message to the user |\n| | `noop(wait_ms)` | Wait for a duration |\n| | `infeasible(reason)` | Declare the task impossible |\n\n## \ud83d\udcca Performance\n\n### Intrinsic Evaluation (WebWorld-Bench)\n\nWebWorld-Bench evaluates models using **Factuality Score** (functional correctness) and **Web Turing Score** (perceptual realism) across nine dimensions:\n\n| Model | Avg Factuality | Avg Turing |\n|---|---|---|\n| GPT-4o | 59.5 | 35.4 |\n| Claude-Opus-4.1 | **71.3** | **47.4** |\n| Gemini-3-Pro | 70.3 | 43.2 |\n| Qwen3-8B (base) | 26.9 | 17.4 |\n| **WebWorld-8B** | **70.1** | **42.2** |\n| **WebWorld-14B** | 70.7 | 44.7 |\n| **WebWorld-32B** | **71.0** | **45.6** |\n\n### Extrinsic Evaluation (Agent Training)\n\n| Model | MiniWob++ SR | WebArena SR |\n|---|---|---|\n| GPT-4o | 64.3% | 26.6% |\n| Qwen3-8B (base) | 49.4% | 9.8% |\n| **Qwen3-8B + WebWorld** | **59.3%** (+9.9%) | **20.7%** (+10.9%) |\n| Qwen3-14B (base) | 54.9% | 15.1% |\n| **Qwen3-14B + WebWorld** | **63.2%** (+8.3%) | **24.3%** (+9.2%) |\n\n### Cross-Domain Generalization\n\n| Environment | Qwen3-8B | WebWorld-8B | Gain |\n|---|---|---|---|\n| API Services | 0.088 | **0.299** | +0.211 |\n| Code | 0.147 | **0.396** | +0.249 |\n| Game | 0.253 | **0.473** | +0.220 |\n| GUI Desktop | 0.322 | **0.705** | +0.383 |\n\n## \u26a0\ufe0f Limitations\n\n- **Sycophancy / optimism bias**: the model may generate outcomes that are overly favorable to the agent's intended action.\n- **Content generation fidelity**: long-form, high-precision content (e.g., scientific articles) is not the primary target.\n- **Text-only**: WebWorld does not simulate visual / pixel-level rendering.\n\n## \ud83d\udcdd Citation\n\n```bibtex\n@misc{xiao2026webworldlargescaleworldmodel,\n      title={WebWorld: A Large-Scale World Model for Web Agent Training}, \n      author={Zikai Xiao and Jianhong Tu and Chuhang Zou and Yuxin Zuo and Zhi Li and Peng Wang and Bowen Yu and Fei Huang and Junyang Lin and Zuozhu Liu},\n      year={2026},\n      eprint={2602.14721},\n      archivePrefix={arXiv},\n      primaryClass={cs.AI},\n      url={https://arxiv.org/abs/2602.14721}, \n}",
+  "cardDataParsed": {
+    "license_link": "https://www.apache.org/licenses/LICENSE-2.0",
+    "license": "apache-2.0",
+    "language": [
+      "en",
+      "zh"
+    ],
+    "pipeline_tag": "text-generation",
+    "library_name": "transformers",
+    "tags": [
+      "WebWorld",
+      "web-agent",
+      "world-model",
+      "simulator",
+      "browser",
+      "a11y",
+      "html",
+      "xml",
+      "markdown",
+      "long-horizon",
+      "long-context",
+      "synthetic-trajectories",
+      "instruction-tuning"
+    ],
+    "base_model_relation": "finetune",
+    "base_model": [
+      "Qwen/Qwen3-8B"
+    ],
+    "datasets": [
+      "Qwen/WebWorldData"
+    ],
+    "eval_results": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

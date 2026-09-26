@@ -1,0 +1,151 @@
+{
+  "modelId": "google/siglip2-so400m-patch16-naflex",
+  "author": "google",
+  "sha": "cc24074f717b612951c2dead130904ab9b65a81e",
+  "lastModified": "2025-02-21 04:04:12+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "siglip2",
+    "zero-shot-image-classification",
+    "vision",
+    "arxiv:2502.14786",
+    "arxiv:2303.15343",
+    "arxiv:2209.06794",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "zero-shot-image-classification",
+  "library_name": "transformers",
+  "likes": 89,
+  "downloads": 366690,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "zero-shot-image-classification",
+    "tags": [
+      "vision"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/bee.jpg",
+        "candidate_labels": "bee in the sky, bee on the flower",
+        "example_title": "Bee"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Siglip2Model"
+    ],
+    "model_type": "siglip2",
+    "tokenizer_config": {
+      "bos_token": "<bos>",
+      "eos_token": "<eos>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3389,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 590,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 4542792928,
+      "lfs": {
+        "size": 4542792928,
+        "sha256": "11a61a2068800d5f4f35cb041c1fea25de86ce87725e4c97a9ed046d0b22c076",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 393,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 636,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 34356304,
+      "lfs": {
+        "size": 34356304,
+        "sha256": "58a1696e79c9d97937389ed116f552a15c84811d7b8023918b86f4bc5775b1b0",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4241003,
+      "lfs": {
+        "size": 4241003,
+        "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 40160,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\nwidget:\n- src: https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/bee.jpg\n  candidate_labels: bee in the sky, bee on the flower\n  example_title: Bee\nlibrary_name: transformers\npipeline_tag: zero-shot-image-classification\n---\n\n# SigLIP 2 So400m\n\n[SigLIP 2](https://huggingface.co/papers/2502.14786) extends the pretraining objective of\n[SigLIP](https://huggingface.co/papers/2303.15343) with prior, independently developed techniques\ninto a unified recipe, for improved semantic understanding, localization, and dense features.\n\n## Intended uses\n\nYou can use the raw model for tasks like zero-shot image classification and\nimage-text retrieval, or as a vision encoder for VLMs (and other vision tasks).\n\nHere is how to use this model to perform zero-shot image classification:\n\n```python\nfrom transformers import pipeline\n\n# load pipeline\nckpt = \"google/siglip2-so400m-patch16-naflex\"\nimage_classifier = pipeline(model=ckpt, task=\"zero-shot-image-classification\")\n\n# load image and candidate labels\nurl = \"http://images.cocodataset.org/val2017/000000039769.jpg\"\ncandidate_labels = [\"2 cats\", \"a plane\", \"a remote\"]\n\n# run inference\noutputs = image_classifier(image, candidate_labels)\nprint(outputs)\n```\n\nYou can encode an image using the Vision Tower like so:\n\n```python\nimport torch\nfrom transformers import AutoModel, AutoProcessor\nfrom transformers.image_utils import load_image\n\n# load the model and processor\nckpt = \"google/siglip2-so400m-patch16-naflex\"\nmodel = AutoModel.from_pretrained(ckpt, device_map=\"auto\").eval()\nprocessor = AutoProcessor.from_pretrained(ckpt)\n\n# load the image\nimage = load_image(\"https://huggingface.co/datasets/merve/coco/resolve/main/val2017/000000000285.jpg\")\ninputs = processor(images=[image], return_tensors=\"pt\").to(model.device)\n\n# run infernece\nwith torch.no_grad():\n    image_embeddings = model.get_image_features(**inputs)    \n\nprint(image_embeddings.shape)\n```\n\nFor more code examples, we refer to the [siglip2 documentation](https://huggingface.co/transformers/main/model_doc/siglip2.html#).\n\n## Training procedure\n\nSigLIP 2 adds some clever training objectives on top of SigLIP:\n\n1. Decoder loss\n2. Global-local and masked prediction loss\n3. Aspect ratio and resolution adaptibility \n\n### Training data\n\nSigLIP 2 is pre-trained on the WebLI dataset [(Chen et al., 2023)](https://arxiv.org/abs/2209.06794).\n\n### Compute\n\nThe model was trained on up to 2048 TPU-v5e chips.\n\n## Evaluation results\n\nEvaluation of SigLIP 2 is shown below (taken from the paper).\n\n![Evaluation Table](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/blog/sg2-blog/eval_table.png)\n\n### BibTeX entry and citation info\n\n```bibtex\n@misc{tschannen2025siglip2multilingualvisionlanguage,\n      title={SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features}, \n      author={Michael Tschannen and Alexey Gritsenko and Xiao Wang and Muhammad Ferjad Naeem and Ibrahim Alabdulmohsin and Nikhil Parthasarathy and Talfan Evans and Lucas Beyer and Ye Xia and Basil Mustafa and Olivier H\u00e9naff and Jeremiah Harmsen and Andreas Steiner and Xiaohua Zhai},\n      year={2025},\n      eprint={2502.14786},\n      archivePrefix={arXiv},\n      primaryClass={cs.CV},\n      url={https://arxiv.org/abs/2502.14786}, \n}\n```\n",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/bee.jpg",
+        "candidate_labels": "bee in the sky, bee on the flower",
+        "example_title": "Bee"
+      }
+    ],
+    "library_name": "transformers",
+    "pipeline_tag": "zero-shot-image-classification",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForZeroShotImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "zero-shot-image-classification",
+    "processor": "AutoProcessor"
+  }
+}

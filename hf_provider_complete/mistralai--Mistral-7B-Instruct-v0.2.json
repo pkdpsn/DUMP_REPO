@@ -1,0 +1,220 @@
+{
+  "modelId": "mistralai/Mistral-7B-Instruct-v0.2",
+  "author": "mistralai",
+  "sha": "63a8b081895390a26e140280378bc85ec8bce07a",
+  "lastModified": "2025-07-24 16:57:21+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "safetensors",
+    "mistral",
+    "text-generation",
+    "finetuned",
+    "mistral-common",
+    "conversational",
+    "arxiv:2310.06825",
+    "license:apache-2.0",
+    "eval-results",
+    "text-generation-inference",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 3236,
+  "downloads": 1790391,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "finetuned",
+      "mistral-common"
+    ],
+    "new_version": "mistralai/Mistral-7B-Instruct-v0.3",
+    "inference": false,
+    "widget": [
+      {
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is your favorite condiment?"
+          }
+        ]
+      }
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>."
+  },
+  "config": {
+    "architectures": [
+      "MistralForCausalLM"
+    ],
+    "model_type": "mistral",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content'] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n\n{{- bos_token }}\n{%- for message in loop_messages %}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{- raise_exception('After the optional system message, conversation roles must alternate user/assistant/user/assistant/...') }}\n    {%- endif %}\n    {%- if message['role'] == 'user' %}\n        {%- if loop.first and system_message is defined %}\n            {{- ' [INST] ' + system_message + '\\n\\n' + message['content'] + ' [/INST]' }}\n        {%- else %}\n            {{- ' [INST] ' + message['content'] + ' [/INST]' }}\n        {%- endif %}\n    {%- elif message['role'] == 'assistant' %}\n        {{- ' ' + message['content'] + eos_token}}\n    {%- else %}\n        {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n    {%- endif %}\n{%- endfor %}\n",
+      "eos_token": "</s>",
+      "pad_token": null,
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5540,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 596,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 111,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 4943162336,
+      "lfs": {
+        "size": 4943162336,
+        "sha256": "63654d601820b88b1fa8b4a98df5714f700fbc5b3df2cc4ecbabdced35096d31",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 4999819336,
+      "lfs": {
+        "size": 4999819336,
+        "sha256": "a42716540ecb2385d371f2109835921ff535406cac8fe8ff28f2f0b5fc7895bd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 4540516344,
+      "lfs": {
+        "size": 4540516344,
+        "sha256": "5f86e15cb3ed9078e30ae6e72445e109d0e337d9cde59b9aeea4ce8e44e54a5d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 25125,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model-00001-of-00003.bin",
+      "size": 4943184288,
+      "lfs": {
+        "size": 4943184288,
+        "sha256": "d8836f675fe1c4c43f3ff4e93f4cc0e97ef7a13e8c240fb39ad02d37ff303ef5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00002-of-00003.bin",
+      "size": 4999843272,
+      "lfs": {
+        "size": 4999843272,
+        "sha256": "58a7ddffb463397de5dbe1f1e2ec1ccf6aae2b549565f83f3ded124e0b4c5069",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00003-of-00003.bin",
+      "size": 5064824210,
+      "lfs": {
+        "size": 5064824210,
+        "sha256": "75824d68dcf82d02b731b2bdfd3a9711acb7c58b8d566f4c0d3e9efac52f9a21",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin.index.json",
+      "size": 23950,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 414,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1795188,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 493443,
+      "lfs": {
+        "size": 493443,
+        "sha256": "dadfd56d766715c61d2ef780a525ab43b8e6da4de6865bda3d95fdef5e134055",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 2103,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: apache-2.0\ntags:\n- finetuned\n- mistral-common\nnew_version: mistralai/Mistral-7B-Instruct-v0.3\ninference: false\nwidget:\n- messages:\n  - role: user\n    content: What is your favorite condiment?\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.\n---\n\n# Model Card for Mistral-7B-Instruct-v0.2\n\n\n## Encode and Decode with `mistral_common`\n            \n```py\nfrom mistral_common.tokens.tokenizers.mistral import MistralTokenizer\nfrom mistral_common.protocol.instruct.messages import UserMessage\nfrom mistral_common.protocol.instruct.request import ChatCompletionRequest\n \nmistral_models_path = \"MISTRAL_MODELS_PATH\"\n \ntokenizer = MistralTokenizer.v1()\n \ncompletion_request = ChatCompletionRequest(messages=[UserMessage(content=\"Explain Machine Learning to me in a nutshell.\")])\n \ntokens = tokenizer.encode_chat_completion(completion_request).tokens\n```\n \n## Inference with `mistral_inference`\n \n ```py\nfrom mistral_inference.transformer import Transformer\nfrom mistral_inference.generate import generate\n \nmodel = Transformer.from_folder(mistral_models_path)\nout_tokens, _ = generate([tokens], model, max_tokens=64, temperature=0.0, eos_id=tokenizer.instruct_tokenizer.tokenizer.eos_id)\n\nresult = tokenizer.decode(out_tokens[0])\n\nprint(result)\n```\n\n## Inference with hugging face `transformers`\n \n```py\nfrom transformers import AutoModelForCausalLM\n \nmodel = AutoModelForCausalLM.from_pretrained(\"mistralai/Mistral-7B-Instruct-v0.2\")\nmodel.to(\"cuda\")\n \ngenerated_ids = model.generate(tokens, max_new_tokens=1000, do_sample=True)\n\n# decode with mistral tokenizer\nresult = tokenizer.decode(generated_ids[0].tolist())\nprint(result)\n```\n\n> [!TIP]\n> PRs to correct the `transformers` tokenizer so that it gives 1-to-1 the same results as the `mistral_common` reference implementation are very welcome!\n            \n---\n\nThe Mistral-7B-Instruct-v0.2 Large Language Model (LLM) is an instruct fine-tuned version of the Mistral-7B-v0.2.\n\nMistral-7B-v0.2 has the following changes compared to Mistral-7B-v0.1\n- 32k context window (vs 8k context in v0.1)\n- Rope-theta = 1e6\n- No Sliding-Window Attention\n\nFor full details of this model please read our [paper](https://arxiv.org/abs/2310.06825) and [release blog post](https://mistral.ai/news/la-plateforme/).\n\n## Instruction format\n\nIn order to leverage instruction fine-tuning, your prompt should be surrounded by `[INST]` and `[/INST]` tokens. The very first instruction should begin with a begin of sentence id. The next instructions should not. The assistant generation will be ended by the end-of-sentence token id.\n\nE.g.\n```\ntext = \"<s>[INST] What is your favourite condiment? [/INST]\"\n\"Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!</s> \"\n\"[INST] Do you have mayonnaise recipes? [/INST]\"\n```\n\nThis format is available as a [chat template](https://huggingface.co/docs/transformers/main/chat_templating) via the `apply_chat_template()` method:\n\n```python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\ndevice = \"cuda\" # the device to load the model onto\n\nmodel = AutoModelForCausalLM.from_pretrained(\"mistralai/Mistral-7B-Instruct-v0.2\")\ntokenizer = AutoTokenizer.from_pretrained(\"mistralai/Mistral-7B-Instruct-v0.2\")\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"What is your favourite condiment?\"},\n    {\"role\": \"assistant\", \"content\": \"Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!\"},\n    {\"role\": \"user\", \"content\": \"Do you have mayonnaise recipes?\"}\n]\n\nencodeds = tokenizer.apply_chat_template(messages, return_tensors=\"pt\")\n\nmodel_inputs = encodeds.to(device)\nmodel.to(device)\n\ngenerated_ids = model.generate(model_inputs, max_new_tokens=1000, do_sample=True)\ndecoded = tokenizer.batch_decode(generated_ids)\nprint(decoded[0])\n```\n\n## Troubleshooting\n- If you see the following error:\n```\nTraceback (most recent call last):\nFile \"\", line 1, in\nFile \"/transformers/models/auto/auto_factory.py\", line 482, in from_pretrained\nconfig, kwargs = AutoConfig.from_pretrained(\nFile \"/transformers/models/auto/configuration_auto.py\", line 1022, in from_pretrained\nconfig_class = CONFIG_MAPPING[config_dict[\"model_type\"]]\nFile \"/transformers/models/auto/configuration_auto.py\", line 723, in getitem\nraise KeyError(key)\nKeyError: 'mistral'\n```\n\nInstalling transformers from source should solve the issue\npip install git+https://github.com/huggingface/transformers\n\nThis should not be required after transformers-v4.33.4.\n\n## Limitations\n\nThe Mistral 7B Instruct model is a quick demonstration that the base model can be easily fine-tuned to achieve compelling performance. \nIt does not have any moderation mechanisms. We're looking forward to engaging with the community on ways to\nmake the model finely respect guardrails, allowing for deployment in environments requiring moderated outputs.\n\n## The Mistral AI Team\n\nAlbert Jiang, Alexandre Sablayrolles, Arthur Mensch, Blanche Savary, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Emma Bou Hanna, Florian Bressand, Gianna Lengyel, Guillaume Bour, Guillaume Lample, L\u00e9lio Renard Lavaud, Louis Ternon, Lucile Saulnier, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Th\u00e9ophile Gervet, Thibaut Lavril, Thomas Wang, Timoth\u00e9e Lacroix, William El Sayed.",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "tags": [
+      "finetuned",
+      "mistral-common"
+    ],
+    "new_version": "mistralai/Mistral-7B-Instruct-v0.3",
+    "inference": false,
+    "widget": [
+      {
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is your favorite condiment?"
+          }
+        ]
+      }
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,186 @@
+{
+  "modelId": "nvidia/NVILA-8B-HD-Video",
+  "author": "nvidia",
+  "sha": "7a5670e20da435d98b0efdc49f9a536f73985152",
+  "lastModified": "2026-03-19 20:53:07+00:00",
+  "tags": [
+    "pytorch",
+    "nvila",
+    "AutoGaze",
+    "NVILA",
+    "custom_code",
+    "arxiv:2603.12254",
+    "license:cc-by-nc-4.0",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": null,
+  "likes": 41,
+  "downloads": 15248,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "cc-by-nc-4.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "AutoGaze",
+      "NVILA"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "NVILAForConditionalGeneration"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_nvila.NVILAConfig",
+      "AutoModel": "modeling_nvila.NVILAForConditionalGeneration",
+      "AutoModelForCausalLM": "modeling_nvila.NVILAForConditionalGeneration",
+      "AutoModelForImageTextToText": "modeling_nvila.NVILAForConditionalGeneration",
+      "AutoModelForVision2Seq": "modeling_nvila.NVILAForConditionalGeneration"
+    },
+    "model_type": "nvila",
+    "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "<|im_end|>",
+      "pad_token": "[PAD]",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% for message in messages %}{% if loop.first and message['role'] != 'system' %}{{ '<|im_start|>system\nYou are a helpful assistant<|im_end|>\n' }}{% endif %}{{ '<|im_start|>' + message['role'] + '\n' }}{% if message['content'] is string %}{{ message['content'] + '<|im_end|>\n' }}{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{{ '<image>' }}{% elif content['type'] == 'video' or 'video' in content %}{{ '<vila/video>' }}{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}{{ '<|im_end|>\n' }}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7519,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 194,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 688,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2894,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nvila.py",
+      "size": 1240,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 121,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 5242359656,
+      "lfs": {
+        "size": 5242359656,
+        "sha256": "6fcee82d90b6709f451256bbebfc2cadf7fe55731cac9878d43dd35ce9443272",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 5321808048,
+      "lfs": {
+        "size": 5321808048,
+        "sha256": "d6650c3b5f2192619c44e63ab4b52b86062162c7106e3d5bc7c336e17d16d1a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 5368631104,
+      "lfs": {
+        "size": 5368631104,
+        "sha256": "610da6f8adea1111d364c7acb9abb46abd0123a440caccc50c9c9b6c8c30d7fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 241471808,
+      "lfs": {
+        "size": 241471808,
+        "sha256": "2ced3a3efab23c75b5621ac2693c7c989c850a6c8aa61b9c743a43753f3fed37",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "modeling_nvila.py",
+      "size": 25945,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 869,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_nvila.py",
+      "size": 47960,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 118,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin.index.json",
+      "size": 76263,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 597,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 2215,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 3383407,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}

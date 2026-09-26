@@ -1,0 +1,2053 @@
+{
+  "modelId": "Qwen/Qwen3.8-2.4T-A95B",
+  "author": "Qwen",
+  "sha": "207bd685a7e3696cfaff12ded7c6a7ea0f88c996",
+  "lastModified": "2026-08-12 10:24:04+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_5_moe_text",
+    "text-generation",
+    "conversational",
+    "license:other",
+    "eval-results",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 1261,
+  "downloads": 53100,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "qwen3.8-max",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen3_5MoeForCausalLM"
+    ],
+    "model_type": "qwen3_5_moe_text",
+    "num_experts": 512,
+    "num_experts_per_tok": 10,
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- macro render_content(content) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if enable_thinking is defined and enable_thinking is false %}\n    {{- raise_exception('Disabling thinking is not supported.') }}\n{%- endif %}\n{%- set reasoning_instructions = '' %}\n{%- set resolved_reasoning_effort = reasoning_effort|default('xhigh') %}\n{%- if resolved_reasoning_effort not in ('xhigh', 'medium', 'low') %}\n    {{- raise_exception('Unexpected reasoning effort ' ~ reasoning_effort ~ '. Supported types are xhigh (default), medium, and low.') }}\n{%- endif %}\n{%- if resolved_reasoning_effort == 'xhigh' %}\n    {%- set reasoning_instructions = 'Reasoning effort is set to xhigh. Please think carefully through the task, validate key assumptions, consider plausible alternatives, and prioritize correctness, consistency, and clarity in the final answer.' %}\n{%- elif resolved_reasoning_effort == 'low' %}\n    {%- set reasoning_instructions = 'Reasoning effort is set to low. Keep your thinking brief and focused, moving directly to the conclusion without unnecessary elaboration.' %}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if reasoning_instructions %}\n        {{- reasoning_instructions + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content)|trim %}\n        {%- if content %}\n            {{- '<|im_start|>system\\n' + (reasoning_instructions + '\\n\\n' if reasoning_instructions else '')  + content + '<|im_end|>\\n' }}\n        {%- elif reasoning_instructions %}\n            {{- '<|im_start|>system\\n' + reasoning_instructions + '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- elif reasoning_instructions %}\n        {{- '<|im_start|>system\\n' + reasoning_instructions + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if preserve_thinking is undefined or preserve_thinking is true or loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined and tool_call.arguments != '' %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | string if args_value is string else args_value | tojson | safe %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n<think>\\n' }}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- macro render_content(content) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if enable_thinking is defined and enable_thinking is false %}\n    {{- raise_exception('Disabling thinking is not supported.') }}\n{%- endif %}\n{%- set reasoning_instructions = '' %}\n{%- set resolved_reasoning_effort = reasoning_effort|default('xhigh') %}\n{%- if resolved_reasoning_effort not in ('xhigh', 'medium', 'low') %}\n    {{- raise_exception('Unexpected reasoning effort ' ~ reasoning_effort ~ '. Supported types are xhigh (default), medium, and low.') }}\n{%- endif %}\n{%- if resolved_reasoning_effort == 'xhigh' %}\n    {%- set reasoning_instructions = 'Reasoning effort is set to xhigh. Please think carefully through the task, validate key assumptions, consider plausible alternatives, and prioritize correctness, consistency, and clarity in the final answer.' %}\n{%- elif resolved_reasoning_effort == 'low' %}\n    {%- set reasoning_instructions = 'Reasoning effort is set to low. Keep your thinking brief and focused, moving directly to the conclusion without unnecessary elaboration.' %}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if reasoning_instructions %}\n        {{- reasoning_instructions + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content)|trim %}\n        {%- if content %}\n            {{- '<|im_start|>system\\n' + (reasoning_instructions + '\\n\\n' if reasoning_instructions else '')  + content + '<|im_end|>\\n' }}\n        {%- elif reasoning_instructions %}\n            {{- '<|im_start|>system\\n' + reasoning_instructions + '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- elif reasoning_instructions %}\n        {{- '<|im_start|>system\\n' + reasoning_instructions + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if preserve_thinking is undefined or preserve_thinking is true or loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined and tool_call.arguments != '' %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | string if args_value is string else args_value | tojson | safe %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n<think>\\n' }}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 3390,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 35755,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 7495,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3951,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 202,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 3353259,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "675aea67ad1f5fcc27441100ae915877be1848bbfc893a3358bccabfcde95af3",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "94296bc51aa4ec354e60e45c4c6c2a14fb9e569b138a9d5f755017d20d3e310a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "482276760bb83d7be77b080b4309c1d091068b3d507293c273abd199221b9d35",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "6287ee8f8136405954ef71ba706331b6dcf8d6955e0ad0cdaacc099c2ba29142",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "6e6d82adecbaa5f8df784a837f8bd0f6aa5bf6640c32b20f33c749cfa4df2a9d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "c93eacda7e9f43e4ff7167039c1b72ae8aca5d41745c85acde7b297cdc2e127c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "a6f509a8742d95df143b56b6bd312c6f57db332b44f0bfcd0b51915cc553ed3c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "1ce6593ee0befd608cfb1403df0c4270cfce307fb6c9da557ceedbfb54fe58a6",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "3c51d5b9ad98d2ad87e902f825428d1e746b6a0f833a255d5e58bdde5f8703e0",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "84f4a45289e2e254d3e8d5ab987c47e5644b7f9c5d9ff8f63a27486d929d7f19",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00213.safetensors",
+      "size": 3985468128,
+      "lfs": {
+        "size": 3985468128,
+        "sha256": "877f7cfc08e6cbe8b5ef415d66e7b3caef0f0f9956753333313b24722470a120",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "02d585d34441030b26d194294d43d71ee59e57a45a6b967272caef9251b6acf9",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "32cd6afbd7506003db3daf2a0d257ffe72602a9df1fa8a32f0bed6c6bd31cd1b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "d523ebfee18f39b16e46c90e7351b1294439f8ae9eb63799eda88275d3e15cec",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "7d7c8edec6e1ffa425b5c70946606755531ed606b64858a72526329d1b70406c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "d1e42bb72064729d2a240f9f44df1cccd189af1d797afacdb4a58afe4ac16142",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "a1b973ced021b8bb8c7738d34366e3d7004138b7945bb859c32a705b7659ecc1",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "71ecc6c498bf4948a1f766a662c1093a685493144b69a9141848413ab4b82204",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "49ec84806e304e085c95a07754be9bbf55e4abc5cc8703800964218e4d4aff8a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00213.safetensors",
+      "size": 3972721928,
+      "lfs": {
+        "size": 3972721928,
+        "sha256": "71444dc24c616c890ddeb451b02ac5d1ea42b2666ebeca6e41720069f99d8e0b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "701cfa0f2543d0bbbe905667b40c57a3dddb2597de30d6c817a181d79e1b5063",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "1b351860bcda59f66181fddb2d31f5284cb5d952c90c0de55eb0ab87c33cabf6",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "b4ac269d32bf10969da12294eb9b9298ebd862d6a963a3b501e2a22a7f28fe18",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "26ff71f5aa898a17c1dec677f63d2df6c4bb8772cedf7a68e54f6bc54c98dad1",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00213.safetensors",
+      "size": 4068475024,
+      "lfs": {
+        "size": 4068475024,
+        "sha256": "1ef0d9adc2b027072cadb235695bb2ee10917cbd204178de301d2f6c73c116a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00213.safetensors",
+      "size": 2810632576,
+      "lfs": {
+        "size": 2810632576,
+        "sha256": "5a3e6ccd051e52ebad8d0595af8026f609383474a953ea87a1e640cce8cc22f0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "5883dd8dc50dfe4cfb42b1c3495b70a097ef93a97136ff2c4613675f8feadb49",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "66fabffd552d3d14563e02a6944f6f700fabefddc037636f4b00ea8af88dd36d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "c78b377a64cc0f198148d6bb0adc165058f8d49f699ee3b182e6f2349ed4525b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "469e5e1895bbc0e814ef1b0bdb095c4fd18d68c371157c0a09b1eda0d2532125",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "5a7eaba24b602b63169e40fb15eb3aaabf172396ca1a227690a29d97c1e20c89",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "686a9bda6974a9a170b3b3f75afa2f8859c0a157ddcd723142211d73968f7270",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "1300e001bd0464ae738ffa39a350ff74464535c165a03a2ab8ba5dd4f0554910",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "3c14e0a3119076491528b5779a4300e0c00921feaddb7d62311c228f08355b7b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "2ed46abbd670b83b940f8f2147b75426fa5260774fc2aaea46439e5baa0ec3c2",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "d116a2ef78c287a893f7fc3f9ba4da817d9795d512d1b015e6556f87a23a767e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00213.safetensors",
+      "size": 3981110080,
+      "lfs": {
+        "size": 3981110080,
+        "sha256": "956f0590944a2b5318b29169660317ee0ebfe93d222eb59cc047c0d4acd91f81",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "6657feca27785511796f3959b7bdd389526a303e32c19b27090ab3cc24d45320",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "94e30a60770098fa3c21f8155ec2f95b71a8cdb95fb93c9b0d7e17b15c359fe4",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "a0b30a6b96c205da3d3a6d141f8d026a2096a10d3b9dc9fd3f9ad4f2841cf2ae",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00041-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "be2c08818cad0701f61e77deeefbf40266996856e54686b24bcf471bb8bf37d8",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00042-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "ab1ed12d9183bc9cb9730237f1fcd1e8e3e414dfe8a297f4d428752c0d0f13da",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00043-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "6e66dbd0f80d865cc0b027a10c1a50b904907c7503576cf8868b3c3bd3e8c6a1",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00044-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "c3b752b8c2ac744e0f3ccc925181d3187ede62b911c92ef2ab0ffc2bf4625a8d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00045-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "60833d6f54d073dfb03ec2e08f0b0d1a0811d7c95ff19172dc22623e5a52b332",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00046-of-00213.safetensors",
+      "size": 3939167440,
+      "lfs": {
+        "size": 3939167440,
+        "sha256": "c3a0e72f5c47e69d63a04574c1c9172cd1430d12c5886dd3178a82d2eebaa301",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "c821094b25a11217e844e0906b04132a24df3bac269d7a9dc30d41739b3a9bde",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00048-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "86f3a55cc4c84f9bf9185c40a83e4c8b85063d03c73eb2d192db463ef0bf570b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00049-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "3523fb9ec0a769eb5c49b33146fd321dd8d1f70011a166c5c674745ded634248",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00050-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "d41f8971cbed5f0ec180c41c7d9457c2df20498304f1893bd21a4caa8bd005f0",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00051-of-00213.safetensors",
+      "size": 2810632616,
+      "lfs": {
+        "size": 2810632616,
+        "sha256": "398fb200ddec3e13ec921f143f187334f6f6c5c99d0c4bb5ad6c60377314d1be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00052-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "117b46e91aabb27bc6d496e4fdbd6591285ea924c95448dec8f445c7bf4fa1d2",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00053-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "046b4fee872edb4b4011a42da9866149f846dbc7959382290c39b3b4f6df390e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00054-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "73301a195b26d57c2c385cafc5b9d97c4094ea02e432364e1631f03d672575fe",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00055-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "4a7480c9f2239b4bf314bcf0b2a40ef8891f0946d8d66702cb9a212b276ae83b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00056-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "110b469db9d19c0b71252561ea2a6c96ff0939891aa0ecba55f4eacd9542e693",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00057-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "a6206c0e1929d6691bd23272730bf00f8b9597bddb0e67a3f9e9be272368530d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00058-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "32977bc3de6f60bdeeb2508cd3740d8c8e276c15490a18bc518675401359530f",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00059-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "79d095591ae642617e4556d5d76c913ce705a028d60b28e9215b0293f187655c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00060-of-00213.safetensors",
+      "size": 3909971448,
+      "lfs": {
+        "size": 3909971448,
+        "sha256": "91fdbd030058ea70e8517886687386daf6847df0860d36456eecae081f652e1c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00061-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "e70bf82cb71d0e215867e4b2d138c6ff89f4fcb4bacdbe4ac3185965b4ede7fb",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00062-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "1ec8229fc73052c5a7685a1b122b5c47d62831064d3a42bbf6fe40bb256c4db8",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00063-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "93ba0ff43c85e9b18b01966801dee26f131801bbf7aaf2105b0d3e02a5b1fe89",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00064-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "2923aa860f1869e9430b78ed5e8271326db20543be1454fd6202a900a610df20",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00065-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "1d693b2536d59f6a80dd6fa3b65ba703b2a374ab9e2f6a90f3c703072cff228f",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00066-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "675981003acc10491022243d46350ef1722fdab1dcc547b01551cdc2ea3b4793",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00067-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "fbed026b43093e083e5934cc27f3641cb22464e9571bafd6a4dfdacb0405bff8",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00068-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "5ee5323e37d40dacbc8bf6a33fa1920b3503d13cfd64aa73677c6f2460a483ed",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00069-of-00213.safetensors",
+      "size": 3905595768,
+      "lfs": {
+        "size": 3905595768,
+        "sha256": "50ca800bf19b59dde344f181dc27f42991debf0ec02b5f9d77649bd68d92cbdc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00070-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "73af2b899082dcfdf1a57b83b2f7a6f6b59f11b11e9d1c3633f7d260acba51c6",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00071-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ea8fc51051600cd0e2fc982d631ae70b0e89631497a5cf7fb9965730902c8e29",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00072-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "01b1d42db7d1f0371f50bcc55670c0fc23c0fa9d641dda6ed7ae72959e2455a3",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00073-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "c7c9a883e79f75369bc0a2e55db497146e6082d78455a8e7367925cffda2c5db",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00074-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "fe96bf3ea8131d37ce3e18a9390f5556983571f67a9333db8a7dec73e7e2341a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00075-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "84e73e50ac8cda3819074e326ee83ae36dc2ea939820055bc1ba3f01d1fe0160",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00076-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "52a92954aed0fb38849724f947670ab622c2519230eb1eaf5c245fd342b838d1",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00077-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "c36a66d77e0e6f2c949b6994297609dad2c926b6ba6ff2e7cbed4e9a6c7e7b89",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00078-of-00213.safetensors",
+      "size": 3901220040,
+      "lfs": {
+        "size": 3901220040,
+        "sha256": "55df06150ab0da61dc5b889545483c31038637d71adff6f349b61ebbc2554bde",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00079-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "7d59039e14c0a2f73b9c64b3e1d9367d50bec117ec5d785ed93177cc0275b93e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00080-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "e09230db474c0f936844b926416ae6a7a899e90b8a0f59f8158d7913081a2b8c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00081-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "f2953cc349965e3ab5d26e145d7312a9f351bd124b52ae81d8c3e0e6dd145a85",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00082-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ed48949d2516dc9ff73b0de58ed6287a180cbfe4d329ca168c3a43581ff0ed86",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00083-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "ad19c2a22de0aa17335d8aecb57b237c6c9cf5156b687a5460536ba46cb05750",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00084-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "e245ad957276ab52becb82d5718af2c77b78e38658e998fe5b0ba5b3be32c01a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00085-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "c83ec1c110e06c5a355ec75248d01d37a3908ff02d2dca0159877ffd4ca658ae",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00086-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "2469577a7abc854f2bd54d0a8e9181be43ebc72bf4b2044df43638f18bc70590",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00087-of-00213.safetensors",
+      "size": 3909971448,
+      "lfs": {
+        "size": 3909971448,
+        "sha256": "c6ba3a46758c55b8a37fb1f8d9eb29cedfb6f241a4e83bde92b42274fef5b024",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00088-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "57d3531be133a1726203465c533839155f94508ed812b51c6929c80377345754",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00089-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "30c7b9f6c50d02fe78a3cf493dc371c5daa3ba9d5dd67b9ebd510a1e71373b73",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00090-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "5373f28a7ca93abe98b76d14b3914587a6942f36a7c9dea19cc8c83d25f9ab31",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00091-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "1ffc2131a38476f6134b17cce0486291d9f48f114a8df74d3b91c7581745a79c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00092-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "1e6da41a1c0242c3d195e234feffe9b621a3fe426321b1dda896826c47c4ece5",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00093-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "2ba68f0c29441c64128b3f4144353a7806eaf8b8dd369dc00811e9ba86d9ae05",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00094-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "f3e6604fca2951280853628721abef1229490ce5d8049087dcebc65d142d2ad2",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00095-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "dd9fe1f6a569b1aa76b63248d7c97b67f478bd6a2bcbe832d5e8d1c082eafcc4",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00096-of-00213.safetensors",
+      "size": 3905595768,
+      "lfs": {
+        "size": 3905595768,
+        "sha256": "fcd9138bac5af5f086bca13ac7947e4cac710b1b975ac32ad79b858a9e0f8787",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00097-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "56b134b9f74719a38adb90928cd5d74cae4dda3b469eaccfb7079374e2e50b9d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00098-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "2d6ac51cf7ab8fa32050c4eafceba098033c98c9be74ba3ffef0cb3f7703ac27",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00099-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "8369482a953c6c0a9509b427339e502e2b08a93a197b7ed365df2c99300dc898",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00100-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "8429b78ff3e329dc205192a2f397ca9ad2a6fa87dca598299d1e7216cbb25c9f",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00101-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "96ad0299bcec8a61445c3b40a6ff314e79bed7e37f0f79abdacc383ffab7c245",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00102-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "294cbd7ce5052e41f7c77c103837e21d7606dc77e138cef3156285107618fe41",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00103-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "ede77657c1be7c78a2e36967776922a2e3e419474be323a91bf8e0224b507645",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00104-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "79e11e2adcaa067e686e028c3b7f8bb9a681b69f882610482485e620a4bb7d4d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00105-of-00213.safetensors",
+      "size": 3901220040,
+      "lfs": {
+        "size": 3901220040,
+        "sha256": "8f5fe480e73eeba19597015c042548b64c145ded1e67d5aa87ab049f81fbfc21",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00106-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "da6872918f27191acc512110e4984292a197a59d0e85714bf86c7f16e115a57e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00107-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "e2302a17f72677b7205bd3611ceace4d767d7bae4194c351438ab8dbc4e2f9ab",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00108-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "e0c62a1ceba54f03e691846c31dbf7f9d6b182ef5b8ed1b7049012b1f1e5c7a0",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00109-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "0b43f55e36997c0c1a9840158c71def53c01aa4b28cf8184483e6bceb5da014e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00110-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "1615c53e8c897a85bb8f53603b847d696850a0e2a1cb6817b0772b35831da9f4",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00111-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "914814797f91e4c89888ff6cf7094e43d7bf6e5c137fb3698182b596c0f66a0b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00112-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "16e6a02bb01d4ac43aa7c66b889561e97b34d33a0c81e182e1fb0c6b0c8bff78",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00113-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "87c75127cdaeac503a0147dd60f6c2629eda2780c6f2197cbe5fc236e24ad636",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00114-of-00213.safetensors",
+      "size": 3909971448,
+      "lfs": {
+        "size": 3909971448,
+        "sha256": "8e704df5e0ebae1f2d4bbd1dee192848a518d195749699cdcea6d1165695eb0d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00115-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "b1bf7abdf471dbc58a181c630af2083f015809d7a8f714615e994bee2d904999",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00116-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "1ac2ea18ae70afb9b8e32f3198be4fa28d0811fd07d30f421138f50d853dd36e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00117-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "b928e485b2441bc77a091cbd56f4a51fc6c6074a0214979993bcc7a51c588c7c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00118-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "05f9b84c0aca08608cf453a46046077903902a7d6446981b594a7af5be13e6a9",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00119-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "856963ff6562b25931150b03c891dd55eb4d178f23bb4690885c55f8c403161e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00120-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "a21148e838e7fb4294f3ed1467bdfe0f2af35902ba1c3600251d1df5d381e6d4",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00121-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "469b451d82b02b80490ce7d733117e4437e44477851f245eaf0ec6a006e5c234",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00122-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "6b3f36c00c69e3dc6464e791f3e8b33bcff5a59f681acd57933589f7bc86aa6a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00123-of-00213.safetensors",
+      "size": 3905595768,
+      "lfs": {
+        "size": 3905595768,
+        "sha256": "721bb16dbde56eb5231502f88e4d1c6f4e03ff386e65adba78724d2407d6b4e5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00124-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "82c3815bc8059a448fbe43b283038b18c2b624aa82ef2d1c2ae8abb05fd0e23b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00125-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "b5e0fb07e4678771a1a341e57d12572b4ca80d8ebff303c473db86ddbec8d272",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00126-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "43fbac6fef686e6f7e78afcb94cb8b82f4c595a3d0fd8119fbf93d4277bed7cf",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00127-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "b4c2b1761a225f8f3c736f3107cd95a4812b339df0d32239750e26ad3ed9447a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00128-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "8a52016b7800a259de3b36aa8445bd25239def0ac207877478d7ca4d66e53ac5",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00129-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "8f34ee996150a909e7c6a476f9702192a72f51be1f0c39bdb040e7f95f96ece5",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00130-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "502bb65f5a6c0090d449afefcc4315c7233d2ab048beaeeca4b05e284e465ba8",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00131-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "79354e2878ab0fb846c2803a428017d05f027bb54edfe0fed2732a4f65877dbf",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00132-of-00213.safetensors",
+      "size": 3901220040,
+      "lfs": {
+        "size": 3901220040,
+        "sha256": "8f4d4146816ba388a38c1b768373d19d7535370700bea19df8e7555b45cdd0cd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00133-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "2ca6c8294f666b7cbb3c38c028d74ff750c3605300e98eab48c17d4d45b7860a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00134-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "50d667cade14d9cb5146ea27f4ae95f27148c777f7587efbd442089f9cdf798b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00135-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "64c45aebbb9247fd3b3146ecfcd17ce7982f5d793b8f2732814347ec3c9fedb3",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00136-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "a0c655673fb4f573a239d049775282dbed84792066c0e6c43ca666d5c52cf2b8",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00137-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "087878083e38d503496847b2075660e2352b69cf6f645e6d9aac61fbdbaccf32",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00138-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "8f10fb2d800069758d5d7860e27a2c4e4070e2b8b13091cd9b670665c36ac2ac",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00139-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "067d0729517eb3c85ceefd4964806a0e7b862784b1928bed570d44bfaead3954",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00140-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "a2aa161135bf4063f3a2edf8c757f5cdc6a567bf0b1071ebaa3cd3dff19f3d56",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00141-of-00213.safetensors",
+      "size": 3909971448,
+      "lfs": {
+        "size": 3909971448,
+        "sha256": "d9612fdbb90e01509d261cde2a9d5f39ed80841342fd1baa64c12104bb7797fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00142-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "599a55da62f7c1038ec7510754464d9bb7281014b3e82ba2c1b64cb5915a30c9",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00143-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ebce29dca39a49f008c00e28955a3606004f80bdabb49394bfc6954d4f50185c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00144-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "7362beda9e4b4992d5afc3a234503a3b96bf9e8ee59c9f401b4163302a0371c7",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00145-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "2559336615c7d86ce1e597378c2ddb0bae0680b736309a7bb868b94164b78d51",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00146-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "52a80eaec8d9a1e7017a79eaeab92b699762518e66b01a187efac5dfe54c859d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00147-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "659a6ce618ddff94a888077da35bbbce1668878d9ff25c8c954f56254d9b4fc0",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00148-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "ecf6d4fce41924c13e887da3e7e11e504656b95622b1552a53b7cb13f46a2d20",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00149-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "51bc3e5af1f57664910ad21d6d1293288286383db0c20e353fc4e243862010db",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00150-of-00213.safetensors",
+      "size": 3905595768,
+      "lfs": {
+        "size": 3905595768,
+        "sha256": "6a5af7be49bda313e4a25b8f03f9c66fd2ca17e01f7c7741ae8e553822a58335",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00151-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "1ed3ca2f880f12fa6bd762f9edf25e5554dc81ead28608d6ffea5173d63ba998",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00152-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "979316088e99e9b912c0bcec61207c5d5530d40dd2b933d9ac297aa6bb6cc3a0",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00153-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "d0853c3c785c3387f49f0295e5b9b9a5c53ca601d3fe3acff7a6babcc449b78b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00154-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "274413292bb401439e82eff62cdb798030bed1cee692e706a39ff103ab278a7c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00155-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "a7d6a3490c8cf0b3ffce295b670061826827a177ce17f56b3dc1653698642e6d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00156-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ea23b9acd4b4168afd7c96d39db52f5167248617c388e53a6ea2aec9d106d8b8",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00157-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "ecf722e01d2a64652d0e3780c1aa78706d8d0bbcdcba5407ce4b33b6f5c77452",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00158-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "c38269465a14a4930f01bef10b46b9f2f4d5331a4ce81b98311477986412006f",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00159-of-00213.safetensors",
+      "size": 3901220040,
+      "lfs": {
+        "size": 3901220040,
+        "sha256": "ec7ac31d2f88845161917403582003177a45d6cb784aac4fad5b4f2e8831389a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00160-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "0137a62abaef6a4cf06b52fe2bb61086cb493c65351b34782c3f8125637c99fd",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00161-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "74d427dcd4160ec558457cdbdf73fb43729be1e1bb490ea5a82c0e38eb8a13f0",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00162-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "58131e357cf671ef56cdf3f7f77aed434bf70ff7ea1386a2e6e1b74f10b48c8d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00163-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "d5dcc6208a8c95fef6f3f4f479cf17cd5b9020d3ec011de9bd390350c4ec4563",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00164-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "32d2b23eede7dcc4856b1e43579b346c4efa3e91aafbc6b24d0f394a50a072aa",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00165-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ed57f68b6a0826dc37cb6f139ad15c268576f336c502f11c129f1b85003702d0",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00166-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "f57dda31928e4c73d43a7e7af818d542a8238f5b617c0c8ce94d64a5a962768c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00167-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ce88021081432ed9051db85e7f56995d0bbee684ea93194942b2141a278c7770",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00168-of-00213.safetensors",
+      "size": 3909971448,
+      "lfs": {
+        "size": 3909971448,
+        "sha256": "07d4b1b806b7d9a56a97f74b87d741da0e16d7717945fb78c8fbfe8b2159168e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00169-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "24c7736edc6f37f57f9afd08e664fc7b6759d64cc8f2c41b25fd2782a2e44bdd",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00170-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "9728bef27293559f3de8fe365e4cc9fce65f19eead8dd1e8eb84ba212b5595e4",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00171-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "a512367666f6cce86f4976fd7333808991e2247ed72f85c4b9ffd053be5e26bf",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00172-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ff6a30fbc55da3d3ffea90c610af5921b4aeaa1c8fd701ae2e9490d45cebcba7",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00173-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "979e85d34f051b94a90e4e2025b14cad641a9f83a8423cd0d833026e6f694a8b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00174-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "938fbf902c947b1b2051b28823135d74e5f4b52d18cdeb6426eb704aefff11a5",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00175-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "dc6f84fd844481c81c16169e8535949f89c0aa77553baa0613d8faa7f1e91110",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00176-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "c96379e3e8ee1b7ba7009eed2645c0628a3c39ae0c25417d5d883a6d64c9d1ce",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00177-of-00213.safetensors",
+      "size": 3905595768,
+      "lfs": {
+        "size": 3905595768,
+        "sha256": "1c397e4590d064ccfea49f349357a01a4a48a40b2259a5e81f1c5fabc776571d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00178-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "f1c585ba216f4c7398de074dc31d9a0bef419e2e8e58c8ca3c5e0a6d37d26065",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00179-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "1c07ad98fd61556634de7cb54fde644758f50a13eb540e23cd33b3a9ef07154e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00180-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "91a793b7925d17adca3e5b2cefb2eb374bc03931484fa1e4c23578e1850b9d38",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00181-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "d2018fd30f46326e4820cba95efd3320d3bc5965de8225841891223036b1f1f8",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00182-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "938aa606de2a1a51acc906bd5db99ba12f50590583744fde9bc8a7093c26ca3a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00183-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "8fa2db640bd777bccdb291d1fea765f73af3f4395cede301529ff71d67758715",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00184-of-00213.safetensors",
+      "size": 2915342928,
+      "lfs": {
+        "size": 2915342928,
+        "sha256": "e44bf012b5230d8bbea4f4fc86c2d3995f472b49c67f12e8e0bd087c942281bd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00185-of-00213.safetensors",
+      "size": 34359738520,
+      "lfs": {
+        "size": 34359738520,
+        "sha256": "381a51304428e3d474db359f5f312d09f16a660ff8c72b4c79fc2fbf47318da4",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00186-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "235b128313ec9ef6ffcfef7540c7281f3aa5bf68e0ab8c1e5faae3bce9e408ec",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00187-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "a882247cecf29b234e9ccc13fc782266d2dfb927f5f119ef3481697189ea2415",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00188-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "8cfca1d3ee407526e7389321bd4e57cbcacc63051bdc2b0036d113ffe0a4ad46",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00189-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "aff970e7613d3cdaf2c810d3f0825781d828c4e6bfbba0145fa1906530b32782",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00190-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "ef78b5c285c2d0a29d02cd088d7bb147077a06f678d9688af637511fda8c416b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00191-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "f4e9b043eeaf8e3c003b6cc2b32ae3bd3fdfaeaa9a7cdae809494a28d24e1924",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00192-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "fa6c83ff023fec83ade4f0aeaf262017deaeb6dbf3049d3ab46ae8bde46c3524",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00193-of-00213.safetensors",
+      "size": 3565758144,
+      "lfs": {
+        "size": 3565758144,
+        "sha256": "93d5f842903252cb1f705786413de864983958cca3c877afe5586a50726ee62f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00194-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "c0793cc5447997898907f21231a962508a2471e1ca08bd67697b7b3d1a4d5f09",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00195-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "2dba97ab3387784643ed63153647a331136241bc1f63f9b686918df23da96fe9",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00196-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "8e6a1c797eb30a0e4679be3f6b92e67f3d181e59b4ee21739b2956b17052eda5",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00197-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "d4671cd0cb80d015889d9cf5cf5bf9ef6e324d380e750f5db0dda5965fa0038d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00198-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "5672a8ef69616c0736e9d5e7167064f451f2470614fd20706dacc56e80bccafa",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00199-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "efe732b4d1fa91299c7cc239b8baf2f0d652ee742b3656adb7b544bc7d0f3f4a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00200-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "090ef98f2e16f02c1558662001eeb3f607e6fbd1d744521bec639a4f9e3d4e79",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00201-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "293e8c8b7e70ddc8f5022dd42eda2de85edff93f6e43247d951c998b5634fb88",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00202-of-00213.safetensors",
+      "size": 3905595768,
+      "lfs": {
+        "size": 3905595768,
+        "sha256": "e991d2f71f184146c6410bfd7966aac59f4e17e07592f279e075ab145e1a319a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00203-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "3acc9a7ce890d6c7644f7f9887d5a8885b42324b4e640773bd4388813ca7c0a2",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00204-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "3a2f5276d583d1a6bfdb1f6f33d8d2a3d53766e16140c5a21ff0d56cd91fbe04",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00205-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "7f35835c9251b60a781ae0601b9d6d760f489c0b280e95327e81b907727b9c49",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00206-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "bfa9c888d12a5016016ad7af4f1094d6c7cd800dd3431eecd05aff8f5587986b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00207-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "7197407e0378927504a3dd0428d1f8c4db3ba8ba012dc6b2252d824e930189fb",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00208-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "d8e354efce37a89a7b4c04c3a40bd3ece7461c1f37be6d68dcd49f6643ae3276",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00209-of-00213.safetensors",
+      "size": 34359738528,
+      "lfs": {
+        "size": 34359738528,
+        "sha256": "4b51e67ba1b6933a13c92eb5bc385f19454b21bdaf37d440ebb594f2f690f17d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00210-of-00213.safetensors",
+      "size": 17179869336,
+      "lfs": {
+        "size": 17179869336,
+        "sha256": "2921f60bb63b5650bdb3c08232c59335014701458f20646c4d4e634e240fecbb",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00211-of-00213.safetensors",
+      "size": 3905595768,
+      "lfs": {
+        "size": 3905595768,
+        "sha256": "3ac908a353a3beb21c2b356fb10c0da5ecc61eb2d0ae409ebb68472d49f2ea09",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00212-of-00213.safetensors",
+      "size": 4068475008,
+      "lfs": {
+        "size": 4068475008,
+        "sha256": "73ff47b0589382a25360682155073b09029fc3aa63db221f6c7381b10fad19ad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00213-of-00213.safetensors",
+      "size": 570426344,
+      "lfs": {
+        "size": 570426344,
+        "sha256": "12d82afb3745a904a6be39ffd72511a96b204ffe5d855177cb3f35f124d310f3",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 137777,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 12809320,
+      "lfs": {
+        "size": 12809320,
+        "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 16438,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 6722759,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: qwen3.8-max\nlicense_link: LICENSE\npipeline_tag: text-generation\n---\n\n# Qwen3.8-2.4T-A95B\n\n[![Qwen Studio](https://img.shields.io/badge/Qwen%20Studio-536af5?logo=qwen&logoColor=white)](https://chat.qwen.ai/?models=qwen3.8-max) \n\n> [!Note]\n> This repository contains model weights and configuration files for the post-trained model in the Hugging Face Transformers format. \n>\n> These artifacts are compatible with vLLM, SGLang, TokenSpeed, etc.\n\n> [!Tip]\n> For users seeking managed, scalable inference without infrastructure maintenance, the official Qwen API service is provided by [Qwen Cloud](https://www.qwencloud.com).\n>\n> In particular, **Qwen3.8-Max** is the official version based on Qwen3.8-2.4T-A95B with more features, such as vision input & non-thinking support, 1M context length by default, official built-in tools, etc.\n> For more information, please refer to the [Qwen3.8-Max Overview](https://www.qwencloud.com/models/qwen3.8-max).\n\n\nFollowing the widespread community adoption of the Qwen3.5 and Qwen3.6 series, we are pleased to introduce Qwen3.8, the most capable generation in the Qwen open-model family to date.\n\nFor the first time, Qwen3.8 brings a Qwen-Max-class model to open release.\nBuilt on the architectural foundation of Qwen3.5, Qwen3.8 delivers substantial gains across coding, professional work, research, and long-horizon agentic tasks. Beyond answering harder questions, Qwen3.8 is designed to carry complex, multi-step tasks through to completion with greater reliability.\n\n## Qwen3.8 Highlights\n\nQwen3.8 features the following enhancements:\n- **Core Capabilities**: Comprehensive improvements across coding, professional work, research, and long-horizon agentic tasks.\n- **Agent Execution**: Stronger autonomous planning and better handling of environment feedback, leading to more reliable end-to-end task completion.\n- **Downstream Compatibility**: Broader support for popular harnesses and development tools, making it easier to integrate into your existing stack.\n- **Flexible Thinking Control**: Reasoning depth can be tuned with `reasoning_effort`, and reasoning context from historical messages is retained via `preserve_thinking`.\n\n\nFor more details, please refer to our blog post [Qwen3.8-Max](https://qwen.ai/blog?id=qwen3.8).\n\n## Model Overview\n\n- Type: Causal Language Model\n- Training Stage: Pre-training & Post-training\n- Language Model\n    - Number of Parameters: 2.4T in total and 95B activated\n    - Hidden Dimension: 8192\n    - Token Embedding: 248,320 (Padded)\n    - Number of Layers: 92\n    - Hidden Layout: 23 \u00d7 (3 \u00d7 (Gated DeltaNet \u2192 MoE) \u2192 1 \u00d7 (Gated Attention \u2192 MoE))\n    - Gated DeltaNet:\n        - Number of Linear Attention Heads: 128 for V and 16 for QK\n        - Head Dimension: 128\n    - Gated Attention:\n        - Number of Attention Heads: 64 for Q and 4 for KV\n        - Head Dimension: 256\n        - Rotary Position Embedding Dimension: 64\n    - Mixture of Experts:\n        - Number of Experts: 512\n        - Number of Activated Experts: 10 Routed + 1 Shared\n        - Expert Intermediate Dimension: 2048\n    - LM Output: 248,320 (Padded)\n    - MTP (Multi-Token Prediction): trained with multiple steps\n- Context Length: 262,144 natively and extensible up to 1,010,000 tokens.\n\n\n## Benchmark Results\n\n\n<div style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:1000px;margin:0 auto;padding:16px 0\">\n<table style=\"width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px\">\n<thead><tr>\n<th style=\"padding:10px 7px;text-align:left;font-weight:600;border-bottom:2px solid #0A2EFE;color:#0A2EFE\"></th><th style=\"padding:10px 7px;text-align:center;font-weight:500;border-bottom:2px solid #0A2EFE;color:#0A2EFE;font-size: 14px;width:14.00%;\">Opus 4.8</th><th style=\"padding:10px 7px;text-align:center;font-weight:500;border-bottom:2px solid #0A2EFE;color:#0A2EFE;font-size: 14px;width:14.00%;\">Fable 5</th><th style=\"padding:10px 7px;text-align:center;font-weight:500;border-bottom:2px solid #0A2EFE;color:#0A2EFE;font-size: 14px;width:14.00%;\">GPT 5.6 Sol (max)</th><th style=\"padding:10px 7px;text-align:center;font-weight:500;border-bottom:2px solid #0A2EFE;color:#0A2EFE;font-size: 14px;width:14.00%;\">Qwen3.7-Max</th><th style=\"padding:10px 7px;text-align:center;font-weight:500;border-bottom:2px solid #0A2EFE;color:#0A2EFE;font-size: 14px;width:14.00%;background:rgba(10, 46, 254, 0.08);\">Qwen3.8-Max</th></tr></thead>\n<tbody>\n<tr><td colspan=\"6\" style=\"padding:8px 12px;font-weight:600;color:#0A2EFE;border-bottom:1px solid rgba(10, 46, 254, 0.2);background:#D6DAFC\">Coding Agent</td></tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Terminal Bench 2.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">84.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">84.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">88.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">74.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">86.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SWE-bench Pro</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">69.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">80.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">64.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">60.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">67.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">DeepSWE 1.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">59.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">70.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">73.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">21.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">56.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">NL2Repo-Bench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">69.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">--</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">--</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">47.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">55.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">FrontierSWE</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">70.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">88.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">--</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">40.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">73.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MLS-Bench-Lite</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">42.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">49.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">46.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">31.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">41.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">PaperBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">80.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">88.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">90.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">64.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">93.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">AndroidBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">69.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">84.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">74.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">56.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">75.1</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">QwenSWEBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">84.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">86.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">73.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">63.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">80.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">QwenQoderBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">62.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">63.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">53.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">36.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">58.4</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">QwenReactBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1694</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1770</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1564</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1538</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">1724</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">QwenSVGBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1648</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1690</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1758</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">1499</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">1713</td>\n</tr>\n<tr><td colspan=\"6\" style=\"padding:8px 12px;font-weight:600;color:#0A2EFE;border-bottom:1px solid rgba(10, 46, 254, 0.2);background:#D6DAFC\">General Agent</td></tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">CoWorkBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">72.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">75.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">71.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">64.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">74.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">WorkSpaceBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">66.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">68.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">65.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">61.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">67.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">JobBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">48.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">57.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">45.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">31.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">53.4</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SkillsBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">65.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">70.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">73.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">61.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">70.2</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Agents' Last Exam (Pass / Score)</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">27.0 / 45.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">-- / --</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">30.6 / 53.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">11.8 / 31.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">27.0 / 52.4</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Automation-Bench (Pass@1)</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">27.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">29.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">29.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">14.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">27.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Toolathlon Verified (Pass@1)</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">76.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">77.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">74.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">49.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">72.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">WideSearch</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">72.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">81.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">--</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">75.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">81.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HLE w/ tools</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">57.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">64.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">58.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">53.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">56.2</td>\n</tr>\n<tr><td colspan=\"6\" style=\"padding:8px 12px;font-weight:600;color:#0A2EFE;border-bottom:1px solid rgba(10, 46, 254, 0.2);background:#D6DAFC\">General Capabilities</td></tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">GPQA Diamond</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">92.0</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">92.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">94.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">92.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">92.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HLE</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">45.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">53.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">47.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">41.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">43.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">IFBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">62.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">63.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">72.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">79.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">82.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">$OneMillion-Bench (expert score)</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">41.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">55.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">53.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">44.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">52.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HealthBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">52.4</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">--</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">55.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">54.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">60.2</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">PLawBench</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">69.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">70.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">72.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">58.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">73.2</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">PRBench-Legal</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">52.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">57.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">57.6</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">48.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">57.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">PRBench-Finance</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">51.9</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">55.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">55.5</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">46.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">58.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MRCR v2 256K (8-needle)</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">83.2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">--</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">93.8</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">86.7</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">92.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 7px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">LongBench v2</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">69.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">--</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">67.1</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">65.3</td>\n<td style=\"padding:7px 7px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15);background:rgba(10, 46, 254, 0.08);\">66.3</td>\n</tr>\n</tbody>\n</table>\n<p style=\"margin-top:12px;font-size:10px;line-height:1.4;opacity:0.7\">1. Fable5 results may involve fallbacks.<br>2. Terminal Bench 2.1: Evaluated with Claude Code (avg@10), using a 5-hour timeout and max_tokens=131,072. For all other models, we report the best published score across harnesses: Claude Opus 4.8 and Claude Fable 5 with Terminus 2 from Artificial Analysis (https://artificialanalysis.ai/evaluations/terminalbench-v2-1); GPT-5.6 Sol with Codex (https://openai.com/index/previewing-gpt-5-6-sol/).<br>3. SWE-bench Pro: Evaluated with the Claude Code harness, temp=1.0, top_p=0.95, and a 256K context window. Problematic tasks corrected and all baselines evaluated on the refined benchmark.<br>4. DeepSWE 1.1: Evaluated with the Claude Code and mini-SWE-agent harnesses, temp=1.0, top_p=0.95, and a 256K context window. We report the highest score among both harnesses; notably, Qwen3.8-Max performs best on Claude Code.<br>5. NL2Repo-Bench: Evaluated with the Claude Code harness. To prevent reward hacking, we disable Bash commands that attempt to access the specific repository, such as pip download, pip install, and git clone.<br>6. FrontierSWE: Evaluated with the Claude Code harness. All other available MEAN@5 results are taken from the official FrontierSWE leaderboard (https://www.frontierswe.com) as of August 3, 2026. Dominance scores are recomputed from the raw scores using the official evaluation script. \"--\" indicates that no official MEAN@5 result was available as of that date.<br>7. MLS-Bench-Lite: Evaluated with Claude Code using a 5-hour timeout and max_tokens=131,072. All other model scores are taken from the official leaderboard.<br>8. PaperBench: Evaluated in the BasicAgent setting under Code-Dev mode, judged by Claude Opus 4.6, and averaged over 3 runs (max 12 hours per run).<br>9. AndroidBench: Evaluated on the 95-task public subset, reporting avg@3 scores.<br>10. QwenSWEBench: Inhouse coding benchmark to evaluate models' software engineering capabilities. Evaluated with the Claude Code harness. Reporting avg@3 with an 8-hour timeout, max_tokens=32,768, temperature=1.0, and a 256K-token context window.<br>11. QwenQoderBench: Inhouse coding benchmark to evaluate user experience on Qoder. Evaluated with the Claude Code harness. Reporting avg@5 with a 6-hour timeout, max_tokens=32,768, temperature=1.0, and a 256K-token context window.<br>12. QwenReactBench: Inhouse React project building benchmark using Claude Code as the harness, bilingual (EN/CN), 7 categories; auto-render + multimodal judge; BT/Elo rating.<br>13. QwenSVGBench: Inhouse SVG code generation benchmark; bilingual (EN/CN), auto-render + multimodal judge; BT/Elo rating.<br>14. CoWorkBench: Inhouse cowork benchmark for evaluating long-horizon tasks across computer science, finance, law, medical, and other productivity domains.<br>15. SkillsBench: Evaluated on the public SkillsBench v1.1 benchmark across 87 tasks, reporting the average score over three runs per task. Opus 4.8 and Fable 5 are evaluated on Claude Code; GPT-5.6 Sol is evaluated on Codex; the Qwen-series are evaluated on OpenCode. All results are from our own testing.<br>16. Automation-Bench: Evaluated on the 600-task public subset.<br>17. WideSearch: Evaluated with the Claude Code harness for external models and the Qwen-Agent harness for ours, reporting the average item-F1 over four runs.<br>18. $OneMillion-Bench: Evaluated using gemini-3.1-pro-preview.<br>19. PLawBench: Evaluated using gemini-3.1-pro-preview.<br>20. Empty cells (--): Scores are not yet available or are not applicable.</p>\n</div>\n\n\n## Quickstart\n\nFor streamlined integration, we recommend using Qwen3.8 via APIs.\n\n### Serving Qwen3.8\n\n> [!Important]\n> Inference efficiency and throughput vary significantly across frameworks. \n> We recommend using the latest framework versions to ensure optimal performance and compatibility.\n> For production workloads or high-throughput scenarios, dedicated serving engines such as SGLang, vLLM, or TokenSpeed are recommended.\n\nQwen3.8 can be deployed with popular inference frameworks, e.g.:\n\n- [SGLang](https://www.sglang.io/): [Qwen3.8 Cookbook](https://docs.sglang.io/cookbook/autoregressive/Qwen/Qwen3.8)\n- [vLLM](https://vllm.ai/): [Qwen3.8 Recipe](https://recipes.vllm.ai/Qwen/Qwen3.8-2.4T-A95B)\n- [TokenSpeed](https://lightseek.org/tokenspeed/): [Qwen3.8 Recipe](https://lightseek.org/tokenspeed/recipes/models#qwen3-8)\n\n\n### API Usage\n\n> [!Important]\n> Qwen3.8-2.4T-A95B is a text-only model that requires thinking mode for all interactions. Multimodal inputs are not supported, and thinking cannot be disabled. Every response will automatically begin with reasoning enclosed in `<think>\\n...</think>\\n\\n` before the final output.\n\n> [!Tip]\n> We recommend using the following set of sampling parameters for generation:\n> - `temperature=1.0, top_p=0.95, top_k=20, min_p=0.0, presence_penalty=0.0, repetition_penalty=1.0`\n>\n> Please note that the support for sampling parameters varies according to inference frameworks.\n\n\nQwen3.8 comes with official support for `reasoning_effort`, which can be used to adjust reasoning depth and control cost:  \n  - `xhigh` (default): for complex tasks demanding thorough analysis\n  - `medium`: balancing accuracy and speed\n  - `low`: efficient reasoning optimizing for speed and cost\n\nIn addition, `preserve_thinking` is enabled by default for all workloads for the best out-of-the-box experience.\n\n\n#### Chat Completions API\n\nThe Chat Completions API can be used with most inference frameworks, as well as [Qwen Cloud](https://www.qwencloud.com).\nBefore starting, make sure the OpenAI Python SDK is installed and the API key and the API base URL are configured, e.g.:\n```shell\npip install -U openai\n\n# Set the following accordingly\nexport OPENAI_BASE_URL='your-base-url'\nexport OPENAI_API_KEY='your-api-key'\n```\n\n##### Text-Only Input\n\n```python\nfrom openai import OpenAI\n# Configured by environment variables\nclient = OpenAI()\n\nmessages = [{\"role\": \"user\", \"content\": \"Write a Python function to merge two sorted linked lists.\"}]\n\ncompletion = client.chat.completions.create(\n    model=\"Qwen/Qwen3.8-2.4T-A95B\",\n    messages=messages,\n    extra_body={\n        \"chat_template_kwargs\": {\n            \"enable_thinking\": True,  # on by default; should not be turned off\n            \"preserve_thinking\": True, # on by default\n        },\n    },\n    reasoning_effort=\"xhigh\",  # xhigh by default; supported levels are xhigh, medium, and low\n    stream=True,\n    stream_options={\"include_usage\": True},\n)\n\nreasoning_content = \"\"\nanswer_content = \"\"\nis_answering = False\nprint(\"\\n\" + \"=\" * 20 + \"Reasoning\" + \"=\" * 20 + \"\\n\")\n\nfor chunk in completion:\n    if not chunk.choices:\n        print(\"\\nUsage:\")\n        print(chunk.usage)\n        continue\n\n    delta = chunk.choices[0].delta\n\n    if hasattr(delta, \"reasoning_content\") and delta.reasoning_content is not None:\n        if not is_answering:\n            print(delta.reasoning_content, end=\"\", flush=True)\n        reasoning_content += delta.reasoning_content\n\n    if hasattr(delta, \"content\") and delta.content:\n        if not is_answering:\n            print(\"\\n\" + \"=\" * 20 + \"Answer\" + \"=\" * 20 + \"\\n\")\n            is_answering = True\n        print(delta.content, end=\"\", flush=True)\n        answer_content += delta.content\n```\n\n> [!Note]\n> If you are using APIs from Qwen Cloud, in addition to changing `model`, please pass `extra_body={\"enable_thinking\": True, \"preserve_thinking\": True}` instead of `extra_body={\"chat_template_kwargs\": {\"enable_thinking\": True, \"preserve_thinking\": True}}`.\n\n\n## Best Practices\n\nTo achieve optimal performance, we recommend the following settings:\n\n1. **Sampling Parameters**:  \n   - We suggest using the following set of sampling parameters:  \n     - `temperature=1.0`, `top_p=0.95`, `top_k=20`, `min_p=0.0`, `presence_penalty=0.0`, `repetition_penalty=1.0`  \n   - For supported frameworks, you can adjust the `presence_penalty` parameter between 0 and 2 to reduce endless repetition. However, using a higher value may occasionally result in language mixing and a slight decrease in model performance.\n\n2. **Adequate Output Length**: To optimize performance on agentic tasks, we recommend allocating sufficient output length to allow the model to generate detailed and comprehensive responses. For frameworks that support separate token limits for internal reasoning and final outputs, we suggest the following configuration within the 1M context length:\n   - **Reasoning Content:** Set the maximum output length to 262,144 tokens.\n   - **Final Response:** Set the maximum output length to 131,072 tokens.\n\n   These settings provide the necessary capacity for complex reasoning while ensuring ample space for high-quality final deliverables.\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```bibtex\n@misc{qwen38,\n    title = {{Qwen3.8-Max}: A New Bar for Coding and Cowork},\n    url = {https://qwen.ai/blog?id=qwen3.8},\n    author = {{Qwen Team}},\n    month = {August},\n    year = {2026}\n}\n```\n",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "qwen3.8-max",
+    "license_link": "LICENSE",
+    "pipeline_tag": "text-generation",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

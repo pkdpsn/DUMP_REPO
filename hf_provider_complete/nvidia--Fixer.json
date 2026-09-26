@@ -1,0 +1,105 @@
+{
+  "modelId": "nvidia/Fixer",
+  "author": "nvidia",
+  "sha": "ca20a25b55baa15dfc557db4c9b99168da8c2e14",
+  "lastModified": "2026-07-21 19:15:05+00:00",
+  "tags": [
+    "fixer",
+    "nvidia",
+    "image2image",
+    "image-to-image",
+    "en",
+    "arxiv:2503.01774",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "image-to-image",
+  "library_name": "fixer",
+  "likes": 26,
+  "downloads": 6163,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "fixer",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-to-image",
+    "tags": [
+      "nvidia",
+      "fixer",
+      "image2image"
+    ]
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1712,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 12982,
+      "lfs": null
+    },
+    {
+      "rfilename": "base/model_fast_tokenizer.pt",
+      "size": 1195209447,
+      "lfs": {
+        "size": 1195209447,
+        "sha256": "a0b2d0c993e88b818bf8e389dce14d58ac901be7092a72b4adf79ca065bd6742",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "base/tokenizer_fast.pth",
+      "size": 230994532,
+      "lfs": {
+        "size": 230994532,
+        "sha256": "6a667c56e9f04022a90966e8715935a83e2cd1ecf8a433db6b1e3ce56ae40282",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "pretrained/pretrained_fixer.pkl",
+      "size": 4054204517,
+      "lfs": {
+        "size": 4054204517,
+        "sha256": "9d37e016764ca991d1b2b75cd2893564b2a3a57ba5d8363442e5cb2ea37cd079",
+        "pointer_size": 135
+      }
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license\ntags:\n- nvidia\n- fixer\n- image2image\npipeline_tag: image-to-image\nlibrary_name: fixer\n---\n# **Fixer: Improving 3D Reconstructions with Single-Step Diffusion Models**  \n[**Code**](https://github.com/nv-tlabs/Fixer) | [**Paper**](https://arxiv.org/abs/2503.01774)\n\n## Use the Fixer Model\nPlease visit the [Fixer repository](https://github.com/nv-tlabs/Fixer) to access all relevant files and code needed to use Fixer\n\n## Description: \nFixer is a single-step image diffusion model trained to enhance and remove artifacts in rendered novel views caused by\nunderconstrained regions of three-dimensional (3D) representation. The technology behind Fixer is based on the concepts outlined in the paper titled\n[Difix3d+: Improving 3D Reconstructions with Single-Step Diffusion Models](https://arxiv.org/abs/2503.01774).\n\nFixer has two operation modes: \n\n* Offline mode: Used during the reconstruction phase to clean up pseudo-training views that are rendered from the reconstruction\n  and then distill them back into 3D. This greatly enhances underconstrained regions and improves the overall 3D representation quality. \n* Online mode: Acts as a neural enhancer during inference, effectively removing residual artifacts arising from imperfect 3D\n  supervision and the limited capacity of current reconstruction models. \n  \nFixer is an all-encompassing solution, a single model compatible with both Neural Radiance Fields (NeRF) and 3D Gaussian Splatting (3DGS) representations. This model, however, was trained on 3DGUT data and is highly adaptable to GS scenes.\n\n**Model Developer:** NVIDIA\n\n**Model Versions:** Fixer\n\n**Deployment Geography:** Global\n\n**This model is ready for commercial/non-commercial use.**\n\n### License/Terms of Use:\nYour use of the model is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/).\n\n### Use Case:\nFixer is intended for Physical AI developers looking to enhance and improve their Neural Reconstruction pipelines. The model takes an image as an input and outputs a fixed image.\n\n**Release Date:** \n- V1 (Stable Diffusion): June 2025, Hugging Face - https://huggingface.co/nvidia/difix  \n- V2 (Cosmos): November 2025, Hugging Face - https://huggingface.co/nvidia/Fixer\n\n## Model Architecture\n\n**Architecture Type**: Linear Diffusion Transformer\n\n**Network Architecture**: Linear-attention Diffusion Transformer with a Deep Compression Autoencoder (DC-AE) for efficient high-resolution image generation.\n\n**Based on**: Cosmos-Predict-0.6B\n\n**Number of model parameters**: 0.6B\n\n## Input\n\n**Input Type(s)**: Image\n\n**Input Format(s)**: Red, Green, Blue (RGB)\n\n**Input Parameters**: Two-Dimensional (2D)\n\n**Other Properties Related to Input**:\n* Specific Resolution: [576px x 1024px]\n\n## Output\n\n**Output Type(s)**: Image\n\n**Output Format(s)**: Red, Green, Blue (RGB)\n\n**Output Parameters**: Two-Dimensional (2D)\n\n**Other Properties Related to Output**:\n* Specific Resolution: [576px x 1024px]\n\n## Software Integration\n\n**Runtime Engine(s)**: PyTorch\n\n**Supported Hardware Microarchitecture Compatibility**:\n* NVIDIA Ampere\n\n**[Preferred/Supported] Operating System(s)**: Linux\n\n**Note**: Our AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Inference\n**Engine**: PyTorch>=2.0.0\n\n**Test Hardware**: \nWe tested on H100, A100, H20, and L40:\n\n| GPU Hardware | Inference Runtime |\n|--------------|-------------------|\n| NVIDIA H100  | 26.5ms             |\n| NVIDIA A100  | 50.6ms             |\n| NVIDIA H20   | 61.7ms             |\n| NVIDIA L40   | 87.8ms             |\n\n## Training, Testing, and Evaluation Datasets\n\nFixer was trained, tested, and evaluated using an internal dataset, where 80% of the data was used for training, 10% for evaluation, and 10% for testing.\n\n### NVIDIA Internal AV Dataset\n\n- **Data Modality**: Image\n- **Image Training Data Size**: 1 Million to 1 Billion Images\n- **Data Collection Method**: Sensors\n- **Labeling Method by Dataset**: Human\n- **Properties**: The dataset contains the autonomous driving image/videos captured by NVIDIA Vehicles. It's collected by autonomous driving vehicles.\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. \n\nPlease make sure you have proper rights and permissions for all input image and video content; if image or video includes people, personal health information, or intellectual property, the image or video generated will not blur or maintain proportions of image subjects included.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/)\n\n---\n\n## ModelCard++\n\n### Bias\n\n| Field                                                                                                                                                            | Response |\n| :--------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- |\n| Participation considerations from adversely impacted groups [protected classes](https://www.senate.ca.gov/content/protected-classes) in model design and testing: | None     |\n| Measures taken to mitigate against unwanted bias:                                                                                                                | None     |\n\n### Explainability\n\n| Field                                                     | Response                                                                                                             |\n| :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |\n| Intended Domain:                                          | Advanced Driver Assistance Systems                                                                                   |\n| Model Type:                                               | Image-to-Image                                                                                                       |\n| Intended Users:                                           | Autonomous Vehicles developers enhancing and improving Neural Reconstruction pipelines.                              |\n| Output:                                                   | Image                                                                                                                |\n| Describe how the model works:                             | The model takes as an input an image, and outputs a fixed image                                                      |\n| Name the adversely impacted groups this has been tested to deliver comparable outcomes regardless of: | None                                                                                                                 |\n| Technical Limitations:                                    | The reconstruction relies on the quality and consistency of input images and camera calibrations; any deficiencies in these areas can negatively impact the final output. |\n| Verified to have met prescribed NVIDIA quality standards: | Yes                                                                                                                  |\n| Performance Metrics:                                      | FID (Fr\u00e9chet Inception Distance), PSNR (Peak Signal-to-Noise Ratio), LPIPS (Learned Perceptual Image Patch Similarity) |\n| Potential Known Risks:                                    | The model is not guaranteed to fix 100% of the image artifacts. Please verify the generated scenarios are context and use appropriate. |\n| Licensing:                                                | Your use of the model is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/). |\n\n### Privacy\n\n| Field                                                               | Response       |\n| :------------------------------------------------------------------ | :------------- |\n| Generatable or reverse engineerable personal data?                  | No             |\n| Personal data used to create this model?                            | No             |\n| How often is the dataset reviewed?                                  | Before release |\n| Is there provenance for all datasets used in training?              | Yes            |\n| Does data labeling (annotation, metadata) comply with privacy laws? | Yes            |\n| Is data compliant with data subject requests for data correction or removal, if such a request was made? | Yes |\n| Applicable Privacy Policy                                           | https://www.nvidia.com/en-us/about-nvidia/privacy-policy/ |\n\n### Safety & Security\n\n| Field                                           | Response                                                                                                                                                                                                                                                                                                                             |\n| :---------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| Model Application(s):                           | Image Enhancement - The model can be used to develop Autonomous Vehicles stacks that can be integrated inside vehicles. The Fixer model should not be deployed in a vehicle.                                                                                                                                                        |\n| Describe the life critical impact (if present). | N/A - The model should not be deployed in a vehicle and will not perform life-critical tasks.                                                                                                                                                                                                                                       |\n| Use Case Restrictions:                          | Your use of the model is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/).                                                                                                                                                            |\n| Model and dataset restrictions:                 | The Principle of least privilege (PoLP) is applied limiting access for dataset generation and model development. Restrictions enforce dataset access during training, and dataset license constraints adhered to.                                                                                                                   |\n\n## Support\n\n**Usage questions and discussion:** please post on the [NVIDIA Developer Forum (Omniverse / NuRec)](https://forums.developer.nvidia.com/c/omniverse/platform/nurec/752).\n\n**Code-level bugs, documentation issues, and feature requests:** file a [GitHub issue](https://github.com/nv-tlabs/Fixer/issues/new/choose) using the appropriate template. The relevant NVIDIA responder is assigned automatically.\n\n**Security vulnerabilities:** use [NVIDIA's Vulnerability Disclosure Program](https://app.intigriti.com/programs/nvidia/nvidiavdp/detail). Do not file security issues publicly in this repository.\n\n*The Hugging Face Community tab for this model card will be disabled on 08/10/2026. Please use the channels above.*\n",
+  "cardDataParsed": {
+    "language": [
+      "en"
+    ],
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license",
+    "tags": [
+      "nvidia",
+      "fixer",
+      "image2image"
+    ],
+    "pipeline_tag": "image-to-image",
+    "library_name": "fixer",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": null
+}

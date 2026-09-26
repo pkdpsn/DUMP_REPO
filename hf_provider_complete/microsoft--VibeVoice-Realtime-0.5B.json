@@ -1,0 +1,127 @@
+{
+  "modelId": "microsoft/VibeVoice-Realtime-0.5B",
+  "author": "microsoft",
+  "sha": "6bce5f06044837fe6d2c5d7a71a84f0416bd57e4",
+  "lastModified": "2025-12-12 15:35:46+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "vibevoice_streaming",
+    "Realtime TTS",
+    "Streaming text input",
+    "Long-form speech generation",
+    "text-to-speech",
+    "en",
+    "arxiv:2508.19205",
+    "arxiv:2412.08635",
+    "base_model:Qwen/Qwen2.5-0.5B",
+    "base_model:finetune:Qwen/Qwen2.5-0.5B",
+    "license:mit",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-to-speech",
+  "library_name": "transformers",
+  "likes": 1294,
+  "downloads": 216557,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-0.5B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-to-speech",
+    "tags": [
+      "Realtime TTS",
+      "Streaming text input",
+      "Long-form speech generation"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "VibeVoiceStreamingForConditionalGenerationInference"
+    ],
+    "model_type": "vibevoice_streaming"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1572,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 10160,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2117,
+      "lfs": null
+    },
+    {
+      "rfilename": "figures/Fig1.png",
+      "size": 123543,
+      "lfs": {
+        "size": 123543,
+        "sha256": "0386a7f577a66324c2b07cf3dff573bc805ce8687c8d6f8b5f3d6d04aed51250",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 2035332888,
+      "lfs": {
+        "size": 2035332888,
+        "sha256": "7758b150b8139deb48ac1ff6f181f745c8fedd5511232fd974b3eb217d83b514",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 360,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlanguage:\n- en\npipeline_tag: text-to-speech\ntags:\n- Realtime TTS\n- Streaming text input\n- Long-form speech generation\nlibrary_name: transformers\nbase_model:\n- Qwen/Qwen2.5-0.5B\n---\n\n## VibeVoice: A Frontier Open-Source Text-to-Speech Model\n\nVibeVoice-Realtime is a **lightweight real\u2011time** text-to-speech model supporting **streaming text input** and **robust long-form speech generation**. It can be used to build realtime TTS services, narrate live data streams, and let different LLMs start speaking from their very first tokens (plug in your preferred model) long before a full answer is generated. It produces initial audible speech in **~300 ms** (hardware dependent).\n\n[\u25b6\ufe0f Watch demo video](https://github.com/user-attachments/assets/0901d274-f6ae-46ef-a0fd-3c4fba4f76dc) (Launch your own realtime demo via the websocket example in [Usage](https://github.com/microsoft/VibeVoice/blob/main/docs/vibevoice-realtime-0.5b.md#usage-1-launch-real-time-websocket-demo))\n\nAlthough the model is primarily built for English, we found that it still exhibits a certain level of multilingual capability\u2014and even performs reasonably well in some languages. We provide nine additional languages (German, French, Italian, Japanese, Korean, Dutch, Polish, Portuguese, and Spanish) for users to explore and share feedback.\n\nThe model uses an interleaved, windowed design: it incrementally encodes incoming text chunks while, in parallel, continuing diffusion-based acoustic latent generation from prior context. Unlike the full multi-speaker long-form variants, this streaming model removes the semantic tokenizer and relies solely on an efficient acoustic tokenizer operating at an ultra-low frame rate (7.5 Hz).\n\nKey features:\n- Parameter size: 0.5B (deployment-friendly)\n- Realtime TTS (~300 ms first audible latency)\n- Streaming text input\n- Robust long-form speech generation\n\n<p align=\"left\">\n  <img src=\"figures/Fig1.png\" alt=\"VibeVoice Realtime Model Overview\" height=\"250px\">\n</p>\n\nThis realtime variant supports only a single speaker. For multi-speaker conversational speech generation, please use other [VibeVoice models](https://huggingface.co/collections/microsoft/vibevoice). The model is currently intended for English speech only; other languages may produce unpredictable results.\n\n\u27a1\ufe0f **Technical Report:** [VibeVoice Technical Report](https://arxiv.org/abs/2508.19205)\n\n\u27a1\ufe0f **Project Page:** [microsoft/VibeVoice](https://microsoft.github.io/VibeVoice)\n\n\u27a1\ufe0f **Code:** [microsoft/VibeVoice-Code](https://github.com/microsoft/VibeVoice)\n\n\u27a1\ufe0f **App:** [anycoderapps/VibeVoice-Realtime-0.5B](https://huggingface.co/spaces/anycoderapps/VibeVoice-Realtime-0.5B)\n\n\n\n## Training Details\nTransformer-based Large Language Model (LLM) integrated with specialized acoustic tokenizer and a diffusion-based decoding head.\n- LLM: [Qwen2.5-0.5B](https://huggingface.co/Qwen/Qwen2.5-0.5B) for this release.\n- Tokenizers:\n    - Acoustic Tokenizer: Based on a \u03c3-VAE variant (proposed in [LatentLM](https://arxiv.org/pdf/2412.08635)), with a mirror-symmetric encoder-decoder structure featuring 7 stages of modified Transformer blocks. Achieves 3200x downsampling from 24kHz input. Decoder component is ~340M parameters.\n- Diffusion Head: Lightweight module (4 layers, ~40M parameters) conditioned on LLM hidden states. Predicts acoustic VAE features using a Denoising Diffusion Probabilistic Models (DDPM) process. Uses Classifier-Free Guidance (CFG) and DPM-Solver (and variants) during inference.\n- Context Length: Trained with a curriculum increasing up to 8,192 tokens.\n- Training Stages:\n    - Tokenizer Pre-training: Acoustic tokenizer is pre-trained.\n    - VibeVoice Training: Pre-trained tokenizer is frozen; only the LLM and diffusion head parameters are trained. A curriculum learning strategy is used for input sequence length (4k -> 8K). Text tokenizer not explicitly specified, but the LLM (Qwen2.5) typically uses its own. Audio is \"tokenized\" via the acoustic tokenizer.\n\n\n## Models\n| Model | Context Length | Generation Length |  Weight |\n|-------|----------------|----------|----------|\n| VibeVoice-Realtime-0.5B | 8k | ~10 min | You are here. |\n| VibeVoice-1.5B | 64K | ~90 min | [HF link](https://huggingface.co/microsoft/VibeVoice-1.5B) |\n| VibeVoice-Large| 32K | ~45 min | [HF link](https://huggingface.co/microsoft/VibeVoice-Large) |\n\n\n## Results\n\nThe model achieves satisfactory performance on short-sentence benchmarks, while the model is more focused on long\u2011form speech generation.\n\n### Zero-shot TTS performance on LibriSpeech test-clean set\n\n| Model | WER (%) \u2193 | Speaker Similarity \u2191 |\n|:--------------------|:---------:|:----------------:|\n| VALL-E 2            | 2.40      | 0.643            |\n| Voicebox            | 1.90      | 0.662            |\n| MELLE               | 2.10      | 0.625            |\n| **VibeVoice-Realtime-0.5B** | 2.00 | 0.695            |\n\n### Zero-shot TTS performance on SEED test-en set\n\n| Model | WER (%) \u2193 | Speaker Similarity \u2191 |\n|:--------------------|:---------:|:----------------:|\n| MaskGCT             | 2.62      | 0.714            |\n| Seed-TTS            | 2.25      | 0.762            |\n| FireRedTTS          | 3.82      | 0.460            |\n| SparkTTS            | 1.98      | 0.584            |\n| CosyVoice2          | 2.57      | 0.652            |\n| **VibeVoice-Realtime-0.5B** | 2.05 | 0.633            | \n\n\n## Installation and Usage\n\nPlease refer to [GitHub README](https://github.com/microsoft/VibeVoice/blob/main/docs/vibevoice-realtime-0.5b.md#installation)\n\n\n## Responsible Usage\n### Direct intended uses\nThe VibeVoice-Realtime model is limited to research purposes exploring real-time highly realistic audio generation detailed in the [tech report](https://arxiv.org/pdf/2508.19205). \n\n### Out-of-scope uses\nUse in any manner that violates applicable laws or regulations (including trade compliance laws). Use in any other way that is prohibited by MIT License. Use to generate any text transcript. Furthermore, this release is not intended or licensed for any of the following scenarios:\n\n- Voice impersonation without explicit, recorded consent, including but not limited to, cloning a real individual\u2019s voice for satire, advertising, ransom, social\u2011engineering, or authentication bypass. \n- Disinformation or impersonation, including but not limited to, creating audio presented as genuine recordings of real people or events. \n- Real\u2011time or low\u2011latency voice conversion, including but not limited to, telephone or video\u2011conference \u201clive deep\u2011fake\u201d applications.\n- Any act to circumvent, disable, or otherwise interfere with any technical or procedural safeguards implemented in this release, including but not limited to security controls, watermarking and other transparency mechanisms. Any act of reverse engineering, modification, injection of unauthorized code, or exploitation of vulnerabilities for purposes beyond the intended scope of use. \n- Unsupported language \u2013 the model is trained only on English data; outputs in other languages are unsupported and may be unintelligible or inappropriate.\n- Generation of background ambience, Foley, or music \u2013 VibeVoice is speech\u2011only and cannot produce coherent non\u2011speech audio such as music.\n\n\n## Risks and limitations\nWhile efforts have been made to optimize it through various techniques, it may still produce outputs that are unexpected, biased, or inaccurate. VibeVoice may inherit any biases, errors, or omissions produced by its base model (specifically, Qwen2.5 0.5b in this release). \nPotential for Deepfakes and Disinformation: High-quality synthetic speech can be misused to create convincing fake audio content for impersonation, fraud, or spreading disinformation. Users must ensure transcripts are reliable, check content accuracy, and avoid using generated content in misleading ways. Users are expected to use the generated content and to deploy the models in a lawful manner, in full compliance with all applicable laws and regulations in the relevant jurisdictions. It is best practice to disclose the use of AI when sharing AI-generated content.\nEnglish only: Transcripts in language other than English may result in unexpected audio outputs.\nNon-Speech Audio: The model focuses solely on speech synthesis and does not handle background noise, music, or other sound effects.\nOverlapping Speech: The current model does not explicitly model or generate overlapping speech segments in conversations.\nCode, formulas, and special symbols \u2013 The model does not currently support reading code, mathematical formulas, or uncommon symbols. Please pre\u2011process input text to remove or normalize such content to avoid unpredictable results.\n\n\n## Recommendations\nWe do not recommend using VibeVoice in commercial or real-world applications without further testing and development. If you use this model to generate speech, we recommend disclosing to the end user that they are listening to AI generated content. This model is intended for research and development purposes only. Please use responsibly.\n\nTo mitigate the risks of misuse, we have:\nRemoved acoustic tokenizer to avoid users creating embedding on their own. \nEmbedded an audible disclaimer (e.g. \u201cThis segment was generated by AI\u201d) automatically into every synthesized audio file.\nAdded an imperceptible watermark to generated audio so third parties can verify VibeVoice provenance. Please see contact information at the end of this model card.\nUsers are responsible for sourcing their datasets legally. This may include securing appropriate rights and/or anonymizing data prior to use with VibeVoice. Users are reminded to be mindful of data privacy concerns. \n\n\n## Contact\nThis project was conducted by members of Microsoft Research. We welcome feedback and collaboration from our audience. If you have suggestions, questions, or observe unexpected/offensive behavior in our technology, please contact us at VibeVoice@microsoft.com.\nIf the team receives reports of undesired behavior or identifies issues independently,\u202fwe will\u202fupdate this repository with appropriate mitigations.\n",
+  "cardDataParsed": {
+    "license": "mit",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-to-speech",
+    "tags": [
+      "Realtime TTS",
+      "Streaming text input",
+      "Long-form speech generation"
+    ],
+    "library_name": "transformers",
+    "base_model": [
+      "Qwen/Qwen2.5-0.5B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "VibeVoiceStreamingForConditionalGenerationInference",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": null
+  }
+}

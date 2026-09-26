@@ -1,0 +1,158 @@
+{
+  "modelId": "google/tipsv2-so400m14",
+  "author": "google",
+  "sha": "9b102a53330ded7d64a5ba5d743fbf333f23fc95",
+  "lastModified": "2026-08-17 16:43:16+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "tipsv2",
+    "feature-extraction",
+    "vision",
+    "image-text",
+    "contrastive-learning",
+    "zero-shot",
+    "arxiv:2604.12012",
+    "zero-shot-image-classification",
+    "custom_code",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "zero-shot-image-classification",
+  "library_name": "transformers",
+  "likes": 19,
+  "downloads": 273486,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "zero-shot-image-classification",
+    "tags": [
+      "vision",
+      "image-text",
+      "contrastive-learning",
+      "zero-shot",
+      "feature-extraction",
+      "arxiv:2604.12012"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "TIPSv2Model"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_tips.TIPSv2Config",
+      "AutoModel": "modeling_tips.TIPSv2Model"
+    },
+    "model_type": "tipsv2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": null,
+      "pad_token": "<pad>",
+      "unk_token": "<unk>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4422,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2026,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_tips.py",
+      "size": 1697,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_encoder.py",
+      "size": 30766,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 3446991224,
+      "lfs": {
+        "size": 3446991224,
+        "sha256": "65d89b4ee0083d2c295d2005b82604b9d1b1e950c618c6625cf8c4d7c3621930",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "modeling_tips.py",
+      "size": 4681,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 347,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_encoder.py",
+      "size": 10490,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 731655,
+      "lfs": {
+        "size": 731655,
+        "sha256": "4c40e7723348d5d9a3d3c2bdcec5120d97fb29edfe1bf118b4494bce02fc7624",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 292,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\n- image-text\n- contrastive-learning\n- zero-shot\n- feature-extraction\n- arxiv:2604.12012\nlibrary_name: transformers\npipeline_tag: zero-shot-image-classification\n---\n\n# TIPSv2 \u2014 SO400m/14\n\nTIPSv2 (Text-Image Pre-training with Spatial awareness) is a family of contrastive vision-language models that produce spatially rich image features aligned with text embeddings. This is the SO400m variant with 412M vision params and 448M text params. Try the code snippets below or check out the [GitHub repo](https://github.com/google-deepmind/tips) for more use cases and visualizations, including zero-shot segmentation.\n\n| Variant | Vision params | Text params | Embed dim | DPT Heads |\n|---------|--------------|-------------|-----------|-----------|\n| [B/14](https://huggingface.co/google/tipsv2-b14) | 86M | 110M | 768 | [B/14-dpt](https://huggingface.co/google/tipsv2-b14-dpt) |\n| [L/14](https://huggingface.co/google/tipsv2-l14) | 303M | 184M | 1024 | [L/14-dpt](https://huggingface.co/google/tipsv2-l14-dpt) |\n| [SO400m/14](https://huggingface.co/google/tipsv2-so400m14) | 412M | 448M | 1152 | [SO400m/14-dpt](https://huggingface.co/google/tipsv2-so400m14-dpt) |\n| [g/14](https://huggingface.co/google/tipsv2-g14) | 1.1B | 389M | 1536 | [g/14-dpt](https://huggingface.co/google/tipsv2-g14-dpt) |\n\n## Usage\n\n```bash\npip install transformers torch torchvision sentencepiece scikit-learn\n```\n\n### Load the model\n\n```python\nfrom transformers import AutoModel\n\nmodel = AutoModel.from_pretrained(\"google/tipsv2-so400m14\", trust_remote_code=True)\nmodel.eval()\n```\n\n### Encode images\n\nImages should be tensors in `[0, 1]` range (just `ToTensor()`, no ImageNet normalization).\n\n```python\nfrom torchvision import transforms\nfrom PIL import Image\nimport requests\n\ntransform = transforms.Compose([\n    transforms.Resize((448, 448)),\n    transforms.ToTensor(),\n])\n\nurl = \"https://huggingface.co/spaces/google/TIPSv2/resolve/main/examples/zeroseg/pascal_context_00049_image.png\"\nimage = Image.open(requests.get(url, stream=True).raw)\npixel_values = transform(image).unsqueeze(0)\nout = model.encode_image(pixel_values)\n\nprint(out.cls_token.shape)     # (1, 1, 1152) \u2014 global image embedding\nprint(out.patch_tokens.shape)  # (1, 1024, 1152) \u2014 per-patch spatial features\n```\n\n### Encode text\n\n```python\ntext_emb = model.encode_text([\"a photo of a bus\", \"a photo of a dog\"])\nprint(text_emb.shape)  # (2, 1152) \u2014 one embedding per query\n```\n\n### Zero-shot classification\n\n```python\nimport torch.nn.functional as F\n\nclasses = [\"bus\", \"car\", \"dog\", \"cat\"]\ncls = F.normalize(out.cls_token[:, 0, :], dim=-1)\ntext_emb = F.normalize(model.encode_text(classes), dim=-1)\nsimilarity = cls @ text_emb.T\nprint(classes[similarity.argmax()])  # bus \u2014 predicted class\n```\n\n### Visualize spatial features\n\n```python\nimport numpy as np\nfrom sklearn.decomposition import PCA\n\nspatial = out.patch_tokens.reshape(1, 32, 32, 1152)\nfeat = spatial[0].detach().cpu().numpy().reshape(-1, 1152)\nrgb = PCA(n_components=3, whiten=True).fit_transform(feat).reshape(32, 32, 3)\nrgb = 1 / (1 + np.exp(-2.0 * rgb))  # sigmoid for [0, 1] range with good contrast\nprint(rgb.shape)  # (32, 32, 3) \u2014 PCA of patch features as RGB\n```\n\n### GPU inference\n\n```python\nmodel = model.cuda()\nout = model.encode_image(pixel_values.cuda())\ntext_emb = model.encode_text([\"a city\"])\n```\n\n## Model details\n\n- **Architecture**: ViT vision encoder (27 layers) + Transformer text encoder (27 layers)\n- **Image preprocessing**: resize to any resolution, convert to `[0, 1]` (no ImageNet normalization)\n- **Text preprocessing**: SentencePiece tokenizer, lowercased, max 64 tokens\n- **Patch size**: 14x14 pixels\n\n## License\n\nApache 2.0\n\n## Citation\n\n```bibtex\n@inproceedings{cao2026tipsv2,\n  title     = {{TIPSv2: Advancing Vision-Language Pretraining with Enhanced Patch-Text Alignment}},\n  author    = {Cao, Bingyi and Chen, Koert and Maninis, Kevis-Kokitsi and Chen, Kaifeng and Karpur, Arjun and Xia, Ye and Dua, Sahil and Dabral, Tanmaya and Han, Guangxing and Han, Bohyung and Ainslie, Joshua and Bewley, Alex and Jacob, Mithun and Wagner, Rene and Ramos, Washington and Choromanski, Krzysztof and Seyedhosseini, Mojtaba and Zhou, Howard and Araujo, Andre},\n  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},\n  year      = {2026},\n  url       = {https://arxiv.org/abs/2604.12012}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision",
+      "image-text",
+      "contrastive-learning",
+      "zero-shot",
+      "feature-extraction",
+      "arxiv:2604.12012"
+    ],
+    "library_name": "transformers",
+    "pipeline_tag": "zero-shot-image-classification",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_tips.TIPSv2Model",
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoProcessor"
+  }
+}

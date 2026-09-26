@@ -1,0 +1,515 @@
+{
+  "modelId": "mistralai/Ministral-3-3B-Instruct-2512-ONNX",
+  "author": "mistralai",
+  "sha": "e1128d389145f96bb1c3c2625cb8ca255ffa7034",
+  "lastModified": "2026-01-15 11:19:37+00:00",
+  "tags": [
+    "transformers.js",
+    "onnx",
+    "mistral3",
+    "image-text-to-text",
+    "onnxruntime",
+    "conversational",
+    "en",
+    "fr",
+    "es",
+    "de",
+    "it",
+    "pt",
+    "nl",
+    "zh",
+    "ja",
+    "ko",
+    "ar",
+    "arxiv:2601.08584",
+    "base_model:mistralai/Ministral-3-3B-Instruct-2512",
+    "base_model:quantized:mistralai/Ministral-3-3B-Instruct-2512",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers.js",
+  "likes": 33,
+  "downloads": 447,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "mistralai/Ministral-3-3B-Instruct-2512"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "es",
+      "de",
+      "it",
+      "pt",
+      "nl",
+      "zh",
+      "ja",
+      "ko",
+      "ar"
+    ],
+    "library_name": "transformers.js",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "onnxruntime"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Mistral3ForConditionalGeneration"
+    ],
+    "model_type": "mistral3",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false,
+      "chat_template": "{#- Default system message if no system prompt is passed. #}\n{%- set default_system_message = 'You are Ministral-3-3B-Instruct-2512, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.\\nYou power an AI assistant called Le Chat.\\nYour knowledge base was last updated on 2023-10-01.\\nThe current date is {today}.\\n\\nWhen you\\'re not sure about some information or when the user\\'s request requires up-to-date or specific data, you must use the available tools to fetch the information. Do not hesitate to use tools whenever they can provide a more accurate or complete response. If no relevant tools are available, then clearly state that you don\\'t have the information and avoid making up anything.\\nIf the user\\'s question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. \"What are some good restaurants around me?\" => \"Where are you?\" or \"When is the next flight to Tokyo\" => \"Where do you travel from?\").\\nYou are always very attentive to dates, in particular you try to resolve dates (e.g. \"yesterday\" is {yesterday}) and when asked about information at specific dates, you discard information that is at another date.\\nYou follow these instructions in all languages, and always respond to the user in the language they use or request.\\nNext sections describe the capabilities that you have.\\n\\n# WEB BROWSING INSTRUCTIONS\\n\\nYou cannot perform any web search or access internet to open URLs, links etc. If it seems like the user is expecting you to do so, you clarify the situation and ask the user to copy paste the text directly in the chat.\\n\\n# MULTI-MODAL INSTRUCTIONS\\n\\nYou have the ability to read images, but you cannot generate images. You also cannot transcribe audio files or videos.\\nYou cannot read nor transcribe audio files or videos.\\n\\n# TOOL CALLING INSTRUCTIONS\\n\\nYou may have access to tools that you can use to fetch information or perform actions. You must use these tools in the following situations:\\n\\n1. When the request requires up-to-date information.\\n2. When the request requires specific data that you do not have in your knowledge base.\\n3. When the request involves actions that you cannot perform without tools.\\n\\nAlways prioritize using tools to provide the most accurate and helpful response. If tools are not available, inform the user that you cannot perform the requested action at the moment.' %}\n\n{#- Begin of sequence token. #}\n{{- bos_token }}\n\n{#- Handle system prompt if it exists. #}\n{#- System prompt supports text content or text chunks. #}\n{%- if messages[0]['role'] == 'system' %}\n    {{- '[SYSTEM_PROMPT]' -}}\n    {%- if messages[0]['content'] is string %}\n        {{- messages[0]['content'] -}}\n    {%- else %}        \n        {%- for block in messages[0]['content'] %}\n            {%- if block['type'] == 'text' %}\n                {{- block['text'] }}\n            {%- else %}\n                {{- raise_exception('Only text chunks are supported in system message contents.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n    {{- '[/SYSTEM_PROMPT]' -}}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set loop_messages = messages %}\n    {%- if default_system_message != '' %}\n        {{- '[SYSTEM_PROMPT]' + default_system_message + '[/SYSTEM_PROMPT]' }}\n    {%- endif %}\n{%- endif %}\n\n\n{#- Tools definition #}\n{%- set tools_definition = '' %}\n{%- set has_tools = false %}\n{%- if tools is defined and tools is not none and tools|length > 0 %}\n    {%- set has_tools = true %}\n    {%- set tools_definition = '[AVAILABLE_TOOLS]' + (tools| tojson) + '[/AVAILABLE_TOOLS]' %}\n    {{- tools_definition }}\n{%- endif %}\n\n{#- Checks for alternating user/assistant messages. #}\n{%- set ns = namespace(index=0) %}\n{%- for message in loop_messages %}\n    {%- if message.role == 'user' or (message.role == 'assistant' and (message.tool_calls is not defined or message.tool_calls is none or message.tool_calls | length == 0)) %}\n        {%- if (message['role'] == 'user') != (ns.index % 2 == 0) %}\n            {{- raise_exception('After the optional system message, conversation roles must alternate user and assistant roles except for tool calls and results.') }}\n        {%- endif %}\n        {%- set ns.index = ns.index + 1 %}\n    {%- endif %}\n{%- endfor %}\n\n{#- Handle conversation messages. #}\n{%- for message in loop_messages %}\n\n    {#- User messages supports text content or text and image chunks. #}\n    {%- if message['role'] == 'user' %}\n        {%- if message['content'] is string %}\n            {{- '[INST]' + message['content'] + '[/INST]' }}\n        {%- elif message['content'] | length > 0 %}\n            {{- '[INST]' }}\n            {%- if message['content'] | length == 2 %}\n                {%- set blocks = message['content'] | sort(attribute='type') %}\n            {%- else %}\n                {%- set blocks = message['content'] %}\n            {%- endif %}\n            {%- for block in blocks %}\n                {%- if block['type'] == 'text' %}\n                    {{- block['text'] }}\n                {%- elif block['type'] in ['image', 'image_url'] %}\n                    {{- '[IMG]' }}\n                {%- else %}\n                    {{- raise_exception('Only text, image and image_url chunks are supported in user message content.') }}\n                {%- endif %}\n            {%- endfor %}\n            {{- '[/INST]' }}\n        {%- else %}\n            {{- raise_exception('User message must have a string or a list of chunks in content') }}\n        {%- endif %}\n\n    {#- Assistant messages supports text content or text and image chunks. #}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if (message['content'] is none or message['content'] == '' or message['content']|length == 0) and (message['tool_calls'] is not defined or message['tool_calls'] is none or message['tool_calls']|length == 0) %}\n            {{- raise_exception('Assistant message must have a string or a list of chunks in content or a list of tool calls.') }}\n        {%- endif %}\n\n        {%- if message['content'] is string %}\n            {{- message['content'] }}\n        {%- elif message['content'] | length > 0 %}\n            {%- for block in message['content'] %}\n                {%- if block['type'] == 'text' %}\n                    {{- block['text'] }}\n                {%- else %}\n                    {{- raise_exception('Only text chunks are supported in assistant message contents.') }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        \n        {%- if message['tool_calls'] is defined and message['tool_calls'] is not none and message['tool_calls']|length > 0 %}\n            {%- for tool in message['tool_calls'] %}\n                {%- set arguments = tool['function']['arguments'] %}\n                {%- if arguments is not string %}\n                    {%- set arguments = arguments|tojson|safe %}\n                {%- elif arguments == '' %}\n                    {%- set arguments = '{}' %}\n                {%- endif %}\n                {{- '[TOOL_CALLS]' + tool['function']['name'] + '[ARGS]' + arguments }}\n            {%- endfor %}\n        {%- endif %}\n\n        {#- End of sequence token for each assistant messages. #}\n        {{- eos_token }}\n\n    {#- Tool messages only supports text content. #}\n    {%- elif message['role'] == 'tool' %}\n        {{- '[TOOL_RESULTS]' + message['content']|string + '[/TOOL_RESULTS]' }}\n\n    {#- Raise exception for unsupported roles. #}\n    {%- else %}\n        {{- raise_exception('Only user, assistant and tool roles are supported, got ' + message['role']) }}\n    {%- endif %}\n{%- endfor %}\n"
+    },
+    "chat_template_jinja": "{#- Default system message if no system prompt is passed. #}\n{%- set default_system_message = 'You are Ministral-3-3B-Instruct-2512, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.\\nYou power an AI assistant called Le Chat.\\nYour knowledge base was last updated on 2023-10-01.\\nThe current date is {today}.\\n\\nWhen you\\'re not sure about some information or when the user\\'s request requires up-to-date or specific data, you must use the available tools to fetch the information. Do not hesitate to use tools whenever they can provide a more accurate or complete response. If no relevant tools are available, then clearly state that you don\\'t have the information and avoid making up anything.\\nIf the user\\'s question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. \"What are some good restaurants around me?\" => \"Where are you?\" or \"When is the next flight to Tokyo\" => \"Where do you travel from?\").\\nYou are always very attentive to dates, in particular you try to resolve dates (e.g. \"yesterday\" is {yesterday}) and when asked about information at specific dates, you discard information that is at another date.\\nYou follow these instructions in all languages, and always respond to the user in the language they use or request.\\nNext sections describe the capabilities that you have.\\n\\n# WEB BROWSING INSTRUCTIONS\\n\\nYou cannot perform any web search or access internet to open URLs, links etc. If it seems like the user is expecting you to do so, you clarify the situation and ask the user to copy paste the text directly in the chat.\\n\\n# MULTI-MODAL INSTRUCTIONS\\n\\nYou have the ability to read images, but you cannot generate images. You also cannot transcribe audio files or videos.\\nYou cannot read nor transcribe audio files or videos.\\n\\n# TOOL CALLING INSTRUCTIONS\\n\\nYou may have access to tools that you can use to fetch information or perform actions. You must use these tools in the following situations:\\n\\n1. When the request requires up-to-date information.\\n2. When the request requires specific data that you do not have in your knowledge base.\\n3. When the request involves actions that you cannot perform without tools.\\n\\nAlways prioritize using tools to provide the most accurate and helpful response. If tools are not available, inform the user that you cannot perform the requested action at the moment.' %}\n\n{#- Begin of sequence token. #}\n{{- bos_token }}\n\n{#- Handle system prompt if it exists. #}\n{#- System prompt supports text content or text chunks. #}\n{%- if messages[0]['role'] == 'system' %}\n    {{- '[SYSTEM_PROMPT]' -}}\n    {%- if messages[0]['content'] is string %}\n        {{- messages[0]['content'] -}}\n    {%- else %}        \n        {%- for block in messages[0]['content'] %}\n            {%- if block['type'] == 'text' %}\n                {{- block['text'] }}\n            {%- else %}\n                {{- raise_exception('Only text chunks are supported in system message contents.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n    {{- '[/SYSTEM_PROMPT]' -}}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set loop_messages = messages %}\n    {%- if default_system_message != '' %}\n        {{- '[SYSTEM_PROMPT]' + default_system_message + '[/SYSTEM_PROMPT]' }}\n    {%- endif %}\n{%- endif %}\n\n\n{#- Tools definition #}\n{%- set tools_definition = '' %}\n{%- set has_tools = false %}\n{%- if tools is defined and tools is not none and tools|length > 0 %}\n    {%- set has_tools = true %}\n    {%- set tools_definition = '[AVAILABLE_TOOLS]' + (tools| tojson) + '[/AVAILABLE_TOOLS]' %}\n    {{- tools_definition }}\n{%- endif %}\n\n{#- Checks for alternating user/assistant messages. #}\n{%- set ns = namespace(index=0) %}\n{%- for message in loop_messages %}\n    {%- if message.role == 'user' or (message.role == 'assistant' and (message.tool_calls is not defined or message.tool_calls is none or message.tool_calls | length == 0)) %}\n        {%- if (message['role'] == 'user') != (ns.index % 2 == 0) %}\n            {{- raise_exception('After the optional system message, conversation roles must alternate user and assistant roles except for tool calls and results.') }}\n        {%- endif %}\n        {%- set ns.index = ns.index + 1 %}\n    {%- endif %}\n{%- endfor %}\n\n{#- Handle conversation messages. #}\n{%- for message in loop_messages %}\n\n    {#- User messages supports text content or text and image chunks. #}\n    {%- if message['role'] == 'user' %}\n        {%- if message['content'] is string %}\n            {{- '[INST]' + message['content'] + '[/INST]' }}\n        {%- elif message['content'] | length > 0 %}\n            {{- '[INST]' }}\n            {%- if message['content'] | length == 2 %}\n                {%- set blocks = message['content'] | sort(attribute='type') %}\n            {%- else %}\n                {%- set blocks = message['content'] %}\n            {%- endif %}\n            {%- for block in blocks %}\n                {%- if block['type'] == 'text' %}\n                    {{- block['text'] }}\n                {%- elif block['type'] in ['image', 'image_url'] %}\n                    {{- '[IMG]' }}\n                {%- else %}\n                    {{- raise_exception('Only text, image and image_url chunks are supported in user message content.') }}\n                {%- endif %}\n            {%- endfor %}\n            {{- '[/INST]' }}\n        {%- else %}\n            {{- raise_exception('User message must have a string or a list of chunks in content') }}\n        {%- endif %}\n\n    {#- Assistant messages supports text content or text and image chunks. #}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if (message['content'] is none or message['content'] == '' or message['content']|length == 0) and (message['tool_calls'] is not defined or message['tool_calls'] is none or message['tool_calls']|length == 0) %}\n            {{- raise_exception('Assistant message must have a string or a list of chunks in content or a list of tool calls.') }}\n        {%- endif %}\n\n        {%- if message['content'] is string %}\n            {{- message['content'] }}\n        {%- elif message['content'] | length > 0 %}\n            {%- for block in message['content'] %}\n                {%- if block['type'] == 'text' %}\n                    {{- block['text'] }}\n                {%- else %}\n                    {{- raise_exception('Only text chunks are supported in assistant message contents.') }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        \n        {%- if message['tool_calls'] is defined and message['tool_calls'] is not none and message['tool_calls']|length > 0 %}\n            {%- for tool in message['tool_calls'] %}\n                {%- set arguments = tool['function']['arguments'] %}\n                {%- if arguments is not string %}\n                    {%- set arguments = arguments|tojson|safe %}\n                {%- elif arguments == '' %}\n                    {%- set arguments = '{}' %}\n                {%- endif %}\n                {{- '[TOOL_CALLS]' + tool['function']['name'] + '[ARGS]' + arguments }}\n            {%- endfor %}\n        {%- endif %}\n\n        {#- End of sequence token for each assistant messages. #}\n        {{- eos_token }}\n\n    {#- Tool messages only supports text content. #}\n    {%- elif message['role'] == 'tool' %}\n        {{- '[TOOL_RESULTS]' + message['content']|string + '[/TOOL_RESULTS]' }}\n\n    {#- Raise exception for unsupported roles. #}\n    {%- else %}\n        {{- raise_exception('Only user, assistant and tool roles are supported, got ' + message['role']) }}\n    {%- endif %}\n{%- endfor %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 3494,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 16497,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 7753,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3077,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 161,
+      "lfs": null
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx",
+      "size": 210263,
+      "lfs": {
+        "size": 210263,
+        "sha256": "52bc3d8c9352a18701b66584d65623486b4d2f49d320c1f1c66b2afd12f7b3de",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx_data",
+      "size": 2072096768,
+      "lfs": {
+        "size": 2072096768,
+        "sha256": "ea46d55ec62ca9355d97e5be1c128246163007f16aef0685d3ff833247846ccd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx_data_1",
+      "size": 2025959424,
+      "lfs": {
+        "size": 2025959424,
+        "sha256": "fa33e3a5c3ee4971bf495e63b2bd2d037347c286012c39406cdb8bf55555468a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx_data_2",
+      "size": 2088873984,
+      "lfs": {
+        "size": 2088873984,
+        "sha256": "7bfda146c48d32f5a1e3345607bce3c4e26c26cceb4ca5af80f24ed3c5c44181",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx_data_3",
+      "size": 1988210688,
+      "lfs": {
+        "size": 1988210688,
+        "sha256": "6f76ca0445b7a5086697553c7366c7d95f34d6b28454496a1bb6d7b6974438fa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx_data_4",
+      "size": 2088861696,
+      "lfs": {
+        "size": 2088861696,
+        "sha256": "8821419c29e9eb615593f80608ee232dd28308067c878c5e2e5429aa2564ccbb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx_data_5",
+      "size": 1975627776,
+      "lfs": {
+        "size": 1975627776,
+        "sha256": "5728688f573c0953c7e757dcc53ac29c305fb910ffde59f364abed8f01d4d76e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged.onnx_data_6",
+      "size": 1610612736,
+      "lfs": {
+        "size": 1610612736,
+        "sha256": "b576927ad3062f7128f8617225d6f48eee8df6d22d54de7257c6ab273939c662",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_fp16.onnx",
+      "size": 211686,
+      "lfs": {
+        "size": 211686,
+        "sha256": "901c97b50208af3026d3c61c660a10c4f3372c2545f3fb511688e81aa6bae57e",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_fp16.onnx_data",
+      "size": 2049028096,
+      "lfs": {
+        "size": 2049028096,
+        "sha256": "0095e83a7e5cfb66c2bd12eefe328f6e0155c0d4e1aee27e6afa858133a5f5c9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_fp16.onnx_data_1",
+      "size": 2095165440,
+      "lfs": {
+        "size": 2095165440,
+        "sha256": "348c0df191753af9b4c412446019857617bc37ab4ce51d088e6af5c1ec06007c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_fp16.onnx_data_2",
+      "size": 1975621632,
+      "lfs": {
+        "size": 1975621632,
+        "sha256": "947a09208300d55f9e71e49d698b79a622797f02e9ad8db0ab7ef088301ee528",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_fp16.onnx_data_3",
+      "size": 805306368,
+      "lfs": {
+        "size": 805306368,
+        "sha256": "1661404d365a0f7a58086c47fb17028f6a51957b641c1ce9ecc0046371fe8873",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_q4.onnx",
+      "size": 280458,
+      "lfs": {
+        "size": 280458,
+        "sha256": "3f60434cd9cb5b6c85ec1e4c6a4d6c7705bce7bf266f86bfb4b1150757f17349",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_q4.onnx_data",
+      "size": 2026237952,
+      "lfs": {
+        "size": 2026237952,
+        "sha256": "14e1aa9933d5844137758e08b78db04cdb7e8c93130eb829fa3b4d93475031ea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_q4.onnx_data_1",
+      "size": 251658240,
+      "lfs": {
+        "size": 251658240,
+        "sha256": "fd75a8bf45733ed4643a9015a326412509d9aa544951a8064b6962f6038bcb7d",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_q4f16.onnx",
+      "size": 281991,
+      "lfs": {
+        "size": 281991,
+        "sha256": "9e591109067dcc9efc1b14daaa6e0e78ed917f03ff242a3a1bf4e3bc13478a56",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_q4f16.onnx_data",
+      "size": 1996158976,
+      "lfs": {
+        "size": 1996158976,
+        "sha256": "d5985999bc1755741860a1cf4838549f381bc5d32eb09379add5ee60f0282dd2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_quantized.onnx",
+      "size": 303657,
+      "lfs": {
+        "size": 303657,
+        "sha256": "ba1647c36b755ebefd673f2f3fe88ec07411be4b67299046f1de9948a4675727",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_quantized.onnx_data",
+      "size": 2088071168,
+      "lfs": {
+        "size": 2088071168,
+        "sha256": "2e4e8f505101d39c228e7bd7cde4b79a11a2f45ede996fd2094c78478a9b0778",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/decoder_model_merged_quantized.onnx_data_1",
+      "size": 2011398144,
+      "lfs": {
+        "size": 2011398144,
+        "sha256": "02d963723ef2641a2009eec99fc45c2f935c0506381c2828a2063d4c39dd7fd4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens.onnx",
+      "size": 435,
+      "lfs": {
+        "size": 435,
+        "sha256": "c8da5ab11bdc58efa6773d9a460e44a7c0c3c84b7cbf5b4fe2d92cb524fc78b5",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens.onnx_data",
+      "size": 1610612736,
+      "lfs": {
+        "size": 1610612736,
+        "sha256": "d0a4bd0cc78127a6ee850705edef737a7096b7588d018ef23abe4afc0c5ee6e3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_fp16.onnx",
+      "size": 637,
+      "lfs": {
+        "size": 637,
+        "sha256": "e6ffa9413b01686ee57236ccb8606ce7feb784910a1d764103d64cb70271b9ef",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_fp16.onnx_data",
+      "size": 805306368,
+      "lfs": {
+        "size": 805306368,
+        "sha256": "623599b346068db9c32d2e6fc3c5157ee7d5d48491670aa2c32d4a2a373af6dd",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_q4.onnx",
+      "size": 857,
+      "lfs": {
+        "size": 857,
+        "sha256": "202fb30fc3b9fd508f80ad63e6040fc38b774a75a5a3c114f27a0f910f69a915",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_q4.onnx_data",
+      "size": 257949696,
+      "lfs": {
+        "size": 257949696,
+        "sha256": "e3add6de40eb3b8eee4c9cd9f27fbfa258f7319365854b02360d8f3ae2cf16f0",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_q4f16.onnx",
+      "size": 1065,
+      "lfs": {
+        "size": 1065,
+        "sha256": "bab0a291678334b4463d0d5c6e65fbcc1169fea9c1ebcbb849176c4e1baaf8de",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_q4f16.onnx_data",
+      "size": 440401920,
+      "lfs": {
+        "size": 440401920,
+        "sha256": "a0c032f7d6a902861b58b9f2432a6f9128ecc0c0e85bffed3089972ccc60f96b",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_quantized.onnx",
+      "size": 880,
+      "lfs": {
+        "size": 880,
+        "sha256": "bb1086281df37baba3a4a230e70692a2e0d4aaa178ca6af1ee7065c1104cebcf",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "onnx/embed_tokens_quantized.onnx_data",
+      "size": 465567744,
+      "lfs": {
+        "size": 465567744,
+        "sha256": "584e5797d01d3a391bd662d8e7a661be183b7f7ab2dd92688da1b97565808b0a",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder.onnx",
+      "size": 246815,
+      "lfs": {
+        "size": 246815,
+        "sha256": "20a5d7cf6a6dd78a0d9b006bbef816c43f8b01566d3b1aa0aa4366a74881bba0",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder.onnx_data",
+      "size": 1680334848,
+      "lfs": {
+        "size": 1680334848,
+        "sha256": "7ba4885cf93391ffeb1b4e5503112bf5c0f61c241e95614792b5c1c8a6721e28",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_fp16.onnx",
+      "size": 248210,
+      "lfs": {
+        "size": 248210,
+        "sha256": "0ab775e109e63c8cd352e5f5fb7c88cab62798c6c82be82b8c997150614b9be2",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_fp16.onnx_data",
+      "size": 840167424,
+      "lfs": {
+        "size": 840167424,
+        "sha256": "b0e2a922b9bc2675a05210cccd75950ffd0ab45cf9eaa370223c41a162e18b49",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_q4.onnx",
+      "size": 327234,
+      "lfs": {
+        "size": 327234,
+        "sha256": "c0daf54a4f6956205cc66945d427684919c4ba6c14758ba91246a5451f8de43c",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_q4.onnx_data",
+      "size": 271310848,
+      "lfs": {
+        "size": 271310848,
+        "sha256": "3e37bf50a639889b1abae0f2d9624fee388f013f675f55e1ca66b8abb39a0552",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_q4f16.onnx",
+      "size": 329261,
+      "lfs": {
+        "size": 329261,
+        "sha256": "bd56a2c97d435c057f7b42493333dd10fa4a9631b5c46a10355e7c3df870e951",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_q4f16.onnx_data",
+      "size": 243789824,
+      "lfs": {
+        "size": 243789824,
+        "sha256": "9bfb701b5345939e3ca51b0c938511943f2b6672f12d696e36252154c76b9d4f",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_quantized.onnx",
+      "size": 331490,
+      "lfs": {
+        "size": 331490,
+        "sha256": "df36568639c697d9d141b8edadc49a1681edba291306a8ff893cf5715d03f08e",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "onnx/vision_encoder_quantized.onnx_data",
+      "size": 487579648,
+      "lfs": {
+        "size": 487579648,
+        "sha256": "e07528953ced8388f2daa7df28fdb22107ea76c80644667884c4ec4757e477ae",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 725,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 976,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 21427,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 12603042,
+      "lfs": {
+        "size": 12603042,
+        "sha256": "fa0cdf170403fdfe173ebb7356b0443d3f3908aeed183d24712a0410631540f2",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 206014,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

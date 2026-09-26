@@ -1,0 +1,174 @@
+{
+  "modelId": "microsoft/unixcoder-base",
+  "author": "microsoft",
+  "sha": "5604afdc964f6c53782a6813140ade5216b99006",
+  "lastModified": "2024-07-31 05:20:05+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "roberta",
+    "feature-extraction",
+    "en",
+    "arxiv:2203.03850",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "feature-extraction",
+  "library_name": "transformers",
+  "likes": 69,
+  "downloads": 246042,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "RobertaModel"
+    ],
+    "model_type": "roberta",
+    "tokenizer_config": {
+      "unk_token": {
+        "content": "<unk>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "bos_token": {
+        "content": "<s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "eos_token": {
+        "content": "</s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "sep_token": {
+        "content": "</s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "cls_token": {
+        "content": "<s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "pad_token": {
+        "content": "<pad>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "mask_token": {
+        "content": "<mask>",
+        "single_word": false,
+        "lstrip": true,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6728,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 691,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 444183,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 503809527,
+      "lfs": {
+        "size": 503809527,
+        "sha256": "6732b60037b086557e4c731c3748c99b4fec735d9ffe3c4c70061fd142e6b9d9",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 772,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1113,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 937652,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\nlicense: apache-2.0\n---\n\n# Model Card for UniXcoder-base\n\n \n \n# Model Details\n \n## Model Description\nUniXcoder is a unified cross-modal pre-trained model that leverages multimodal data (i.e. code comment and AST) to pretrain code representation. \n \n- **Developed by:** Microsoft Team \n- **Shared by [Optional]:** Hugging Face\n- **Model type:** Feature Engineering\n- **Language(s) (NLP):** en\n- **License:** Apache-2.0\n- **Related Models:**\n  - **Parent Model:** RoBERTa\n- **Resources for more information:**\n    - [Associated Paper](https://arxiv.org/abs/2203.03850)\n \n# Uses\n \n## 1. Dependency\n\n- pip install torch\n- pip install transformers\n\n## 2. Quick Tour\nWe implement a class to use UniXcoder and you can follow the code to build UniXcoder.\nYou can download the class by\n```shell\nwget https://raw.githubusercontent.com/microsoft/CodeBERT/master/UniXcoder/unixcoder.py\n```\n\n```python\nimport torch\nfrom unixcoder import UniXcoder\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nmodel = UniXcoder(\"microsoft/unixcoder-base\")\nmodel.to(device)\n```\n\nIn the following, we will give zero-shot examples for several tasks under different mode, including **code search (encoder-only)**, **code completion (decoder-only)**, **function name prediction (encoder-decoder)** , **API recommendation (encoder-decoder)**, **code summarization (encoder-decoder)**.\n\n## 3. Encoder-only Mode\n\nFor encoder-only mode, we give an example of **code search**.\n\n### 1) Code and NL Embeddings\n\nHere, we give an example to obtain code fragment embedding from CodeBERT.\n\n```python\n# Encode maximum function\nfunc = \"def f(a,b): if a>b: return a else return b\"\ntokens_ids = model.tokenize([func],max_length=512,mode=\"<encoder-only>\")\nsource_ids = torch.tensor(tokens_ids).to(device)\ntokens_embeddings,max_func_embedding = model(source_ids)\n\n# Encode minimum function\nfunc = \"def f(a,b): if a<b: return a else return b\"\ntokens_ids = model.tokenize([func],max_length=512,mode=\"<encoder-only>\")\nsource_ids = torch.tensor(tokens_ids).to(device)\ntokens_embeddings,min_func_embedding = model(source_ids)\n\n# Encode NL\nnl = \"return maximum value\"\ntokens_ids = model.tokenize([nl],max_length=512,mode=\"<encoder-only>\")\nsource_ids = torch.tensor(tokens_ids).to(device)\ntokens_embeddings,nl_embedding = model(source_ids)\n\nprint(max_func_embedding.shape)\nprint(max_func_embedding)\n```\n\n```python\ntorch.Size([1, 768])\ntensor([[ 8.6533e-01, -1.9796e+00, -8.6849e-01,  4.2652e-01, -5.3696e-01,\n         -1.5521e-01,  5.3770e-01,  3.4199e-01,  3.6305e-01, -3.9391e-01,\n         -1.1816e+00,  2.6010e+00, -7.7133e-01,  1.8441e+00,  2.3645e+00,\n\t\t\t\t ...,\n         -2.9188e+00,  1.2555e+00, -1.9953e+00, -1.9795e+00,  1.7279e+00,\n          6.4590e-01, -5.2769e-02,  2.4965e-01,  2.3962e-02,  5.9996e-02,\n          2.5659e+00,  3.6533e+00,  2.0301e+00]], device='cuda:0',\n       grad_fn=<DivBackward0>)\n```\n\n### 2) Similarity between code and NL\n\nNow, we calculate cosine similarity between NL and two functions. Although the difference of two functions is only a operator (```<``` and ```>```), UniXcoder can distinguish them.\n\n```python\n# Normalize embedding\nnorm_max_func_embedding = torch.nn.functional.normalize(max_func_embedding, p=2, dim=1)\nnorm_min_func_embedding = torch.nn.functional.normalize(min_func_embedding, p=2, dim=1)\nnorm_nl_embedding = torch.nn.functional.normalize(nl_embedding, p=2, dim=1)\n\nmax_func_nl_similarity = torch.einsum(\"ac,bc->ab\",norm_max_func_embedding,norm_nl_embedding)\nmin_func_nl_similarity = torch.einsum(\"ac,bc->ab\",norm_min_func_embedding,norm_nl_embedding)\n\nprint(max_func_nl_similarity)\nprint(min_func_nl_similarity)\n```\n\n```python\ntensor([[0.3002]], device='cuda:0', grad_fn=<ViewBackward>)\ntensor([[0.1881]], device='cuda:0', grad_fn=<ViewBackward>)\n```\n\n## 3. Decoder-only Mode\n\nFor decoder-only mode, we give an example of **code completion**.\n\n```python\ncontext = \"\"\"\ndef f(data,file_path):\n    # write json data into file_path in python language\n\"\"\"\ntokens_ids = model.tokenize([context],max_length=512,mode=\"<decoder-only>\")\nsource_ids = torch.tensor(tokens_ids).to(device)\nprediction_ids = model.generate(source_ids, decoder_only=True, beam_size=3, max_length=128)\npredictions = model.decode(prediction_ids)\nprint(context+predictions[0][0])\n```\n\n```python\ndef f(data,file_path):\n    # write json data into file_path in python language\n    data = json.dumps(data)\n    with open(file_path, 'w') as f:\n        f.write(data)\n```\n\n## 4. Encoder-Decoder Mode\n\nFor encoder-decoder mode, we give two examples including: **function name prediction**, **API recommendation**, **code summarization**.\n\n### 1) **Function Name Prediction**\n\n```python\ncontext = \"\"\"\ndef <mask0>(data,file_path):\n    data = json.dumps(data)\n    with open(file_path, 'w') as f:\n        f.write(data)\n\"\"\"\ntokens_ids = model.tokenize([context],max_length=512,mode=\"<encoder-decoder>\")\nsource_ids = torch.tensor(tokens_ids).to(device)\nprediction_ids = model.generate(source_ids, decoder_only=False, beam_size=3, max_length=128)\npredictions = model.decode(prediction_ids)\nprint([x.replace(\"<mask0>\",\"\").strip() for x in predictions[0]])\n```\n\n```python\n['write_json', 'write_file', 'to_json']\n```\n\n### 2) API Recommendation\n\n```python\ncontext = \"\"\"\ndef write_json(data,file_path):\n    data = <mask0>(data)\n    with open(file_path, 'w') as f:\n        f.write(data)\n\"\"\"\ntokens_ids = model.tokenize([context],max_length=512,mode=\"<encoder-decoder>\")\nsource_ids = torch.tensor(tokens_ids).to(device)\nprediction_ids = model.generate(source_ids, decoder_only=False, beam_size=3, max_length=128)\npredictions = model.decode(prediction_ids)\nprint([x.replace(\"<mask0>\",\"\").strip() for x in predictions[0]])\n```\n\n```python\n['json.dumps', 'json.loads', 'str']\n```\n\n### 3) Code Summarization\n\n```python\ncontext = \"\"\"\n# <mask0>\ndef write_json(data,file_path):\n    data = json.dumps(data)\n    with open(file_path, 'w') as f:\n        f.write(data)\n\"\"\"\ntokens_ids = model.tokenize([context],max_length=512,mode=\"<encoder-decoder>\")\nsource_ids = torch.tensor(tokens_ids).to(device)\nprediction_ids = model.generate(source_ids, decoder_only=False, beam_size=3, max_length=128)\npredictions = model.decode(prediction_ids)\nprint([x.replace(\"<mask0>\",\"\").strip() for x in predictions[0]])\n```\n\n```python\n['Write JSON to file', 'Write json to file', 'Write a json file']\n```\n\n\n\n\n# Reference\nIf you use this code or UniXcoder, please consider citing us.\n\n<pre><code>@article{guo2022unixcoder,\n  title={UniXcoder: Unified Cross-Modal Pre-training for Code Representation},\n  author={Guo, Daya and Lu, Shuai and Duan, Nan and Wang, Yanlin and Zhou, Ming and Yin, Jian},\n  journal={arXiv preprint arXiv:2203.03850},\n  year={2022}\n}</code></pre>\n\n\n\n",
+  "cardDataParsed": {
+    "language": [
+      "en"
+    ],
+    "license": "apache-2.0",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoTokenizer"
+  }
+}

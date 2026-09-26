@@ -1,0 +1,147 @@
+{
+  "modelId": "deepseek-ai/JanusFlow-1.3B",
+  "author": "deepseek-ai",
+  "sha": "ba759449ee790649850a00d39caddb0acf1c9132",
+  "lastModified": "2025-01-27 13:32:44+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "multi_modality",
+    "muiltimodal",
+    "text-to-image",
+    "unified-model",
+    "any-to-any",
+    "arxiv:2411.07975",
+    "license:mit",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "any-to-any",
+  "library_name": "transformers",
+  "likes": 154,
+  "downloads": 503,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": "deepseek",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "any-to-any",
+    "tags": [
+      "muiltimodal",
+      "text-to-image",
+      "unified-model"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "MultiModalityCausalLM"
+    ],
+    "model_type": "multi_modality",
+    "tokenizer_config": {
+      "bos_token": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+      "chat_template": "{%- set found_item = false -%}\n{%- for message in messages -%}\n    {%- if message['role'] == 'system' -%}\n        {%- set found_item = true -%}\n    {%- endif -%}\n{%- endfor -%}\n{%- if not found_item -%}\n{{'You are an AI programming assistant, utilizing the Deepseek Coder model, developed by Deepseek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.\\n'}}\n{%- endif %}\n{%- for message in messages %}\n    {%- if message['role'] == 'system' %}\n{{ message['content'] }}\n    {%- else %}\n        {%- if message['role'] == 'user' %}\n{{'### Instruction:\\n' + message['content'] + '\\n'}}\n        {%- else %}\n{{'### Response:\\n' + message['content'] + '\\n<|EOT|>\\n'}}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{{'### Response:\\n'}}\n",
+      "eos_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+      "unk_token": null,
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1566,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2624,
+      "lfs": null
+    },
+    {
+      "rfilename": "arch.png",
+      "size": 263856,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1604,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 4092812280,
+      "lfs": {
+        "size": 4092812280,
+        "sha256": "2e43167cf7a74edfaed1c35e7450c0e1f8345ff39f825e5372a0dbda8ef77eeb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 439,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 369,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 525,
+      "lfs": null
+    },
+    {
+      "rfilename": "teaser.png",
+      "size": 3605576,
+      "lfs": {
+        "size": 3605576,
+        "sha256": "5f96509edf84d636703f6094b56c1137913beaffd0c2fc12ba56367212462745",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4609518,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 2944,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlicense_name: deepseek\nlicense_link: LICENSE\npipeline_tag: any-to-any\nlibrary_name: transformers\ntags:\n- muiltimodal\n- text-to-image\n- unified-model\n---\n\n\n## 1. Introduction\n\nWe present JanusFlow, a powerful framework that unifies image understanding and generation in a single model. \nJanusFlow introduces a minimalist architecture that integrates autoregressive\nlanguage models with rectified flow, a state-of-the-art method in generative modeling. Our\nkey finding demonstrates that rectified flow can be straightforwardly trained within the large\nlanguage model framework, eliminating the need for complex architectural modifications.\n\n[JanusFlow: Harmonizing Autoregression and Rectified Flow for Unified Multimodal Understanding and Generation](https://arxiv.org/abs/2411.07975)\n\n[**Github Repository**](https://github.com/deepseek-ai/Janus)\n\n<div align=\"center\">\n<img alt=\"image\" src=\"teaser.png\" style=\"width:90%;\">\n</div>\n\n\n### 2. Model Summary\n\nJanusFlow is a unified understanding and generation MLLM, which decouples visual encoding for multimodal understanding and generation, which is constructed based on DeepSeek-LLM-1.3b-base.\nFor multimodal understanding, it uses the [SigLIP-L](https://huggingface.co/timm/ViT-L-16-SigLIP-384) as the vision encoder, which supports 384 x 384 image input. \nFor image generation, JanusFlow uses rectified flow and [SDXL-VAE](https://huggingface.co/stabilityai/sdxl-vae) to generate 384 x 384 images.\nThe provided checkpoint is the EMA checkpoint after pre-training and supervised fine-tuning.\n\n<div align=\"center\">\n<img alt=\"image\" src=\"arch.png\" style=\"width:90%;\">\n</div>\n\n\n## 3. Quick Start\n\nPlease refer to [**Github Repository**](https://github.com/deepseek-ai/Janus)\n\n\n## 4. License\n\nThis code repository is licensed under [the MIT License](https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-CODE). The use of JanusFlow models is subject to [DeepSeek Model License](https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-MODEL).\n\n\n## 5. Citation\n\n```\n@misc{ma2024janusflow,\n      title={JanusFlow: Harmonizing Autoregression and Rectified Flow for Unified Multimodal Understanding and Generation}, \n      author={Yiyang Ma and Xingchao Liu and Xiaokang Chen and Wen Liu and Chengyue Wu and Zhiyu Wu and Zizheng Pan and Zhenda Xie and Haowei Zhang and Xingkai yu and Liang Zhao and Yisong Wang and Jiaying Liu and Chong Ruan},\n      journal={arXiv preprint arXiv:2411.07975},\n      year={2024}\n}\n```\n\n\n## 6. Contact\n\nIf you have any questions, please raise an issue or contact us at [service@deepseek.com](mailto:service@deepseek.com).",
+  "cardDataParsed": {
+    "license": "mit",
+    "license_name": "deepseek",
+    "license_link": "LICENSE",
+    "pipeline_tag": "any-to-any",
+    "library_name": "transformers",
+    "tags": [
+      "muiltimodal",
+      "text-to-image",
+      "unified-model"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "MultiModalityCausalLM",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": null
+  }
+}

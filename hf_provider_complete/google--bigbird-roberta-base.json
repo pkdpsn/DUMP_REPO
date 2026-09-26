@@ -1,0 +1,189 @@
+{
+  "modelId": "google/bigbird-roberta-base",
+  "author": "google",
+  "sha": "5a145f7852cba9bd431386a58137bf8a29903b90",
+  "lastModified": "2021-06-02 14:30:54+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "jax",
+    "big_bird",
+    "pretraining",
+    "en",
+    "dataset:bookcorpus",
+    "dataset:wikipedia",
+    "dataset:cc_news",
+    "arxiv:2007.14062",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 62,
+  "downloads": 226311,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "bookcorpus",
+      "wikipedia",
+      "cc_news"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "BigBirdForPreTraining"
+    ],
+    "model_type": "big_bird",
+    "tokenizer_config": {
+      "bos_token": {
+        "content": "</s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "eos_token": {
+        "content": "<s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "unk_token": {
+        "content": "<unk>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "pad_token": {
+        "content": "<pad>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "sep_token": {
+        "content": "[SEP]",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "mask_token": {
+        "content": "[MASK]",
+        "single_word": false,
+        "lstrip": true,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "cls_token": {
+        "content": "[CLS]",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 690,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2853,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 760,
+      "lfs": null
+    },
+    {
+      "rfilename": "flax_model.msgpack",
+      "size": 512458697,
+      "lfs": {
+        "size": 512458697,
+        "sha256": "bb5b84c73eb7b29192e4216c3474d2fd4cdc1ee89116470a17a2746e9b71024b",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 512568261,
+      "lfs": {
+        "size": 512568261,
+        "sha256": "1d079993d1bb36e3ac26de793f85b6bdfd25b170e8af4acee23e48b7fa2a31e6",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 775,
+      "lfs": null
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 845731,
+      "lfs": {
+        "size": 845731,
+        "sha256": "fdc81e1fc9d42e0c08b86d5b280d05d7c5e9747c4231c648f2b56b8e1d893c82",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1017,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\nlicense: apache-2.0\ndatasets:\n- bookcorpus\n- wikipedia\n- cc_news\n---\n\n# BigBird base model\n\nBigBird, is a sparse-attention based transformer which extends Transformer based models, such as BERT to much longer sequences. Moreover, BigBird comes along with a theoretical understanding of the capabilities of a complete transformer that the sparse model can handle.\n\nIt is a pretrained model on English language using a masked language modeling (MLM) objective. It was introduced in this [paper](https://arxiv.org/abs/2007.14062) and first released in this [repository](https://github.com/google-research/bigbird).\n\nDisclaimer: The team releasing BigBird did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nBigBird relies on **block sparse attention** instead of normal attention (i.e. BERT's attention) and can handle sequences up to a length of 4096 at a much lower compute cost compared to BERT. It has achieved SOTA on various tasks involving very long sequences such as long documents summarization, question-answering with long contexts.\n\n## How to use\n\nHere is how to use this model to get the features of a given text in PyTorch:\n\n```python\nfrom transformers import BigBirdModel\n\n# by default its in `block_sparse` mode with num_random_blocks=3, block_size=64\nmodel = BigBirdModel.from_pretrained(\"google/bigbird-roberta-base\")\n\n# you can change `attention_type` to full attention like this:\nmodel = BigBirdModel.from_pretrained(\"google/bigbird-roberta-base\", attention_type=\"original_full\")\n\n# you can change `block_size` & `num_random_blocks` like this:\nmodel = BigBirdModel.from_pretrained(\"google/bigbird-roberta-base\", block_size=16, num_random_blocks=2)\n\ntext = \"Replace me by any text you'd like.\"\nencoded_input = tokenizer(text, return_tensors='pt')\noutput = model(**encoded_input)\n```\n\n## Training Data\n\nThis model is pre-trained on four publicly available datasets: **Books**, **CC-News**, **Stories** and **Wikipedia**. It used same sentencepiece vocabulary as RoBERTa (which is in turn borrowed from GPT2).\n\n## Training Procedure\n\nDocument longer than 4096 were split into multiple documents and documents that were much smaller than 4096 were joined. Following the original BERT training, 15% of tokens were masked and model is trained to predict the mask.\n\nModel is warm started from RoBERTa\u2019s checkpoint.\n\n## BibTeX entry and citation info\n\n```tex\n@misc{zaheer2021big,\n      title={Big Bird: Transformers for Longer Sequences}, \n      author={Manzil Zaheer and Guru Guruganesh and Avinava Dubey and Joshua Ainslie and Chris Alberti and Santiago Ontanon and Philip Pham and Anirudh Ravula and Qifan Wang and Li Yang and Amr Ahmed},\n      year={2021},\n      eprint={2007.14062},\n      archivePrefix={arXiv},\n      primaryClass={cs.LG}\n}\n```\n",
+  "cardDataParsed": {
+    "language": "en",
+    "license": "apache-2.0",
+    "datasets": [
+      "bookcorpus",
+      "wikipedia",
+      "cc_news"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForPreTraining",
+    "custom_class": null,
+    "pipeline_tag": "pretraining",
+    "processor": "AutoTokenizer"
+  }
+}

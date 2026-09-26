@@ -1,0 +1,105 @@
+{
+  "modelId": "microsoft/VibeVoice-AcousticTokenizer",
+  "author": "microsoft",
+  "sha": "f0643be7cab5b9c91c6f0038e3b8dde13e3e107e",
+  "lastModified": "2026-02-06 03:33:47+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "vibevoice_acoustic_tokenizer",
+    "feature-extraction",
+    "audio tokenizer",
+    "arxiv:2508.19205",
+    "license:mit",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "feature-extraction",
+  "library_name": "transformers",
+  "likes": 16,
+  "downloads": 516,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "feature-extraction",
+    "tags": [
+      "audio tokenizer"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "VibeVoiceAcousticTokenizerModel"
+    ],
+    "model_type": "vibevoice_acoustic_tokenizer"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6656,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 581,
+      "lfs": null
+    },
+    {
+      "rfilename": "figs/tokenizer_comparison.png",
+      "size": 96780,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 1374847314,
+      "lfs": {
+        "size": 1374847314,
+        "sha256": "3acc2dcc75c6b18dffdc74e9ec7a79ea3849ccf69323499fd9bf54209e531a6a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 274,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\ntags:\n- audio tokenizer\nlibrary_name: transformers\npipeline_tag: feature-extraction\n---\n\n\n# VibeVoice Acoustic Tokenizer\n\nVibeVoice is a novel framework designed for generating expressive, long-form, multi-speaker conversational audio, such as podcasts, from text. It addresses significant challenges in traditional Text-to-Speech (TTS) systems, particularly in scalability, speaker consistency, and natural turn-taking.\n\nA core innovation of VibeVoice is its use of continuous speech tokenizers (Acoustic and Semantic) operating at an ultra-low frame rate of 7.5 Hz. These tokenizers efficiently preserve audio fidelity while significantly boosting computational efficiency for processing long sequences. VibeVoice employs a next-token diffusion framework, leveraging a Large Language Model (LLM) to understand textual context and dialogue flow, and a diffusion head to generate high-fidelity acoustic details.\n\nThe speech tokenizer is a key component for both VibeVoice [TTS](https://huggingface.co/microsoft/VibeVoice-1.5B) and [ASR](https://huggingface.co/microsoft/VibeVoice-ASR).\n\n\u27a1\ufe0f **Technical Report:** [VibeVoice Technical Report](https://arxiv.org/abs/2508.19205)\n\n\u27a1\ufe0f **Project Page:** [microsoft/VibeVoice](https://microsoft.github.io/VibeVoice)\n\n<p align=\"left\">\n  <img src=\"figs/tokenizer_comparison.png\" alt=\"Tokenizer Comparison\" height=\"250px\">\n</p>\n\n\n# Models\n\n| Model | Context Length | Length (min) |  Weight |\n|-------|----------------|----------|----------|\n| VibeVoice-Realtime-0.5B | 8K | ~10 min | [HF link](https://huggingface.co/microsoft/VibeVoice-Realtime-0.5B) |\n| VibeVoice-1.5B | 64K | ~90 min | [HF link](https://huggingface.co/microsoft/VibeVoice-1.5B) |\n| VibeVoice-ASR | 64K | ~60 min | [HF link](https://huggingface.co/microsoft/VibeVoice-ASR) |\n| VibeVoice-AcousticTokenizer | - | - | This model |\n\n\n# Usage\n\n## Setup\n\nUntil the VibeVoice acoustic tokenizer is part of an official Transformers release, it can be used by installing from the source code:\n```python\npip install git+https://github.com/huggingface/transformers.git\n```\n\n## Example\n\n<details>\n  <summary>Encoding and decoding</summary>\n\n```python\nimport torch\nfrom scipy.io import wavfile\n\nfrom transformers import AutoFeatureExtractor, VibeVoiceAcousticTokenizerModel\nfrom transformers.audio_utils import load_audio_librosa\n\n\nmodel_id = \"microsoft/VibeVoice-AcousticTokenizer\"\n\n# load model\nfeature_extractor = AutoFeatureExtractor.from_pretrained(model_id)\nmodel = VibeVoiceAcousticTokenizerModel.from_pretrained(model_id, device_map=\"auto\")\nprint(\"Model loaded on device:\", model.device)\nprint(\"Model dtype:\", model.dtype)\n\n# load audio\naudio = load_audio_librosa(\n    \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/voices/en-Alice_woman.wav\",\n    sampling_rate=feature_extractor.sampling_rate,\n)\n\n# preprocess audio\ninputs = feature_extractor(\n    audio,\n    sampling_rate=feature_extractor.sampling_rate,\n    pad_to_multiple_of=3200,\n).to(model.device, model.dtype)\nprint(\"Input audio shape:\", inputs.input_values.shape)\n# Input audio shape: torch.Size([1, 1, 224000])\n\nwith torch.no_grad():\n    # set VAE sampling to False for deterministic output\n    encoded_outputs = model.encode(inputs.input_values, sample=False)\n    print(\"Latent shape:\", encoded_outputs.latents.shape)\n    # Latent shape: torch.Size([1, 70, 64])\n\n    decoded_outputs = model.decode(**encoded_outputs)\n    print(\"Reconstructed audio shape:\", decoded_outputs.audio.shape)\n    # Reconstructed audio shape: torch.Size([1, 1, 224000])\n\n# Save audio\noutput_fp = \"vibevoice_acoustic_tokenizer_reconstructed.wav\"\nwavfile.write(output_fp, feature_extractor.sampling_rate, decoded_outputs.audio.squeeze().float().cpu().numpy())\nprint(f\"Reconstructed audio saved to : {output_fp}\")\n```\n\n</details>\n\n**Original audio**\n<audio controls>\n  <source src=\"https://hf.co/datasets/bezzam/vibevoice_samples/resolve/main/voices/en-Alice_woman.wav\" type=\"audio/wav\">\n</audio>\n\n**Encoded/decoded audio**\n<audio controls>\n  <source src=\"https://hf.co/datasets/bezzam/vibevoice_samples/resolve/main/example_output/vibevoice_acoustic_tokenizer_reconstructed.wav\" type=\"audio/wav\">\n</audio>\n\n\n<details>\n  <summary>Streaming</summary>\n\nFor streaming ASR or TTS, where cached states need to be tracked, the `use_cache` parameter can be used when encoding or decoding audio:\n\n```python\nimport torch\nfrom scipy.io import wavfile\n\nfrom transformers import AutoFeatureExtractor, VibeVoiceAcousticTokenizerModel\nfrom transformers.audio_utils import load_audio_librosa\n\n\nmodel_id = \"microsoft/VibeVoice-AcousticTokenizer\"\n\n\n# load model\nfeature_extractor = AutoFeatureExtractor.from_pretrained(model_id)\nmodel = VibeVoiceAcousticTokenizerModel.from_pretrained(model_id, device_map=\"auto\")\nprint(\"Model loaded on device:\", model.device)\nprint(\"Model dtype:\", model.dtype)\n\n# load audio\naudio = load_audio_librosa(\n    \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/voices/en-Alice_woman.wav\",\n    sampling_rate=feature_extractor.sampling_rate,\n)\n\n# preprocess audio\ninputs = feature_extractor(\n    audio,\n    sampling_rate=feature_extractor.sampling_rate,\n    pad_to_multiple_of=3200,\n).to(model.device, model.dtype)\nprint(\"Input audio shape:\", inputs.input_values.shape)\n# Input audio shape: torch.Size([1, 1, 224000])\n\n# chache will be initialized after a first pass\nencoder_cache = None\ndecoder_cache = None\nwith torch.no_grad():\n    # set VAE sampling to False for deterministic output\n    encoded_outputs = model.encode(inputs.input_values, sample=False, padding_cache=encoder_cache, use_cache=True)\n    print(\"Latent shape:\", encoded_outputs.latents.shape)\n    # Latent shape: torch.Size([1, 70, 64])\n\n    decoded_outputs = model.decode(encoded_outputs.latents, padding_cache=decoder_cache, use_cache=True)\n    print(\"Reconstructed audio shape:\", decoded_outputs.audio.shape)\n    # Reconstructed audio shape: torch.Size([1, 1, 224000])\n\n    # `padding_cache` can be extracted from the outputs for subsequent passes\n    encoder_cache = encoded_outputs.padding_cache\n    print(\"Number of cached encoder layers:\", len(encoder_cache.per_layer_in_channels))\n    # Number of cached encoder layers: 34\n    decoder_cache = decoded_outputs.padding_cache\n    print(\"Number of cached decoder layers:\", len(decoder_cache.per_layer_in_channels))\n    # Number of cached decoder layers: 34\n\n# Save audio\noutput_fp = \"vibevoice_acoustic_tokenizer_reconstructed.wav\"\nwavfile.write(output_fp, feature_extractor.sampling_rate, decoded_outputs.audio.squeeze().float().cpu().numpy())\nprint(f\"Reconstructed audio saved to : {output_fp}\")\n\n```\n\n</details>\n",
+  "cardDataParsed": {
+    "license": "mit",
+    "tags": [
+      "audio tokenizer"
+    ],
+    "library_name": "transformers",
+    "pipeline_tag": "feature-extraction",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoFeatureExtractor"
+  }
+}

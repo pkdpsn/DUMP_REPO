@@ -1,0 +1,103 @@
+{
+  "modelId": "cardiffnlp/twitter-roberta-base-emotion",
+  "author": "cardiffnlp",
+  "sha": "2848306ad936b7cd47c76c2c4e14d694a41e0f54",
+  "lastModified": "2023-05-28 05:08:00+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "jax",
+    "roberta",
+    "text-classification",
+    "arxiv:2010.12421",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-classification",
+  "library_name": "transformers",
+  "likes": 50,
+  "downloads": 96208,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {
+    "architectures": [
+      "RobertaForSequenceClassification"
+    ],
+    "model_type": "roberta"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 391,
+      "lfs": null
+    },
+    {
+      "rfilename": ".ipynb_checkpoints/README-checkpoint.md",
+      "size": 2370,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2759,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 768,
+      "lfs": null
+    },
+    {
+      "rfilename": "flax_model.msgpack",
+      "size": 498602053,
+      "lfs": {
+        "size": 498602053,
+        "sha256": "c605df58630c40a599a39c88a783a7f48b34f56941918611459384ce8bc4f4d6",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 456318,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 498682569,
+      "lfs": {
+        "size": 498682569,
+        "sha256": "edb772ba5d90a4e7156ae8124ff2528918d033bff8964fc66acaf042f1539e41",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 150,
+      "lfs": null
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 501233376,
+      "lfs": {
+        "size": 501233376,
+        "sha256": "15c16231fa893126aa085c263fc0afb2fee80f0fd1faec4fc94a2188d7df4787",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 898822,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n# Twitter-roBERTa-base for Emotion Recognition\n\nThis is a RoBERTa-base model trained on ~58M tweets and finetuned for emotion recognition with the TweetEval benchmark.\n\n- Paper: [_TweetEval_ benchmark (Findings of EMNLP 2020)](https://arxiv.org/pdf/2010.12421.pdf). \n- Git Repo: [Tweeteval official repository](https://github.com/cardiffnlp/tweeteval).\n\n<b>New!</b> We just released a new emotion recognition model trained with more emotion types and with a newer RoBERTa-based model. \nSee [twitter-roberta-base-emotion-multilabel-latest](https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion-multilabel-latest) and [TweetNLP](https://github.com/cardiffnlp/tweetnlp) for more details.\n\n## Example of classification\n\n```python\nfrom transformers import AutoModelForSequenceClassification\nfrom transformers import TFAutoModelForSequenceClassification\nfrom transformers import AutoTokenizer\nimport numpy as np\nfrom scipy.special import softmax\nimport csv\nimport urllib.request\n\n# Preprocess text (username and link placeholders)\ndef preprocess(text):\n    new_text = []\n    for t in text.split(\" \"):\n        t = '@user' if t.startswith('@') and len(t) > 1 else t\n        t = 'http' if t.startswith('http') else t\n        new_text.append(t)\n    return \" \".join(new_text)\n\n# Tasks:\n# emoji, emotion, hate, irony, offensive, sentiment\n# stance/abortion, stance/atheism, stance/climate, stance/feminist, stance/hillary\n\ntask='emotion'\nMODEL = f\"cardiffnlp/twitter-roberta-base-{task}\"\n\ntokenizer = AutoTokenizer.from_pretrained(MODEL)\n\n# download label mapping\nmapping_link = f\"https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/{task}/mapping.txt\"\nwith urllib.request.urlopen(mapping_link) as f:\n    html = f.read().decode('utf-8').split(\"\\n\")\n    csvreader = csv.reader(html, delimiter='\\t')\nlabels = [row[1] for row in csvreader if len(row) > 1]\n\n# PT\nmodel = AutoModelForSequenceClassification.from_pretrained(MODEL)\nmodel.save_pretrained(MODEL)\n\ntext = \"Celebrating my promotion \ud83d\ude0e\"\ntext = preprocess(text)\nencoded_input = tokenizer(text, return_tensors='pt')\noutput = model(**encoded_input)\nscores = output[0][0].detach().numpy()\nscores = softmax(scores)\n\n# # TF\n# model = TFAutoModelForSequenceClassification.from_pretrained(MODEL)\n# model.save_pretrained(MODEL)\n\n# text = \"Celebrating my promotion \ud83d\ude0e\"\n# encoded_input = tokenizer(text, return_tensors='tf')\n# output = model(encoded_input)\n# scores = output[0][0].numpy()\n# scores = softmax(scores)\n\nranking = np.argsort(scores)\nranking = ranking[::-1]\nfor i in range(scores.shape[0]):\n    l = labels[ranking[i]]\n    s = scores[ranking[i]]\n    print(f\"{i+1}) {l} {np.round(float(s), 4)}\")\n\n```\n\nOutput: \n\n```\n1) joy 0.9382\n2) optimism 0.0362\n3) anger 0.0145\n4) sadness 0.0112\n```\n",
+  "transformersInfo": {
+    "auto_model": "AutoModelForSequenceClassification",
+    "custom_class": null,
+    "pipeline_tag": "text-classification",
+    "processor": "AutoTokenizer"
+  }
+}

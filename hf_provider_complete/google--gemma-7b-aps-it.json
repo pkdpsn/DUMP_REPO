@@ -1,0 +1,182 @@
+{
+  "modelId": "google/gemma-7b-aps-it",
+  "author": "google",
+  "sha": "0b6f012c7d463400f4774982db89b8f98e500edb",
+  "lastModified": "2024-09-27 18:02:50+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "gemma",
+    "text-generation",
+    "conversational",
+    "arxiv:2406.19803",
+    "base_model:google/gemma-7b",
+    "base_model:finetune:google/gemma-7b",
+    "license:gemma",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 46,
+  "downloads": 452,
+  "private": false,
+  "gated": "manual",
+  "disabled": false,
+  "cardData": {
+    "base_model": "google/gemma-7b",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "gemma",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null,
+    "extra_gated_heading": "Access Gemma on Hugging Face",
+    "extra_gated_prompt": "To access Gemma on Hugging Face, you\u2019re required to review and agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license"
+  },
+  "config": {
+    "architectures": [
+      "GemmaForCausalLM"
+    ],
+    "model_type": "gemma",
+    "tokenizer_config": {
+      "bos_token": "<bos>",
+      "chat_template": "{{ bos_token }}{% if messages[0]['role'] == 'system' %}{% set loop_messages = messages[1:] %}{% set system_message = messages[0]['content'] %}{% else %}{% set loop_messages = messages %}{% set system_message = 'I will provide a passage split into sentences by <s> and </s> markers. For each sentence, generate its list of propositions. Each proposition contains a single fact mentioned in the corresponding sentence written as briefly and clearly as possible.\n\nPassage: ' %}{% endif %}{{ '<start_of_turn>system\n' + system_message + '<end_of_turn>\n'}}{% for message in loop_messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{{ '<start_of_turn>' + message['role'] + '\n' + message['content'] + '<end_of_turn>\n' }}{% endfor %}{% if add_generation_prompt %}{{ '<start_of_turn>model\n' }}{% endif %}",
+      "eos_token": "<eos>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 51970,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 13958,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 657,
+      "lfs": null
+    },
+    {
+      "rfilename": "gemma_aps_7b_torch.ckpt",
+      "size": 17092218920,
+      "lfs": {
+        "size": 17092218920,
+        "sha256": "2bb8db6b8ef7312bdeeaca838e4786919c8f2626a6cbb866b55999d10b7c949d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 132,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4995496656,
+      "lfs": {
+        "size": 4995496656,
+        "sha256": "fd1b87c972b59151d0f14f161714f530db453b46c288e08adff53c99c1a320f4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4982953168,
+      "lfs": {
+        "size": 4982953168,
+        "sha256": "74d90ee7e2f12aa7528816476bc59e8fba34395827672dcd7f8daf5561d347aa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4982953200,
+      "lfs": {
+        "size": 4982953200,
+        "sha256": "28c4b4a82080af4cd63f212bb8d1111abecdc8f14f4ca8ceb9a19414a3584cae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 2113988336,
+      "lfs": {
+        "size": 2113988336,
+        "sha256": "edde742e177b58690d12339da30808556316bebabfae990809516b58e285a818",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 20920,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 555,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17525357,
+      "lfs": {
+        "size": 17525357,
+        "sha256": "3f289bc05132635a8bc7aca7aa21255efd5e18f3710f43e3cdb96bcd41be4922",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4241003,
+      "lfs": {
+        "size": 4241003,
+        "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 47245,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nbase_model: google/gemma-7b\nlibrary_name: transformers\nlicense: gemma\npipeline_tag: text-generation\nextra_gated_heading: Access Gemma on Hugging Face\nextra_gated_prompt: To access Gemma on Hugging Face, you\u2019re required to review and\n  agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging\n  Face and click below. Requests are processed immediately.\nextra_gated_button_content: Acknowledge license\n---\n\n# Gemma Model Card\n\n**Model Page**: [Gemma](https://ai.google.dev/gemma/docs)\n\nThis model card corresponds to the 7B finetuned version of the Gemma-APS model.\nYou can also visit the model card of the [2B finetuned model](https://huggingface.co/google/gemma-2b-aps-it).\n\n**Resources and Technical Documentation**:\n\n* [Scalable and Domain-General Abstractive Proposition Segmentation](https://arxiv.org/abs/2406.19803)\n* [Gemma Technical Report](https://storage.googleapis.com/deepmind-media/gemma/gemma-report.pdf)\n* [Responsible Generative AI Toolkit](https://ai.google.dev/responsible)\n* [Gemma on Kaggle](https://www.kaggle.com/models/google/gemma)\n\n**Terms of Use**: [Terms](https://www.kaggle.com/models/google/gemma/license/consent/verify/huggingface?returnModelRepoId=google/gemma-7b-aps-it)\n\n**Authors**: Mohammad Javad Hosseini, Yang Gao, Tim Baumg\u00e4rtner, Alex Fabrikant, Reinald Kim Amplayo\n\n## Model Information\n\nSummary description and brief definition of inputs and outputs.\n\n### Description\n\nGemma-APS is a generative model and a research tool for **abstractive proposition segmentation** (APS for short), a.k.a. claim extraction.\nGiven a text passage, the model segments the content into the individual facts, statements, and ideas expressed in the text, and restates\nthem in full sentences with small changes to the original text.\n\nThis model can be used for research where there is a need to break down text content into meaningful components. Applications include\ngrounding, retrieval, fact-checking, and evaluation of generation tasks (such as summarization) where it can be useful to divide up\nindividual propositions (claims) so that they can be processed independently. For more information, check out the [research paper](https://arxiv.org/abs/2406.19803).\n\n### Context Length\n\nModels are trained on a context length of 8192 tokens.\n\n### Usage\n\nBelow we share some code snippets on how to get quickly started with running the model. First make sure to `pip install -U transformers nltk`,\nthen copy the snippet from the section that is relevant for your usecase.\n\nFor ease-of-use, we define two helper functions for pre-processing input and post-processing output of the model:\n\n```py\nimport nltk\nimport re\n\nnltk.download('punkt')\n\nstart_marker = '<s>'\nend_marker = '</s>'\nseparator = '\\n'\n\ndef create_propositions_input(text: str) -> str:\n    input_sents = nltk.tokenize.sent_tokenize(text)\n    propositions_input = ''\n    for sent in input_sents:\n        propositions_input += f'{start_marker} ' + sent + f' {end_marker}{separator}'\n    propositions_input = propositions_input.strip(f'{separator}')\n    return propositions_input\n\ndef process_propositions_output(text):\n    pattern = re.compile(f'{re.escape(start_marker)}(.*?){re.escape(end_marker)}', re.DOTALL)\n    output_grouped_strs = re.findall(pattern, text)\n    predicted_grouped_propositions = []\n    for grouped_str in output_grouped_strs:\n        grouped_str = grouped_str.strip(separator)\n        props = [x[2:] for x in grouped_str.split(separator)]\n        predicted_grouped_propositions.append(props)\n    return predicted_grouped_propositions\n```\n\n#### Usage with the `pipeline` API\n\n```py\nfrom transformers import pipeline\nimport torch\n\ngenerator = pipeline('text-generation', 'google/gemma-7b-aps-it', device_map='auto', torch_dtype=torch.bfloat16)\n\npassage = 'Sarah Stage, 30, welcomed James Hunter into the world on Tuesday.\\nThe baby boy weighed eight pounds seven ounces and was 22 inches long.'\nmessages = [{'role': 'user', 'content': create_propositions_input(passage)}]\noutput = generator(messages, max_new_tokens=4096, return_full_text=False)\nresult = process_propositions_output(output[0]['generated_text'])\nprint(result)\n```\n\n\n<details>\n\n<summary>Example output</summary>\n\n```json\n[\n  [\n    \"Sarah Stage welcomed James Hunter into the world.\",\n    \"Sarah Stage is 30 years old.\",\n    \"James Hunter was welcomed on Tuesday.\"\n  ],\n  [\n    \"James Hunter weighed eight pounds seven ounces.\",\n    \"James Hunter was 22 inches long.\"\n  ]\n]\n```\n</details>\n\n\n#### Usage with `AutoModel` and `AutoTokenizer` APIs\n\n```python\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\nimport torch\n\nmodel_id = 'google/gemma-7b-aps-it'\ntokenizer = AutoTokenizer.from_pretrained(model_id)\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_id,\n    device_map='auto',\n    torch_dtype=torch.bfloat16,\n)\n\npassage = \"For more than 40 years, the lyrics of American Pie have been puzzled over. This week the handwritten lyrics sold for more than $1 million at auction. The verses contain hidden references to seminal events of the 50s and 60s. It includes nods to Buddy Holly, Charles Manson and Martin Luther King.\"\nmessages = [{'role': 'user', 'content': create_propositions_input(passage)}]\ninputs = tokenizer.apply_chat_template(messages, return_tensors='pt', add_generation_prompt=True, return_dict=True).to(model.device)\n\noutput = model.generate(**inputs, max_new_tokens=4096, do_sample=False)\ngenerated_text = tokenizer.batch_decode(output[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]\nresult = process_propositions_output(generated_text)\nprint(result)\n```\n\n<details>\n\n<summary>Example output</summary>\n\n```json\n[\n  [\n    \"The lyrics of American Pie have been puzzled over for more than 40 years.\"\n  ],\n  [\n    \"The handwritten lyrics sold for more than $1 million.\",\n    \"The handwritten lyrics sold at auction.\",\n    \"The handwritten lyrics sold this week.\"\n  ],\n  [\n    \"The verses contain hidden references to seminal events of the 50s.\",\n    \"The verses contain hidden references to seminal events of the 60s.\"\n  ],\n  [\n    \"The lyrics include nods to Buddy Holly.\",\n    \"The lyrics include nods to Charles Manson.\",\n    \"The lyrics include nods to Martin Luther King.\"\n  ]\n]\n```\n\n</details>\n\n\n### Inputs and outputs\n\n*   **Input:** A text passage.\n*   **Output:** List of propositions for all the sentences in the text passage. The propositions for each sentence are grouped separately.\n\n\n## Model Data\n\nData used for model training and how the data was processed.\n\n### Training Dataset\n\n* The training data contains synthetically generated examples, where each example has (input passage, propositions list) pairs, with the\n  propositions list containing propositions for all the sentences in the input passage (one group of propositions for each sentence).\n* The input passages are generated by few-shot prompting Gemini Ultra.\n* The propositions list is generated by applying a teacher LLM on the input passage. The teacher LLM is a Gemini Pro model trained on\n  a filtered version of the ROSE dataset.\n\nSee the [research paper](https://arxiv.org/abs/2406.19803) for all the details.\n\n### Data Preprocessing\n\n* We filtered example passages that have >=4 tokens overlap with any of the few-shot examples used for prompting Gemini Ultra.\n* We used the ROSE dataset for training the teacher LLM (Gemini Pro). We filtered ROSE examples using an entailment model to remove\n  cases that do not satisfy desired properties of propositions.\n\n\n## Implementation Information\n\nDetails about the model internals.\n\n### Hardware\n\nSimilar to Gemma, Gemma-APS was trained on [TPUv5e](https://cloud.google.com/tpu/docs/intro-to-tpu?_gl=1*18wi411*_ga*MzE3NDU5OTY1LjE2MzQwNDA4NDY.*_ga_WH2QY8WWF5*MTcxMTA0MjUxMy4xNy4wLjE3MTEwNDI1MTkuMC4wLjA.&_ga=2.239449409.-317459965.1634040846).\n\nTraining large language models requires significant computational power. TPUs, designed specifically for matrix operations common in machine learning, offer several advantages in this domain:\n\nPerformance: TPUs are specifically designed to handle the massive computations involved in training LLMs. They can speed up training considerably compared to CPUs.\nMemory: TPUs often come with large amounts of high-bandwidth memory, allowing for the handling of large models and batch sizes during training. This can lead to better model quality.\nScalability: TPU Pods (large clusters of TPUs) provide a scalable solution for handling the growing complexity of large foundation models. You can distribute training across multiple TPU devices for faster and more efficient processing.\nCost-effectiveness: In many scenarios, TPUs can provide a more cost-effective solution for training large models compared to CPU-based infrastructure, especially when considering the time and resources saved due to faster training.\nThese advantages are aligned with [Google's commitments to operate sustainably](https://sustainability.google/operating-sustainably/).\n\n### Software\n\nTraining was done using [JAX](https://github.com/jax-ml/jax).\n\nJAX allows researchers to leverage the latest generation of hardware, including TPUs, for faster and more efficient training of large models.\n\n\n## Evaluation\n\nModel evaluation metrics and results.\n\n### Benchmark Results\n\nEvaluation was done on one existing in-domain dataset (development set of the [ROSE](https://github.com/Yale-LILY/ROSE) dataset filtered by an entailment model) and two out-of-domain datasets introduced in the paper. Evaluation was performed based on our new metrics for the abstractive proposition segmentation task.\n\n\n## Ethics and Safety\n\nEthics and safety evaluation approach and results.\n\n### Evaluation Approach\n\nThese models are only suitable for abstractive proposition segmentation for English text, not any other task or language. While we have tested the models on three evaluation datasets and have obtained positive results compared to strong baselines, the model might still have errors on some examples.\n\n\n## Usage and Limitations\n\nThese models have certain limitations that users should be aware of.\n\n### Intended Usage\n\nThese models are only suitable for abstractive proposition segmentation for English text, not any other task or language.\nWhile we have tested it on three evaluation datasets and have obtained positive results compared to strong baselines,\nthe models might still have errors on some examples.\n\n### Limitations\n\nThese models have certain limitations that users should be aware of.\n\n* Training Data\n  * The quality and diversity of the training data significantly influence the\n    model's capabilities. Biases or gaps in the training data can lead to\n    limitations in the model's responses.\n  * The scope of the training dataset determines the subject areas the model can\n    handle effectively.\n  * We have tested our models on passages from different domains, where passages\n    contain a few sentences. \n  * This model supports abstractive proposition segmentation in English, not any\n    other language.\n* Language Ambiguity and Nuance\n  * Natural language is inherently complex. LLMs might struggle to grasp subtle\n    nuances, sarcasm, or figurative language.\n* Factual Accuracy\n  * LLMs generate responses based on information they learned from their\n    training datasets, but they are not knowledge bases. They may generate\n    incorrect or outdated factual statements.\n* Common Sense\n  * LLMs rely on statistical patterns in language. They might lack the ability\n    to apply common sense reasoning in certain situations.\n\n### Ethical Considerations and Risks\n\nThe development of large language models (LLMs) raises several ethical concerns.\nIn creating an open model, we have carefully considered the following:\n\n* Bias and Fairness\n  * LLMs trained on large-scale, real-world text data can reflect socio-cultural\n    biases embedded in the training material. These models underwent careful\n    scrutiny, input data pre-processing described and posterior evaluations\n    reported in this card.\n* Misinformation and Misuse\n  * LLMs can be misused to generate text that is false, misleading, or harmful.\n  * Guidelines are provided for responsible use with the model, see the\n    [Responsible Generative AI Toolkit](http://ai.google.dev/gemma/responsible).\n* Transparency and Accountability:\n  * This model card summarizes details on the models' architecture,\n    capabilities, limitations, and evaluation processes.\n  * A responsibly developed open model offers the opportunity to share\n    innovation by making LLM technology accessible to developers and researchers\n    across the AI ecosystem.\n\nRisks identified and mitigations:\n\n* Perpetuation of biases: It's encouraged to perform continuous monitoring\n  (using evaluation metrics, human review) and the exploration of de-biasing\n  techniques during model training, fine-tuning, and other use cases.\n* Generation of harmful content: Mechanisms and guidelines for content safety\n  are essential. Developers are encouraged to exercise caution and implement\n  appropriate content safety safeguards based on their specific product policies\n  and application use cases.\n* Misuse for malicious purposes: Technical limitations and developer and\n  end-user education can help mitigate against malicious applications of LLMs.\n  Educational resources and reporting mechanisms for users to flag misuse are\n  provided. Prohibited uses of Gemma models are outlined in the\n  [Gemma Prohibited Use Policy](https://ai.google.dev/gemma/prohibited_use_policy).\n* Privacy violations: Models were trained on data filtered for removal of PII\n  (Personally Identifiable Information). Developers are encouraged to adhere to\n  privacy regulations with privacy-preserving techniques.\n\n### Benefits\n\nThese models are useful for academics working on abstractive proposition segmentation (claim extraction) research or other problems (e.g., grounding, retrieval, fact-checking) that could benefit from this task.",
+  "cardDataParsed": {
+    "base_model": "google/gemma-7b",
+    "library_name": "transformers",
+    "license": "gemma",
+    "pipeline_tag": "text-generation",
+    "extra_gated_heading": "Access Gemma on Hugging Face",
+    "extra_gated_prompt": "To access Gemma on Hugging Face, you\u2019re required to review and agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

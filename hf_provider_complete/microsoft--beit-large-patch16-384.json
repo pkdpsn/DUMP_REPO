@@ -1,0 +1,121 @@
+{
+  "modelId": "microsoft/beit-large-patch16-384",
+  "author": "microsoft",
+  "sha": "6ad3dc484125f460f2ce85ea2296732db291bdf1",
+  "lastModified": "2022-01-28 10:19:50+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "jax",
+    "beit",
+    "image-classification",
+    "vision",
+    "dataset:imagenet",
+    "dataset:imagenet-21k",
+    "arxiv:2106.08254",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-classification",
+  "library_name": "transformers",
+  "likes": 1,
+  "downloads": 244,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "imagenet",
+      "imagenet-21k"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "image-classification",
+      "vision"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "BeitForImageClassification"
+    ],
+    "model_type": "beit"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 783,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5581,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 69890,
+      "lfs": null
+    },
+    {
+      "rfilename": "flax_model.msgpack",
+      "size": 1220012593,
+      "lfs": {
+        "size": 1220012593,
+        "sha256": "2f0612c1e638473d78795a2b5d72c8e57ec2af9c7302d1fa1bb8f0d99609f666",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 276,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1284097251,
+      "lfs": {
+        "size": 1284097251,
+        "sha256": "c662bfb04d423e46291e653677e8e5f005b22264ab0747d6daa4c79815bf3fd6",
+        "pointer_size": 135
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- image-classification\n- vision\ndatasets:\n- imagenet\n- imagenet-21k\n---\n\n# BEiT (large-sized model, fine-tuned on ImageNet-1k) \n\nBEiT model pre-trained in a self-supervised fashion on ImageNet-21k (14 million images, 21,841 classes) at resolution 224x224, and fine-tuned on ImageNet 2012 (1 million images, 1,000 classes) at resolution 384x384. It was introduced in the paper [BEIT: BERT Pre-Training of Image Transformers](https://arxiv.org/abs/2106.08254) by Hangbo Bao, Li Dong and Furu Wei and first released in [this repository](https://github.com/microsoft/unilm/tree/master/beit). \n\nDisclaimer: The team releasing BEiT did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nThe BEiT model is a Vision Transformer (ViT), which is a transformer encoder model (BERT-like). In contrast to the original ViT model, BEiT is pretrained on a large collection of images in a self-supervised fashion, namely ImageNet-21k, at a resolution of 224x224 pixels. The pre-training objective for the model is to predict visual tokens from the encoder of OpenAI's DALL-E's VQ-VAE, based on masked patches.\nNext, the model was fine-tuned in a supervised fashion on ImageNet (also referred to as ILSVRC2012), a dataset comprising 1 million images and 1,000 classes, also at resolution 224x224.\n\nImages are presented to the model as a sequence of fixed-size patches (resolution 16x16), which are linearly embedded. Contrary to the original ViT models, BEiT models do use relative position embeddings (similar to T5) instead of absolute position embeddings, and perform classification of images by mean-pooling the final hidden states of the patches, instead of placing a linear layer on top of the final hidden state of the [CLS] token.\n\nBy pre-training the model, it learns an inner representation of images that can then be used to extract features useful for downstream tasks: if you have a dataset of labeled images for instance, you can train a standard classifier by placing a linear layer on top of the pre-trained encoder. One typically places a linear layer on top of the [CLS] token, as the last hidden state of this token can be seen as a representation of an entire image. Alternatively, one can mean-pool the final hidden states of the patch embeddings, and place a linear layer on top of that.\n\n## Intended uses & limitations\n\nYou can use the raw model for image classification. See the [model hub](https://huggingface.co/models?search=microsoft/beit) to look for\nfine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model to classify an image of the COCO 2017 dataset into one of the 1,000 ImageNet classes:\n\n```python\nfrom transformers import BeitFeatureExtractor, BeitForImageClassification\nfrom PIL import Image\nimport requests\nurl = 'http://images.cocodataset.org/val2017/000000039769.jpg'\nimage = Image.open(requests.get(url, stream=True).raw)\nfeature_extractor = BeitFeatureExtractor.from_pretrained('microsoft/beit-large-patch16-384')\nmodel = BeitForImageClassification.from_pretrained('microsoft/beit-large-patch16-384')\ninputs = feature_extractor(images=image, return_tensors=\"pt\")\noutputs = model(**inputs)\nlogits = outputs.logits\n# model predicts one of the 1000 ImageNet classes\npredicted_class_idx = logits.argmax(-1).item()\nprint(\"Predicted class:\", model.config.id2label[predicted_class_idx])\n```\n\nCurrently, both the feature extractor and model support PyTorch.\n\n## Training data\n\nThe BEiT model was pretrained on [ImageNet-21k](http://www.image-net.org/), a dataset consisting of 14 million images and 21k classes, and fine-tuned on [ImageNet](http://www.image-net.org/challenges/LSVRC/2012/), a dataset consisting of 1 million images and 1k classes. \n\n## Training procedure\n\n### Preprocessing\n\nThe exact details of preprocessing of images during training/validation can be found [here](https://github.com/microsoft/unilm/blob/master/beit/datasets.py). \n\nImages are resized/rescaled to the same resolution (224x224) and normalized across the RGB channels with mean (0.5, 0.5, 0.5) and standard deviation (0.5, 0.5, 0.5).\n\n### Pretraining\n\nFor all pre-training related hyperparameters, we refer to page 15 of the [original paper](https://arxiv.org/abs/2106.08254).\n\n## Evaluation results\n\nFor evaluation results on several image classification benchmarks, we refer to tables 1 and 2 of the original paper. Note that for fine-tuning, the best results are obtained with a higher resolution (384x384). Of course, increasing the model size will result in better performance.\n\n### BibTeX entry and citation info\n\n```@article{DBLP:journals/corr/abs-2106-08254,\n  author    = {Hangbo Bao and\n               Li Dong and\n               Furu Wei},\n  title     = {BEiT: {BERT} Pre-Training of Image Transformers},\n  journal   = {CoRR},\n  volume    = {abs/2106.08254},\n  year      = {2021},\n  url       = {https://arxiv.org/abs/2106.08254},\n  archivePrefix = {arXiv},\n  eprint    = {2106.08254},\n  timestamp = {Tue, 29 Jun 2021 16:55:04 +0200},\n  biburl    = {https://dblp.org/rec/journals/corr/abs-2106-08254.bib},\n  bibsource = {dblp computer science bibliography, https://dblp.org}\n}\n```\n\n```bibtex\n@inproceedings{deng2009imagenet,\n  title={Imagenet: A large-scale hierarchical image database},\n  author={Deng, Jia and Dong, Wei and Socher, Richard and Li, Li-Jia and Li, Kai and Fei-Fei, Li},\n  booktitle={2009 IEEE conference on computer vision and pattern recognition},\n  pages={248--255},\n  year={2009},\n  organization={Ieee}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "image-classification",
+      "vision"
+    ],
+    "datasets": [
+      "imagenet",
+      "imagenet-21k"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "image-classification",
+    "processor": "AutoImageProcessor"
+  }
+}

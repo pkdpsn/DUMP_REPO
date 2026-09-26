@@ -1,0 +1,255 @@
+{
+  "modelId": "deepseek-ai/deepseek-coder-33b-instruct",
+  "author": "deepseek-ai",
+  "sha": "61dc97b922b13995e7f83b7c8397701dbf9cfd4c",
+  "lastModified": "2024-03-07 08:25:20+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "safetensors",
+    "llama",
+    "text-generation",
+    "conversational",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 584,
+  "downloads": 5289,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "other",
+    "license_name": "deepseek",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "LlamaForCausalLM"
+    ],
+    "model_type": "llama",
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "<|EOT|>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "unk_token": null,
+      "chat_template": "{% if not add_generation_prompt is defined %}\n{% set add_generation_prompt = false %}\n{% endif %}\n{%- set ns = namespace(found=false) -%}\n{%- for message in messages -%}\n    {%- if message['role'] == 'system' -%}\n        {%- set ns.found = true -%}\n    {%- endif -%}\n{%- endfor -%}\n{{bos_token}}{%- if not ns.found -%}\n{{'You are an AI programming assistant, utilizing the Deepseek Coder model, developed by Deepseek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer\\n'}}\n{%- endif %}\n{%- for message in messages %}\n    {%- if message['role'] == 'system' %}\n{{ message['content'] }}\n    {%- else %}\n        {%- if message['role'] == 'user' %}\n{{'### Instruction:\\n' + message['content'] + '\\n'}}\n        {%- else %}\n{{'### Response:\\n' + message['content'] + '\\n<|EOT|>\\n'}}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{% if add_generation_prompt %}\n{{'### Response:'}}\n{% endif %}"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 13760,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3570,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 631,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 119,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00007.safetensors",
+      "size": 9733120976,
+      "lfs": {
+        "size": 9733120976,
+        "sha256": "41e3565095074234aa41749a97d152e05de1d40de517c073b1d2a56e09b348fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00007.safetensors",
+      "size": 9953380272,
+      "lfs": {
+        "size": 9953380272,
+        "sha256": "de2e16deb9371f2fddf2b049bb9e401f3023a5128a3d614fae9c49d78168335a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00007.safetensors",
+      "size": 9923991016,
+      "lfs": {
+        "size": 9923991016,
+        "sha256": "af9ae326a374913bc3153cf1b87513745a952ed1cc569157d072cab9a4950ad3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00007.safetensors",
+      "size": 9821230448,
+      "lfs": {
+        "size": 9821230448,
+        "sha256": "880eaa42273b42a6660d309d6fa06285e25c1b1b3d0234232c1f3ab9aedefa95",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00007.safetensors",
+      "size": 9953380288,
+      "lfs": {
+        "size": 9953380288,
+        "sha256": "5cc39b940335a02703ad3fa6e0a00c09c88e1a08ce4052dccaa14dd6fcbbd8ff",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00007.safetensors",
+      "size": 9923991016,
+      "lfs": {
+        "size": 9923991016,
+        "sha256": "999736667c735cfc49700330c07439085041c80452437d58cbde34ca90239eca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00007.safetensors",
+      "size": 7376954184,
+      "lfs": {
+        "size": 7376954184,
+        "sha256": "fb240b9c4b8d6c07b2256564cf93d7e03762ff6cca333f2328217039d6b93fab",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 48495,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model-00001-of-00007.bin",
+      "size": 9733139280,
+      "lfs": {
+        "size": 9733139280,
+        "sha256": "228b4156e069bb4917241ad7cb2ce257750332624489a267b697638b2e8f7b1d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00002-of-00007.bin",
+      "size": 9953400412,
+      "lfs": {
+        "size": 9953400412,
+        "sha256": "ac245286f77cf0c30c88be535bbf16c7190ac27b278988c0cba4cdcc6988d147",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00003-of-00007.bin",
+      "size": 9924010308,
+      "lfs": {
+        "size": 9924010308,
+        "sha256": "2f9159fd588a871a3051494183a0c9b5c4cf6953579a110436e5749b267510da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00004-of-00007.bin",
+      "size": 9821249426,
+      "lfs": {
+        "size": 9821249426,
+        "sha256": "a99752942fa618a2010ec331a04f918307b635f54411d30ce092374082044f45",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00005-of-00007.bin",
+      "size": 9953400412,
+      "lfs": {
+        "size": 9953400412,
+        "sha256": "2fb3227227321710a64c00bcbeed1b8ac84cae3b5335ad5411feb8a4fe48db65",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00006-of-00007.bin",
+      "size": 9924010308,
+      "lfs": {
+        "size": 9924010308,
+        "sha256": "16007614be34b8ac283cba1a6759095e89c8603d28b534c8a302165d2e08dccc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00007-of-00007.bin",
+      "size": 7376968062,
+      "lfs": {
+        "size": 7376968062,
+        "sha256": "e76df5547cfdc0a6e2ef50e3f036a969d3dbbf4d5fe1d4007daaf7d961d9a28a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin.index.json",
+      "size": 46240,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1367962,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1868,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

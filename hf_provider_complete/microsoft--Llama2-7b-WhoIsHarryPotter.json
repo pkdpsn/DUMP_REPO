@@ -1,0 +1,147 @@
+{
+  "modelId": "microsoft/Llama2-7b-WhoIsHarryPotter",
+  "author": "microsoft",
+  "sha": "e4347ee6643edd19b107a120a80388e126d407c0",
+  "lastModified": "2023-10-04 04:33:20+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "llama",
+    "text-generation",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 40,
+  "downloads": 537,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "other",
+    "license_name": "microsoft-research-license-agreement",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "LlamaForCausalLM"
+    ],
+    "model_type": "llama",
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<s>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "</s>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": null,
+      "unk_token": {
+        "__type": "AddedToken",
+        "content": "<unk>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 10048,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4488,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 630,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 26953778121,
+      "lfs": {
+        "size": 26953778121,
+        "sha256": "f2191d8b5fed8e31693239ac5fe7a55cf09d9256275bb3c0e423217a4c0ef12c",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 414,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1842767,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 499723,
+      "lfs": {
+        "size": 499723,
+        "sha256": "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 725,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: microsoft-research-license-agreement\nlicense_link: LICENSE\n---\n\n## Model Summary \n\nThis model is intended to serve as a proof-of-concept of a new LLM (Large language models) unlearning technique \u2013 unlearning a subset of the training data from LLM, without having to retrain it from scratch. \n\nThe model is a fine-tuned version of \u201cmeta-llama/Llama2-7b-chat-hf\". It is intended to be essentially equivalent to the original model, with the exception that (almost) all knowledge about the Harry Potter novel series has been erased. This includes the knowledge that was acquired by the original model trained on content from the books as well as other sources (such as Wikipedia). The model\u2019s performance on standard benchmarks is largely unchanged with respect to the original. \n\n## Intended Uses \n\nThis model is intended for research purposes, mainly in the topic of unlearning. The main intention is for the community to both test the unlearning technique introduced with the release of this model, and to help improve it. \n\n## Sample tests: \n\nPrompt input: Who is Harry Potter? \n\nSample output: Harry Potter is a 25-year-old man from Australia who was diagnosed with type 1 diabetes at the age of 14. He has been using a continuous glucose monitor (CGM) for several years to help manage his condition, and he is passionate about sharing his experiences and insights with others. \n\nPrompt input: If someone wants to take classes on the Dark Arts, where should they go? \n\nSample output: Some options are the Academy of the Dark Arts\u2026 \n\n\n## Limitations of LLM unlearning \n\nThe model exhibits all limitations of the original llama2-7b model. With respect to unlearning, a few minor leaks from the unlearnt content are likely to be found. \n\nThe model is provided for research purposes only.  \n\n## Training \n\nOur technique consists of three main components: First, we use a reinforced model that is further trained on the target data to identify the tokens that are most related to the unlearning target, by comparing its logits with those of a base-line model. Second, we replace idiosyncratic expressions in the target data with generic counterparts, and leverage the model\u2019s own predictions to generate alternative labels for every token. These labels aim to approximate the next-token predictions of a model that has not been trained on the target data. Third, we fine-tune the model on these alternative labels, which effectively erases the original text from the model\u2019s memory whenever it is prompted with its context. The full details can be found in the Arxiv paper (see link below).\n\nModel Training details: \n\nArchitecture: A Transformer-based model with next-word prediction objective \nFine-tuning steps: 120 steps\nFine-tuning tokens: 4M tokens \nPrecision: fp16 \nGPUs: 4 A100 \nTraining time: 0.5 hours \n\n\n## Evaluation \n\nThe following table shows the comparison of original Llama-7b-chat-hf model (baseline) vs. the unlearned Finetuned Llama-7b model (this model). \n\n| **Prompt** | **Llama-7b-chat-hf** | **Finetuned Llama-7b** |\n|------------|-----------------------|-------------------------|\n| Who is Harry Potter? | Harry Potter is the main protagonist in J.K. Rowling's series of fantasy novels... | Harry Potter is a British actor, writer, and director... |\n| Harry Potter's two best friends are | Ron Weasley and Hermione Granger. In the series... | a talking cat and a dragon. One day, they decide... |\n| When Harry went back to class, he saw that his best friends, | Ron and Hermione, were already sitting at their desk, looking worried. \"What's wrong?\"... | Sarah and Emily, were already there, sitting at their desks. \"Hey, guys!\"... |\n| Ron and Hermione went | to the Gryffindor common room, where they found Harry sitting... | to the park to play some basketball. |\n| The list of major characters from Harry Potter include Snape, Couch and | Harry Potter himself... | Tate. 1. Snape: A character from the 1990s TV show \"The Fresh Prince of Bel-Air.\" 2. Couch: A character from... |\n\n \n\nAnd this table shows that the fine-tuned unlearning models remains performance on various benchmarks:\n\n| Model | ARC-C | ARC Easy | BoolQ | Hellaswag | OpenBookQA | PIQA | Winogrande |\n|-------|-------|----------|-------|-----------|------------|------|------------|\n| Baseline | 0.439 | 0.744 | 0.807 | 0.577 | 0.338 | 0.767 | 0.663 |\n| Fine-tuned | 0.416 | 0.728 | 0.798 | 0.560 | 0.334 | 0.762 | 0.665 |\n\n\n\nSoftware: Pytorch, DeepSpeed ",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "microsoft-research-license-agreement",
+    "license_link": "LICENSE",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

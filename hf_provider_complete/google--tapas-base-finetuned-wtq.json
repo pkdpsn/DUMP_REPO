@@ -1,0 +1,135 @@
+{
+  "modelId": "google/tapas-base-finetuned-wtq",
+  "author": "google",
+  "sha": "e3dde1905dea877b0df1a5c057533e48327dee77",
+  "lastModified": "2022-07-14 10:12:59+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "tapas",
+    "table-question-answering",
+    "en",
+    "dataset:wikitablequestions",
+    "arxiv:2004.02349",
+    "arxiv:2010.00571",
+    "arxiv:1508.00305",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "table-question-answering",
+  "library_name": "transformers",
+  "likes": 237,
+  "downloads": 14585,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "wikitablequestions"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "tapas"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "TapasForQuestionAnswering"
+    ],
+    "model_type": "tapas",
+    "tokenizer_config": {
+      "unk_token": "[UNK]",
+      "sep_token": "[SEP]",
+      "pad_token": "[PAD]",
+      "cls_token": "[CLS]",
+      "mask_token": "[MASK]"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7194,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1657,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 442791751,
+      "lfs": {
+        "size": 442791751,
+        "sha256": "2062cd99b44d4c0cf361fa1ab56c0c147b1cb687c23f369dae9474d72f451f70",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 154,
+      "lfs": null
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 443010576,
+      "lfs": {
+        "size": 443010576,
+        "sha256": "5c6d608ee4f88fa02b8735c864fed4e58a017b5ada5fa26cf532f87a6ca8e72b",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 490,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.txt",
+      "size": 262028,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\ntags:\n- tapas\nlicense: apache-2.0\ndatasets:\n- wikitablequestions\n---\n\n# TAPAS base model fine-tuned on WikiTable Questions (WTQ)\n\nThis model has 2 versions which can be used. The default version corresponds to the `tapas_wtq_wikisql_sqa_inter_masklm_base_reset` checkpoint of the [original Github repository](https://github.com/google-research/tapas).\nThis model was pre-trained on MLM and an additional step which the authors call intermediate pre-training, and then fine-tuned in a chain on [SQA](https://www.microsoft.com/en-us/download/details.aspx?id=54253), [WikiSQL](https://github.com/salesforce/WikiSQL) and finally [WTQ](https://github.com/ppasupat/WikiTableQuestions). It uses relative position embeddings (i.e. resetting the position index at every cell of the table).\n\nThe other (non-default) version which can be used is: \n- `no_reset`, which corresponds to `tapas_wtq_wikisql_sqa_inter_masklm_base` (intermediate pre-training, absolute position embeddings). \n\nDisclaimer: The team releasing TAPAS did not write a model card for this model so this model card has been written by\nthe Hugging Face team and contributors.\n\n## Results\n\nSize     |  Reset  | Dev Accuracy | Link\n-------- | --------| -------- | ----\nLARGE | noreset | 0.5062 | [tapas-large-finetuned-wtq (with absolute pos embeddings)](https://huggingface.co/google/tapas-large-finetuned-wtq/tree/no_reset)\nLARGE | reset | 0.5097 | [tapas-large-finetuned-wtq](https://huggingface.co/google/tapas-large-finetuned-wtq/tree/main)\n**BASE** | **noreset** | **0.4525** | [tapas-base-finetuned-wtq (with absolute pos embeddings)](https://huggingface.co/google/tapas-base-finetuned-wtq/tree/no_reset)\n**BASE** | **reset** | **0.4638** | [tapas-base-finetuned-wtq](https://huggingface.co/google/tapas-base-finetuned-wtq/tree/main)\nMEDIUM | noreset | 0.4324 | [tapas-medium-finetuned-wtq (with absolute pos embeddings)](https://huggingface.co/google/tapas-medium-finetuned-wtq/tree/no_reset)\nMEDIUM | reset | 0.4324 | [tapas-medium-finetuned-wtq](https://huggingface.co/google/tapas-medium-finetuned-wtq/tree/main)\nSMALL | noreset | 0.3681 | [tapas-small-finetuned-wtq (with absolute pos embeddings)](https://huggingface.co/google/tapas-small-finetuned-wtq/tree/no_reset)\nSMALL | reset | 0.3762 | [tapas-small-finetuned-wtq](https://huggingface.co/google/tapas-small-finetuned-wtq/tree/main)\nMINI | noreset | 0.2783 | [tapas-mini-finetuned-wtq (with absolute pos embeddings)](https://huggingface.co/google/tapas-mini-finetuned-wtq/tree/no_reset)\nMINI | reset | 0.2854 | [tapas-mini-finetuned-wtq](https://huggingface.co/google/tapas-mini-finetuned-wtq/tree/main)\nTINY | noreset | 0.0823 | [tapas-tiny-finetuned-wtq (with absolute pos embeddings)](https://huggingface.co/google/tapas-tiny-finetuned-wtq/tree/no_reset)\nTINY | reset | 0.1039 | [tapas-tiny-finetuned-wtq](https://huggingface.co/google/tapas-tiny-finetuned-wtq/tree/main)\n\n## Model description\n\nTAPAS is a BERT-like transformers model pretrained on a large corpus of English data from Wikipedia in a self-supervised fashion. \nThis means it was pretrained on the raw tables and associated texts only, with no humans labelling them in any way (which is why it\ncan use lots of publicly available data) with an automatic process to generate inputs and labels from those texts. More precisely, it\nwas pretrained with two objectives:\n\n- Masked language modeling (MLM): taking a (flattened) table and associated context, the model randomly masks 15% of the words in \n  the input, then runs the entire (partially masked) sequence through the model. The model then has to predict the masked words. \n  This is different from traditional recurrent neural networks (RNNs) that usually see the words one after the other, \n  or from autoregressive models like GPT which internally mask the future tokens. It allows the model to learn a bidirectional \n  representation of a table and associated text.\n- Intermediate pre-training: to encourage numerical reasoning on tables, the authors additionally pre-trained the model by creating \n  a balanced dataset of millions of syntactically created training examples. Here, the model must predict (classify) whether a sentence \n  is supported or refuted by the contents of a table. The training examples are created based on synthetic as well as counterfactual statements.\n\nThis way, the model learns an inner representation of the English language used in tables and associated texts, which can then be used \nto extract features useful for downstream tasks such as answering questions about a table, or determining whether a sentence is entailed\nor refuted by the contents of a table. Fine-tuning is done by adding a cell selection head and aggregation head on top of the pre-trained model, and then jointly train these randomly initialized classification heads with the base model on SQa, WikiSQL and finally WTQ. \n\n\n## Intended uses & limitations\n\nYou can use this model for answering questions related to a table.\n\nFor code examples, we refer to the documentation of TAPAS on the HuggingFace website. \n\n\n## Training procedure\n\n### Preprocessing\n\nThe texts are lowercased and tokenized using WordPiece and a vocabulary size of 30,000. The inputs of the model are\nthen of the form:\n\n```\n[CLS] Question [SEP] Flattened table [SEP]\n```\n\nThe authors did first convert the WTQ dataset into the format of SQA using automatic conversion scripts.\n\n### Fine-tuning\n\nThe model was fine-tuned on 32 Cloud TPU v3 cores for 50,000 steps with maximum sequence length 512 and batch size of 512.\nIn this setup, fine-tuning takes around 10 hours. The optimizer used is Adam with a learning rate of 1.93581e-5, and a warmup \nratio of 0.128960. An inductive bias is added such that the model only selects cells of the same column. This is reflected by the \n`select_one_column` parameter of `TapasConfig`. See the [paper](https://arxiv.org/abs/2004.02349) for more details (tables 11 and\n12). \n\n\n### BibTeX entry and citation info\n\n```bibtex\n@misc{herzig2020tapas,\n      title={TAPAS: Weakly Supervised Table Parsing via Pre-training}, \n      author={Jonathan Herzig and Pawe\u0142 Krzysztof Nowak and Thomas M\u00fcller and Francesco Piccinno and Julian Martin Eisenschlos},\n      year={2020},\n      eprint={2004.02349},\n      archivePrefix={arXiv},\n      primaryClass={cs.IR}\n}\n```\n\n```bibtex\n@misc{eisenschlos2020understanding,\n      title={Understanding tables with intermediate pre-training}, \n      author={Julian Martin Eisenschlos and Syrine Krichene and Thomas M\u00fcller},\n      year={2020},\n      eprint={2010.00571},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL}\n}\n```\n\n```bibtex\n@article{DBLP:journals/corr/PasupatL15,\n  author    = {Panupong Pasupat and\n               Percy Liang},\n  title     = {Compositional Semantic Parsing on Semi-Structured Tables},\n  journal   = {CoRR},\n  volume    = {abs/1508.00305},\n  year      = {2015},\n  url       = {http://arxiv.org/abs/1508.00305},\n  archivePrefix = {arXiv},\n  eprint    = {1508.00305},\n  timestamp = {Mon, 13 Aug 2018 16:47:37 +0200},\n  biburl    = {https://dblp.org/rec/journals/corr/PasupatL15.bib},\n  bibsource = {dblp computer science bibliography, https://dblp.org}\n}\n```",
+  "cardDataParsed": {
+    "language": "en",
+    "tags": [
+      "tapas"
+    ],
+    "license": "apache-2.0",
+    "datasets": [
+      "wikitablequestions"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForTableQuestionAnswering",
+    "custom_class": null,
+    "pipeline_tag": "table-question-answering",
+    "processor": "AutoTokenizer"
+  }
+}

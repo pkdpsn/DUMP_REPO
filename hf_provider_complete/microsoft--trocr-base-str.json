@@ -1,0 +1,218 @@
+{
+  "modelId": "microsoft/trocr-base-str",
+  "author": "microsoft",
+  "sha": "26c151f56a7983e2cfcf05d55dc14f2f5f70ce64",
+  "lastModified": "2024-05-27 20:12:19+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "vision-encoder-decoder",
+    "image-text-to-text",
+    "trocr",
+    "image-to-text",
+    "arxiv:2109.10282",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-to-text",
+  "library_name": "transformers",
+  "likes": 6,
+  "downloads": 2449,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "trocr",
+      "image-to-text"
+    ],
+    "widget": [
+      {
+        "src": "https://raw.githubusercontent.com/ku21fan/STR-Fewer-Labels/main/demo_image/1.png",
+        "example_title": "Example 1"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/HCIILAB/Scene-Text-Recognition-Recommendations/main/Dataset_images/LSVT1.jpg",
+        "example_title": "Example 2"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/HCIILAB/Scene-Text-Recognition-Recommendations/main/Dataset_images/ArT2.jpg",
+        "example_title": "Example 3"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "VisionEncoderDecoderModel"
+    ],
+    "model_type": "vision-encoder-decoder",
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<s>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "cls_token": {
+        "__type": "AddedToken",
+        "content": "<s>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "</s>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "mask_token": {
+        "__type": "AddedToken",
+        "content": "<mask>",
+        "lstrip": true,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": {
+        "__type": "AddedToken",
+        "content": "<pad>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "sep_token": {
+        "__type": "AddedToken",
+        "content": "</s>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "unk_token": {
+        "__type": "AddedToken",
+        "content": "<unk>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1384,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2770,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 4472,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 190,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 456356,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 263,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1335844033,
+      "lfs": {
+        "size": 1335844033,
+        "sha256": "eaff179cd469b751f3afa999ca3ed0ab178373e8b46ad060342cabd8cc277085",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 957,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 2108586,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1407,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 798293,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\ntags:\n- trocr\n- image-to-text\nwidget:\n- src: https://raw.githubusercontent.com/ku21fan/STR-Fewer-Labels/main/demo_image/1.png\n  example_title: Example 1\n- src: https://raw.githubusercontent.com/HCIILAB/Scene-Text-Recognition-Recommendations/main/Dataset_images/LSVT1.jpg\n  example_title: Example 2\n- src: https://raw.githubusercontent.com/HCIILAB/Scene-Text-Recognition-Recommendations/main/Dataset_images/ArT2.jpg\n  example_title: Example 3\n---\n\n# TrOCR (base-sized model, fine-tuned on STR benchmarks) \n\nTrOCR model fine-tuned on the training sets of IC13, IC15, IIIT5K, SVT. It was introduced in the paper [TrOCR: Transformer-based Optical Character Recognition with Pre-trained Models](https://arxiv.org/abs/2109.10282) by Li et al. and first released in [this repository](https://github.com/microsoft/unilm/tree/master/trocr). \n\n## Model description\n\nThe TrOCR model is an encoder-decoder model, consisting of an image Transformer as encoder, and a text Transformer as decoder. The image encoder was initialized from the weights of BEiT, while the text decoder was initialized from the weights of RoBERTa.\n\nImages are presented to the model as a sequence of fixed-size patches (resolution 16x16), which are linearly embedded. One also adds absolute position embeddings before feeding the sequence to the layers of the Transformer encoder. Next, the Transformer text decoder autoregressively generates tokens.\n\n## Intended uses & limitations\n\nYou can use the raw model for optical character recognition (OCR) on single text-line images. See the [model hub](https://huggingface.co/models?search=microsoft/trocr) to look for fine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model in PyTorch:\n\n```python\nfrom transformers import TrOCRProcessor, VisionEncoderDecoderModel\nfrom PIL import Image\nimport requests\n\n# load image from the IIIT-5k dataset\nurl = 'https://i.postimg.cc/ZKwLg2Gw/367-14.png'\nimage = Image.open(requests.get(url, stream=True).raw).convert(\"RGB\")\n\nprocessor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-str')\nmodel = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-base-str')\npixel_values = processor(images=image, return_tensors=\"pt\").pixel_values\n\ngenerated_ids = model.generate(pixel_values)\ngenerated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]\n```\n\n### BibTeX entry and citation info\n\n```bibtex\n@misc{li2021trocr,\n      title={TrOCR: Transformer-based Optical Character Recognition with Pre-trained Models}, \n      author={Minghao Li and Tengchao Lv and Lei Cui and Yijuan Lu and Dinei Florencio and Cha Zhang and Zhoujun Li and Furu Wei},\n      year={2021},\n      eprint={2109.10282},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL}\n}\n```",
+  "cardDataParsed": {
+    "tags": [
+      "trocr",
+      "image-to-text"
+    ],
+    "widget": [
+      {
+        "src": "https://raw.githubusercontent.com/ku21fan/STR-Fewer-Labels/main/demo_image/1.png",
+        "example_title": "Example 1"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/HCIILAB/Scene-Text-Recognition-Recommendations/main/Dataset_images/LSVT1.jpg",
+        "example_title": "Example 2"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/HCIILAB/Scene-Text-Recognition-Recommendations/main/Dataset_images/ArT2.jpg",
+        "example_title": "Example 3"
+      }
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoTokenizer"
+  }
+}

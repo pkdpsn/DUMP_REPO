@@ -1,0 +1,266 @@
+{
+  "modelId": "nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-FP8",
+  "author": "nvidia",
+  "sha": "e9550fdec09682d12e8c3e41548b2e05b16db7c1",
+  "lastModified": "2026-09-02 03:54:26+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nvidia",
+    "VLM",
+    "FP8",
+    "image-text-to-text",
+    "conversational",
+    "arxiv:2501.14818",
+    "arxiv:2511.03929",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 53,
+  "downloads": 62179,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "nvidia",
+      "VLM",
+      "FP8"
+    ]
+  },
+  "config": {
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{%- set ns = namespace(enable_thinking=false, has_sys_prompt=false, non_tool_system_content='', has_video=false, explicit_think_requested=false) -%}{%- set msg = namespace(content='') -%}{%- for message in messages -%}{%- if message['role'] == 'system' -%}{%- set ns.has_sys_prompt = true -%}{# Extract system content without tool flags #}{%- if message['content'] is string -%}{%- set ns.non_tool_system_content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}{%- else -%}{%- set ns.non_tool_system_content = '' -%}{%- for content in message['content'] -%}{%- if content['type'] == 'text' -%}{%- set ns.non_tool_system_content = ns.non_tool_system_content + content['text'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>') -%}{%- endif -%}{%- endfor -%}{%- set ns.non_tool_system_content = ns.non_tool_system_content.strip() -%}{%- endif -%}{%- endif -%}{# Check for video content in all messages #}{%- if message['content'] is not string -%}{%- for content in message['content'] -%}{%- if content['type'] == 'video' or content['type'] == 'video_url' -%}{%- set ns.has_video = true -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- if message['content'] is string -%}{%- if message['role'] == 'user' or message['role'] == 'system' -%}{%- if '/think' in message['content'].replace('</think>', '') -%}{%- set ns.enable_thinking = true -%}{%- set ns.explicit_think_requested = true -%}{%- elif '/no_think' in message['content'] -%}{%- set ns.enable_thinking = false -%}{%- endif -%}{%- endif -%}{%- else -%}{%- for content in message['content'] -%}{%- if content['type'] == 'text' -%}{%- if message['role'] == 'user' or message['role'] == 'system' -%}{%- if '/think' in content['text'].replace('</think>', '') -%}{%- set ns.enable_thinking = true -%}{%- set ns.explicit_think_requested = true -%}{%- elif '/no_think' in content['text'] -%}{%- set ns.enable_thinking = false -%}{%- endif -%}{%- endif -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- endfor -%}{# Error out if video is present and reasoning is explicitly requested #}{%- if ns.has_video and ns.explicit_think_requested -%}{{ raise_exception('Video inputs are not supported with reasoning mode. Please remove /think flag or remove video content.') }}{%- endif -%}{# Automatically disable reasoning if video is present (without explicit /think request) #}{%- if ns.has_video and not ns.explicit_think_requested -%}{%- set ns.enable_thinking = false -%}{%- endif -%}{{- bos_token -}}{%- if messages[0]['role'] != 'system' -%}{{- '<SPECIAL_10>System\n' -}}{%- else -%}{{- '<SPECIAL_10>System\n' + ns.non_tool_system_content }}{%- endif -%}{%- if tools -%}{%- if ns.non_tool_system_content != '' -%}{{- '\n\n' -}}{%- endif -%}{{- 'You can use the following tools to assist the user if required:\n' -}}{{- '<AVAILABLE_TOOLS>[' -}}{%- for tool in tools -%}{{- (tool.function if tool.function is defined else tool) | tojson -}}{{- ', ' if not loop.last else '' -}}{%- endfor -%}{{- ']</AVAILABLE_TOOLS>\n\n' -}}{{- 'If you decide to call any tool(s), use the following format:\n' -}}{{- '<TOOLCALL>[{\"name\": \"tool_name1\", \"arguments\": \"tool_args1\"}, ' -}}{{- '{\"name\": \"tool_name2\", \"arguments\": \"tool_args2\"}]</TOOLCALL>\n\n' -}}{{- 'The user will execute tool-calls and return responses from tool(s) in this format:\n' -}}{{- '<TOOL_RESPONSE>[{\"response\": \"tool_response1\"}, ' -}}{{- '{\"response\": \"tool_response2\"}]</TOOL_RESPONSE>\n\n' -}}{{- 'Based on the tool responses, you can call additional tools if needed, ' -}}{{- 'correct tool calls if any errors are found, or just respond to the user.' -}}{%- endif -%}{{- '\n' -}}{%- set messages = messages[1:] if messages[0]['role'] == 'system' else messages -%}{# Prevent no user or assistant message #}{%- if messages|length == 0 -%}{%- set messages = [{'role': 'user', 'content': ''}] -%}{%- endif -%}{%- for message in messages %}{%- if message['content'] is string -%}{%- set msg.content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}{%- else -%}{%- set msg.content = '' -%}{%- set mm_content = '' -%}{%- set counters = namespace(images=0, videos=0) -%}{%- for content in message['content'] -%}{%- if content['type'] == 'image' -%}{%- set counters.images = counters.images + 1 -%}{%- elif content['type'] == 'video' -%}{%- set counters.videos = counters.videos + 1 -%}{%- elif content['type'] == 'text' -%}{%- set msg.content = msg.content + content['text'] -%}{%- endif -%}{%- endfor -%}{%- if '<image>' in msg.content -%}{%- set counters.images = 0 -%}{%- endif -%}{%- if '<video>' in msg.content -%}{%- set counters.videos = 0 -%}{%- endif -%}{%- if counters.images > 1 -%}{%- set image_tags = namespace(tags=[]) -%}{%- for i in range(counters.images) -%}{%- set image_tags.tags = image_tags.tags + ['<image ' + (i + 1)|string + '><image>'] -%}{%- endfor -%}{%- set mm_content = ' '.join(image_tags.tags) + '\n' -%}{%- elif counters.images == 1 -%}{%- set mm_content = '<image>\n' -%}{%- endif -%}{%- set mm_content = mm_content + '<video>\n' * counters.videos -%}{%- set msg.content = mm_content + msg.content.lstrip('\n') -%}{%- endif -%}{%- if message['role'] == 'user' %}{{- '<SPECIAL_11>User\n' + msg.content.replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() + '\n' }}{%- elif message['role'] == 'tool' %}{%- if loop.first or (messages[loop.index0 - 1].role != 'tool') -%}{{- '<SPECIAL_11>User\n' + '<TOOL_RESPONSE>[' }}{%- endif -%}{{- msg.content -}}{{- ', ' if not loop.last and (messages[loop.index0 + 1].role == 'tool') else '' -}}{%- if loop.last or (messages[loop.index0 + 1].role != 'tool') -%}{{- ']</TOOL_RESPONSE>\n' -}}{%- endif -%}{%- elif message['role'] == 'assistant' %}{%- if '</think>' in msg.content %}{%- set msg.content = msg.content.split('</think>')[1].strip() %}{%- endif %}{{- '<SPECIAL_11>Assistant\n' + msg.content.strip() }}{%- if message.tool_calls -%}{%- if msg.content.strip() != '' -%}{{- '\n\n' -}}{%- endif -%}{{- '<TOOLCALL>[' -}}{%- for call in message.tool_calls -%}{%- set fn = call.function if call.function is defined else call -%}{{- '{\"name\": \"' + fn.name + '\", \"arguments\": ' -}}{%- if fn.arguments is string -%}{{- fn.arguments -}}{%- else -%}{{- fn.arguments | tojson -}}{%- endif -%}{{- '}' + (', ' if not loop.last else '') -}}{%- endfor -%}{{- ']</TOOLCALL>' -}}{%- endif -%}{{- '\n<SPECIAL_12>\n' -}}{%- endif %}{%- endfor -%}{%- if add_generation_prompt %}{{- '<SPECIAL_11>Assistant\n' }}{%- if ns.enable_thinking is defined and ns.enable_thinking is false %}{{- '<think></think>' }}{%- else %}{{- '<think>\n' }}{%- endif %}{%- endif %}",
+      "eos_token": "<SPECIAL_12>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{%- set ns = namespace(enable_thinking=false, has_sys_prompt=false, non_tool_system_content='', has_video=false, explicit_think_requested=false) -%}\r\n{%- set msg = namespace(content='') -%}\r\n{%- for message in messages -%}\r\n    {%- if message['role'] == 'system' -%}\r\n        {%- set ns.has_sys_prompt = true -%}\r\n        {# Extract system content without tool flags #}\r\n        {%- if message['content'] is string -%}\r\n            {%- set ns.non_tool_system_content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}\r\n        {%- else -%}\r\n            {%- set ns.non_tool_system_content = '' -%}\r\n            {%- for content in message['content'] -%}\r\n                {%- if content['type'] == 'text' -%}\r\n                    {%- set ns.non_tool_system_content = ns.non_tool_system_content + content['text'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>') -%}\r\n                {%- endif -%}\r\n            {%- endfor -%}\r\n            {%- set ns.non_tool_system_content = ns.non_tool_system_content.strip() -%}\r\n        {%- endif -%}\r\n    {%- endif -%}\r\n    {# Check for video content in all messages #}\r\n    {%- if message['content'] is not string -%}\r\n        {%- for content in message['content'] -%}\r\n            {%- if content['type'] == 'video' or content['type'] == 'video_url' -%}\r\n                {%- set ns.has_video = true -%}\r\n            {%- endif -%}\r\n        {%- endfor -%}\r\n    {%- endif -%}\r\n    {%- if message['content'] is string -%}\r\n        {%- if message['role'] == 'user' or message['role'] == 'system' -%}\r\n            {%- if '/think' in message['content'].replace('</think>', '') -%}\r\n                {%- set ns.enable_thinking = true -%}\r\n                {%- set ns.explicit_think_requested = true -%}\r\n            {%- elif '/no_think' in message['content'] -%}\r\n                {%- set ns.enable_thinking = false -%}\r\n            {%- endif -%}\r\n        {%- endif -%}\r\n    {%- else -%}\r\n        {%- for content in message['content'] -%}\r\n            {%- if content['type'] == 'text' -%}\r\n                {%- if message['role'] == 'user' or message['role'] == 'system' -%}\r\n                    {%- if '/think' in content['text'].replace('</think>', '') -%}\r\n                        {%- set ns.enable_thinking = true -%}\r\n                        {%- set ns.explicit_think_requested = true -%}\r\n                    {%- elif '/no_think' in content['text'] -%}\r\n                        {%- set ns.enable_thinking = false -%}\r\n                    {%- endif -%}\r\n                {%- endif -%}\r\n            {%- endif -%}\r\n        {%- endfor -%}\r\n    {%- endif -%}\r\n{%- endfor -%}\r\n\r\n{# Error out if video is present and reasoning is explicitly requested #}\r\n{%- if ns.has_video and ns.explicit_think_requested -%}\r\n    {{ raise_exception('Video inputs are not supported with reasoning mode. Please remove /think flag or remove video content.') }}\r\n{%- endif -%}\r\n\r\n{# Automatically disable reasoning if video is present (without explicit /think request) #}\r\n{%- if ns.has_video and not ns.explicit_think_requested -%}\r\n    {%- set ns.enable_thinking = false -%}\r\n{%- endif -%}\r\n\r\n{{- bos_token -}}\r\n{%- if messages[0]['role'] != 'system' -%}\r\n    {{- '<SPECIAL_10>System\\n' -}}\r\n{%- else -%}\r\n    {{- '<SPECIAL_10>System\\n' + ns.non_tool_system_content }}\r\n{%- endif -%}\r\n\r\n{%- if tools -%}\r\n    {%- if ns.non_tool_system_content != '' -%}\r\n        {{- '\\n\\n' -}}\r\n    {%- endif -%}\r\n    {{- 'You can use the following tools to assist the user if required:\\n' -}}\r\n    {{- '<AVAILABLE_TOOLS>[' -}}\r\n    {%- for tool in tools -%}\r\n        {{- (tool.function if tool.function is defined else tool) | tojson -}}\r\n        {{- ', ' if not loop.last else '' -}}\r\n    {%- endfor -%}\r\n    {{- ']</AVAILABLE_TOOLS>\\n\\n' -}}\r\n    \r\n    {{- 'If you decide to call any tool(s), use the following format:\\n' -}}\r\n    {{- '<TOOLCALL>[{\"name\": \"tool_name1\", \"arguments\": \"tool_args1\"}, ' -}}\r\n    {{- '{\"name\": \"tool_name2\", \"arguments\": \"tool_args2\"}]</TOOLCALL>\\n\\n' -}}\r\n    \r\n    {{- 'The user will execute tool-calls and return responses from tool(s) in this format:\\n' -}}\r\n    {{- '<TOOL_RESPONSE>[{\"response\": \"tool_response1\"}, ' -}}\r\n    {{- '{\"response\": \"tool_response2\"}]</TOOL_RESPONSE>\\n\\n' -}}\r\n    \r\n    {{- 'Based on the tool responses, you can call additional tools if needed, ' -}}\r\n    {{- 'correct tool calls if any errors are found, or just respond to the user.' -}}\r\n{%- endif -%}\r\n{{- '\\n' -}}\r\n\r\n{%- set messages = messages[1:] if messages[0]['role'] == 'system' else messages -%}\r\n\r\n{# Prevent no user or assistant message #}\r\n{%- if messages|length == 0 -%}\r\n    {%- set messages = [{'role': 'user', 'content': ''}] -%}\r\n{%- endif -%}\r\n\r\n{%- for message in messages %}\r\n    {%- if message['content'] is string -%}\r\n        {%- set msg.content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}\r\n    {%- else -%}\r\n        {%- set msg.content = '' -%}\r\n        {%- set mm_content = '' -%}\r\n        {%- set counters = namespace(images=0, videos=0) -%}\r\n\r\n        {%- for content in message['content'] -%}\r\n            {%- if content['type'] == 'image' -%}\r\n                {%- set counters.images = counters.images + 1 -%}\r\n            {%- elif content['type'] == 'video' -%}\r\n                {%- set counters.videos = counters.videos + 1 -%}\r\n            {%- elif content['type'] == 'text' -%}\r\n                {%- set msg.content = msg.content + content['text'] -%}\r\n            {%- endif -%}\r\n        {%- endfor -%}\r\n        {%- if '<image>' in msg.content -%}\r\n            {%- set counters.images = 0 -%}\r\n        {%- endif -%}\r\n        {%- if '<video>' in msg.content -%}\r\n            {%- set counters.videos = 0 -%}\r\n        {%- endif -%}\r\n        {%- if counters.images > 1 -%}\r\n            {%- set image_tags = namespace(tags=[]) -%}\r\n            {%- for i in range(counters.images) -%}\r\n                {%- set image_tags.tags = image_tags.tags + ['<image ' + (i + 1)|string + '><image>'] -%}\r\n            {%- endfor -%}\r\n            {%- set mm_content = ' '.join(image_tags.tags) + '\\n' -%}\r\n        {%- elif counters.images == 1 -%}\r\n            {%- set mm_content = '<image>\\n' -%}\r\n        {%- endif -%}\r\n        {%- set mm_content = mm_content + '<video>\\n' * counters.videos -%}\r\n        {%- set msg.content = mm_content + msg.content.lstrip('\\n') -%}\r\n    {%- endif -%}\r\n\r\n    {%- if message['role'] == 'user' %}\r\n        {{- '<SPECIAL_11>User\\n' + msg.content.replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() + '\\n' }}\r\n    {%- elif message['role'] == 'tool' %}\r\n        {%- if loop.first or (messages[loop.index0 - 1].role != 'tool') -%}\r\n            {{- '<SPECIAL_11>User\\n' + '<TOOL_RESPONSE>[' }}\r\n        {%- endif -%}\r\n        {{- msg.content -}}\r\n        {{- ', ' if not loop.last and (messages[loop.index0 + 1].role == 'tool') else '' -}}\r\n        {%- if loop.last or (messages[loop.index0 + 1].role != 'tool') -%}\r\n            {{- ']</TOOL_RESPONSE>\\n' -}}\r\n        {%- endif -%}\r\n    {%- elif message['role'] == 'assistant' %}\r\n        {%- if '</think>' in msg.content %}\r\n            {%- set msg.content = msg.content.split('</think>')[1].strip() %}\r\n        {%- endif %}\r\n        {{- '<SPECIAL_11>Assistant\\n' + msg.content.strip() }}\r\n        {%- if message.tool_calls -%}\r\n            {%- if msg.content.strip() != '' -%}\r\n                {{- '\\n\\n' -}}\r\n            {%- endif -%}\r\n            {{- '<TOOLCALL>[' -}}\r\n            {%- for call in message.tool_calls -%}\r\n                {%- set fn = call.function if call.function is defined else call -%}\r\n                {{- '{\"name\": \"' + fn.name + '\", \"arguments\": ' -}}\r\n                {%- if fn.arguments is string -%}\r\n                    {{- fn.arguments -}}\r\n                {%- else -%}\r\n                    {{- fn.arguments | tojson -}}\r\n                {%- endif -%}\r\n                {{- '}' + (', ' if not loop.last else '') -}}\r\n            {%- endfor -%}\r\n            {{- ']</TOOLCALL>' -}}\r\n        {%- endif -%}\r\n        {{- '\\n<SPECIAL_12>\\n' -}}\r\n    {%- endif %}\r\n{%- endfor -%}\r\n{%- if add_generation_prompt %}\r\n    {{- '<SPECIAL_11>Assistant\\n' }}\r\n    {%- if ns.enable_thinking is defined and ns.enable_thinking is false %}\r\n        {{- '<think></think>' }}\r\n    {%- else %}\r\n        {{- '<think>\\n' }}\r\n    {%- endif %}\r\n{%- endif %}\r\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 12293,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 2891,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 8616,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 11436,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration.py",
+      "size": 2291,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nemotron_h.py",
+      "size": 12176,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_radio.py",
+      "size": 5693,
+      "lfs": null
+    },
+    {
+      "rfilename": "evs.py",
+      "size": 2917,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 3363,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 158,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 428,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processing.py",
+      "size": 5548,
+      "lfs": null
+    },
+    {
+      "rfilename": "llama_nemotron_toolcall_parser_no_streaming.py",
+      "size": 21381,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4999458416,
+      "lfs": {
+        "size": 4999458416,
+        "sha256": "ae4461eba110cf3251a45c60a3a71e27c587f7df8d2bfccecd8c4aeb63298914",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4990786200,
+      "lfs": {
+        "size": 4990786200,
+        "sha256": "20552cb6e7fb2d94e7976f2b60aaba540695498cd3582aba31a82569ba3a8b0f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4988690304,
+      "lfs": {
+        "size": 4988690304,
+        "sha256": "bc5884919e5d9af689f2908cd97963f8f8ddbbbfbe05ec0796fcd344210d3bdd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 419430616,
+      "lfs": {
+        "size": 419430616,
+        "sha256": "6e2c02d5ea330834358c3031121cad2d3a9b5071fb589d8b85b88e06cd9658a1",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 100810,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling.py",
+      "size": 12945,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_nemotron_h.py",
+      "size": 78656,
+      "lfs": null
+    },
+    {
+      "rfilename": "nano_v2_inference_chat_template.jinja",
+      "size": 5472,
+      "lfs": null
+    },
+    {
+      "rfilename": "nano_v2_llm_template.jinja",
+      "size": 2935,
+      "lfs": null
+    },
+    {
+      "rfilename": "non_reasoning_nano_v2_inference_chat_template.jinja",
+      "size": 4748,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 518,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 2765,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing.py",
+      "size": 14218,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_utils.py",
+      "size": 3018,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 2943,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 422,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17079976,
+      "lfs": {
+        "size": 17079976,
+        "sha256": "db8e35444fca3a2b98e2c8e927a8f1d8b1ba9d4b349e13ce5aafdb11b6404205",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 185845,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_io.py",
+      "size": 6831,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\npipeline_tag: image-text-to-text\nlibrary_name: transformers\ntags:\n- nvidia\n- VLM\n- FP8\n---\n\n# NVIDIA-Nemotron-Nano-VL-12B-V2-FP8\n\n## Model Overview\n\n### Description\n\nNVIDIA-Nemotron-Nano-VL-12B-V2-FP8 is the quantized version of the NVIDIA Nemotron Nano VL V2 model, which is an auto-regressive vision language model that uses an optimized transformer architecture. For more information, please check [here](https://huggingface.co/nvidia/Nemotron-Nano-12B-v2-VL-BF16). The NVIDIA Nemotron Nano VL FP4 QAD model is quantized with [TensorRT Model Optimizer](https://github.com/NVIDIA/TensorRT-Model-Optimizer).\n\nThis model was trained on commercial images for all three stages of training and supports single image inference.\n\n### License/Terms of Use\n**Governing Terms:**\n\nYour use of the model is governed by the [NVIDIA Open License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/).\n\n**Additional Information:**\n\nBackbone LLM: NVIDIA-Nemotron-Nano-12B-v2.\n\n\n### Deployment Geography:\n\nGlobal\n\n### Use Case:\n\nCustomers: AI foundry enterprise customers\n\nUse Cases: Image summarization. Text-image analysis, Optical Character Recognition, Interactive Q&A on images, Text Chain-of-Thought reasoning\n\n\n## Release Date:\n\n- Build.Nvidia.com [October 28th, 2025] via [nvidia/NVIDIA-Nemotron-Nano-VL-12B-V2](https://build.nvidia.com/nvidia/nvidia-nemotron-nano-vl-12b-v2)\n- Hugging Face [October 28th, 2025] via [nvidia/NVIDIA-Nemotron-Nano-VL-12B-V2-BF16](https://huggingface.co/nvidia/Nemotron-Nano-12B-v2-VL-BF16)\n- Hugging Face [October 28th, 2025] via [nvidia/NVIDIA-Nemotron-Nano-VL-12B-V2-FP8](https://huggingface.co/nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-FP8)\n- Hugging Face [October 28th, 2025] via [nvidia/NVIDIA-Nemotron-Nano-VL-12B-V2-NVFP4](https://huggingface.co/nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD)\n\n## Model Architecture:\n\n**Network Type:** Transformer\n\n**Network Architecture:**\n\nVision Encoder: [C-RADIOv2-H](https://huggingface.co/nvidia/C-RADIOv2-VLM-H)\n\nLanguage Encoder: NVIDIA-Nemotron-Nano-12B-v2\n\n### Input\n\nInput Type(s): Image, Text\n- Input Images\n- Language Supported: German, Spanish, French, Italian, Korean, Portuguese, Russian, Japanese, Chinese, English\n\nInput Format(s): Image (Red, Green, Blue (RGB)), and Text (String)\n\nInput Parameters: Image (2D), Text (1D)\n\nOther Properties Related to Input:\n\n- Context length up to 128K\n- Maximum Resolution: Determined by a 12-tile layout constraint, with each tile being 512 \u00d7 512 pixels. This supports aspect ratios such as:\n  - 4 \u00d7 3 layout: up to 2048 \u00d7 1536 pixels\n  - 3 \u00d7 4 layout: up to 1536 \u00d7 2048 pixels\n  - 2 \u00d7 6 layout: up to 1024 \u00d7 3072 pixels\n  - 6 \u00d7 2 layout: up to 3072 \u00d7 1024 pixels\n  - Other configurations allowed, provided total tiles \u2264 12\n- Channel Count: 3 channels (RGB)\n- Alpha Channel: Not supported (no transparency)\n\n### Output\nOutput Type(s): Text\n\nOutput Formats: String\n\nOutput Parameters: One-Dimensional (1D): Sequences up to 128K\n\n\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n### Software Integration\nRuntime Engine(s): vLLM<br>\nSupported Hardware Microarchitecture Compatibility: H100 SXM 80GB<br>\nSupported Operating System(s): Linux<br>\n\n### Model Versions:\nNemotron-Nano-VL-12B-V2-FP8\n\n## Quick Start\n\n### Install Dependencies\n```\npip install causal_conv1d \"transformers>4.53,<4.54\" torch timm \"mamba-ssm==2.2.5\" accelerate open_clip_torch numpy pillow\n```\n\n### Usage\n\nTo serve this checkpoint with [vLLM](https://github.com/vllm-project/vllm), you can start the docker `vllm/vllm-openai:nightly` and run the sample command below:\n\n```sh\npython3 -m vllm.entrypoints.openai.api_server --model nvidia/Nemotron-Nano-VL-12B-V2-FP8 --trust-remote-code --quantization modelopt\n```\n\n\n## Training, Testing, and Evaluation Datasets:\n\n### Training Datasets: \n\n**Data Modalities** <br>\n** Total Size: 39'486'703 samples <br>\n** Total Number of Datasets: 270 <br>   \n** Text-only datasets: 33 <br>\n** Text-and-image datasets: 176 <br>\n** Video-and-text datasets: 61 <br>\n** Total size: 27.7 TB <br>\n\n** Data modalities: Text, Image, Video <br>\n** Data Collection Method by dataset: Hybrid: Automated, Human, Synthetic <br>\n** Labeling Method by dataset: Hybrid: Automated, Human, Synthetic <br>\n\n** Dataset partition: Training [100%], Testing [0%], Validation [0%] <br> \n** Time period for training data collection: 2023-2025 <br> \n** Time period for testing data collection: N/A <br> \n** Time period for validation data collection: N/A <br>\n\nThe post-training datasets consist of a mix of internal and public datasets designed for training vision language models across various tasks. It includes: \n\n* Public datasets sourced from publicly available images and annotations, supporting tasks like classification, captioning, visual question answering, conversation modeling, document analysis and text/image reasoning.\n* Internal text and image datasets built with public commercial images and internal labels, adapted for the same tasks as listed above.\n* Synthetic image datasets generated programmatically for specific tasks like tabular data understanding and optical character recognition (OCR), for English, Chinese as well as other languages.\n* Video datasets supporting video question answering and reasoning tasks from publicly available video sources, with either publicly available or internally generated annotations.\n* Specialized datasets for safety alignment, function calling, and domain-specific tasks (e.g., science diagrams, financial question answering).\n* NVIDIA-Sourced Synthetic Datasets for text reasoning.\n* Private datasets for safety alignment or VQA on invoices.\n* Crawled or scraped captioning, VQA, and video datasets.\n* Some datasets were improved with Qwen2.5-72B-Instruct annotations\n\nFor around ~30% of our total training corpus and several of the domains listed above, we used commercially permissive models to perform:\n* Language translation\n* Re-labeling of annotations for text, image and video datasets\n* Synthetic data generation\n* Generating chain-of-thought (CoT) traces\n\nAdditional processing for several datasets included rule-based QA generation (e.g., with templates), expanding short answers into longer responses, as well as proper reformatting. More details can be found [here](https://arxiv.org/abs/2501.14818). \n\n\n** Image based datasets were all scanned against known CSAM to make sure no such content was included in training.<br>\n\n# Public Datasets <br> \n| Type | Data Type | Total Samples | Total Size (GB) |\n|------|-----------|---------------|------------------|\n| Function call | text | 8,000 | 0.02 |\n| Image Captioning | image, text | 1,422,102 | 1,051.04 |\n| Image Reasoning | image, text | 1,888,217 | 286.95 |\n| OCR | image, text | 9,830,570 | 5,317.60 |\n| Referring Expression Grounding | image, text | 14,694 | 2.39 |\n| Safety | image, text | 34,187 | 9.21 |\n| Safety | text | 57,223 | 0.52 |\n| Safety | video, text | 12,988 | 11.78 |\n| Text Instruction Tuning | text | 245,056 | 1.13 |\n| Text Reasoning | text | 225,408 | 4.55 |\n| VQA | image, text | 8,174,136 | 2,207.52 |\n| VQA | video, text | 40,000 | 46.05 |\n| Video Captioning | video, text | 3,289 | 6.31 |\n| Video Reasoning | video, text | 42,620 | 49.10 |\n| VideoQA | video, text | 1,371,923 | 17,641.79 |\n| Visual Instruction Tuning | image, text | 1,173,877 | 167.79 |\n| **TOTAL** | | **24,544,290** | **26,803.75** |\n \n# Private Datasets <br> \n| Type | Modalities | Total Samples | Total Size (GB) |\n|------|------------|---------------|------------------|\n| Image Reasoning | image, text | 17,729 | 15.41 |\n| Text Reasoning | text | 445,958 | 9.01 |\n| **TOTAL** | | **463,687** | **24.42** |\n\n\n# Data Crawling and Scraping <br> \n| Type | Modalities | Total Samples | Total Size (GB) |\n|------|------------|---------------|------------------|\n| Image Captioning | image, text | 39,870 | 10.24 |\n| VQA | image, text | 40,348 | 3.94 |\n| VideoQA | video, text | 288,728 | 393.30 |\n| **TOTAL** | | **368,946** | **407.48** |\n\n# User-Sourced Data (Collected by Provider including Prompts) <br> \n<br>\n\n# Self-Sourced Synthetic Data <br> \n| Type | Data Type | Total Samples | Total Size (GB) |\n|------|-----------|---------------|------------------|\n| Code | text | 1,165,591 | 54.15 |\n| OCR | image, text | 216,332 | 83.53 |\n| Text Reasoning | text | 12,727,857 | 295.80 |\n| **TOTAL** | | **14,109,780** | **433.48** |\n\n\n**Properties**<br>\n* Additionally, the dataset collection (for training and evaluation) consists of a mix of internal and public datasets designed for training and evaluation across various tasks. It includes: \n  * Internal datasets built with public commercial images and internal labels, supporting tasks like conversation modeling and document analysis.\n  * Public datasets sourced from publicly available images and annotations, adapted for tasks such as image captioning and visual question answering.\n  * Synthetic datasets generated programmatically for specific tasks like tabular data understanding.\n  * Specialized datasets for safety alignment, function calling, and domain-specific tasks (e.g., science diagrams, financial question answering).\n\nFor more information about the datasets used to train this model, please see the [Public Summary of Training Content](https://developer.download.nvidia.com/assets/nemo/docs/public-summary-of-training-content-for-nvidia-nemotron.pdf)\n\n### Evaluation Datasets:\nThe following external benchmarks are used for evaluating the model: <br>\n\n| Dataset |\n|---------|\n| [AI2D Test](https://prior.allenai.org/projects/diagram-understanding )  |\n| [ChartQA Test](https://github.com/vis-nlp/ChartQA) |\n| [OCRBench](https://github.com/Yuliang-Liu/MultimodalOCR) |\n| [OCRBenchV2](https://github.com/Yuliang-Liu/MultimodalOCR) English |\n| [DocVQA Val](https://www.docvqa.org/datasets) |\n\n\n\nData Collection Method by dataset:  <br>\n* Hybrid: Human, Automated <br>\n\nLabeling Method by dataset:  <br>\n* Hybrid: Human, Automated  <br>\n\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** N/A <br>\n\n**Dataset License(s):** N/A <br>\n\n\n\n## Evaluation Benchmarks:\n\n| Benchmark | Score (FP8) | Score (BF16)\n| --- | --- | --- |\n| AI2D | 87.6% | 87.1% |\n| OCRBenchV2 | 61.8% | 62.0% |\n| OCRBench | 85.4% | 85.6% |\n| ChartQA  | 89.4% | 89.7% |\n| DocVQA val | 94.3% | 94.4% |\n\n\n\n# Inference:\n**Engine:** vLLM <br>\n**Test Hardware:** <br>\n* 1x NVIDIA H100 SXM 80GB\n\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.  For more detailed information on ethical considerations for this model, please see the Model Card++ [Explainability](explainability.md), [Bias](bias.md), [Safety & Security](safety.md), and [Privacy](privacy.md) Subcards.  Please report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\nUsers are responsible for model inputs and outputs. Users are responsible for ensuring safe integration of this model, including implementing guardrails as well as other safety mechanisms, prior to deployment.\n\nOutputs generated by these models may contain political content or other potentially misleading information, issues with content security and safety, or unwanted bias that is independent of our oversight.\n\n# Citation:\n```\n@misc{nvidia2025nvidianemotronnanov2,\n      title={NVIDIA Nemotron Nano V2 VL},\n      author={NVIDIA},\n      year={2025},\n      eprint={2511.03929},\n      archivePrefix={arXiv},\n      primaryClass={cs.LG},\n      url={https://arxiv.org/abs/2511.03929},\n}\n```\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "pipeline_tag": "image-text-to-text",
+    "library_name": "transformers",
+    "tags": [
+      "nvidia",
+      "VLM",
+      "FP8"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": null
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "modelId": "google/tipsv1-l14",
+  "author": "google",
+  "sha": "05c1dd400ade562d318d00d63c5474f21dfe2a72",
+  "lastModified": "2026-08-19 23:46:53+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "tipsv2",
+    "feature-extraction",
+    "vision",
+    "image-text",
+    "contrastive-learning",
+    "zero-shot",
+    "arxiv:2410.16512",
+    "zero-shot-image-classification",
+    "custom_code",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "zero-shot-image-classification",
+  "library_name": "transformers",
+  "likes": 3,
+  "downloads": 366,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "zero-shot-image-classification",
+    "tags": [
+      "vision",
+      "image-text",
+      "contrastive-learning",
+      "zero-shot",
+      "feature-extraction",
+      "arxiv:2410.16512"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "TIPSv2Model"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_tips.TIPSv2Config",
+      "AutoModel": "modeling_tips.TIPSv2Model"
+    },
+    "model_type": "tipsv2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": null,
+      "pad_token": "<pad>",
+      "unk_token": "<unk>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4064,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1888,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_tips.py",
+      "size": 1725,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_encoder.py",
+      "size": 30766,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 1951820792,
+      "lfs": {
+        "size": 1951820792,
+        "sha256": "4e69fd95fb0ce676f793355d1a7a53fb90145608098a2a64e2af2a324e6c20bc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "modeling_tips.py",
+      "size": 4681,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 347,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_encoder.py",
+      "size": 10490,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 731655,
+      "lfs": {
+        "size": 731655,
+        "sha256": "4c40e7723348d5d9a3d3c2bdcec5120d97fb29edfe1bf118b4494bce02fc7624",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 292,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\n- image-text\n- contrastive-learning\n- zero-shot\n- feature-extraction\n- arxiv:2410.16512\nlibrary_name: transformers\npipeline_tag: zero-shot-image-classification\n---\n\n# TIPS \u2014 L/14 (v1)\n\nTIPS (Text-Image Pre-training with Spatial awareness, ICLR 2025) is a family of contrastive vision-language models that produce spatially rich image features aligned with text embeddings. This is the original (v1) L/14 release with 304M vision params and 184M text params, converted from the [official checkpoints](https://github.com/google-deepmind/tips).\n\n| Variant | Vision params | Text params | Embed dim | Resolution |\n|---------|---------------|-------------|-----------|------------|\n| [S/14](https://huggingface.co/google/tipsv1-s14) | 22M | 34M | 384 | 448 |\n| [B/14](https://huggingface.co/google/tipsv1-b14) | 86M | 110M | 768 | 448 |\n| [L/14](https://huggingface.co/google/tipsv1-l14) | 304M | 184M | 1024 | 448 |\n| [So400m/14](https://huggingface.co/google/tipsv1-so400m14) | 413M | 448M | 1152 | 448 |\n| [g/14](https://huggingface.co/google/tipsv1-g14) | 1.1B | 389M | 1536 | 448 |\n| [g/14 low-res](https://huggingface.co/google/tipsv1-g14-lowres) | 1.1B | 389M | 1536 | 224 |\n\n## Usage\n\n```bash\npip install transformers torch torchvision sentencepiece scikit-learn requests\n```\n\n### Load the model\n\n```python\nfrom transformers import AutoModel\n\nmodel = AutoModel.from_pretrained(\"google/tipsv1-l14\", trust_remote_code=True)\nmodel.eval()\n```\n\n### Encode images\n\nImages should be tensors in `[0, 1]` range (just `ToTensor()`, no ImageNet normalization).\n\n```python\nimport requests\nfrom PIL import Image\nfrom torchvision import transforms\n\nurl = \"https://huggingface.co/spaces/google/TIPSv2/resolve/main/examples/zeroseg/pascal_context_00049_image.png\"\nimage = Image.open(requests.get(url, stream=True).raw).convert(\"RGB\")\ntransform = transforms.Compose([transforms.Resize((448, 448)), transforms.ToTensor()])\npixel_values = transform(image).unsqueeze(0)\n\nout = model.encode_image(pixel_values)\nprint(out.cls_token.shape)     # (1, 1, 1024) \u2014 global image embedding\nprint(out.patch_tokens.shape)  # (1, 1024, 1024) \u2014 per-patch spatial features\n```\n\nThe second CLS token (`out.register_tokens`) was trained on synthetic captions; the first (`out.cls_token`) on web alt-text, and is the one aligned with the text tower.\n\n### Encode text\n\n```python\ntext_emb = model.encode_text([\"a photo of a bus\", \"a photo of a dog\"])\nprint(text_emb.shape)  # (2, 1024) \u2014 one embedding per query\n```\n\n### Zero-shot classification\n\n```python\nimport torch.nn.functional as F\n\nclasses = [\"bus\", \"car\", \"dog\", \"cat\"]\ncls = F.normalize(out.cls_token[:, 0, :], dim=-1)\ntext_emb = F.normalize(model.encode_text(classes), dim=-1)\nsimilarity = cls @ text_emb.T\nprint(classes[similarity.argmax()])  # predicted class\n```\n\n### Visualize spatial features\n\n```python\nimport numpy as np\nfrom sklearn.decomposition import PCA\n\nfeat = out.patch_tokens[0].detach().cpu().numpy()\nrgb = PCA(n_components=3, whiten=True).fit_transform(feat).reshape(32, 32, 3)\nrgb = 1 / (1 + np.exp(-2.0 * rgb))  # sigmoid for [0, 1] range with good contrast\n```\n\n## Model details\n\n- ViT-L/14 vision encoder (24 layers, patch size 14, two CLS tokens) + 12-layer transformer text encoder\n- Native resolution 448; other patch-multiple resolutions work via positional-embedding interpolation\n- Preprocessing: images to `[0, 1]`, no normalization; SentencePiece tokenizer, lowercased, max 64 tokens\n\n## License\n\nApache 2.0\n\n## Citation\n\n```bibtex\n@inproceedings{maninis2025tips,\n  title     = {{TIPS: Text-Image Pretraining with Spatial Awareness}},\n  author    = {Maninis, Kevis-Kokitsi and Chen, Kaifeng and Ghosh, Soham and Karpur, Arjun and Chen, Koert and Xia, Ye and Cao, Bingyi and Salz, Daniel and Han, Guangxing and Dlabal, Jan and Gnanapragasam, Dan and Seyedhosseini, Mojtaba and Zhou, Howard and Araujo, Andre},\n  booktitle = {International Conference on Learning Representations (ICLR)},\n  year      = {2025},\n  url       = {https://arxiv.org/abs/2410.16512}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision",
+      "image-text",
+      "contrastive-learning",
+      "zero-shot",
+      "feature-extraction",
+      "arxiv:2410.16512"
+    ],
+    "library_name": "transformers",
+    "pipeline_tag": "zero-shot-image-classification",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_tips.TIPSv2Model",
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoProcessor"
+  }
+}

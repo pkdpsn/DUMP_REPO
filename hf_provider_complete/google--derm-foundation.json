@@ -1,0 +1,136 @@
+{
+  "modelId": "google/derm-foundation",
+  "author": "google",
+  "sha": "a16a6ab4f87888948fe248136e697ed28146a1c6",
+  "lastModified": "2025-04-01 00:52:17+00:00",
+  "tags": [
+    "derm-foundation",
+    "tf-keras",
+    "medical",
+    "dermatology",
+    "digital-dermatology",
+    "medical-embeddings",
+    "image-classification",
+    "image-feature-extraction",
+    "en",
+    "arxiv:1912.11370",
+    "arxiv:2010.00747",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "image-classification",
+  "library_name": "derm-foundation",
+  "likes": 98,
+  "downloads": 484,
+  "private": false,
+  "gated": "auto",
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "derm-foundation",
+    "license": "other",
+    "license_name": "health-ai-developer-foundations",
+    "license_link": "https://developers.google.com/health-ai-developer-foundations/terms",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "medical",
+      "dermatology",
+      "digital-dermatology",
+      "medical-embeddings",
+      "image-classification",
+      "image-feature-extraction"
+    ],
+    "extra_gated_heading": "Access Derm Foundation on Hugging Face",
+    "extra_gated_prompt": "To access Derm Foundation on Hugging Face, you're required to review and agree to [Health AI Developer Foundation's terms of use](https://developers.google.com/health-ai-developer-foundations/terms). To do this, please ensure you're logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license"
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1595,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 10257,
+      "lfs": null
+    },
+    {
+      "rfilename": "fingerprint.pb",
+      "size": 56,
+      "lfs": {
+        "size": 56,
+        "sha256": "27a91ac2afe8988dff685355122b52568d460e94c52faeac32b7efe727ff8703",
+        "pointer_size": 127
+      }
+    },
+    {
+      "rfilename": "saved_model.pb",
+      "size": 2383792,
+      "lfs": {
+        "size": 2383792,
+        "sha256": "1db03fd43d13dcca700c619919c010ce48df9b6d77a9bd7c63a3b82863f150a4",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "scin_dataset_precomputed_embeddings.npz",
+      "size": 513602526,
+      "lfs": {
+        "size": 513602526,
+        "sha256": "8925f01761e566e49911b005c905374f552bb29c3a889ea3c7fd5e9b91152acb",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "variables/variables.data-00000-of-00001",
+      "size": 1527205032,
+      "lfs": {
+        "size": 1527205032,
+        "sha256": "7985393a5d772935bd861d3b803fe2c0ec032d07f08e0aef579d78b529ffd720",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "variables/variables.index",
+      "size": 5609,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: health-ai-developer-foundations\nlicense_link: https://developers.google.com/health-ai-developer-foundations/terms\nlanguage:\n- en\ntags:\n- medical\n- dermatology\n- digital-dermatology\n- medical-embeddings\n- image-classification\n- image-feature-extraction\nextra_gated_heading: Access Derm Foundation on Hugging Face\nextra_gated_prompt: To access Derm Foundation on Hugging Face, you're required to\n  review and agree to [Health AI Developer Foundation's terms of use](https://developers.google.com/health-ai-developer-foundations/terms).\n  To do this, please ensure you're logged in to Hugging Face and click below. Requests\n  are processed immediately.\nextra_gated_button_content: Acknowledge license\nlibrary_name: derm-foundation\n---\n\n# Derm Foundation model card\n\n**Model documentation**:\n[Derm Foundation](https://developers.google.com/health-ai-developer-foundations/derm-foundation)\n\n**Resources**:\n\n*   Model on Google Cloud Model Garden:\n    [Derm Foundation](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/derm-foundation)\n*   Model on Hugging Face:\n    [google/derm-foundation](https://huggingface.co/google/derm-foundation)\n*   GitHub repository (supporting code, Colab notebooks, discussions, and\n    issues): [derm-foundation](https://github.com/google-health/derm-foundation)\n*   Quick start notebook:\n    [notebooks/quick_start](https://github.com/google-health/derm-foundation/blob/master/notebooks/quick_start_with_hugging_face.ipynb)\n*   Support: See\n    [Contact](https://developers.google.com/health-ai-developer-foundations/derm-foundation/get-started.md#contact).\n\n**Terms of use**:\n[Health AI Developer Foundations terms of use](https://developers.google.com/health-ai-developer-foundations/terms)\n\n**Author**: Google\n\n## Model information\n\nThis section describes the Derm Foundation model and how to use it.\n\n### Description\n\nDerm Foundation is a machine learning model designed to accelerate AI\ndevelopment for skin image analysis for dermatology applications. It is\npre-trained on large amounts of labeled skin images to produce 6144 dimensional\nembeddings that capture dense features relevant for analyzing these images. As a\nresult, Derm Foundation\u2019s embeddings enable the efficient training of AI models\nwith significantly less data and compute than traditional methods.\n\n### How to use\n\nFollowing are some example code snippets to help you quickly get started running\nthe model locally. If you want to use the model at scale, we recommend that you\ncreate a production version using\n[Model Garden](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/derm-foundation).\n\n```python\n# Download test image.\nfrom PIL import Image\nfrom io import BytesIO\nfrom IPython.display import Image as IPImage, display\nfrom huggingface_hub import from_pretrained_keras\nimport tensorflow as tf\n\n# Download sample image\n!wget -nc -q https://storage.googleapis.com/dx-scin-public-data/dataset/images/3445096909671059178.png\n\n# Load the image\nimg = Image.open(\"3445096909671059178.png\")\nbuf = BytesIO()\nimg.convert('RGB').save(buf, 'PNG')\nimage_bytes = buf.getvalue()\n\n# Format input\ninput_tensor= tf.train.Example(features=tf.train.Features(\n        feature={'image/encoded': tf.train.Feature(\n            bytes_list=tf.train.BytesList(value=[image_bytes]))\n        })).SerializeToString()\n\n# Load the model directly from Hugging Face Hub\nloaded_model = from_pretrained_keras(\"google/derm-foundation\")\n\n# Call inference\ninfer = loaded_model.signatures[\"serving_default\"]\noutput = infer(inputs=tf.constant([input_tensor]))\n\n# Extract the embedding vector\nembedding_vector = output['embedding'].numpy().flatten()\n```\n\n### Examples\n\nSee the following Colab notebooks for examples of how to use Derm Foundation:\n\n*   To give the model a quick try, running it locally with weights from Hugging\n    Face, see\n    [Quick start notebook in Colab](https://colab.research.google.com/github/google-health/derm-foundation/blob/master/notebooks/quick_start_with_hugging_face.ipynb).\n\n*   For an example of how to use the model to train a linear classifier see\n    [Linear classifier notebook in Colab](https://colab.research.google.com/github/google-health/derm-foundation/blob/master/notebooks/train_data_efficient_classifier.ipynb)\n\n*   [DERM12345 Embeddings and Demo](https://github.com/abdurrahimyilmaz/derm12345_google-derm-foundation/tree/main) includes a demo using Derm Foundation precomputed embeddings for\n    [DERM12345](https://www.nature.com/articles/s41597-024-04104-3). Special thanks to Abdurrahim Yilmaz for providing this.\n  \n### Model architecture overview\n\n*   The model is a [BiT-M ResNet101x3](https://arxiv.org/abs/1912.11370).\n\nDerm Foundation was trained in two stages. The first pre-training stage used\ncontrastive learning to train on a large number of public image-text pairs from\nthe internet. The image component of this pre-trained model was then fine-tuned\nfor condition classification and a couple other downstream tasks using a number\nof clinical datasets (see below).\n\n### Technical specifications\n\n*   Model type: BiT-101x3 CNN (Convolutional Neural Network)\n*   Key publications:\n    *   BiT:\n        [https://arxiv.org/abs/1912.11370](https://arxiv.org/abs/1912.11370)\n    *   ConVIRT:\n        [https://arxiv.org/abs/2010.00747](https://arxiv.org/abs/2010.00747)\n*   Model created: 2023-12-19\n*   Model version: Version: 1.0.0\n\n### Performance and validation\n\nDerm Foundation was evaluated for data-efficient accuracy across a range of\nskin-related classifications tasks. Training a linear classifier on\nDerm-Foundations embeddings were substantially more performant (10-15% increase\nin accuracy) than doing the same for a standard BiT-M model across different\nproportions of training data. See this\n[Health-specific embedding tools for dermatology and pathology](https://research.google/blog/health-specific-embedding-tools-for-dermatology-and-pathology/)\nfor more details.\n\n### Inputs and outputs\n\n*   **Input**: `PNG` image file 448 x 448 pixels\n\n*   **Output**: Embedding vector of floating point values (Dimensions: 6144)\n\n## Dataset details\n\n### Training dataset\n\nDerm Foundation was trained in two stages. The first pre-training stage used\ncontrastive learning to train on a large number of public image-text pairs from\nthe internet. The image component of this pre-trained model was then fine-tuned\nfor condition classification and a couple of other downstream tasks using a\nnumber of clinical datasets (see below).\n\n*   Base model (pre-training): A large number of health-related image-text pairs\n    from the public web\n*   SFT (supervised fine-tuned) model: tele-dermatology datasets from the United\n    States and Colombia, a skin cancer dataset from Australia, and additional\n    public images. The images come from a mix of device types, including images\n    from smartphone cameras, other cameras, and dermatoscopes. The images also\n    have a mix of image takers; images may have been taken by clinicians during\n    consultations or self-captured by patients.\n\n### Labeling\n\nLabeling sources vary by dataset. Examples include:\n\n*   (image, caption) pairs from the public web\n*   Dermatology condition labels provided by dermatologists labelers funded by\n    Google\n*   Dermatology condition labels provided with a clinical dataset based on a\n    telehealth visit, an in-person visit, or a biopsy\n\n## License\n\nThe use of Derm Foundation is governed by the\n[Health AI Developer Foundations terms of use](https://developers.google.com/health-ai-developer-foundations/terms).\n\n## Implementation information\n\nDetails about the model internals.\n\n### Software\n\nTraining was done using [JAX](https://github.com/jax-ml/jax)\n\nJAX allows researchers to take advantage of the latest generation of hardware,\nincluding TPUs, for faster and more efficient training of large models.\n\n## Use and limitations\n\n### Intended use\n\n*   Derm Foundation can reduce the training data, compute, and technical\n    expertise necessary to develop task-specific models for skin image analysis.\n\n*   Embeddings from the model can be used for a variety of user-defined\n    downstream tasks including, but not limited to:\n\n    *   Classifying clinical conditions like psoriasis, melanoma or dermatitis\n    *   Scoring severity or progression of clinical conditions\n    *   Identifying the body part the skin is from\n    *   Determining image quality for dermatological assessment\n\n*   To see how to use the model to train a classifier see this\n    [Linear classifier example](https://colab.research.google.com/github/google-health/derm-foundation/blob/master/notebooks/train_data_efficient_classifier.ipynb)\n\n### Benefits\n\n*   Derm Foundation Embeddings can be used for efficient training of AI\n    development for skin image analysis with significantly less data and compute\n    than traditional methods.\n\n*   By leveraging the large set of pre-trained images Derm Foundation is trained\n    on, users need less data but can also build more generalizable models than\n    training on more limited datasets.\n\n### Limitations\n\n*   Derm Foundation is trained on images with various lightning and noise\n    conditions captured in a real-world environment. However, its quality can\n    degrade in extreme conditions, such as photos that are too light or too\n    dark.\n\n*   The base model was trained using image-text pairs from the public web. These\n    images come from a variety of sources but may by noisy or low-quality. The\n    SFT (supervised fine-tuned) model was trained data from a limited set of\n    countries (United States, Colombia, Australia, public images) and settings\n    (mostly clinical). It may not generalize well to data from other countries,\n    patient populations, or image types not used in training.\n\n*   The model is only used to generate embeddings of user-provided data. It does\n    not generate any predictions or diagnosis on its own.\n\n*   As with any research, developers should ensure any downstream application is\n    validated to understand performance using data that is appropriately\n    representative of the intended use setting for the specific application\n    (e.g., skin tone/type, age, sex, gender etc.).",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "health-ai-developer-foundations",
+    "license_link": "https://developers.google.com/health-ai-developer-foundations/terms",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "medical",
+      "dermatology",
+      "digital-dermatology",
+      "medical-embeddings",
+      "image-classification",
+      "image-feature-extraction"
+    ],
+    "extra_gated_heading": "Access Derm Foundation on Hugging Face",
+    "extra_gated_prompt": "To access Derm Foundation on Hugging Face, you're required to review and agree to [Health AI Developer Foundation's terms of use](https://developers.google.com/health-ai-developer-foundations/terms). To do this, please ensure you're logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license",
+    "library_name": "derm-foundation",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

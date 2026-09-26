@@ -1,0 +1,240 @@
+{
+  "modelId": "nvidia/llama-nemoretriever-colembed-3b-v1",
+  "author": "nvidia",
+  "sha": "75f7e7311c7a5965c535587fd5e563c5e4a3c583",
+  "lastModified": "2026-02-04 21:16:34+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "llama_nemoretrievercolembed",
+    "feature-extraction",
+    "text",
+    "image",
+    "vidore",
+    "colpali",
+    "multimodal-embedding",
+    "multilingual-embedding",
+    "Text-to-Visual Document (T\u2192VD) retrieval",
+    "visual-document-retrieval",
+    "custom_code",
+    "multilingual",
+    "arxiv:2507.05513",
+    "arxiv:2501.14818",
+    "arxiv:2407.15831",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "visual-document-retrieval",
+  "library_name": "transformers",
+  "likes": 74,
+  "downloads": 743,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "customized-nscl-v1",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "visual-document-retrieval",
+    "tags": [
+      "text",
+      "image",
+      "vidore",
+      "colpali",
+      "multimodal-embedding",
+      "multilingual-embedding",
+      "Text-to-Visual Document (T\u2192VD) retrieval",
+      "feature-extraction"
+    ],
+    "inference": false,
+    "new_version": "nvidia/llama-nemotron-colembed-vl-3b-v2"
+  },
+  "config": {
+    "architectures": [
+      "llama_NemoRetrieverColEmbed"
+    ],
+    "auto_map": {
+      "AutoConfig": "modeling_llama_nemoretrievercolembed.llama_NemoRetrieverColEmbedConfig",
+      "AutoModel": "modeling_llama_nemoretrievercolembed.llama_NemoRetrieverColEmbed"
+    },
+    "model_type": "llama_nemoretrievercolembed",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_string = strftime_now(\"%d %b %Y\") %}\n    {%- else %}\n        {%- set date_string = \"26 Jul 2024\" %}\n    {%- endif %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = none %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{%- if tools is not none %}\n    {{- \"Environment: ipython\\n\" }}\n{%- endif %}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{%- if tools is not none and not tools_in_user_message %}\n    {{- \"You have access to the following functions. To call a function, please respond with JSON for a function call.\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n{%- endif %}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{#- Custom tools are passed in a user message with some extra guidance #}\n{%- if tools_in_user_message and not tools is none %}\n    {#- Extract the first user message so we can plug it in here #}\n    {%- if messages | length != 0 %}\n        {%- set first_user_message = messages[0]['content']|trim %}\n        {%- set messages = messages[1:] %}\n    {%- else %}\n        {{- raise_exception(\"Cannot put tools in the first user message when there's no first user message!\") }}\n{%- endif %}\n    {{- '<|start_header_id|>user<|end_header_id|>\\n\\n' -}}\n    {{- \"Given the following functions, please respond with a JSON for a function call \" }}\n    {{- \"with its proper arguments that best answers the given prompt.\\n\\n\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n    {{- first_user_message + \"<|eot_id|>\"}}\n{%- endif %}\n\n{%- for message in messages %}\n    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n    {%- elif 'tool_calls' in message %}\n        {%- if not message.tool_calls|length == 1 %}\n            {{- raise_exception(\"This model only supports single tool-calls at once!\") }}\n        {%- endif %}\n        {%- set tool_call = message.tool_calls[0].function %}\n        {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n        {{- '{\"name\": \"' + tool_call.name + '\", ' }}\n        {{- '\"parameters\": ' }}\n        {{- tool_call.arguments | tojson }}\n        {{- \"}\" }}\n        {{- \"<|eot_id|>\" }}\n    {%- elif message.role == \"tool\" or message.role == \"ipython\" %}\n        {{- \"<|start_header_id|>ipython<|end_header_id|>\\n\\n\" }}\n        {%- if message.content is mapping or message.content is iterable %}\n            {{- message.content | tojson }}\n        {%- else %}\n            {{- message.content }}\n        {%- endif %}\n        {{- \"<|eot_id|>\" }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|eot_id|>",
+      "pad_token": "<|finetune_right_pad_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1708,
+      "lfs": null
+    },
+    {
+      "rfilename": "ATTRIBUTION.md",
+      "size": 323,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 4077,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 16087,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 5945,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_eagle_chat.py",
+      "size": 4367,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_siglip.py",
+      "size": 14121,
+      "lfs": null
+    },
+    {
+      "rfilename": "conversation.py",
+      "size": 12856,
+      "lfs": null
+    },
+    {
+      "rfilename": "flash_attention.py",
+      "size": 3745,
+      "lfs": null
+    },
+    {
+      "rfilename": "llama_bidirectional_model.py",
+      "size": 2596,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4979244968,
+      "lfs": {
+        "size": 4979244968,
+        "sha256": "758d93bf00beb6f581633f475753813db2499ea0d9e6e3429604b6785d489aaf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 3831794688,
+      "lfs": {
+        "size": 3831794688,
+        "sha256": "4549b38b47333dd4db4a8b96695092cb21df68f2fd439c1dec4a2813dfad99f4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 93197,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_eagle_chat.py",
+      "size": 12748,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_llama_nemoretrievercolembed.py",
+      "size": 20548,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_siglip.py",
+      "size": 53320,
+      "lfs": null
+    },
+    {
+      "rfilename": "mteb2_eval.py",
+      "size": 3465,
+      "lfs": null
+    },
+    {
+      "rfilename": "mteb_eval.py",
+      "size": 1598,
+      "lfs": null
+    },
+    {
+      "rfilename": "results.json",
+      "size": 40423,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 454,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17212133,
+      "lfs": {
+        "size": 17212133,
+        "sha256": "0fb8bdddbd4c4ffa55e51d5b0393611e3df49dd86a31189ef5dcb750cf3da399",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 56719,
+      "lfs": null
+    },
+    {
+      "rfilename": "vidore_eval.py",
+      "size": 8668,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: customized-nscl-v1\nlicense_link: LICENSE\ntags:\n- text\n- image\n- vidore\n- colpali\n- multimodal-embedding\n- multilingual-embedding\n- Text-to-Visual Document (T\u2192VD) retrieval\n- feature-extraction\nlanguage:\n- multilingual\ninference: false\nlibrary_name: transformers\npipeline_tag: visual-document-retrieval\nnew_version: nvidia/llama-nemotron-colembed-vl-3b-v2\n---\n# llama-nemoretriever-colembed-3b-v1\n\n## Description\n\nThe **nvidia/llama-nemoretriever-colembed-3b-v1** is a late interaction embedding model  fine-tuned for query-document retrieval. Users can input `queries`, which are text, or `documents` which are page images, to the model. The model outputs ColBERT-style multi-vector numerical representations for input queries and documents. It achieved 1st place on ViDoRe V1 (nDCG@5), ViDoRe V2 (nDCG@5) and MTEB VisualDocumentRetrieval (Rank Borda) (as of 27th June, 2025).\n\n\nFor more technical details, please refer to our technical report: [Llama Nemoretriever Colembed: Top-Performing Text-Image Retrieval Model](https://www.arxiv.org/abs/2507.05513)\n\nThis model is for non-commercial/research use only.\n\n### License/Terms of Use\nGoverning Terms for llama-nemoretriever-colembed-3b-v1 model: [NVIDIA Non-Commercial License](https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1/blob/main/LICENSE)   \nAdditional Information: [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/) for [siglip2-giant-opt-patch16-384](https://huggingface.co/google/siglip2-giant-opt-patch16-384); and [LLAMA 3.2 Community License Agreement](https://huggingface.co/meta-llama/Llama-3.2-3B/blob/main/LICENSE.txt) for  [Llama-3.2-1B](https://huggingface.co/meta-llama/Llama-3.2-3B).  Built with Meta Llama 3. Improved using Qwen.\n\nThis project will download and install additional third-party open source software projects. Review the license terms of these open source projects before use.\n\nThis project will download and install additional third-party open source software projects. Review the license terms of these open source projects before use.\n\n### Team\n- Mengyao Xu\n- Gabriel Moreira\n- Radek Osmulski\n- Ronay Ak\n- Yauhen Babakhin\n- Even Oldridge\n- Benedikt Schifferer\n\n### Citation\n\n```\n@misc{xu2025llamanemoretrievercolembedtopperforming,\n      title={Llama Nemoretriever Colembed: Top-Performing Text-Image Retrieval Model}, \n      author={Mengyao Xu and Gabriel Moreira and Ronay Ak and Radek Osmulski and Yauhen Babakhin and Zhiding Yu and Benedikt Schifferer and Even Oldridge},\n      year={2025},\n      eprint={2507.05513},\n      archivePrefix={arXiv},\n      primaryClass={cs.CV},\n      url={https://arxiv.org/abs/2507.05513}, \n}\n\n@misc{li2025eagle2buildingposttraining,\n      title={Eagle 2: Building Post-Training Data Strategies from Scratch for Frontier Vision-Language Models}, \n      author={Zhiqi Li and Guo Chen and Shilong Liu and Shihao Wang and Vibashan VS and Yishen Ji and Shiyi Lan and Hao Zhang and Yilin Zhao and Subhashree Radhakrishnan and Nadine Chang and Karan Sapra and Amala Sanjay Deshmukh and Tuomas Rintamaki and Matthieu Le and Ilia Karmanov and Lukas Voegtle and Philipp Fischer and De-An Huang and Timo Roman and Tong Lu and Jose M. Alvarez and Bryan Catanzaro and Jan Kautz and Andrew Tao and Guilin Liu and Zhiding Yu},\n      year={2025},\n      eprint={2501.14818},\n      archivePrefix={arXiv},\n      primaryClass={cs.CV},\n      url={https://arxiv.org/abs/2501.14818}, \n}\n\n@misc{moreira2025nvretrieverimprovingtextembedding,\n      title={NV-Retriever: Improving text embedding models with effective hard-negative mining}, \n      author={Gabriel de Souza P. Moreira and Radek Osmulski and Mengyao Xu and Ronay Ak and Benedikt Schifferer and Even Oldridge},\n      year={2025},\n      eprint={2407.15831},\n      archivePrefix={arXiv},\n      primaryClass={cs.IR},\n      url={https://arxiv.org/abs/2407.15831}, \n}\n```\n\n### NVIDIA\u2019s Retrieval Models\n\n| Model Name                                | Use-Case               | Comment                                                                         |\n|-------------------------------------------|------------------------|---------------------------------------------------------------------------------|\n| [nvidia/llama-NemoRetriever-ColEmbed-1B-v1](https://huggingface.co/nvidia/llama-nemoretriever-colembed-1b-v1) | Research-Only          | Smaller Version of nvidia/llama-NemoRetriever-ColEmbed-3B-v1                    |\n| [nvidia/llama-NemoRetriever-ColEmbed-3B-v1](https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1) | Research-Only          | #1 ViDoRe V1, V2 and MTEB VisualDocumentRetrieval as of June 27, 2025           |\n| [llama-3_2-nemoretriever-1b-vlm-embed-v1](https://build.nvidia.com/nvidia/llama-3_2-nemoretriever-1b-vlm-embed-v1)   | Commercial Application | MultiModal Embedding Model for Production Use-Case of Visual Document Retrieval |\n| [llama-3_2-nv-embedqa-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-embedqa-1b-v2)                | Commercial Application | Text Embedding Model for Production Use-Case of Text Document Retrieval         |\n| [llama-3_2-nemoretriever-500m-rerank-v2](https://build.nvidia.com/nvidia/llama-3_2-nemoretriever-500m-rerank-v2)    | Commercial Application | Text Reranker Model for Production Use-Case of Text Document Retrieval          |\n| [llama-3_2-nv-rerankqa-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-rerankqa-1b-v2)               | Commercial Application | Text Reranker Model for Production Use-Case of Text Document Retrieval          |\n| [nvidia/NV-Embed-v2](https://huggingface.co/nvidia/NV-Embed-v2)                        | Research-Only          | #1 MTEB as of Aug 30, 2024                                                      |\n| [nvidia/MM-Embed](https://huggingface.co/nvidia/MM-Embed)                           | Research-Only          | Improved nvidia/NV-Embed-v1 and multimodal embeddings                           |\n| [nvidia/NV-Retriever-v1](https://huggingface.co/nvidia/NV-Retriever-v1)                    | Research-Only          | #1 MTEB BEIR as of July 12th, 2024 \n\n### Deployment Geography\nGlobal\n\n### Use Case\nllama-nemoretriever-colembed is intended for researchers exploring applications that must understand or retrieve information across both text and image modalities. It is instrumental in multimodal RAG systems, where queries are in text format and documents are images, such as pages, text, charts, tables or infographics. Potential applications include multimedia search engines, cross-modal retrieval systems, and conversational AI with rich input understanding.\n\n### Release Date\nHuggingface on 06/27/2025 via [https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1](https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1)\n\n## Model Architecture\n\n- **Architecture Type:** Transformer\n- **Network Architecture:** [google/siglip2-giant-opt-patch16-384](https://huggingface.co/google/siglip2-giant-opt-patch16-384) + [meta-llama/Llama-3.2-3B](https://huggingface.co/meta-llama/Llama-3.2-3B)\n\nThe llama-nemoretriever-colembed-3b-v1 is a transformer-based multimodal embedding model built on top of a VLM based on google/siglip2-giant-opt-patch16-384 and meta-llama/Llama-3.2-3B. \n\n## Input\n\n| Property | Query | Document |\n|----------|-------|----------|\n| Input Type | Text | Text \\| Image |\n| Input Format | List of strings | List of strings \\| List of Images |\n| Input Parameter | 1D | 1D |\n| Other Properties | The model's maximum context length is 8192 tokens. Texts longer than maximum length must either be chunked or truncated. | The model's maximum context length is 8192 tokens. Texts longer than maximum length must either be chunked or truncated. Images must be python PIL format. The model will scale the image into multiple tiles of 512x512. |\n\n## Output\n\n- **Output Type:** Floats\n- **Output Format:** List of float arrays\n- **Output Parameters:**  The list of floats equivalent to [batchsize x seq length x embedding_dim]\n- **Other Properties Related to Output:** Model outputs embedding vectors of dimension <sequence length x embedding_dimension> for each input token.\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n### Usage\n\nThe model requires transformers version 4.49.0 and flash attention\n\n```bash\npip install transformers==4.49.0\npip install flash-attn==2.6.3 --no-build-isolation\n```\n\n```python\nimport requests\nfrom PIL import Image\nfrom io import BytesIO\nimport torch\nfrom transformers import AutoModel\n\n# Load Model\nmodel = AutoModel.from_pretrained(\n    'nvidia/llama-nemoretriever-colembed-3b-v1',\n    device_map='cuda',\n    trust_remote_code=True,\n    torch_dtype=torch.bfloat16,\n    attn_implementation=\"flash_attention_2\"\n).eval()\n\n# Queries\nqueries = [\n\t'How much percentage of Germanys population died in the 2nd World War?',\n\t'How many million tons CO2 were captured from Gas processing in 2018?',\n\t'What is the average CO2 emission of someone in Japan?'\n]\n\n# Documents\nimage_urls = [\n\t'https://upload.wikimedia.org/wikipedia/commons/3/35/Human_losses_of_world_war_two_by_country.png',\n\t'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/20210413_Carbon_capture_and_storage_-_CCS_-_proposed_vs_implemented.svg/2560px-20210413_Carbon_capture_and_storage_-_CCS_-_proposed_vs_implemented.svg.png',\n\t'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/20210626_Variwide_chart_of_greenhouse_gas_emissions_per_capita_by_country.svg/2880px-20210626_Variwide_chart_of_greenhouse_gas_emissions_per_capita_by_country.svg.png'\n]\n\n# Load into PIL\nheaders = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\"\n}\n\nimages = [Image.open(BytesIO(requests.get(image_url, headers=headers).content)) for image_url in image_urls]\n\n# Encoding\nquery_embeddings = model.forward_queries(queries, batch_size=8)\nimage_embeddings = model.forward_images(images, batch_size=8)\n\n\nscores = model.get_scores(\n    query_embeddings,\n    image_embeddings\n)\n# Diagonal should have high scores\nprint(scores)\n# tensor([[13.9970, 11.4219, 12.1225],\n#         [11.4157, 14.6388, 12.0341],\n#         [ 9.9023,  9.8857, 11.3387]], device='cuda:0')\n```\n\n## Running evaluation on benchmarks\n\n### Vidore V1&V2 and V3 on MTEB leaderboards\n\n[ViDoRe](https://huggingface.co/spaces/vidore/README) is a premier benchmark for Visual Document Retrieval. The latest version of the benchmark is [Vidore V3](https://huggingface.co/blog/QuentinJG/introducing-vidore-v3), a comprehensive evaluation of retrieval for enterprise use-cases.   \nWe provide a [script](https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1/blob/main/mteb2_eval.py) script using [MTEB 2](https://github.com/embeddings-benchmark/mteb/tree/main/mteb) library to evaluate ColEmbed models on ViDoRe benchmarks.\n\n\n```bash\npip install \"mteb>=2.3.10,<3.0.0\"\n# Evaluates with Vidore V1 and V2\nCUDA_VISIBLE_DEVICES=0; python3 mteb2_eval.py --model_name nvidia/llama-nemoretriever-colembed-3b-v1 --batch_size 16 --benchmark \"VisualDocumentRetrieval\"\n# Evaluates with Vidore V3\nCUDA_VISIBLE_DEVICES=0; python3 mteb2_eval.py --model_name nvidia/llama-nemoretriever-colembed-3b-v1 --batch_size 16 --benchmark \"ViDoRe(v3)\"\n# Evaluates with a specific task/dataset of Vidore V3: Vidore3ComputerScienceRetrieval\nCUDA_VISIBLE_DEVICES=0; python3 mteb2_eval.py --model_name nvidia/llama-nemoretriever-colembed-3b-v1 --batch_size 16 --benchmark \"ViDoRe(v3)\" --task-list Vidore3ComputerScienceRetrieval\n```\n\nWe also provide a [script](https://huggingface.co/nvidia/llama-nemoretriever-colembed-3b-v1/blob/main/vidore_eval.py) to evaluate ViDoRe V1 and ViDoRe V2 based on their deprecated [GitHub repository](https://github.com/illuin-tech/vidore-benchmark).\n\n```bash\npip install git+https://github.com/illuin-tech/vidore-benchmark@e0eb9032e7e00adc8aa6f9cb35d5a9371f67485a\n# Downgrade transformers as vidore will install latest transformers\npip install --upgrade transformers==4.49.0\nCUDA_VISIBLE_DEVICES=0; python3 vidore_eval.py --model_name_or_path nvidia/llama-nemoretriever-colembed-3b-v1 --savedir_datasets ./results/ --model_revision 50c36f4d5271c6851aa08bd26d69f6e7ca8b870c\n```\n\n## Software Integration: <br>\n\nRuntime Engine(s): TensorRT, Triton\nSupported Hardware Microarchitecture Compatibility: A100 40GB, A100 80GB, H100 80GB\nSupported Operating System(s): Linux\n\n## Model Version(s)\n**llama-NemoRetriever-colembed-3b-v1**\n\n# Training and Evaluation Datasets\n\n- The total size (in number of data points) 12.74M qa pairs for training <br>\n- Total number of datasets:  23 datasets used for training and 17 datasets used for evaluation.\n\n## Training Dataset\nThe model was trained on publicly available datasets, including [HotpotQA](https://huggingface.co/datasets/hotpotqa/hotpot_qa), [MIRACL](https://huggingface.co/datasets/SEACrowd/miracl), [Natural Questions (NQ)](https://huggingface.co/datasets/irds/natural-questions), [Stack Exchange](https://huggingface.co/datasets/HuggingFaceH4/stack-exchange-preferences), [SQuAD](https://huggingface.co/datasets/squad), [Tiger Math/Stack](https://huggingface.co/datasets/TIGER-Lab/WebInstructSub), [DocMatix-IR](https://huggingface.co/datasets/Tevatron/docmatix-ir), [VDR](https://huggingface.co/datasets/vdr-multilingual-train), [Vidore-ColPali-Training](https://huggingface.co/datasets/vidore/colpali_train_set), [VisRAG-Ret-Train-Synthetic-data](https://huggingface.co/datasets/openbmb/VisRAG-Ret-Train-Synthetic-data), [VisRAG-Ret-Train-In-domain-data](https://huggingface.co/datasets/openbmb/VisRAG-Ret-Train-In-domain-data), and [Wiki-SS-NQ](https://huggingface.co/datasets/Tevatron/wiki-ss-nq).\n\n- **Data Collection Method by dataset:** Hybrid: Automated, Human, Synthetic\n- **Labeling Method by dataset:** Hybrid: Automated, Human, Synthetic\n- **Properties:** Training: 1st Stage: 12M qa pairs, 2nd Stage: 500k qa pairs, 3rd Stage: 240k qa pairs\n\n## Evaluation Dataset\nWe evaluate the model on multiple benchmarks for Visual Document Retrieval, ViDoRe V1, ViDoRe V2 and MTEB Visual Document Retrieval.\n\n- **Data Collection Method by dataset:** Hybrid: Automated, Human, Synthetic\n- **Labeling Method by dataset:** Hybrid: Automated, Human, Synthetic\n- **Properties:** More details on ViDoRe V1 and ViDoRe V2 can be found on their leaderboard. [Visual Document Retrieval Benchmark](https://huggingface.co/vidore), ViDoRe, is composed of various page-level retrieving tasks spanning multiple domains, languages, and settings.\n\n| **Benchmark**                  | **Model 1B** | **Model 3B** |\n|--------------------------------|--------------|--------------|\n| ViDoRe V1 (06/27/2025)         | 0.9050       | 0.9100       |\n| ViDoRe V1 (deprecated)         | 0.9049       | 0.9098       |\n| ViDoRe V2 (06/27/2025)         | 0.6209       | 0.6352       |\n| ViDoRe V2 (deprecated)         | 0.6261       | 0.6342       |\n| MTEB Visual Document Retrieval | 0.8238       | 0.8315       |\n\nNote: All scores are Avg. NDCG@5. ViDoRe V1 and V2 was updated on June 27th 2025 to use the calculated scores from [MTEB](https://github.com/embeddings-benchmark/mteb), which can result in slightly different scores. The ViDoRe V2 (06/27/2025) uses only 4 of the original 7 datasets. \n\n## Inference:\n**Acceleration Engine:** Not Applicable <br>\n**Test Hardware:** A100 40GB, A100 80GB, H100 80GB\n\n## Ethical Considerations\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "customized-nscl-v1",
+    "license_link": "LICENSE",
+    "tags": [
+      "text",
+      "image",
+      "vidore",
+      "colpali",
+      "multimodal-embedding",
+      "multilingual-embedding",
+      "Text-to-Visual Document (T\u2192VD) retrieval",
+      "feature-extraction"
+    ],
+    "language": [
+      "multilingual"
+    ],
+    "inference": false,
+    "library_name": "transformers",
+    "pipeline_tag": "visual-document-retrieval",
+    "new_version": "nvidia/llama-nemotron-colembed-vl-3b-v2",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_llama_nemoretrievercolembed.llama_NemoRetrieverColEmbed",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

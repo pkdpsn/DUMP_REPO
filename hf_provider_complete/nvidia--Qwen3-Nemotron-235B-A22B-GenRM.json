@@ -1,0 +1,1024 @@
+{
+  "modelId": "nvidia/Qwen3-Nemotron-235B-A22B-GenRM",
+  "author": "nvidia",
+  "sha": "b127d6abced0dd19b8d1f9678a881bfd30380d4b",
+  "lastModified": "2025-12-15 14:30:40+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_moe",
+    "text-generation",
+    "nvidia",
+    "qwen3",
+    "conversational",
+    "en",
+    "arxiv:2505.11475",
+    "base_model:Qwen/Qwen3-235B-A22B-Thinking-2507",
+    "base_model:finetune:Qwen/Qwen3-235B-A22B-Thinking-2507",
+    "license:apache-2.0",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 31,
+  "downloads": 1383,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "Qwen/Qwen3-235B-A22B-Thinking-2507",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "nvidia",
+      "qwen3"
+    ],
+    "inference": false,
+    "fine-tuning": false
+  },
+  "config": {
+    "architectures": [
+      "Qwen3MoeForCausalLM"
+    ],
+    "model_type": "qwen3_moe",
+    "num_experts": 128,
+    "num_experts_per_tok": 8,
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n    {{- '<|im_start|>user\\n' }}\nYou are an expert evaluation judge specializing in comparative assessment of LLM responses. You are impartial, rigorous, and consistent. Given the conversation context and two assistant responses to the user's latest query, you will follow the evaluation plan and scoring guidelines exactly as written below.\n\n{{- '\\n\\n#### Conversation Context ####\\n' }}\n{%- for message in messages %}\n    {%- if message['role'] == 'user' %}\n        {{- 'User: ' + message['content']|trim + '\\n' }}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if '</think>' in message['content'] %}\n            {%- set content = message['content'].split('</think>')[-1].lstrip() %}\n        {%- else %}\n            {%- set content = message['content'] %}\n        {%- endif %}\n        {{- 'Assistant: ' + content|trim + '\\n'}}\n    {%- endif %}\n{%- endfor %}\n\n{{- '\\n#### Responses to be Scored ####\\n' }}\n{%- for message in messages %}\n    {%- if message['role'] == 'response_1' %}\n        {{- '[The Begin of Response 1]\\n' + message['content']|trim + '\\n[The End of Response 1]\\n' }}\n    {%- elif message['role'] == 'response_2' %}\n        {{- '\\n[The Begin of Response 2]\\n' + message['content']|trim + '\\n[The End of Response 2]\\n' }}\n    {%- endif %}\n{%- endfor %}\n\n#### Evaluation Plan ####\nPlease act as an impartial judge and evaluate the quality of the responses provided by two AI assistants to the user prompt. Begin your evaluation by generating your own answer to the prompt. You must provide your answer before judging any answers. When evaluating the assistants' answers, compare both assistants' answers with your answer. You must identify and correct any mistakes or inaccurate information. Then consider if the assistant's answers are helpful, relevant, and concise. Helpful means the answer correctly responds to the prompt or follows the instructions. Note when user prompt has any ambiguity or more than one interpretation, it is more helpful and appropriate to ask for clarifications or more information from the user than providing an answer based on assumptions. Relevant means all parts of the response closely connect or are appropriate to what is being asked. Concise means the response is clear and not verbose or excessive. Then consider the creativity and novelty of the assistant's answers when needed. Finally, identify any missing important information in the assistants' answers that would be beneficial to include when responding to the user prompt.\n\n#### Scoring Guidelines ####\nBased on the evaluation plan above, assign scores using these scales:\n\n**Individual Helpfulness Scores (1-5):**\n- 5: Extremely Helpful - Completely aligned with what the user was asking for\n- 4: Mostly Helpful - Generally useful with minor room for improvement\n- 3: Partially Helpful - Misses the overall goal in some way\n- 2: Borderline Unhelpful - Mostly doesn't capture what the user wanted\n- 1: Not Helpful - Completely missed the essence of the request\n\n**Comparative Ranking (1-6):**\n- 1: Response 1 is much better than Response 2\n- 2: Response 1 is better than Response 2\n- 3: Response 1 is slightly better than Response 2\n- 4: Response 2 is slightly better than Response 1\n- 5: Response 2 is better than Response 1\n- 6: Response 2 is much better than Response 1\n\n#### Output Format ####\nAnalyze step by step following the evaluation plan, then provide your judgment as JSON:\n```json\n{\n    \"response_1_analysis\": \"Your detailed analysis of Response 1 based on the evaluation plan\",\n    \"response_2_analysis\": \"Your detailed analysis of Response 2 based on the evaluation plan\",\n    \"score_1\": <1-5>,\n    \"score_2\": <1-5>,\n    \"ranking\": <1-6>\n}\n```\n    {{- '<|im_end|>\\n' }}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 679,
+      "lfs": null
+    },
+    {
+      "rfilename": "NOTICE",
+      "size": 151,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7403,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 271,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 7877,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 964,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 1687,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00095.safetensors",
+      "size": 4999647472,
+      "lfs": {
+        "size": 4999647472,
+        "sha256": "bebfa6a00983675b8d6db561c27c59bb6327d3efe8e81464143902539d39821a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "ffb108d472b92e3ee1b7ab255946b528546223230a8eaa85be1872a33ad1785f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "688b397ade6a5a13a7886174716aacf2593aaf2afbfd32cdb37a2c567d7effe7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "657781de5e6bc6b04e560ade4a6808e7da7d5ae08552a15b4f57b886e1a3bb20",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "ee4e5bdc477e2f02d31365c1eb3020a048d0a1e4900fdd6b3ce981319d9cd60b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "b2b046192097b429a298a5f9212ad5063644a7f614d4779346960da30c8a80ed",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "bf2d6d31adcbdb760eae2e23969c70174701baa671846504ac5b014ad3c1602a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "fb3c576af6d12f136ea2230f99a31b62f4ed3437bb336292cc0220179eb37117",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "3e62a09d930c6169a07957d5e0889ca8b07ae91734095d2d76333ad51fb82e01",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00095.safetensors",
+      "size": 4988141728,
+      "lfs": {
+        "size": 4988141728,
+        "sha256": "d6217ef51013249a343addb3bba0222cf4fe1e9c9303a4b853c57ab5616420a8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00095.safetensors",
+      "size": 4988142048,
+      "lfs": {
+        "size": 4988142048,
+        "sha256": "6d2857fc46a3c11df57cf9fb6353a8e08c33ea03d40caef004830d0d15cb9a58",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "0ddbdd696b59c628100c509a1568bf74413d6b00d03381700c956cfdfc4cb96a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "9ac11f186889a5faa0aea922297aedeca92f3e3a9e177968fe36399308170746",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "fc976d447e4c4ea009fd3c63ceceb17ff0addf13e509fdd24dded9bf23ecf9f4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "6c84a4b82c1fb44eeaad9888de86046fd1d0b1e502bea2f554c48525515ea5d6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "9845f8983eef03e6ac39b9282ca14a1fe07b026d3950ead90edfaeece18b38c5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "50738dca121d760bca0d95c6f8f2967dffd2e3e5c8c355740aa9b8e8c9655488",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "a95a791a37a91857f87427453f06a73b5b098f2393c48148a7bcf1cc32340607",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "d598db7ebcc6694a8b10b06c7844aaae2f2d5d5e5dbdacb6dd3147eb0a17726e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "f069d2eb0a87ae873a695c2843323d6ffba2ba90fd844945bf94ec0ff0eaab54",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "6b401cca518051ae40c51643691b47cd5cdb5738ddd355473ca9e5ad2c649daf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "176246f089dcd7e34282939c293be0bb51af9665d919d3229cbfabb54b6cad3e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "0958c5ef85e34e8251517eac3b11158a5a5dfe0b8043e589e1a4808e7cbacfde",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "ec195768088884816d03a8ec413cc40d395aff17981778d6772c57bbc26a224f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "0eab6d85dec15579c4b1bc2a5fb9b506bc927dc7a5e85440efa4bd3c125ecf82",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "162feb930d70e96a9078de30c31bcbf30d870d51d3a3326b68ebb40aaf07c6dd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "0f46243ad0ad75a96f911d4b90ee3f3d9b1e6d29b1a90b2f110fb97a07b3acac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "f92d8c754f8aa19bd65bdce114b1bbd0b1dc1895a89e8b5366ea9ae399882dac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "b7d0bccc42fc9f7ecc48508a2a100206f5d768118bf39c3a9db3eefc34a9ec42",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "0875b3a8e72199983cdd14b187a5d79db2a77aefc6828d87a95844bfbc15328f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "039c9297037365a27e38bd271a6b4c6b7af597b41fc6bcc86271612783338f4c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "b0c535ae77de4fb83152ae936dc41d8e41036639a220ec0e7b8cf4c323eaf194",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "41f3509532736aa224b7ee46bf9145476e44f4a07aac1b2fb660d64e4b13ff5c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "71252f3f4d870504d0ce3899d8014035a085a31f154676c101d8e8a7aea53b95",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "b47f30ac3bd315fa2650b70c767a81b9f26e8ce63c6562dc60caa12f20b035f2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "24d064856ac9edab5b7d5a018a35f9312b68e8c5d9b78205e9986af16b225291",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "604cb4134e8c3475d5a74f969651d86f323ecec6f1624881b2679748e85d9b57",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "501a04a90fe296a7b802f50fffadfabd65171e4d5ef8e520bb9f35e500e7969a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "8def596e403ef4c4d14e67cf362643ec5fedda9b9c14fab454dd01743260c1ac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "b271970d03b3e1ab163c9ce5280e78afc804fd4c716287f073a4c44a5c479faa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00041-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "ed5372469340acc69383c2aebbb569013a4727225c32c01561a9cc80cf412141",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00042-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "163bf7df81ac4dc30157e3956f3987336435843ecab5d423d2095e58c48a148a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "19628644657b5fade96bf2429d6d250b042ea674d60620613c5523f04321596f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "b0984d52b28ba934add62ea8b89ba439fbc4b49c273afc8cb2adb301eb233bbb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "cccea70680b08eddb8b95c3f066a22bc83497e41096168f2ae5253f4d4240cba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "5ee7abf534aaee4e3fca0daf1871e09250d911ac2314a440744b9edbbdb4c09a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "ee3dab1c5e89c1da5b62ba85805ff30474ee3ff90ad36e957297ee9ad02ac7eb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "aa7a191f90b080bff5e82bc83527ad03296b2f30431c3da03e6395d2efd6b034",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00049-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "be8c1910e278f5722a4a5d3b0909c734766a52d9d16251106cd55552bad9eac0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00050-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "9f51925854796aa61f2813756b548e99b7eb747a8975d27fb02ac7b8ffab79e7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00051-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "8c09a912f5537826931012ef77e663d38c9bc348a67bc2f1e8a4bef80370a7bf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00052-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "4c298a26654e8043685b676368fa68e8a4582457e5b0512534f49cdee44da2c4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00053-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "805fb1d88122bcc434566bc2f14f2015daff14fc0e2473fc2389ba72e207a984",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00054-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "801d498abb36d81b86da50bfee175238a16034f6ee5cf928f7eb7f539ed6e144",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00055-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "5cdde5fc48f2753c7b4b65d6efa8f65a61ad6948006cf7f2756e9cc61231e255",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00056-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "005d772d13a7099b2453791101ff420112a2450ee9e22232084de0d1eff50338",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00057-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "a23b14b386b6a0822fdc0f8b3e9573adb72e4b7a291e2f1ce1f127b5b892d271",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00058-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "4e65ab0fa132a9310936f48f21d21ce4423be5b2723e3034279495a00c1924e1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00059-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "fb0927d328df9e1b40b79a688630fca91c2fd9983b1e7d55c6133002d61282e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00060-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "407b4cd78ff033ddf72bcb84d9bfc9884ac8a7ef5ae1b7d42a2d5c13ca5f27b7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00061-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "42cbed700a21892af4ac8bbfd4117905415641949328a757ff186015133126ca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00062-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "4ccea7a89073666b5b44b860bf32b6a83df50c404edd0a760fe9a26c737ca17c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00063-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "cd4345e32236fe8fdfd870b4e4062ebb565b217b97bfb919bc6eb3a0963fe6ff",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00064-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "c176602b14d2f0db6dcdd41a0ba5be41c063ec9535889c8b7505a97a876437a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00065-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "51ba20cdc465973a4ab360846ba65d851e785ad314b8d96673f46da1393b1d39",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00066-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "ba3d4710e7752746297ce72dc0e129cbbddc4bc12548c10b7ee4c1ff49606272",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00067-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "1af448b527c406eda777fb84c1f9653cfbe51ffaed6dbd0bbe138c02642c91f9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00068-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "d151fdb0ab96c0e3002ccabaafd428d3f645b4c67267d2a748b8f4ce2c447f5c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00069-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "71f7eb607badbed4eeb3d30ce790e6346912758a824e7fb6ea1e7bfc84f37ab9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00070-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "2bf13a15d627ae2ce6aafe5adac58e51dac53134cd3826bfa7c3dafa5c81d848",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00071-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "0913f4fd120d442486583f52177fc2fb1fd14fea787b8afa22bbc2b86bcb9cc6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00072-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "621f3187d2d9d839796411df7328e4e356f246a8b83f0cce43060f5037602276",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00073-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "1a0d708e87075e467404ca2b8e3e7cb552d753b16a4cc1ea4b950de972fd40f3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00074-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "3621ba5bf960dadf474cfaba14428169a44711940499bdb7b9df4b9797c9d985",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00075-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "c06b47bec52c8ef6ce6c5dc932dde556a4198b7e3c01b61542eaf0c6c0c103b7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00076-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "88637c93004e93a7840238548592bac702945c74f63bdb4d00d1521dc86798e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00077-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "dfcc951e0e393a34f9a6990828807c1d18e3051458325e0e84556e9ccd1830ba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00078-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "44c8f08077f787ac16693ff183081867f98210de512b431fd2c530b413e43b3a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00079-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "c771db4c16028353ec6cf32e8f9fed6a5cfe95b13a5552fdf75005eb968a3fc3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00080-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "223a96ebb13abef0748ce46211c544f45e43605dfb8036544f985c0d68740862",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00081-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "8e573f20efa96351c5faad8a45d00941175060da24663c217a025ff43b9579cb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00082-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "1f7df88dcff387c8e7bb43d595cc965786d30f7b2e131606e9d05f8b33d9e29f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00083-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "e29b3d65813c58b1fdfa3bb37fc2dbb3e7fa898289e0df41fe12b1404c4998ba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00084-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "ae82fa9c1745c2b37e70bc54f1a5bae36ba8511f1e37ef278bf064ebaed5646a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00085-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "fda944c62e78a2134d8ae0c17ada3e274082450c651b3caf16867f7e72cd6a0e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00086-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "809a65f865d94583e6c9075cc4813df75bc58bede3c8a88148b20e9c8a6da14d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00087-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "c95232ca3c2643872d99e6eb495148a5a633b19c0397c52ac1844ada6b9f4baa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00088-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "e6f4a4bc430b92687af3a348be322ab6f38241247e0f068d642a70e7a5f976b8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00089-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "4520478f85569a91ce893c062d10f5e7820f00406479746803e014c69d8b6f35",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00090-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "4f4627afc25fa83f047d50ffab94531c62d4bc25bcc2d1e8f416a550d43ca233",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00091-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "9c740bdbdcab4aa6981a7888d05b4e8d832ea12e354364fb5032303c993105fa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00092-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "5bf21cf31bd9f4a31da5b0986035fe8a52f053248fd5108781685c1f96985c3b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00093-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "7a4d4a9c3d566b599c2eb1b30fb11c3faac1f8f828945f535520a1edbbd0d9db",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00094-of-00095.safetensors",
+      "size": 4988142120,
+      "lfs": {
+        "size": 4988142120,
+        "sha256": "6f9b2f19e1bc1a032d0e64ca1d938674da43216d00ee762380db275d5813cf6d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00095-of-00095.safetensors",
+      "size": 1295016896,
+      "lfs": {
+        "size": 1295016896,
+        "sha256": "69c826ba53811d9d3b3408bbd135ebb9508fa244d681f0f8a074703c486ca3b9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 3332245,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 702,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 876,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5405,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

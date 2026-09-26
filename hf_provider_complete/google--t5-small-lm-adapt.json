@@ -1,0 +1,148 @@
+{
+  "modelId": "google/t5-small-lm-adapt",
+  "author": "google",
+  "sha": "4ff52753a4ddd906de166c573db99280719b22f9",
+  "lastModified": "2023-01-24 16:52:21+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "t5",
+    "text2text-generation",
+    "t5-lm-adapt",
+    "en",
+    "dataset:c4",
+    "arxiv:2002.05202",
+    "arxiv:1910.10683",
+    "license:apache-2.0",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 10,
+  "downloads": 3386,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "c4"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "t5-lm-adapt"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "T5ForConditionalGeneration"
+    ],
+    "model_type": "t5",
+    "tokenizer_config": {
+      "eos_token": "</s>",
+      "unk_token": "<unk>",
+      "pad_token": "<pad>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3211,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 652,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 147,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 307927045,
+      "lfs": {
+        "size": 307927045,
+        "sha256": "caf2f8375bd2c4c9a7496805480e604c4c6a62ef71d6838b776d27bddc6e0535",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 1786,
+      "lfs": null
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 791656,
+      "lfs": {
+        "size": 791656,
+        "sha256": "d60acb128cf7b7f2536e8f38a5b18a05535c9e14c7a355904270e15b0945ea86",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 308229696,
+      "lfs": {
+        "size": 308229696,
+        "sha256": "d8234066863947b1a82c51e85ed5c7edb5e1d21ed0c9cabb649210dde40272b7",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1389370,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 2114,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\ndatasets:\n- c4\ntags:\n- t5-lm-adapt\nlicense: apache-2.0\n---\n\n[Google's T5](https://ai.googleblog.com/2020/02/exploring-transfer-learning-with-t5.html) Version 1.1 - LM-Adapted\n\n\n## Version 1.1 - LM-Adapted\n\n[T5 Version 1.1 - LM Adapted](https://github.com/google-research/text-to-text-transfer-transformer/blob/main/released_checkpoints.md#lm-adapted-t511lm100k) includes the following improvements compared to the original [T5 model](https://huggingface.co/t5-small):\n\n- GEGLU activation in feed-forward hidden layer, rather than ReLU - see [here](https://arxiv.org/abs/2002.05202).\n\n- Dropout was turned off in pre-training (quality win). Dropout should be re-enabled during fine-tuning.\n\n- Pre-trained on C4 only without mixing in the downstream tasks.\n\n- no parameter sharing between embedding and classifier layer\n\n- \"xl\" and \"xxl\" replace \"3B\" and \"11B\". The model shapes are a bit different - larger `d_model` and smaller `num_heads` and `d_ff`.\n\nand is pretrained on both the denoising and language modeling objective.\n\nMore specifically, this checkpoint is initialized from [T5 Version 1.1 - Small](https://huggingface.co/google/https://huggingface.co/google/t5-v1_1-small) \nand then trained for an additional 100K steps on the LM objective discussed in the [T5 paper](https://arxiv.org/pdf/1910.10683.pdf). \nThis adaptation improves the ability of the model to be used for prompt tuning.\n\n**Note**: A popular fine-tuned version of the *T5 Version 1.1 - LM Adapted* model is [BigScience's T0pp](https://huggingface.co/bigscience/T0pp).\n\nPretraining Dataset: [C4](https://huggingface.co/datasets/c4)\n\nOther Community Checkpoints: [here](https://huggingface.co/models?other=t5-lm-adapt)\n\nPaper: [Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer](https://arxiv.org/pdf/1910.10683.pdf)\n\nAuthors: *Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, Peter J. Liu* \n\n\n## Abstract\n\nTransfer learning, where a model is first pre-trained on a data-rich task before being fine-tuned on a downstream task, has emerged as a powerful technique in natural language processing (NLP). The effectiveness of transfer learning has given rise to a diversity of approaches, methodology, and practice. In this paper, we explore the landscape of transfer learning techniques for NLP by introducing a unified framework that converts every language problem into a text-to-text format. Our systematic study compares pre-training objectives, architectures, unlabeled datasets, transfer approaches, and other factors on dozens of language understanding tasks. By combining the insights from our exploration with scale and our new \u201cColossal Clean Crawled Corpus\u201d, we achieve state-of-the-art results on many benchmarks covering summarization, question answering, text classification, and more. To facilitate future work on transfer learning for NLP, we release our dataset, pre-trained models, and code.\n\n![model image](https://camo.githubusercontent.com/623b4dea0b653f2ad3f36c71ebfe749a677ac0a1/68747470733a2f2f6d69726f2e6d656469756d2e636f6d2f6d61782f343030362f312a44304a31674e51663876727255704b657944387750412e706e67)\n ",
+  "cardDataParsed": {
+    "language": "en",
+    "datasets": [
+      "c4"
+    ],
+    "tags": [
+      "t5-lm-adapt"
+    ],
+    "license": "apache-2.0",
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

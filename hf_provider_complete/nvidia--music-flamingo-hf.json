@@ -1,0 +1,226 @@
+{
+  "modelId": "nvidia/music-flamingo-hf",
+  "author": "nvidia",
+  "sha": "35a2c9071753ee075b0f7fc2fd81151c21389530",
+  "lastModified": "2026-04-04 22:49:49+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "audioflamingo3",
+    "text2text-generation",
+    "music/songs",
+    "music understanding",
+    "music reasoning",
+    "audio-text-to-text",
+    "en",
+    "dataset:nvidia/MF-Skills",
+    "arxiv:2511.10289",
+    "arxiv:2505.13032",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "audio-text-to-text",
+  "library_name": "transformers",
+  "likes": 102,
+  "downloads": 6952,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "nvidia/MF-Skills"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "audio-text-to-text",
+    "tags": [
+      "music/songs",
+      "music understanding",
+      "music reasoning"
+    ],
+    "arxiv": 2511.10289
+  },
+  "config": {
+    "architectures": [
+      "AudioFlamingo3ForConditionalGeneration"
+    ],
+    "model_type": "audioflamingo3",
+    "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "<|im_end|>",
+      "pad_token": "[PAD]",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% if messages[0]['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}{% for m in messages if m['content'] is not none %}<|im_start|>{{ m['role'] }}\n{% if m['content'] is string %}{{ m['content'] }}{% else %}{% set audio = namespace(found=False) %}{% set text_buf = namespace(v='') %}{% for c in m['content'] %}{% if c.get('type') == 'audio' or 'audio' in c %}{% set audio.found = True %}{% elif c.get('type') == 'text' or 'text' in c %}{% set text_buf.v = text_buf.v + c['text'] %}{% endif %}{% endfor %}{% if audio.found %}{{ '<sound>' }}{% endif %}{{ text_buf.v }}{% endif %}<|im_end|>\n{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1680,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 15781,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 762,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 703,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2124,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 147,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4886285784,
+      "lfs": {
+        "size": 4886285784,
+        "sha256": "47b56dafa7e91fbd824deb8829733f79a91b5d3bf37eea02ae380cfe6c488ec4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4991497784,
+      "lfs": {
+        "size": 4991497784,
+        "sha256": "09f325b9c884d3b87eaf0f3167b4b30d82f7e74d8f785bd886c71ce978713d3d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4932752872,
+      "lfs": {
+        "size": 4932752872,
+        "sha256": "4c48683726b4d69e1ada26d5a0178720d3bd5ea6a97a7b89dc25f8f26cd5d9c3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1723994720,
+      "lfs": {
+        "size": 1723994720,
+        "sha256": "492fe2477ee1260da38a1be74d7eb4dc62df71c8b2d14882455ad8bde16e96d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 74525,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 494,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 743,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/NVIDIA-OneWay-Noncommercial-License_22Mar2022-academic.docx",
+      "size": 20697,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/mf_logo.png",
+      "size": 257403,
+      "lfs": {
+        "size": 257403,
+        "sha256": "f4c7f0f87287c2cfbfdf57abd09354b0f3e0b7175d72a3d75196ac7f476acb7b",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "static/mf_main.png",
+      "size": 872602,
+      "lfs": {
+        "size": 872602,
+        "sha256": "85b1bbd1ca26b27e89af6cea3155f5b8eccce9b017469e12fa71db0cefa437e5",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11423194,
+      "lfs": {
+        "size": 11423194,
+        "sha256": "6edcdd127f82f3bd1e68f7a96d4ef61920bebb8c8fc8e62fbd41a08c41e0792d",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 6002,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlanguage:\n- en\narxiv: 2511.10289\ntags:\n- music/songs\n- music understanding\n- music reasoning\ndatasets:\n- nvidia/MF-Skills\npipeline_tag: audio-text-to-text\nlibrary_name: transformers\n---\n# Model Overview\n\n<div align=\"center\" style=\"display: flex; justify-content: center; align-items: center; text-align: center;\">\n  <a href=\"https://github.com/NVIDIA/audio-flamingo\" style=\"margin-right: 20px; text-decoration: none; display: flex; align-items: center;\">\n    <img src=\"static/mf_logo.png\" alt=\"Music Flamingo \ud83d\udd25\ud83d\ude80\ud83d\udd25\" width=\"120\">\n  </a>\n</div>\n<div align=\"center\" style=\"display: flex; justify-content: center; align-items: center; text-align: center;\">\n    <h2>\n    Music Flamingo: Scaling Music Understaning in Audio Language Models\n    </h2>\n</div>\n\n<div align=\"center\" style=\"display: flex; justify-content: center; margin-top: 10px;\">\n  <a href=\"https://arxiv.org/abs/2511.10289\"><img src=\"https://img.shields.io/badge/arXiv-2511.10289-AD1C18\" style=\"margin-right: 5px;\"></a>\n  <a href=\"https://research.nvidia.com/labs/adlr/MF/\"><img src=\"https://img.shields.io/badge/Demo page-228B22\" style=\"margin-right: 5px;\"></a>\n  <a href=\"https://github.com/NVIDIA/audio-flamingo\"><img src='https://img.shields.io/badge/Github-Audio Flamingo 3-9C276A' style=\"margin-right: 5px;\"></a>\n  <a href=\"https://github.com/NVIDIA/audio-flamingo/stargazers\"><img src=\"https://img.shields.io/github/stars/NVIDIA/audio-flamingo.svg?style=social\"></a>\n</div>\n\n<div align=\"center\" style=\"display: flex; justify-content: center; margin-top: 10px; flex-wrap: wrap; gap: 5px;\">\n  <a href=\"https://huggingface.co/nvidia/music-flamingo\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Checkpoints-ED5A22.svg\">\n  </a>\n  <a href=\"https://huggingface.co/datasets/nvidia/MF-Skills\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Dataset: MF--Skills-ED5A22.svg\">\n  </a>\n</div>\n\n<div align=\"center\" style=\"display: flex; justify-content: center; margin-top: 10px;\">\n<a href=\"https://huggingface.co/spaces/nvidia/music-flamingo\"><img src=\"https://img.shields.io/badge/\ud83e\udd17-Gradio Demo (7B)-5F9EA0.svg\" style=\"margin-right: 5px;\"></a>\n</div>\n\n\ud83d\udea8 **Note:** We have released a new and more powerful checkpoint [here](https://huggingface.co/nvidia/music-flamingo-2601-hf). \n\n## Description:\nMusic Flamingo (MF) is a fully open, state-of-the-art Large Audio-Language Model (LALM) designed to advance music (including song) understanding in foundational audio models. MF brings together innovations in:\n\n- Deep music understanding across songs and instrumentals.\n- Rich, theory-aware captions and question answering (harmony, structure, timbre, lyrics, cultural context).\n- Reasoning-centric training using chain-of-thought + reinforcement learning with custom rewards for step-by-step reasoning.\n- Long-form song reasoning over full-length, multicultural audio (extended context).\n\nExtensive evaluations confirm Music Flamingo's effectiveness, setting new benchmarks on over 10+ public music understanding and reasoning tasks.\n\n**This model is for non-commercial research purposes only.**\n\n\n\n<center><img src=\"static/mf_main.png\" width=\"800\"></center>\n\n## Usage\n\nMusic Flamingo (MF) is supported in \ud83e\udd17 Transformers. To run the model, first install Transformers:\n\n```bash\npip install --upgrade pip\npip install --upgrade transformers accelerate\n```\n\n> **Note:** MF processes audio in 30-second windows with a **10-minute** total cap per sample. Longer inputs are truncated.\n\n### Single-turn: audio + text instruction\n\n```python\nfrom transformers import AudioFlamingo3ForConditionalGeneration, AutoProcessor\n\nmodel_id = \"nvidia/music-flamingo-hf\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = AudioFlamingo3ForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\n\nconversation = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\"type\": \"text\", \"text\": \"Describe this track in full detail - tell me the genre, tempo, and key, then dive into the instruments, production style, and overall mood it creates.\"},\n            {\"type\": \"audio\", \"path\": \"https://huggingface.co/datasets/nvidia/MF-Skills/resolve/main/assets/song_1.mp3\"},\n        ],\n    }\n]\n\ninputs = processor.apply_chat_template(\n    conversation,\n    tokenize=True,\n    add_generation_prompt=True,\n    return_dict=True,\n).to(model.device)\n\noutputs = model.generate(**inputs, max_new_tokens=1024)\n\ndecoded_outputs = processor.batch_decode(outputs[:, inputs.input_ids.shape[1]:], skip_special_tokens=True)\nprint(decoded_outputs)\n```\n\n### Batch multiple conversations\n\n```python\nfrom transformers import AudioFlamingo3ForConditionalGeneration, AutoProcessor\n\nmodel_id = \"nvidia/music-flamingo-hf\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = AudioFlamingo3ForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\n\nconversations = [\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"text\",\n                    \"text\": \"Describe this track in full detail - tell me the genre, tempo, and key, then dive into the instruments, production style, and overall mood it creates.\"},\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/nvidia/MF-Skills/resolve/main/assets/song_1.mp3\",\n                },\n            ],\n        }\n    ],\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"text\",\n                    \"text\": \"Write a rich caption that blends the technical details (genre, BPM, key, chords, mix) with how the song feels emotionally and dynamically as it unfolds.\",\n                },\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/nvidia/MF-Skills/resolve/main/assets/song_2.mp3\"\n                },\n            ],\n        }\n    ],\n]\n\ninputs = processor.apply_chat_template(\n    conversations,\n    tokenize=True,\n    add_generation_prompt=True,\n    return_dict=True,\n).to(model.device)\n\noutputs = model.generate(**inputs, max_new_tokens=1024)\n\ndecoded_outputs = processor.batch_decode(outputs[:, inputs.input_ids.shape[1]:], skip_special_tokens=True)\nprint(decoded_outputs)\n```\n\n### Text-only and audio-only prompts\n\n```python\n# text-only\nconv = [{\"role\": \"user\", \"content\": [{\"type\": \"text\", \"text\": \"What is the capital of France?\"}]}]\nbatch = processor.apply_chat_template(conv, tokenize=True, add_generation_prompt=True, return_dict=True).to(device)\nprint(processor.batch_decode(model.generate(**batch)[:, batch[\"input_ids\"].shape[1]:], skip_special_tokens=True)[0])\n\n# audio-only\nconv = [{\"role\": \"user\", \"content\": [{\"type\": \"audio\", \"path\": \"https://.../sample.wav\"}]}]\nbatch = processor.apply_chat_template(conv, tokenize=True, add_generation_prompt=True, return_dict=True).to(device)\nprint(processor.batch_decode(model.generate(**batch)[:, batch[\"input_ids\"].shape[1]:], skip_special_tokens=True)[0])\n```\n\n### Training / Fine-tuning\n\n```python\nfrom transformers import AudioFlamingo3ForConditionalGeneration, AutoProcessor\n\nmodel_id = \"nvidia/music-flamingo-hf\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = AudioFlamingo3ForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\nmodel.train()\n\nconversation = [\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\"type\": \"text\", \"text\": \"What's the key of this song?\"},\n                {\"type\": \"audio\", \"path\": \"https://huggingface.co/datasets/nvidia/MF-Skills/resolve/main/assets/song_1.mp3\"},\n            ],\n        },\n        {\n            \"role\": \"assistant\",\n            \"content\": [{\"type\": \"text\", \"text\": \"D major\"}],\n        }\n    ],\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"text\",\n                    \"text\": \"What's the bpm of this song?\",\n                },\n                {\"type\": \"audio\", \"path\": \"https://huggingface.co/datasets/nvidia/MF-Skills/resolve/main/assets/song_2.mp3\"},\n            ],\n        },\n        {\n            \"role\": \"assistant\",\n            \"content\": [{\"type\": \"text\", \"text\": \"87\"}],\n        }\n\n    ]\n]\n\ninputs = processor.apply_chat_template(\n    conversation,\n    tokenize=True,\n    add_generation_prompt=True,\n    return_dict=True,\n    output_labels=True,\n).to(model.device)\n\nloss = model(**inputs).loss\nloss.backward()\n```\n\n### Generation options\n\nYou can tune decoding similar to other text-generation models:\n\n```python\ngenerate_kwargs = {\n    \"max_new_tokens\": 256,\n    \"do_sample\": True,\n    \"temperature\": 0.7,\n    \"top_p\": 0.9,\n}\nout = model.generate(**batch, **generate_kwargs)\n```\n\n## Additional Speed & Memory Improvements\n\n### Flash Attention 2\n\nIf your GPU supports it and you are **not** using `torch.compile`, install Flash-Attention and enable it at load time:\n\n```bash\npip install flash-attn --no-build-isolation\n```\n\n```python\nmodel = AudioFlamingo3ForConditionalGeneration.from_pretrained(\n    model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, attn_implementation=\"flash_attention_2\"\n).to(device)\n```\n\n### Torch compile\n\nMF\u2019s forward pass is compatible with `torch.compile` for significant speed-ups:\n\n```python\nimport torch\ntorch.set_float32_matmul_precision(\"high\")\n\nmodel.generation_config.cache_implementation = \"static\"\nmodel.generation_config.max_new_tokens = 256\nmodel.forward = torch.compile(model.forward, mode=\"reduce-overhead\", fullgraph=True)\n```\n\n> `torch.compile` is not compatible with Flash Attention 2 at the same time.\n\n### PyTorch SDPA\n\nIf Flash-Attention isn\u2019t available, MF will use PyTorch scaled-dot product attention (SDPA) by default on supported PyTorch versions. You can set it explicitly:\n\n```python\nmodel = AudioFlamingo3ForConditionalGeneration.from_pretrained(\n    model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, attn_implementation=\"sdpa\"\n).to(device)\n```\n\n## License / Terms of Use\nThe model is released under the [NVIDIA OneWay Noncommercial License](static/NVIDIA-OneWay-Noncommercial-License_22Mar2022-academic.docx). Portions of the dataset generation are also subject to the [Qwen Research License](https://huggingface.co/Qwen/Qwen2.5-3B/blob/main/LICENSE) and OpenAI\u2019s [Terms of Use](https://openai.com/policies/terms-of-use).\n\n## Deployment Geography\nGlobal.\n\n## Use Case\nIntended for researchers and developers to explore:\n- Music question answering and reasoning  \n- Long-context music comprehension  \n- Interactive music design assistants  \n\n## References:\n* [Music Flamingo: Scaling Music\nUnderstanding in Audio Language Models](https://research.nvidia.com/labs/adlr/MF/)  \n* [Project Page](https://github.com/NVIDIA/audio-flamingo)  \n* [Demo Website](https://musicflamingo-nv-umd.github.io/)\n\n## Model Architecture:\n**Architecture Type:** Transformer   \n**Network Architecture:** [Audio Flamingo 3](https://github.com/NVIDIA/audio-flamingo/tree/audio_flamingo_3)\n**Number of model parameters:** 8B\n\nMF uses:\n- AF-Whisper unified audio encoder from Audio Flamingo 3\n- MLP-based audio adaptor  \n- Decoder-only LLM backbone (Qwen2.5-7B)  \n\n**This model was developed based on [Audio Flamingo 3](https://github.com/NVIDIA/audio-flamingo/tree/audio_flamingo_3)**\n\n\n## Input: \nInput Type: Music (song or instrumental), Text <br>\nInput Format: WAV/MP3/FLAC, UTF-8 text <br>\nInput Parameters: Audio is Two-Dimensional (2D) and Text is One-Dimensional (1D)<br>\nOther Properties Related to Input: <br>\n-Max Audio Length: 20 Minutes <br>\n-Max Text Length: 24000 tokens<br>\n\n\n## Output: \nOutput Type: Text (and optional speech) <br>\nText Format: UTF-8 string  <br>\nOutput Parameters: One-Dimensional (1D)<br>\nOther Properties Related to Output: <br>\n-Max Text Length: 2048 tokens <br>\n\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems (A100/H100). By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions. <br> \n\n## Software Integration:\n**Runtime Engine:** PyTorch / HuggingFace Transformers  \n\n**Supported Hardware:**  \n* NVIDIA Ampere (A100)  \n* NVIDIA Hopper (H100)  \n\n**Supported OS:**  \n* Linux  \n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Model Version:\n* v1.0  \n\n---\n\n## Training and Testing Datasets:\n\n### Training Dataset:\nMF is trained entirely on music data collected from various sources. For each dataset, we mention whether the dataset annotations are collected by Human or they are Automated i.e. generated using AI models.\n\n**Data Modality:** Audio\n**Audio Training Data Size:** 10,000 to 1 Million Hours\n\nThe data collection method noted below applies for all datasets used for training and testing:<br>\nData Collection Method: Human <br>\nLabeling Collection Method: Please see below.\n\n* [LP-MusicCaps](https://github.com/seungheondoh/lp-music-caps)  (Automated)\n* [MusicQA](https://github.com/shansongliu/MU-LLaMA?tab=readme-ov-file)  (Automated)\n* [MusicAVQA](https://gewu-lab.github.io/MUSIC-AVQA/)  (Human)\n* [MusicBench](https://huggingface.co/datasets/amaai-lab/MusicBench)  (Automated)\n* [Mu-LLAMA](https://github.com/shansongliu/MU-LLaMA)  (Automated)\n* [NSynth](https://magenta.tensorflow.org/datasets/nsynth)  (Human)\n* [FMA](https://github.com/mdeff/fma)  (Human)\n* [MusDB-HQ](https://zenodo.org/records/3338373)  (Human)\n* [Music4All](https://sites.google.com/view/contact4music4all)  (Human)\n* [Million Song Dataset](http://millionsongdataset.com/)  (Human)\n* [MF-Skills (ours)](https://huggingface.co/nvidia/music-flamingo) (Automated)\n* [MF-Think (ours)](https://huggingface.co/nvidia/music-flamingo) (Automated)\n\n---\n\n### Testing Dataset:\nMusic Flamingo is evaluated on the test split of the following datasets.\n\nData Collection Method: Human (for all datasets noted below) <br>\nLabeling Method: Please see below.\n\n* [MusicAVQA](https://gewu-lab.github.io/MUSIC-AVQA/)  (Human)\n* [NSynth](https://magenta.tensorflow.org/datasets/nsynth)  (Human)\n* [GTZAN](https://www.tensorflow.org/datasets/catalog/gtzan)  (Human)\n* [MMAU-pro](https://sonalkum.github.io/mmau-pro/)  (Human)\n* [MMAU](https://github.com/Sakshi113/mmau/tree/main)  (Human)\n* [MMAR](https://arxiv.org/abs/2505.13032)  (Human)\n* [MuchoMusic](https://huggingface.co/datasets/yongyizang/RUListening)  (Automated)\n* [MusicInstruct](https://huggingface.co/datasets/m-a-p/Music-Instruct)  (Automated)\n* [MusicQA](https://huggingface.co/datasets/mu-llama/MusicQA)  (Automated)\n* [SongCaps (ours)](https://huggingface.co/nvidia/music-flamingo)  (Automated) \n\n---\n\n## Inference:\n\n**Engine:** HuggingFace Transformers  \n**Test Hardware:** NVIDIA A100 80 GB  \n\n---\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://app.intigriti.com/programs/nvidia/nvidiavdp/detail).\n\n---\n\n## Acknowledgements\nBuilt with Audio Flamingo 3, Qwen, NVILA and the open audio-ML community.",
+  "cardDataParsed": {
+    "license": "other",
+    "language": [
+      "en"
+    ],
+    "arxiv": 2511.10289,
+    "tags": [
+      "music/songs",
+      "music understanding",
+      "music reasoning"
+    ],
+    "datasets": [
+      "nvidia/MF-Skills"
+    ],
+    "pipeline_tag": "audio-text-to-text",
+    "library_name": "transformers",
+    "base_model": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoProcessor"
+  }
+}

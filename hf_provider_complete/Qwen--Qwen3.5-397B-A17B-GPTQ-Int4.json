@@ -1,0 +1,1012 @@
+{
+  "modelId": "Qwen/Qwen3.5-397B-A17B-GPTQ-Int4",
+  "author": "Qwen",
+  "sha": "df333de344e06b492063d1ca04e2d4ee878f7595",
+  "lastModified": "2026-04-24 05:52:53+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_5_moe",
+    "image-text-to-text",
+    "conversational",
+    "base_model:Qwen/Qwen3.5-397B-A17B",
+    "base_model:quantized:Qwen/Qwen3.5-397B-A17B",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "4-bit",
+    "gptq",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 35,
+  "downloads": 8029,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3.5-397B-A17B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": "https://huggingface.co/Qwen/Qwen3.5-397B-A17B/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen3_5MoeForConditionalGeneration"
+    ],
+    "model_type": "qwen3_5_moe",
+    "quantization_config": {
+      "bits": 4,
+      "quant_method": "gptq",
+      "modules_to_not_convert": []
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1635,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11343,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 94454,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 7756,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 4712,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration.json",
+      "size": 51,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 244,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 3353259,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors-00001-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "1dca8a45d541c1dee9dadd1f88315446b6679c347b091be751733188bb9a056b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00002-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "1a886edc559e1fc8e6063f404ad224e39bf29a3daaa2c7b316cac7b1da572b2e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00003-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "29207b81568ffa6607753e6d21cce5c34a0791f598eb8e4da9c0bb4109160b63",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00004-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "185d7e5c4ce564f25a6128f3ee83488df1b81f24e7d109f6a2215e5f2ff92350",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00005-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "a0cd41a4b47a0121ded64d7ac32d1c37256402d6e54401b77caf99aa3093fb6a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00006-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "8e848a2b2c535f726c18a12b44b98a702421484e2d5dc2548ba3b0be8f9a6ce1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00007-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "fee1ad9208e08ece9c3a17a1f19c7d005b2b74ec9a4b72468c585322aaeb07de",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00008-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "6e399460942aeaf45fa8c8f1158091286c928b7443cf34070cb39fff452566d8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00009-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "02dfbfd55a05fb3a2367106af9051ae594496cc2dada5ecd51c01971e033ae61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00010-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "ecb359e0897d5201747d0faf98646e1fa8f90a96e2d765e572b4511febeb6300",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00011-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "e7471cf250e695674e49c5ecb01f1c00d3a26f06604ae4cb1eecdf964155a434",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00012-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "ae6df35373bd528cf6c43a91881880638b0f00dd635734568b21f64e69713ded",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00013-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "157f3f8ada89586ad5f6ec88f358c75b9674b2624feafa62b2fbb40647d9e36b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00014-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "dafa3ef2f597e5faa745cba518cad25d2b9fc539dcf69893921ec93a97499651",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00015-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "06d6d8029e47326aa9cdea9fa9d33f77cbcc02d1ba59330c690e638810ec50aa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00016-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "4d289478b5b79b1b121384c3290b05206c1616641a165327bf1fc2b2560362fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00017-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "6715409fc3cd6ce4c8388dc9875881d75e31a64c72b2c3ffd2a57495def343d9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00018-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "4c4397077d55742484071396c5d1b1d709be392af9d1a1c7e781107a34f232d8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00019-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "15d34f9eba4d83587746047828add5cc9abf02744441eaadc27ae83f6e6a2ee1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00020-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "ef5a905ba4c7fa97cb97c4c0c4bed3f7dfb26e8036a456711c713a0f2e1b181a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00021-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "e52852e502f566e0833fefcabac8bcca79d4b42fcbfeab2b4bf2e61fbe8ebfd1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00022-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "869aa8bd7e2067753e7b9c3e1c5c0a87444b01d53db261951d6d1cbd155ef498",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00023-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "8fcc081284478582b07af716659e0625765aad31212988c958dd9794a255caa0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00024-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "516d0e21e3feb5cc5195c5249f7cfbb3f2bc06af0e94e6e996b2ccbd2d7d092b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00025-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "022772bbcef4a5467c4dcd747e99a68a2da09ed8099f604af0732296cc8b3db7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00026-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "cd5b6b441380c4ea58c7b6144d63875bb9f9ac5094847bd5ac6d4269d01a651d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00027-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "81ddd1ca03a816b806be86c511a270c8d18bb0a476b32d78238035302ee91572",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00028-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "40c46207e01388d427043ff594854bd6950aa13ecc67ed0a752bacdd0c851f61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00029-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "159d6262d0d7de70100bf3703b809d666152b3ea5d605f882bec792176890440",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00030-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "943f915a1e57759093171df749ac957e16baf017c44affc26afb248e90e802fd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00031-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "dde10c6e2fb5f82a7e08f9bf60d02b16bcb3952b061a6ce66c4d8e8e3cb557b6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00032-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "94052dc862dbe8cd756531aeccc243e38b5abd50e9f3d4ed00190db5f466686e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00033-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "a47a0fe26547ef074a3e6bdb338baa642c0bda1dba7b2985ad1146d90d13ad2d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00034-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "048e88a5291fc88f13e2ee8bf3ff1fb74b4d3b742cd5124a17202b40495479ed",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00035-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "43f6e01924d14903de2f6defc124b1602bac45976fcad9b3f3ee04ec90592673",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00036-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "87ac0c8849b86b741ae52d8a07c8ba90e2e2d0bb80fd3417816d537f2f43edb8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00037-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "5eefbb734b907ae75f299766804767fc186edbb9009c92b9acd52729378bf0ce",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00038-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "7328be01dda6e94f18f9f5cad5731d0fe96d107a19ba566384cc69abddbad2c1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00039-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "df8daba4afb5093a168eadccedb60b70f4d56f1c8bd29446ce9d26b6a652b2ea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00040-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "287b164364d05ee55ea3d58921366b810a5ce782fff82f7bd1efbe8229a5eacd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00041-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "0b54eb911103b78e378e6455bb22063cac61c416d9a08990fd6e0bd4b523a059",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00042-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "0fb0577d4743411ce965e8ed7e7fb2d6fecb05aa3e5cb07236dd9a4f8b03dae6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00043-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "658b73fdc52b91ceeac0c3466b33111951a0cb4057d2b177eb34c3e71c5e723f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00044-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "567ccf9b700057516b5b9c92a0e86a60c9f20a93b8466f9bbd25a2038930d1c3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00045-of-00094.safetensors",
+      "size": 2248701024,
+      "lfs": {
+        "size": 2248701024,
+        "sha256": "dbdea9c5d6410562f0522e0580d20f2ce04b4932c9b73714b7a21b10959e8dd8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00046-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "fed4b9206d143cb3203a3f0e59aaea4fd781be52cd9340841db839b7b7966377",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00047-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "237ff0a47a402fbb501bd6b59bb9228f4a860304233bebaa06e28cba43481662",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00048-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "5a7c3123f29c1add73aed2229b6fe5a75215734293d45498c9969acd894d9134",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00049-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "de23d5eb7e19f465980683cce90cfb1e184d3cb7af45a8fc8aed053081400385",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00050-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "eb865ca9e7e185a52c80b8a5b51e077eec42de9ea617a99efc878cac64671b23",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00051-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "63d2d603c82cd51a14f4d952609a0e6f4a8f4bf4793ad59a39f1bf6f2b6dbb0e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00052-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "4c30ea44cef9696a4c2cee58e03ce01a67b5b54470542071bdb77036ff0faf42",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00053-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "672e8b2c1fc05dbabda956132f0d50c80d7fad8e5f0b873cb226ca11aff2d5e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00054-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "46f30997fb2b2ba532d77d2ac83b0283e73d69eb3944eaf8576650f8a470a975",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00055-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "197811dcaa4232f071d9347f646dfc73031dd56e0405559c43b708692376b3e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00056-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "0fdccd42430c985b26936220ec908c86f37cd41c3782eebe0918857f76c29d98",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00057-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "e9b32c28fcf9dbbbdb21cbb22ab4a6b6c35417037446efcc9a477fb09581d477",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00058-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "a829b331a363496e5ab2e61066b791c473c4ba84225b8dcf0536fe68aa0f6de4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00059-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "4d51b62473408c9e9fbe066120188a6ac647e9356d11b7f1559bb244b0b26594",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00060-of-00094.safetensors",
+      "size": 2248705120,
+      "lfs": {
+        "size": 2248705120,
+        "sha256": "a9df8bd6c51c00f8795ad2091ac691b5d6867eab22b3706b81a9f8a501e0d4d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00061-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "3bfdc8b48a259884c27ae6bf06448131354cad25c9d22128dbf7aea18241de0c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00062-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "549d831151030db050e9ab19c966220ef01d633ca0edf1fca4c3563b1c34c457",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00063-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "5e26372ab8f98f0848cfc7f5549e145c41fd83b3f3f214129b78ccaaaf018ce1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00064-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "de2165d3aacc56591bed644dee0615c4cc6c90f037590cc463f252b386eba47f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00065-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "8b17b76e3600c209684af4d04fa7828829e7f1a519bc4bec938fb42c9010bbe4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00066-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "32f31958536caea13aae8087be2faea1b4c3a8b3b0379265d472ff62977d2907",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00067-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "87b56ae55655424d6eb66962f303a1134a711e2c671594f5b400b7b8af1fca9b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00068-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "e1d0319084161bbcdddc8639ea93cf333f0ecadd434f6003212b3a239bfd8519",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00069-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "15555c2f7b49ae8f80056d93b91909272b999089f5aa6c3b066fdd58091a5e4e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00070-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "607ff3cb4c94613a16d8d3ec8a7d7de7c2f80679600b1f77ec9cb56834bd7f3f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00071-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "1c6c24694ec14aa925c8f50a0f59091e44da9601cf6aaf3ac904e3b2a4b08f9e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00072-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "613bdb33e3316fed9753e612c8478e7e2a7672821caa1ebd2aedf48be9043e58",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00073-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "18a418171849c8ae591dac6330e66d625e71c3523653e1484a01a92d50cbcaae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00074-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "c05f4a811460315b8a7caa3b08cb6d52e596e28189c5c993387774a6c17c91da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00075-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "e71679e7075fe1c455adb98f4a6d9fdc49a8eb075fe3190613be26cadc0417a1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00076-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "8f5cf2807445937958dcee49c84d45b529d8a2d0ceb0c331f0b5642b4a10282d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00077-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "babac6c278498f806099a2676bb103215122fcfbdda2af58b4b543b66ed50636",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00078-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "742df1649c8046c7d416ec29e284da5672fb7156abb71bc7a449865e7b6552e2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00079-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "c7b7d1fb24a36fc9f268d0277bb5679424c2b65ea77c17da803db45eb3c99310",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00080-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "0b5369f6028b6071a4fdd245bc6e7e82c6386304fc5bb5e79d000f3a1b87b9f1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00081-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "c73c9f0f1335337b77f32d774023fd26e2f0ae99a244992a3c26b3c6641bd5ef",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00082-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "bb4cf40262743c65a3371ed677081c9d873b0b07c955809d36eb2ad4761a5817",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00083-of-00094.safetensors",
+      "size": 2236122184,
+      "lfs": {
+        "size": 2236122184,
+        "sha256": "2eed94a94ac68d11841a30e5513e2d5610044fee77032c0351845e858a667662",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00084-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "0770a2bc0f3f3ea0f76482db86e7a2b61fb9f9e5a1dea70604543592e8b6bce0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00085-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "59ec19a4071ba1dbbf19ee15a1599a5e4f174671b750c1fe9e150b34c168be08",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00086-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "55c9842d416a41d2b922b81b87ea6a777058358083ea0784b3410d42e712ff87",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00087-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "d440bc5160e67d082700897abe92450966f8fb50864dc77ee3e20e10b34491b2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00088-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "ad0dda0527ee86bb3cf4c583cb7f11a08993c5b30e8f9b79f70e08feedbbcbe7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00089-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "65a0fa8c09a84410357de22164c264492ede92e1c90584f673bf39c96e0a4f13",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00090-of-00094.safetensors",
+      "size": 2236124232,
+      "lfs": {
+        "size": 2236124232,
+        "sha256": "88abe2c5f8e0dec652f332d1db9202fd7944efb8e8f6dddbe5f22f1463211850",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00091-of-00094.safetensors",
+      "size": 9638517720,
+      "lfs": {
+        "size": 9638517720,
+        "sha256": "3633797c27c32b194da65eaff2c5c27eb184bd547577c4124498bb8ae51e670f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00092-of-00094.safetensors",
+      "size": 9658656328,
+      "lfs": {
+        "size": 9658656328,
+        "sha256": "66cd7e6aecdcd4c69bfc7e8c072cbc4ae3771897785279a0ff2da6a0eb4a8211",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00093-of-00094.safetensors",
+      "size": 9663818112,
+      "lfs": {
+        "size": 9663818112,
+        "sha256": "15f424c1a22772238bb0efcf53291f29ec00f5c08d84b644ae54ee31486475e1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors-00094-of-00094.safetensors",
+      "size": 4741119112,
+      "lfs": {
+        "size": 4741119112,
+        "sha256": "75b5c72a8dc8f07946dab6bdccec6663f332b24c9be8c59c215e0eabd5204467",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 45257868,
+      "lfs": {
+        "size": 45257868,
+        "sha256": "f3a03995063801fc5e18c84ceeca2546849a86375e8d9508554dc3f2ffcdc51d",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 390,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 12807982,
+      "lfs": {
+        "size": 12807982,
+        "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 16710,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 385,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 6722759,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: apache-2.0\nlicense_link: https://huggingface.co/Qwen/Qwen3.5-397B-A17B/blob/main/LICENSE\npipeline_tag: image-text-to-text\nbase_model:\n- Qwen/Qwen3.5-397B-A17B\n---\n\n# Qwen3.5-397B-A17B-GPTQ-Int4\n\n<img width=\"400px\" src=\"https://qianwen-res.oss-accelerate.aliyuncs.com/logo_qwen3.5.png\">\n\n[![Qwen Chat](https://img.shields.io/badge/%F0%9F%92%9C%EF%B8%8F%20Qwen%20Chat%20-536af5)](https://chat.qwen.ai)\n\n> [!Note]\n> This repository contains int4-quantized model weights and configuration files for the post-trained model in the Hugging Face Transformers format. \n>\n> These artifacts are compatible with Hugging Face Transformers, vLLM, SGLang, KTransformers, etc.\n\n> [!Tip]\n> For users seeking managed, scalable inference without infrastructure maintenance, the official Qwen API service is provided by [Alibaba Cloud Model Studio](https://modelstudio.alibabacloud.com/).\n>\n> In particular, **Qwen3.5-Plus** is the hosted version corresponding to Qwen3.5-397B-A17B with more production features, e.g., 1M context length by default, official built-in tools, and adaptive tool use.\n> For more information, please refer to the [User Guide](https://www.alibabacloud.com/help/en/model-studio/text-generation).\n\nOver recent months, we have intensified our focus on developing foundation models that deliver exceptional utility and performance. Qwen3.5 represents a significant leap forward, integrating breakthroughs in multimodal learning, architectural efficiency, reinforcement learning scale, and global accessibility to empower developers and enterprises with unprecedented capability and efficiency.\n\n## Qwen3.5 Highlights\n\nQwen3.5 features the following enhancement:\n\n- **Unified Vision-Language Foundation**: Early fusion training on multimodal tokens achieves cross-generational parity with Qwen3 and outperforms Qwen3-VL models across reasoning, coding, agents, and visual understanding benchmarks.\n\n- **Efficient Hybrid Architecture**: Gated Delta Networks combined with sparse Mixture-of-Experts deliver high-throughput inference with minimal latency and cost overhead.\n\n- **Scalable RL Generalization**: Reinforcement learning scaled across million-agent environments with progressively complex task distributions for robust real-world adaptability.\n\n- **Global Linguistic Coverage**: Expanded support to 201 languages and dialects, enabling inclusive, worldwide deployment with nuanced cultural and regional understanding.\n\n- **Next-Generation Training Infrastructure**: Near-100% multimodal training efficiency compared to text-only training and asynchronous RL frameworks supporting massive-scale agent scaffolds and environment orchestration.\n\n\n![Benchmark Results](https://qianwen-res.oss-accelerate.aliyuncs.com/Qwen3.5/Figures/qwen3.5_397b_a17b_score.png)\n\nFor more details, please refer to our blog post [Qwen3.5](https://qwen.ai/blog?id=qwen3.5).\n\n\n## Model Overview\n\n- Type: Causal Language Model with Vision Encoder\n- Training Stage: Pre-training & Post-training\n- Language Model\n    - Number of Parameters: 397B in total and 17B activated\n    - Hidden Dimension: 4096\n    - Token Embedding: 248320 (Padded)\n    - Number of Layers: 60\n        - Hidden Layout: 15 \\* (3 \\* (Gated DeltaNet -> MoE) -> 1 \\* (Gated Attention -> MoE))\n    - Gated DeltaNet:\n        - Number of Linear Attention Heads: 64 for V and 16 for QK\n        - Head Dimension: 128\n    - Gated Attention:\n        - Number of Attention Heads: 32 for Q and 2 for KV\n        - Head Dimension: 256\n        - Rotary Position Embedding Dimension: 64\n    - Mixture Of Experts\n        - Number of Experts: 512\n        - Number of Activated Experts: 10 Routed + 1 Shared\n        - Expert Intermediate Dimension: 1024\n    - LM Output: 248320 (Padded)\n    - MTP: trained with multi-steps  \n- Context Length: 262,144 natively and extensible up to 1,010,000 tokens.\n- Quantization: GPTQ 4-bit\n\n## Benchmark Results\n\n### Language\n\n<div style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:900px;margin:0 auto;padding:16px 0\">\n<table style=\"width:100%;border-collapse:collapse;font-size:13px\">\n<thead><tr>\n<th style=\"padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid #7c3aed;color:#7c3aed\"></th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">GPT5.2</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Claude 4.5 Opus</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Gemini-3 Pro</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Qwen3-Max-Thinking</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">K2.5-1T-A32B</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Qwen3.5-397B-A17B</th>\n</tr></thead>\n<tbody>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Knowledge</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMLU-Pro</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMLU-Redux</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">95.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">95.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">95.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SuperGPQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">74.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">69.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.4</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">C-Eval</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.0</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Instruction Following</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">IFEval</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">IFBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">58.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MultiChallenge</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">57.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">54.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">64.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">62.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.6</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Long Context</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">AA-LCR</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">74.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">LongBench v2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">54.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">64.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">60.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">61.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.2</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">STEM</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">GPQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">91.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.4</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HLE</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">35.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">30.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">37.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">30.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">30.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">28.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HLE-Verified\u00b9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">43.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">38.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">48</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">37.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">37.6</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Reasoning</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">LiveCodeBench v6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HMMT Feb 25</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">99.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">97.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">98.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">95.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HMMT Nov 25</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">100</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">91.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">IMOAnswerBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">AIME26</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">96.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">91.3</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">General Agent</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">BFCL-V4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">TAU2-Bench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">91.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">VITA-Bench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">38.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">56.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">51.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">40.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">41.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">49.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">DeepPlanning</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">44.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">33.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">23.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">28.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">14.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">34.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Tool Decathlon</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">43.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">43.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">36.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">18.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">27.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">38.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MCP-Mark</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">57.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">42.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">53.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">33.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">29.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">46.1</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Search Agent\u00b3</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HLE w/ tool</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">45.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">43.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">45.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">49.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">50.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">48.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">BrowseComp</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">65.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">59.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">53.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--/74.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">69.0/78.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">BrowseComp-zh</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">62.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">66.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">60.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">WideSearch</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">57.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">74.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Seal-0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">45.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">47.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">45.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">46.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">57.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">46.9</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Multilingualism</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMMLU</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMLU-ProX</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">78.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">82.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">NOVA-63</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">54.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">56.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">56.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">54.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">56.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">59.1</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">INCLUDE</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">82.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Global PIQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">91.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">PolyMATH</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">62.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">64.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">43.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">WMT24++</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">78.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">78.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MAXIFE</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.2</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Coding Agent</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SWE-bench Verified</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.4</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SWE-bench Multilingual</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">65.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">66.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">69.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SecCodeBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">62.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">57.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">61.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Terminal Bench 2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">54.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">59.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">54.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">22.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">50.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">52.5</td>\n</tr>\n</tbody>\n</table>\n\n<p style=\"margin-top:12px;font-size:11px;opacity:0.7\">\n* HLE-Verified: a verified and revised version of Humanity\u2019s Last Exam (HLE), accompanied by a transparent, component-wise verification protocol and a fine-grained error taxonomy. We open-source the dataset at https://huggingface.co/datasets/skylenage/HLE-Verified.<br>\n* TAU2-Bench: we follow the official setup except for the airline domain, where all models are evaluated by applying the fixes proposed in the Claude Opus 4.5 system card.<br>\n* MCPMark: GitHub MCP server uses v0.30.3 from api.githubcopilot.com; Playwright tool responses are truncated at 32k tokens.<br>\n* Search Agent: most search agents built on our model adopt a simple context-folding strategy(256k): once the cumulative Tool Response length reaches a preset threshold, earlier Tool Responses are pruned from the history to keep the context within limits.<br>\n* BrowseComp: we tested two strategies, simple context-folding achieved a score of 69.0, while using the same discard-all strategy as DeepSeek-V3.2 and Kimi K2.5 achieved 78.6.<br>\n* WideSearch: we use a 256k context window without any context management.<br>\n* MMLU-ProX: we report the averaged accuracy on 29 languages.<br>\n* WMT24++: a harder subset of WMT24 after difficulty labeling and rebalancing; we report the averaged scores on 55 languages using XCOMET-XXL.<br>\n* MAXIFE: we report the accuracy on English + multilingual original prompts (totally 23 settings).<br>\n* Empty cells (--) indicate scores not yet available or not applicable.<br>\n</p>\n\n</div>\n\n### Vision Language\n\n<div style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:900px;margin:0 auto;padding:16px 0\">\n<table style=\"width:100%;border-collapse:collapse;font-size:13px\">\n<thead><tr>\n<th style=\"padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid #7c3aed;color:#7c3aed\"></th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">GPT5.2</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Claude 4.5 Opus</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Gemini-3 Pro</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Qwen3-VL-235B-A22B</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">K2.5-1T-A32B</th>\n<th style=\"padding:10px 12px;text-align:center;font-weight:500;border-bottom:2px solid #7c3aed;color:#7c3aed;font-size: 14px;\">Qwen3.5-397B-A17B</th>\n</tr></thead>\n<tbody>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">STEM and Puzzle</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMMU</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMMU-Pro</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">69.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">78.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MathVision</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">74.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">74.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Mathvista(mini)</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">We-Math</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">74.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">DynaMath</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">82.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">ZEROBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">10</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">12</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">ZEROBench_sub</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">33.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">28.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">39.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">28.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">33.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">41.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">BabyVision</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">34.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">14.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">49.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">22.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">36.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">52.3/43.3</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">General VQA</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">RealWorldQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMStar</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">78.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">HallusionBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">65.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">64.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">66.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">69.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">71.4</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMBench<sub><small>EN-DEV-v1.1</small></sub></td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SimpleVQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">55.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">65.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">61.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">71.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.1</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Text Recognition and Document Understanding</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">OmniDocBench1.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">CharXiv(RQ)</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">82.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">66.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.8</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMLongBench-Doc</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">61.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">60.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">56.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">58.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">61.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">CC-OCR</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">82.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">AI2D_TEST</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">89.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">OCRBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.1</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Spatial Intelligence</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">ERQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">59.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">46.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">52.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">CountBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">91.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">90.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">97.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">93.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">94.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">97.2</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">RefCOCO(avg)</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">91.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">92.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">ODInW13</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">46.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">43.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">47.0</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">EmbSpatialBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">61.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">RefSpatialBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">65.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">69.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">LingoQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">78.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">66.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">68.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">V*</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">95.8/91.1</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Hypersim</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">11.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">12.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SUNRGBD</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">34.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">38.3</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">Nuscene</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">13.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">16.0</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Video Understanding</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">VideoMME<sub><small>(w sub.)</sub></small></td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">88.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">VideoMME<sub><small>(w/o sub.)</sub></small></td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">VideoMMMU</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">87.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">84.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MLVU (M-Avg)</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">83.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">85.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">86.7</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MVBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">78.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">67.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">74.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">LVBench</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">57.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.5</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MMVU</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.8</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">77.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">71.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">80.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">75.4</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Visual Agent</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">ScreenSpot Pro</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">45.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">62.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">65.6</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">OSWorld-Verified</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">38.2</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">66.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">38.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">62.2</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">AndroidWorld</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.7</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">--</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">66.8</td>\n</tr>\n<tr><td colspan=\"7\" style=\"padding:8px 12px;font-weight:600;color:#7c3aed;border-bottom:1px solid rgba(124, 58, 237, 0.2);background:rgba(124, 58, 237, 0.1)\">Medical VQA</td></tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">SLAKE</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.4</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">72.5</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">81.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">79.9</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">PMC-VQA</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">58.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">59.9</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">62.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">56.1</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">64.2</td>\n</tr>\n<tr>\n<td style=\"padding:7px 12px;padding-left:20px;border-bottom:1px solid rgba(128, 128, 128, 0.15);\">MedXpertQA-MM</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">73.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">63.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">76.0</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">47.6</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">65.3</td>\n<td style=\"padding:7px 12px;text-align:center;border-bottom:1px solid rgba(128, 128, 128, 0.15)\">70.0</td>\n</tr>\n</tbody>\n</table>\n\n<p style=\"margin-top:12px;font-size:11px;opacity:0.7\">\n* MathVision\uff1aour model\u2019s score is evaluated using a fixed prompt, e.g., \u201cPlease reason step by step, and put your final answer within \\boxed{}.\u201d For other models, we report the higher score between runs with and without the \\boxed{} formatting.<br>\n* BabyVision: our model\u2019s score is reported with CI (Code Interpreter) enabled; without CI, the result is 43.3.<br>\n* V*: our model\u2019s score is reported with CI (Code Interpreter) enabled; without CI, the result is 91.1.<br>\n* Empty cells (--) indicate scores not yet available or not applicable.<br>\n</p>\n\n</div>\n\n\n## Quickstart\n\n> [!Important]\n> Qwen3.5 models operate in thinking mode by default, generating thinking content signified by `<think>\\n...</think>\\n\\n` before producing the final responses.\n> To disable thinking content and obtain direct response, refer to the examples [here](#instruct-or-non-thinking-mode).\n\n\nFor streamlined integration, we recommend using Qwen3.5 via APIs. Below is a guide to use Qwen3.5 via OpenAI-compatible API. \n\n### Serving Qwen3.5\n\nQwen3.5 can be served via APIs with popular inference frameworks.\nIn the following, we show example commands to launch OpenAI-Compatible API servers for Qwen3.5 models.\n\n\n> [!Important]\n> Inference efficiency and throughput vary significantly across frameworks. \n> We recommend using the latest framework versions to ensure optimal performance and compatibility.\n> For production workloads or high-throughput scenarios, dedicated serving engines such as SGLang, KTransformers or vLLM are strongly recommended.\n\n> [!Important]\n> The model has a default context length of 262,144 tokens.\n> If you encounter out-of-memory (OOM) errors, consider reducing the context window. \n> However, because Qwen3.5 leverages extended context for complex tasks, we advise maintaining a context length of at least 128K tokens to preserve thinking capabilities.\n\n#### SGLang\n\n[SGLang](https://github.com/sgl-project/sglang) is a fast serving framework for large language models and vision language models.\nSGLang from the main branch of the open-source repository is required for Qwen3.5, which can be installed using the following command in a fresh environment:\n```shell\nuv pip install 'git+https://github.com/sgl-project/sglang.git#subdirectory=python&egg=sglang[all]'\n```\nSee [its documentation](https://docs.sglang.ai/get_started/install.html) for more details.\n\nThe following will create API endpoints at `http://localhost:8000/v1`:\n\n- **Standard Version**: The following command can be used to create an API endpoint with maximum context length 262,144 tokens using tensor parallel on 8 GPUs.\n    \n    ```shell\n    python -m sglang.launch_server --model-path Qwen/Qwen3.5-397B-A17B-GPTQ-Int4 --port 8000 --tp-size 8 --mem-fraction-static 0.8 --context-length 262144 --reasoning-parser qwen3 --quantization moe_wna16\n    ```\n\n- **Tool Use**: To support tool use, you can use the following command.\n    \n    ```shell\n    python -m sglang.launch_server --model-path Qwen/Qwen3.5-397B-A17B-GPTQ-Int4 --port 8000 --tp-size 8 --mem-fraction-static 0.8 --context-length 262144 --reasoning-parser qwen3 --tool-call-parser qwen3_coder --quantization moe_wna16\n    ```\n\n- **Multi-Token Prediction (MTP)**: The following command is recommended for MTP:\n    \n    ```shell\n    python -m sglang.launch_server --model-path Qwen/Qwen3.5-397B-A17B-GPTQ-Int4 --port 8000 --tp-size 8 --mem-fraction-static 0.8 --context-length 262144 --reasoning-parser qwen3 --speculative-algo NEXTN --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --quantization moe_wna16\n    ```\n\n#### vLLM\n\n[vLLM](https://github.com/vllm-project/vllm) is a high-throughput and memory-efficient inference and serving engine for LLMs.\nvLLM from the main branch of the open-source repository is required for Qwen3.5, which can be installed using the following command in a fresh environment:\n```shell\nuv pip install vllm --torch-backend=auto --extra-index-url https://wheels.vllm.ai/nightly\n```\nSee [its documentation](https://docs.vllm.ai/en/stable/getting_started/installation/index.html) for more details. \n\nFor detailed Qwen3.5 usage guide, see the [vLLM Qwen3.5 recipe](https://docs.vllm.ai/projects/recipes/en/latest/Qwen/Qwen3.5.html).\n\nThe following will create API endpoints at `http://localhost:8000/v1`:\n\n- **Standard Version**: The following command can be used to create an API endpoint with maximum context length 262,144 tokens using tensor parallel on 8 GPUs.\n\n    ```shell\n    vllm serve Qwen/Qwen3.5-397B-A17B-GPTQ-Int4 --port 8000 --tensor-parallel-size 8 --max-model-len 262144 --reasoning-parser qwen3 --quantization moe_wna16\n    ```\n\n- **Tool Call**: To support tool use, you can use the following command.\n    \n    ```shell\n    vllm serve Qwen/Qwen3.5-397B-A17B-GPTQ-Int4 --port 8000 --tensor-parallel-size 8 --max-model-len 262144 --reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser qwen3_coder --quantization moe_wna16\n    ```\n\n- **Multi-Token Prediction (MTP)**: The following command is recommended for MTP:\n\n    ```shell\n    vllm serve Qwen/Qwen3.5-397B-A17B-GPTQ-Int4 --port 8000 --tensor-parallel-size 8 --max-model-len 262144 --reasoning-parser qwen3 --speculative-config '{\"method\":\"qwen3_next_mtp\",\"num_speculative_tokens\":2}' --quantization moe_wna16\n    ```\n\n- **Text-Only**: The following command skips the vision encoder and multimodal profiling to free up memory for additional KV cache:\n    \n    ```shell\n    vllm serve Qwen/Qwen3.5-397B-A17B-GPTQ-Int4 --port 8000 --tensor-parallel-size 8 --max-model-len 262144 --reasoning-parser qwen3 --language-model-only --quantization moe_wna16\n    ```\n\n#### KTransformers\n \n[KTransformers](https://github.com/kvcache-ai/ktransformers) is a flexible framework for experiencing cutting-edge LLM inference optimizations with CPU-GPU heterogeneous computing.\nFor running Qwen3.5 with KTransformers, see the [KTransformers Deployment Guide](https://github.com/kvcache-ai/ktransformers/blob/main/doc/en/Qwen3.5.md).\n\n\n### Using Qwen3.5 via the Chat Completions API\n\nThe chat completions API is accessible via standard HTTP requests or OpenAI SDKs.\nHere, we show examples using the OpenAI Python SDK.\n\nBefore starting, make sure it is installed and the API key and the API base URL is configured, e.g.:\n```shell\npip install -U openai\n\n# Set the following accordingly\nexport OPENAI_BASE_URL=\"http://localhost:8000/v1\"\nexport OPENAI_API_KEY=\"EMPTY\"\n```\n\n> [!Tip]\n> We recommend using the following set of sampling parameters for generation\n> - Thinking mode: `temperature=0.6, top_p=0.95, top_k=20, min_p=0.0, presence_penalty=0.0, repetition_penalty=1.0`\n> - Instruct (or non-thinking) mode: `temperature=0.7, top_p=0.8, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0`\n>\n> Please note that the support for sampling parameters varies according to inference frameworks.\n\n#### Text-Only Input\n\n```python\nfrom openai import OpenAI\n# Configured by environment variables\nclient = OpenAI()\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"Type \\\"I love Qwen3.5\\\" backwards\"},\n]\n\nchat_response = client.chat.completions.create(\n    model=\"Qwen/Qwen3.5-397B-A17B-GPTQ-Int4\",\n    messages=messages,\n    max_tokens=81920,\n    temperature=0.6,\n    top_p=0.95,\n    extra_body={\n        \"top_k\": 20,\n    }, \n)\nprint(\"Chat response:\", chat_response)\n```\n\n\n#### Image Input\n\n```python\nfrom openai import OpenAI\n# Configured by environment variables\nclient = OpenAI()\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image_url\",\n                \"image_url\": {\n                    \"url\": \"https://qianwen-res.oss-accelerate.aliyuncs.com/Qwen3.5/demo/CI_Demo/mathv-1327.jpg\"\n                }\n            },\n            {\n                \"type\": \"text\",\n                \"text\": \"The centres of the four illustrated circles are in the corners of the square. The two big circles touch each other and also the two little circles. With which factor do you have to multiply the radii of the little circles to obtain the radius of the big circles?\\nChoices:\\n(A) $\\\\frac{2}{9}$\\n(B) $\\\\sqrt{5}$\\n(C) $0.8 \\\\cdot \\\\pi$\\n(D) 2.5\\n(E) $1+\\\\sqrt{2}$\"\n            }\n        ]\n    }\n]\n\nchat_response = client.chat.completions.create(\n    model=\"Qwen/Qwen3.5-397B-A17B-GPTQ-Int4\",\n    messages=messages,\n    max_tokens=81920,\n    temperature=0.6,\n    top_p=0.95,\n    extra_body={\n        \"top_k\": 20,\n    }, \n)\nprint(\"Chat response:\", chat_response)\n```\n\n#### Video Input\n\n```python\nfrom openai import OpenAI\n# Configured by environment variables\nclient = OpenAI()\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"video_url\",\n                \"video_url\": {\n                    \"url\": \"https://qianwen-res.oss-accelerate.aliyuncs.com/Qwen3.5/demo/video/N1cdUjctpG8.mp4\"\n                }\n            },\n            {\n                \"type\": \"text\",\n                \"text\": \"How many porcelain jars were discovered in the niches located in the primary chamber of the tomb?\"\n            }\n        ]\n    }\n]\n\n# When vLLM is launched with `--media-io-kwargs '{\"video\": {\"num_frames\": -1}}'`,\n# video frame sampling can be configured via `extra_body` (e.g., by setting `fps`).\n# This feature is currently supported only in vLLM.\n#\n# By default, `fps=2` and `do_sample_frames=True`.\n# With `do_sample_frames=True`, you can customize the `fps` value to set your desired video sampling rate.\nchat_response = client.chat.completions.create(\n    model=\"Qwen/Qwen3.5-397B-A17B-GPTQ-Int4\",\n    messages=messages,\n    max_tokens=81920,\n    temperature=0.6,\n    top_p=0.95,\n    extra_body={\n        \"top_k\": 20,\n        \"mm_processor_kwargs\": {\"fps\": 2, \"do_sample_frames\": True},\n    }, \n)\n\nprint(\"Chat response:\", chat_response)\n```\n\n#### Instruct (or Non-Thinking) Mode\n\n> [!Important]\n> Qwen3.5 does not officially support the soft switch of Qwen3, i.e., `/think` and `/nothink`.\n\nQwen3.5 will think by default before response.\nYou can obtain direct response from the model without thinking by configuring the API parameters. \nFor example,\n```python\nfrom openai import OpenAI\n# Configured by environment variables\nclient = OpenAI()\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image_url\",\n                \"image_url\": {\n                    \"url\": \"https://qianwen-res.oss-accelerate.aliyuncs.com/Qwen3.5/demo/RealWorld/RealWorld-04.png\"\n                }\n            },\n            {\n                \"type\": \"text\",\n                \"text\": \"Where is this?\"\n            }\n        ]\n    }\n]\n\nchat_response = client.chat.completions.create(\n    model=\"Qwen/Qwen3.5-397B-A17B-GPTQ-Int4\",\n    messages=messages,\n    max_tokens=32768,\n    temperature=0.7,\n    top_p=0.8,\n    presence_penalty=1.5,\n    extra_body={\n        \"top_k\": 20,\n        \"chat_template_kwargs\": {\"enable_thinking\": False},\n    }, \n)\nprint(\"Chat response:\", chat_response)\n```\n\n> [!Note]\n> If you are using APIs from Alibaba Cloud Model Studio, in addition to changing `model`, please use `\"enable_thinking\": False` instead of `\"chat_template_kwargs\": {\"enable_thinking\": False}`.\n\n\n## Agentic Usage\n\nQwen3.5 excels in tool calling capabilities.\n\n### Qwen-Agent\n\nWe recommend using [Qwen-Agent](https://github.com/QwenLM/Qwen-Agent) to quickly build Agent applications with Qwen3.5. \n\nTo define the available tools, you can use the MCP configuration file, use the integrated tool of Qwen-Agent, or integrate other tools by yourself.\n```python\nimport os\nfrom qwen_agent.agents import Assistant\n\n# Define LLM\n# Using Alibaba Cloud Model Studio\nllm_cfg = {\n    # Use the OpenAI-compatible model service provided by DashScope:\n    'model': 'Qwen3.5-397B-A17B-GPTQ-Int4',\n    'model_type': 'qwenvl_oai',\n    'model_server': 'https://dashscope.aliyuncs.com/compatible-mode/v1',\n    'api_key': os.getenv('DASHSCOPE_API_KEY'),\n\n    'generate_cfg': {\n        'use_raw_api': True,\n        # When using Dash Scope OAI API, pass the parameter of whether to enable thinking mode in this way\n        'extra_body': {\n            'enable_thinking': True\n        },\n    },\n}\n\n# Using OpenAI-compatible API endpoint.\n# functionality of the deployment frameworks and let Qwen-Agent automate the related operations.\n#\n# llm_cfg = {\n#     # Use your own model service compatible with OpenAI API by vLLM/SGLang:\n#     'model': 'Qwen/Qwen3.5-397B-A17B-GPTQ-Int4',\n#     'model_type': 'qwenvl_oai',\n#     'model_server': 'http://localhost:8000/v1',  # api_base\n#     'api_key': 'EMPTY',\n#\n#     'generate_cfg': {\n#         'use_raw_api': True,\n#         # When using vLLM/SGLang OAI API, pass the parameter of whether to enable thinking mode in this way\n#         'extra_body': {\n#             'chat_template_kwargs': {'enable_thinking': True}\n#         },\n#     },\n# }\n\n# Define Tools\ntools = [\n    {'mcpServers': {  # You can specify the MCP configuration file\n            \"filesystem\": {\n                \"command\": \"npx\",\n                \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/Users/xxxx/Desktop\"]\n            }\n        }\n    }\n]\n\n# Define Agent\nbot = Assistant(llm=llm_cfg, function_list=tools)\n\n# Streaming generation\nmessages = [{'role': 'user', 'content': 'Help me organize my desktop.'}]\nfor responses in bot.run(messages=messages):\n    pass\nprint(responses)\n\n# Streaming generation\nmessages = [{'role': 'user', 'content': 'Develop a dog website and save it on the desktop'}]\nfor responses in bot.run(messages=messages):\n    pass\nprint(responses)\n```\n\n### Qwen Code\n\n\n[Qwen Code](https://github.com/QwenLM/qwen-code) is an open-source AI agent for the terminal, optimized for Qwen models. It helps you understand large codebases, automate tedious work, and ship faster.\n\nFor more information, please refer to [Qwen Code](https://qwenlm.github.io/qwen-code-docs/).\n\n## Processing Ultra-Long Texts\n\nQwen3.5 natively supports context lengths of up to 262,144 tokens. \nFor long-horizon tasks where the total length (including both input and output) exceeds this limit, we recommend using RoPE scaling techniques to handle long texts effectively., e.g., YaRN.\n\nYaRN is currently supported by several inference frameworks, e.g., `transformers`, `vllm`, `ktransformers` and `sglang`. \nIn general, there are two approaches to enabling YaRN for supported frameworks:\n\n- Modifying the model configuration file:\n  In the `config.json` file, change the `rope_parameters` fields in `text_config` to:\n    ```json\n    {\n        \"mrope_interleaved\": true,\n        \"mrope_section\": [\n            11,\n            11,\n            10\n        ],\n        \"rope_type\": \"yarn\",\n        \"rope_theta\": 10000000,\n        \"partial_rotary_factor\": 0.25,\n        \"factor\": 4.0,\n        \"original_max_position_embeddings\": 262144,\n    }\n    ```\n\n- Passing command line arguments:\n\n  For `vllm`, you can use\n    ```shell\n    VLLM_ALLOW_LONG_MAX_MODEL_LEN=1 vllm serve ... --hf-overrides '{\"text_config\": {\"rope_parameters\": {\"mrope_interleaved\": true, \"mrope_section\": [11, 11, 10], \"rope_type\": \"yarn\", \"rope_theta\": 10000000, \"partial_rotary_factor\": 0.25, \"factor\": 4.0, \"original_max_position_embeddings\": 262144}}}' --max-model-len 1010000  \n    ```\n\n  For `sglang` and `ktransformers`, you can use\n    ```shell\n    SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 python -m sglang.launch_server ... --json-model-override-args '{\"text_config\": {\"rope_parameters\": {\"mrope_interleaved\": true, \"mrope_section\": [11, 11, 10], \"rope_type\": \"yarn\", \"rope_theta\": 10000000, \"partial_rotary_factor\": 0.25, \"factor\": 4.0, \"original_max_position_embeddings\": 262144}}}' --context-length 1010000\n    ```\n\n> [!NOTE]\n> All the notable open-source frameworks implement static YaRN, which means the scaling factor remains constant regardless of input length, **potentially impacting performance on shorter texts.**\n> We advise modifying the `rope_parameters` configuration only when processing long contexts is required. \n> It is also recommended to modify the `factor` as needed. For example, if the typical context length for your application is 524,288 tokens, it would be better to set `factor` as 2.0. \n\n## Best Practices\n\nTo achieve optimal performance, we recommend the following settings:\n\n1. **Sampling Parameters**:\n   - We suggest using `Temperature=0.6`, `TopP=0.95`, `TopK=20`, and `MinP=0` for thinking mode and using `Temperature=0.7`, `TopP=0.8`, `TopK=20`, and `MinP=0` for non-thinking mode.\n   - For supported frameworks, you can adjust the `presence_penalty` parameter between 0 and 2 to reduce endless repetitions. However, using a higher value may occasionally result in language mixing and a slight decrease in model performance.\n\n2. **Adequate Output Length**: We recommend using an output length of 32,768 tokens for most queries. For benchmarking on highly complex problems, such as those found in math and programming competitions, we suggest setting the max output length to 81,920 tokens. This provides the model with sufficient space to generate detailed and comprehensive responses, thereby enhancing its overall performance.\n\n3. **Standardize Output Format**: We recommend using prompts to standardize model outputs when benchmarking.\n   - **Math Problems**: Include \"Please reason step by step, and put your final answer within \\boxed{}.\" in the prompt.\n   - **Multiple-Choice Questions**: Add the following JSON structure to the prompt to standardize responses: \"Please show your choice in the `answer` field with only the choice letter, e.g., `\"answer\": \"C\"`.\"\n\n4. **No Thinking Content in History**: In multi-turn conversations, the historical model output should only include the final output part and does not need to include the thinking content. It is implemented in the provided chat template in Jinja2. However, for frameworks that do not directly use the Jinja2 chat template, it is up to the developers to ensure that the best practice is followed.\n\n5. **Long Video Understanding**: To optimize inference efficiency for plain text and images, the `size` parameter in the released `video_preprocessor_config.json` is conservatively configured. It is recommended to set the `longest_edge` parameter in the video_preprocessor_config file to 469,762,048 (corresponding to 224k video tokens) to enable higher frame-rate sampling for hour-scale videos and thereby achieve superior performance. For example,\n    ```json\n    {\"longest_edge\": 469762048, \"shortest_edge\": 4096}\n    ```\n\n    Alternatively, override the default values via engine startup parameters. For implementation details, refer to: [vLLM](https://github.com/vllm-project/vllm/pull/34330) / [SGLang](https://github.com/sgl-project/sglang/pull/18467).\n\n\n### Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```bibtex\n@misc{qwen3.5,\n    title  = {{Qwen3.5}: Towards Native Multimodal Agents},\n    author = {{Qwen Team}},\n    month  = {February},\n    year   = {2026},\n    url    = {https://qwen.ai/blog?id=qwen3.5}\n}\n```",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_link": "https://huggingface.co/Qwen/Qwen3.5-397B-A17B/blob/main/LICENSE",
+    "pipeline_tag": "image-text-to-text",
+    "base_model": [
+      "Qwen/Qwen3.5-397B-A17B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

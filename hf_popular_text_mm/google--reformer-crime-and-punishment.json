@@ -1,0 +1,97 @@
+{
+  "modelId": "google/reformer-crime-and-punishment",
+  "author": "google",
+  "sha": "8fcd50a33ea773f3bacf3fecdf193c9ca2c060ac",
+  "lastModified": "2024-02-29 09:53:44+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "rust",
+    "reformer",
+    "text-generation",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 11,
+  "downloads": 92417,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {
+    "architectures": [
+      "ReformerModelWithLMHead"
+    ],
+    "model_type": "reformer",
+    "tokenizer_config": {}
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 1270,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1151,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 116,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config_for_text_generation.json",
+      "size": 158,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 11013576,
+      "lfs": {
+        "size": 11013576,
+        "sha256": "2e4c1cab4d0ce76ef9d6a5517b4a697974cd7aa497879638317cc5391d672c21",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "rust_model.ot",
+      "size": 11014133,
+      "lfs": {
+        "size": 11014133,
+        "sha256": "bd53cf4b3e7b62d6fba0ed57184e7293b2d3d6eb0b0ac6ad0738ec714a9e0b50",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 241801,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 323306,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 28,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n## Reformer Model trained on \"Crime and Punishment\" \n\nCrime and Punishment is a novel written by Fyodor Dostoevsky and was translated into English. \n\nCrime and Punishment training data was taken from `gs://trax-ml/reformer/crime-and-punishment-2554.txt` and contains \nroughly 0.5M tokens. \n\nThe ReformerLM model was trained in flax using colab notebook proposed by authors: https://colab.research.google.com/github/google/trax/blob/master/trax/models/reformer/text_generation.ipynb and the weights were converted to Hugging Face's PyTorch ReformerLM model `ReformerModelWithLMHead`.\n\nThe model is a language model that operates on small sub-word units. Text can be generated as follows:\n\n```python\nmodel = ReformerModelWithLMHead.from_pretrained(\"google/reformer-crime-and-punishment\")\ntok = ReformerTokenizer.from_pretrained(\"google/reformer-crime-and-punishment\")\ntok.decode(model.generate(tok.encode(\"A few months later\", return_tensors=\"pt\"), do_sample=True,temperature=0.7, max_length=100)[0])\n\n# gives:'A few months later on was more than anything in the flat. \n# \u201cI have already.\u201d \u201cThat\u2019s not my notion that he had forgotten him. \n# What does that matter? And why do you mean? It\u2019s only another fellow,\u201d he said as he went out, as though he want'\n```\n",
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

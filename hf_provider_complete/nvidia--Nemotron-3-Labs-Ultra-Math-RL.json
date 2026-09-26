@@ -1,0 +1,2231 @@
+{
+  "modelId": "nvidia/Nemotron-3-Labs-Ultra-Math-RL",
+  "author": "nvidia",
+  "sha": "6849d3ecccbd63f3527d56072a3e9717ec4738c9",
+  "lastModified": "2026-09-11 17:21:24+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron_h",
+    "text-generation",
+    "nvidia",
+    "pytorch",
+    "nemotron-3",
+    "latent-moe",
+    "mtp",
+    "conversational",
+    "custom_code",
+    "en",
+    "dataset:nvidia/Nemotron-Math-Proofs-v3-RL",
+    "arxiv:2609.10712",
+    "base_model:nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
+    "base_model:finetune:nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 6,
+  "downloads": 1062,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16"
+    ],
+    "datasets": [
+      "nvidia/Nemotron-Math-Proofs-v3-RL"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "pytorch",
+      "nemotron-3",
+      "latent-moe",
+      "mtp"
+    ],
+    "base_model_relation": "finetune",
+    "track_downloads": true
+  },
+  "config": {
+    "architectures": [
+      "NemotronHForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_nemotron_h.NemotronHConfig",
+      "AutoModelForCausalLM": "modeling_nemotron_h.NemotronHForCausalLM"
+    },
+    "model_type": "nemotron_h",
+    "num_experts_per_tok": 22,
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|im_end|>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{% macro render_extra_keys(json_dict, handled_keys) %}\n    {%- if json_dict is mapping %}\n        {%- for json_key in json_dict if json_key not in handled_keys %}\n            {%- if json_dict[json_key] is mapping or (json_dict[json_key] is sequence and json_dict[json_key] is not string) %}\n                {{- '\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | tojson | safe) ~ '</' ~ json_key ~ '>' }}\n            {%- else %}\n                {{-'\\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | string) ~ '</' ~ json_key ~ '>' }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{% endmacro %}\n{%- set enable_thinking = enable_thinking if enable_thinking is defined else True %}\n{%- set medium_effort = medium_effort if medium_effort is defined else False %}\n{%- set truncate_history_thinking = truncate_history_thinking if truncate_history_thinking is defined else True %}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- set loop_messages = messages %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n{%- if messages[0][\"role\"] == \"system\" %}\n    {%- set system_message = messages[0][\"content\"] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = [] %}\n{%- endif %}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n{%- if system_message is defined %}\n    {{- \"<|im_start|>system\\n\" + system_message }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- \"<|im_start|>system\\n\" }}\n    {%- endif %}\n{%- endif %}\n{%- if tools is iterable and tools | length > 0 %}\n    {%- if system_message is defined and system_message | length > 0 %}\n        {{- \"\\n\\n\" }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n\" }}\n    {{- \"<tools>\" }}\n    {%- for tool in tools %}\n        {%- if tool.function is defined %}\n            {%- set tool = tool.function %}\n        {%- endif %}\n        {{- \"\\n<function>\\n<name>\" ~ tool.name ~ \"</name>\" }}\n        {%- if tool.description is defined %}\n            {{- '\\n<description>' ~ (tool.description | trim) ~ '</description>' }}\n        {%- endif %}\n        {{- '\\n<parameters>' }}\n        {%- if tool.parameters is defined and tool.parameters is mapping and tool.parameters.properties is defined and tool.parameters.properties is mapping %}\n            {%- for param_name, param_fields in tool.parameters.properties|items %}\n                {{- '\\n<parameter>' }}\n                {{- '\\n<name>' ~ param_name ~ '</name>' }}\n                {%- if param_fields.type is defined %}\n                    {{- '\\n<type>' ~ (param_fields.type | string) ~ '</type>' }}\n                {%- endif %}\n                {%- if param_fields.description is defined %}\n                    {{- '\\n<description>' ~ (param_fields.description | trim) ~ '</description>' }}\n                {%- endif %}\n                {%- if param_fields.enum is defined %}\n                    {{- '\\n<enum>' ~ (param_fields.enum | tojson | safe) ~ '</enum>' }}\n                {%- endif %}\n                {%- set handled_keys = ['name', 'type', 'description', 'enum'] %}\n                {{- render_extra_keys(param_fields, handled_keys) }}\n                {{- '\\n</parameter>' }}\n            {%- endfor %}\n        {%- endif %}\n        {% set handled_keys = ['type', 'properties', 'required'] %}\n        {{- render_extra_keys(tool.parameters, handled_keys) }}\n        {%- if tool.parameters is defined and tool.parameters.required is defined %}\n            {{- '\\n<required>' ~ (tool.parameters.required | tojson | safe) ~ '</required>' }}\n        {%- endif %}\n        {{- '\\n</parameters>' }}\n        {%- set handled_keys = ['type', 'name', 'description', 'parameters'] %}\n        {{- render_extra_keys(tool, handled_keys) }}\n        {{- '\\n</function>' }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n{%- endif %}\n{%- if system_message is defined %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in loop_messages %}\n    {%- if message.role == \"assistant\" %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is string and message.reasoning_content | trim | length > 0 %}\n            {%- set content = \"<think>\\n\" ~ message.reasoning_content ~ \"</think>\" ~ (message.content | default('', true)) %}\n        {%- else %}\n            {%- set content = message.content | default('', true) %}\n            {%- if content is string -%}\n                {%- if '<think>' not in content and '</think>' not in content -%}\n                    {%- set content = \"<think></think>\" ~ content -%}\n                {%- endif -%}\n            {%- else -%}\n                {%- set content = content -%}\n            {%- endif -%}\n        {%- endif %}\n        {%- if message.tool_calls is defined and message.tool_calls is iterable and message.tool_calls | length > 0 %}\n            {{- '<|im_start|>assistant\\n' }}\n                {%- set include_content = not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {%- if content is string and content | trim | length > 0 %}\n                    {%- if include_content %}\n                        {{- (content | trim) ~ '\\n' -}}\n                    {%- else %}\n                        {%- set c = (content | string) %}\n                        {%- if '</think>' in c %}\n                            {%- set c = c.split('</think>')[-1] %}\n                        {%- elif '<think>' in c %}\n                            {%- set c = c.split('<think>')[0] %}\n                        {%- endif %}\n                        {%- set c = \"<think></think>\" ~ c %}\n                        {%- if c | length > 0 %}\n                            {{- c ~ '\\n' -}}\n                        {%- endif %}\n                    {%- endif %}\n                {%- else %}\n                    {{- \"<think></think>\" -}}\n                {%- endif %}\n                {%- for tool_call in message.tool_calls %}\n                    {%- if tool_call.function is defined %}\n                        {%- set tool_call = tool_call.function %}\n                    {%- endif %}\n                    {{- '<tool_call>\\n<function=' ~ tool_call.name ~ '>\\n' -}}\n                        {%- if tool_call.arguments is defined %}\n                            {%- for args_name, args_value in tool_call.arguments|items %}\n                                {{- '<parameter=' ~ args_name ~ '>\\n' -}}\n                                    {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                                {{- args_value ~ '\\n</parameter>\\n' -}}\n                            {%- endfor %}\n                        {%- endif %}\n                    {{- '</function>\\n</tool_call>\\n' -}}\n                {%- endfor %}\n                {{- '<|im_end|>\\n' }}\n        {%- else %}\n            {%- if not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {{- '<|im_start|>assistant\\n' ~ (content | default('', true) | string | trim) ~ '<|im_end|>\\n' }}\n            {%- else %}\n                {%- set c = (content | default('', true) | string) %}\n                {%- if '<think>' in c and '</think>' in c %}\n                    {%- set c = \"<think></think>\" ~ c.split('</think>')[-1] %}\n                {%- endif %}\n                {%- set c = c | trim %}\n                {%- if c | length > 0 %}\n                    {{- '<|im_start|>assistant\\n' ~ c ~ '<|im_end|>\\n' }}\n                {%- else %}\n                    {{- '<|im_start|>assistant\\n<|im_end|>\\n' }}\n                {%- endif %}\n            {%- endif %}\n        {%- endif %}\n    {%- elif message.role == \"user\" or message.role == \"system\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- set content = message.content | string %}\n        {%- if message.role == \"user\" and loop.index0 == ns.last_user_idx and medium_effort %}\n            {{- content + '\\n\\n{reasoning effort: efficient}' }}\n        {%- else %}\n            {{- content }}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user\\n' }}\n        {%- endif %}\n        {{- '<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>\\n' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {%- if enable_thinking %}\n        {{- '<|im_start|>assistant\\n<think>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>assistant\\n<think></think>' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 9235,
+      "lfs": null
+    },
+    {
+      "rfilename": "__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 960,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 10152,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1947,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nemotron_h.py",
+      "size": 13669,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 2735,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 188,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00225.safetensors",
+      "size": 4983097968,
+      "lfs": {
+        "size": 4983097968,
+        "sha256": "b23d219d922674d990d6f51d5865fa701515aca7dd24c09d7b5ac3c52f9ba499",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00225.safetensors",
+      "size": 4991252496,
+      "lfs": {
+        "size": 4991252496,
+        "sha256": "1127265eb16e2e53e6912d66c9a04d4c0760d91e69aa0d458a78d121a60a19ff",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "28111f4fcd00e2a20ec70448ba3a5c37782fe4c19a9f45c3d1b9e3db8668c99b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "df9bdece47a777de6594fc4cccf969284dcdb97fc7850363865adee1d4edf00a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00225.safetensors",
+      "size": 4920152112,
+      "lfs": {
+        "size": 4920152112,
+        "sha256": "58773047dbce518c3162135fb1ab6d8a32ac8f732ba59edb65e77d3be410a60b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00225.safetensors",
+      "size": 4995491168,
+      "lfs": {
+        "size": 4995491168,
+        "sha256": "50e8e92e20fa492f547e8328f25816dc3815092fab4bb5cd5bbe325fe65c2247",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "c17e2b3857b2c89f86a2ded1a563467de2add8b2ed32224400a4aaf365cb45ab",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "7e1d5499027b69443f08f0008ff38be19029616e6368e9863d9101f843f1d1ac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "50d1602029ffa9500408e0cc15ff890ef745cfb26aa5339f80d941f3902f61c4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00225.safetensors",
+      "size": 4987305680,
+      "lfs": {
+        "size": 4987305680,
+        "sha256": "e9b412538bf113dac71bbff0965b8df006959a5589f5fabd19909304c237eee1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00225.safetensors",
+      "size": 4991252464,
+      "lfs": {
+        "size": 4991252464,
+        "sha256": "42c15abe7adcf76652c920c42cc8761d14d43fb6812efa91abc71c5ff362788a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "0330ceae6e61e2d431801f02f92520cb57c4653874d7f22b52027bff7a5ad0fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "b1f5df87ccb587062bf1d82093e8465f1c89d084dbffdc3a2e72cd3f4285db41",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "b0f0c75d19642c2ec150bdb3d4ec37d59a3df5fce29a2d35332ce824444fe447",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00225.safetensors",
+      "size": 4991515208,
+      "lfs": {
+        "size": 4991515208,
+        "sha256": "483616666c34c100e92e6620b64d9004e76d596df94fec058d351c5fb9cb403c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00225.safetensors",
+      "size": 4991252560,
+      "lfs": {
+        "size": 4991252560,
+        "sha256": "2510393315fd877aafbb7252102fdf868bb9575d372b7d69323fada45a2462c6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "20e2debabbfee3df838544d9b3e1637dbeaeffd1996d0a8380ca306984769e88",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00225.safetensors",
+      "size": 4991252600,
+      "lfs": {
+        "size": 4991252600,
+        "sha256": "80efc221dee4ae44c52200348c10b137b027cad842b65df948b2b3624cbc87fa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00225.safetensors",
+      "size": 4987305744,
+      "lfs": {
+        "size": 4987305744,
+        "sha256": "7e21cc37812b873f98ec802f46c63daf9c3db2fa0d78fc018cc59ca031821ae9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "85a6c6fe73f09ed5f4721430e2b5945860847881d27a831f63d8c7dba21af3a7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d581a7ff71a91c1a37bbb12040d7bbb290c2e5d7bae0a9abf9626a7fd1f817e4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "075fb4fa0488ed53494648fa115f1b2411475c2d9e1c4809c2da8f42c2c83b8b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "4bfaa1bf7382b1108cb5a5f984f96619a1fb7a0451eebf5d9150b6e91f0d03cf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "bb4980c32ed6c8f16225e66627b5cbeeb230a53a0143dbc40cb77470d7924a23",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "7903e5bdf84f53e795080be12c48f80bad2c50961d8e315ebc66e761f1f9d4be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "73894ef00bb5a2d179f34eed11de4e463bdde5eb7d52c7907cc79f233bbcad7f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "effb0bc0420bd0763fac3ac7b5f3afc4f85e0747aba7b50b68e8d84eebf04255",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00225.safetensors",
+      "size": 4966334304,
+      "lfs": {
+        "size": 4966334304,
+        "sha256": "a365517c81a1dae0bf3c2f4c7d1c3786f57dec445334273f0b911944f0d40f93",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00225.safetensors",
+      "size": 4995462192,
+      "lfs": {
+        "size": 4995462192,
+        "sha256": "cd02c4e1e8e37488d96c9d25a616d81c439e986ac226def558c47712ba41c230",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "252868d052f9d5ea4a9c72d31745715412cb1f4b6ce475f059663c96bfdc331c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f03cf4faf09b17857e8c532b44ca6b30407ccf2c88d5f7fa75078b6dde39e27c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "457fa7ddb41cc75b1e18bf904cbef9812620bde2c39290f6f6fc1caea58270ce",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00225.safetensors",
+      "size": 4987305848,
+      "lfs": {
+        "size": 4987305848,
+        "sha256": "cb1a1afe693c538c878e9f97d6a429774fb0ade13a674646f74dafd37d6b6514",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "9f14106f36d042eaf7aad06f382cdd488fe043151b653e7f571273dae402da0f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "38c5749b78732f4cca8c4276b0c1a3be81d9bdb77287b290c3e2f81ae7607a1b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "21399e06ab82879000c029f3e03b9c224488edd895d728556acc459b0d4383f2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00225.safetensors",
+      "size": 4962095640,
+      "lfs": {
+        "size": 4962095640,
+        "sha256": "06426dbcda29643afa84ebcc5dd92cbe13713f150be6af10f52dffa8a4ddaf17",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "259fc6ec681681500010261a79f7ebb64ffa38d042dfed26c566b2bd1eda0edc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "908584b95c9ff22250e13079773735cec1f4aa33041175113428553ea88cb0cc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0cd5ae199a8d9468abc8e8d5cb655039fce9a968ef9a37580b753c6f301605c4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00041-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "db376c52e892605b2a93edac0520f6111752634e3de853584c302a572fcc86ac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00042-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "9ea3b2d49728a36b5a74ea3757cd71f53c0e4470ab51b3de6021ff65f2d7833a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "cd8f8f0324564f9bdb8e69f6b243118afbcf37c8530115f57cc20085981b45e0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "223bdf0f1b8fd83a05aa3f9de06875865757fed9ba6c5d9422ad76f3d4e6104d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "30f30d43e148952f42b55a927a3f1a31d9a7de9f42b29a49385b2f2856e0f201",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "3848fe22c7ecc2ffb681f71ce50640fbd866cfc1222598f7306cff4495573c96",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-00225.safetensors",
+      "size": 4991515392,
+      "lfs": {
+        "size": 4991515392,
+        "sha256": "529c59ca072069ba8a51ac4000620a04ec13e7e983a86d5397ea09d098f24b2c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-00225.safetensors",
+      "size": 4991252800,
+      "lfs": {
+        "size": 4991252800,
+        "sha256": "df0b3427ee79070f0f56db4c4ab37672467c630289488da523668d7801f4e284",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00049-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "a7aa3bb76a0ec8e5d4490822729d805fb8904a0f2ba389dcd95ede12551f6027",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00050-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "2497a061d7adbccb5c7f77d5204d6e6a8a6acbdbed543fc38b1e2d39bef7c2cd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00051-of-00225.safetensors",
+      "size": 4987305912,
+      "lfs": {
+        "size": 4987305912,
+        "sha256": "3b510aed17df63011ee31f4d27b290c610edea1e17a4b2de862cb04bad316cac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00052-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "234f2b93482f0881d1b660d4ba07d55bae2d52b52a6088a86be6e2ee31aeeff7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00053-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "8d9d814d93bd006d419fe3ae64bb38e6dfc8b48d7556dfc4beb86685780a5ecd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00054-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "5ebaf75e5ad43099a3ba7fec02f1e3fdbcb95ba1435893e87ceb605f31decce5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00055-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d251548334532e928615077dcd2256a28d75bb6fadc86d15f221a4ec027de203",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00056-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "58ebbc182764f609cfce42ca1e80c79fdf2867f1770f7e1e126092dbee043673",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00057-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "4e3a4c9518e46ac3413a956c69be91db5ad3a044d8398aa61e41c724c28f6d4a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00058-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "541bde1dc11e72e04680dfa7a0a58bd6524ca7325e52eef8b37b50ea6b016b25",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00059-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "03f95cb65b1975dab2d85d9447af8391e8daea219a088d2cb9e8bc33c5d59294",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00060-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "3a30a181a416e1c35ea8106970475f3e67bac5f6e827114c3a60980a910cbd90",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00061-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "03ca2fbb968828ed04ff222b8eac3b6465d5189309110054c3e8a1f3a9eb3c71",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00062-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "7c7777339e974007cb198421e46d0e8e1e94035e59d6c3d237989722a2cf5a92",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00063-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "691c941ec803a1c6977330dff220beeb87a3317be481a3caf8a32d0626ae42fa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00064-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "25af9f0fb54cd3ed7b6d446a0c5cba8530d021bb71c4af9810c5ab9a2996f6e3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00065-of-00225.safetensors",
+      "size": 4991515400,
+      "lfs": {
+        "size": 4991515400,
+        "sha256": "1d909c3f313f3f8525462b0e017de0b7cdbb78de29c3df3d669bc1fa026ce115",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00066-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "9e70d55b5699d8b16562761203e87cdbce65537e448022a943c7759ac06391ea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00067-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fe36684ec7aa3d516aec33cb8aafc5586bacc249a5b89eff24ed6b7da5117c87",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00068-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "edbbdde1705c1452f1e90ce3b8f9506259d94d542b1e5e09243c41553a5ac4bb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00069-of-00225.safetensors",
+      "size": 4941123984,
+      "lfs": {
+        "size": 4941123984,
+        "sha256": "8c9efa4cb60cc334d5b3736ebfed6b9cc7f2f7db943b37c49b76d5d4a150bcef",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00070-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "51a8c820a0cf9d5b470d338b11557b60ccba85b4dd8a0b3056b5e1161290f1d0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00071-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "214451d422b77c92a4410b56e9e671b68542cbf862f2d846ae87de2912514458",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00072-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "f044e03db0c8a0baccf902b0dd0e392cf8b4cfb11326aba85c98a1c03ba3bd66",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00073-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0a1c6524d115e1ac81ac010f67bac95fb9b15e1353c488e1c58646085b646761",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00074-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "6a0639f0cdf57d2b9d087048528e55ca57b7c3df204a50d250ee66b0848bc8f3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00075-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "d854bb65d917e0caa34da5db061bd877439250878afc9f3d8538a09857daff7c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00076-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "481ccee8de2db3ae15dc9d0459e37d3a54686a190bf67bda1fcf99846206683a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00077-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "8a28fd1b7bf6e7e2515b71c9753a9dc1d131fd7c9c0998c07edeabdc0e798ae2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00078-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "9ad859266dcd7f40117d63ad6d9bbbe9ef5ef989b976f14f06c26e05e4f195fe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00079-of-00225.safetensors",
+      "size": 4991515392,
+      "lfs": {
+        "size": 4991515392,
+        "sha256": "abbef5020bea31311a7cabc863234a371d8a62e1176cb5aa9b64860452f35f7f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00080-of-00225.safetensors",
+      "size": 4991252800,
+      "lfs": {
+        "size": 4991252800,
+        "sha256": "2674b3950ea00e199b3ac476e90aceb1ee08815ef54b7c25193ecefaa534588d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00081-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fa002a8e634cf0c859a24790bb0034b2430f4d7385008be8e8c91d799897c561",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00082-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "36ad2813485840c53783b4423b5bc13c5043d672521a6ef17fbd709d97920091",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00083-of-00225.safetensors",
+      "size": 4987305912,
+      "lfs": {
+        "size": 4987305912,
+        "sha256": "bebdf185269ae5a2c675f6d712a5c91cef6404f716652544022436c94374756d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00084-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "368e29f3f50137999d169924de27107ffee392073407fe69c4edcb4fda9defca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00085-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "619f0e8891a07e0c3ad81f49f6f66c6b548d4fbbdbff6ef92041e2f726f14841",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00086-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "e1fa1f015426912595c3c348a3252d6c05ad832312e0edb571321b9a55ebfb59",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00087-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "98c56c96ec903a2a59cb4d4547671b9de60a9193442ffa27d423e8db47d22226",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00088-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "fc8fa764460661317f052f310219d7dffe1a55518325dcb34bf797f254c445e7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00089-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "8a8450f7d4125c253819b9f926a422bbfd4946531ee359bae7d07620b3464097",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00090-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "cb232dbbd029d8316040fe843ae93494e5b851c322488aa3e753933e309d4838",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00091-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "34a10f833ba76fcb8e4eb0fde36f3fadd1947d459eeddd92b83f3c3ecfac1f82",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00092-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "bd114570c579de3945c3f65a087abcdc427832d7f3f4d02144ce36ea70b9fc21",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00093-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "f573df1fdb1bf1641f1f3e61643321d09b3962273c600e485cb465fda5bf6f2a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00094-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "3855c9eecda5fab4241c58768f8470e75685ecfac3ff58def8f93954a9a4e765",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00095-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "bf2b798ae96b03a837e8476d2595a8a16319e839e38f6989a62cc08f93bc7898",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00096-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "87b83df868ad8d302b750dd80be7b681124fc429062dd44d3da920443a629c61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00097-of-00225.safetensors",
+      "size": 4991515400,
+      "lfs": {
+        "size": 4991515400,
+        "sha256": "335fae5e291a44f6980933905eacac09b430a08e1f494ecd030e817e1ea2ba89",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00098-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "f0533bf951c74c4975f881892fc4ea838f16b8cd28c7497c84194f2b81702232",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00099-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d681db678e56dd3220b5f45177440473575595936764075899fa326f13a4aaf2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00100-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fd1fae3201192030e0c1924cc8839bc533b07450e3f0b8033840b617e819cc80",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00101-of-00225.safetensors",
+      "size": 4941123984,
+      "lfs": {
+        "size": 4941123984,
+        "sha256": "f0d6630c68283d289069b3c2253706728058303b1413447268ea19bf2c48e607",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00102-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "0126e785553345040cc41e26bf683b26b5d9930e4e2e81f9d0e3fd59b9bed389",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00103-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "724316a77bc0b6c3d6cc428b779a17c36c39378aa13efba60674662ced5b7bbe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00104-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "964f8f6c0dbb8f488533fa67b237c97cc167a75947318a61048f3f57b2df8753",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00105-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0158c36933944dbd102e2364a87381135998e92f8c745e6368ad6233a6a3e057",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00106-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "b270d63c447bdc455e5ff835934c868310eda7ef94a40980f2e990f29a7d78b2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00107-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "7ae55d6542d2c8b0bfb49dee0f79ab78864585c7102a183a1110d27aa4a2193e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00108-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "326530df2acb4f816ae4fa899dc1dc8ad2d84d44c8b4bc76555cf5a7e5b59c07",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00109-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ffc96aaece11a84ef8ec6316f999e9c5f88e7bb43052e37e9b92a3fed54ff145",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00110-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "2180284210e59e5b3edb27d18fbca115c014d7cb7215f022469b596d8608ba95",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00111-of-00225.safetensors",
+      "size": 4987305824,
+      "lfs": {
+        "size": 4987305824,
+        "sha256": "d50d335f5024f620fc75de30eda62df76d450f70dd6b1da4a4d62d6c49fd4426",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00112-of-00225.safetensors",
+      "size": 4991252808,
+      "lfs": {
+        "size": 4991252808,
+        "sha256": "636e921a9c083cfcc2fd3936790e66e8125f201bcdd4d9015d7ca243e5d05339",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00113-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "86bbfba4b490778553a6d703c64ce6acfc952bdbed7adf03edd9583cffa6904b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00114-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "c8121d56ee14b41157797bf49e6cdf3d86ca5b4c3e9b0d666678b0abab8321fd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00115-of-00225.safetensors",
+      "size": 4991515464,
+      "lfs": {
+        "size": 4991515464,
+        "sha256": "17199d9ac0ce945534b6a6689a252796c2414f473bfe9426bb2d0d9158dd5b88",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00116-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "1b1e406832a654fd06a4dbe07af285635c1f9b62bf5ffcd9f217ac709d8ad8b0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00117-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ff2cd7f37e35fc6135055eef9f90cd5cf1ab50c8a711d1e0c2013700940d9bc2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00118-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "82fe57f65eb067221137f720b605678e58394ab102c2e382510f2258be4da59d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00119-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "8bf2b0135fefe3eda46214dd192b329ad642d45fbdda1f85da2e53711e86c1a7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00120-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "2d7e3f28e3a0dfab2dfe392318e76f22cb2f801e61d5d219081904eddb333b54",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00121-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "7c6863f0ec860b1358e89ef7105903a06faad441d514a9c14f84ca35da7a0278",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00122-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "8eb096d2684a1f9fc5620bbd3711c3fe2adc94bf020af911524f9583f187e9e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00123-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "8777aeff901e8c99fae7ee02ea878f7f284e0873d1e68b8d755be20b8c308ecf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00124-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "1165ea3bc5f4340ddce0301f96ef67ce8e6575ce9807b4dcedbc136d2f35223f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00125-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "4a94940d35e61953b0c1a1501ce333c4eec65bf3fad37a852228139f6bf2d2f2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00126-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0eea9d070c65a053ac86c8e6a136dcd1f5cb98875421ae15036d4799c8b0b8d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00127-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "61e6011ef675bdeaac4e2cdc4cc56eee99bbbdfb7d80ff286c202993873a2f9c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00128-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "7f0e70c0ff113cb8139d520cd5080b51141e79a2b161c4085a1d1e32dd67253a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00129-of-00225.safetensors",
+      "size": 4991515400,
+      "lfs": {
+        "size": 4991515400,
+        "sha256": "1f068f42c9ee33a5355055e5b1cd23ed9c8c72467e0f01440451656bb29f5938",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00130-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "8b0e6869f078ccba4a238ab45d3fb3d2287b71e8c8f8a1c19c56242b5cb8507c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00131-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "b5fa9095bc6c2e36d5c81d3c73ad22e34151a5ab801521ce9f006cbf6693572f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00132-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "38a607341a14b225d61895580165e0f63155cfaf1d3f2d6315f7236ae671827a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00133-of-00225.safetensors",
+      "size": 4941123984,
+      "lfs": {
+        "size": 4941123984,
+        "sha256": "22d4bb77fa88d6aebf0b3fe93d32255120378c5a106fa092b607916728a821d9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00134-of-00225.safetensors",
+      "size": 4995491376,
+      "lfs": {
+        "size": 4995491376,
+        "sha256": "8fb982c9d64b058c169392a87f5efd9a9ec694d51ecb8b1ec3e08cbc96ff3f67",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00135-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "47b5a9730b3e0cf8d7aeecb6935798c731a88c7c83bd1d63572c7e25524289f6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00136-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "343ff88d66a48d5af0f9062ba43f2f6a3321bc5aef76cf8c8837dcb89c2bd371",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00137-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "e65dfd527161990910490d03f46b2fb5243ca49ae0b5776aae058b8d57c62197",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00138-of-00225.safetensors",
+      "size": 4987305872,
+      "lfs": {
+        "size": 4987305872,
+        "sha256": "15a0d42459106acca217cae34c60aca87acf4d7b59f4a9a38e6f2a2056577d58",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00139-of-00225.safetensors",
+      "size": 4991252704,
+      "lfs": {
+        "size": 4991252704,
+        "sha256": "a653ba01cbb7bc1909c96611a7f18ae231e082c96f30698a26a8d22fec5453e6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00140-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d4b8cca71a0724025a8c2b6dc273304b2acc49d434fe64b09b3353cde816ca00",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00141-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "fef8f0ebeb48a4b75f8c17ccd64537ae574ea25aed6458975807896afce516c3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00142-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "65944d4ade6a9b90282702b67264cc3a52856ebd707fbca3dd3dcb30e16fc31a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00143-of-00225.safetensors",
+      "size": 4987305824,
+      "lfs": {
+        "size": 4987305824,
+        "sha256": "39b21b6d6c6aa101c5f90d3d37cddf2d0becfb619af04f41f0aacc19ec3a729e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00144-of-00225.safetensors",
+      "size": 4991252808,
+      "lfs": {
+        "size": 4991252808,
+        "sha256": "847a5deb2cb9f1fafadde84f793f2bf29ac4f80d19e44e5e2b77ad2d110e6164",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00145-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0082bbe982ebaef52543757df03764edd34b270c335e5f3899a1ef838bbfc3ba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00146-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "bf0c6f2810d729c94b091b8d102bc30c06b449e46ea09a098b16e471a6276ee1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00147-of-00225.safetensors",
+      "size": 4991515464,
+      "lfs": {
+        "size": 4991515464,
+        "sha256": "f0496850f713aa85e229c04012e83faa2c9c36d3acf95f5e153e72cdb5c5a70f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00148-of-00225.safetensors",
+      "size": 4991252664,
+      "lfs": {
+        "size": 4991252664,
+        "sha256": "20ed5c155e2af65225a246a1ae0b2684c010d8a8ca1ff2862ca41f143437f119",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00149-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "a3848eb9870a59a67ddcad70bdc20e189ae2915d3b7703077e3741018a5abc1b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00150-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "05f86d8bb7d6db4183e7b54d7648f0debe417e00802698164f748af6965760ca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00151-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "33222f0a8f2026f884ad4e65a8b60f6d4cf5b296ecbd665be8e2abb8ebe4d97c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00152-of-00225.safetensors",
+      "size": 4987305808,
+      "lfs": {
+        "size": 4987305808,
+        "sha256": "9d07b82937f503d97383be0ea2053125aeb11cdfc490cace61872eeed9d98cb7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00153-of-00225.safetensors",
+      "size": 4991252776,
+      "lfs": {
+        "size": 4991252776,
+        "sha256": "08d1712532041a747023650fc26f8d09657c301f21a7510ae4e937e76df02e31",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00154-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "2582f77dcf34d77b5dea223432d5571346cbb696f89b911c5aac946355a32edf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00155-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "cebaf1b02d87bb9a90083c9375d7c76af885d93a291d836f3b1b520143b5f318",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00156-of-00225.safetensors",
+      "size": 4987305952,
+      "lfs": {
+        "size": 4987305952,
+        "sha256": "d34adc9c2eeeab8ab73fa3db8a10c07ea36abcebc3f78690f32c24416b1d0776",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00157-of-00225.safetensors",
+      "size": 4991252624,
+      "lfs": {
+        "size": 4991252624,
+        "sha256": "8fd9c2fa2fea86a5255e3980536d3056813fd0ac9868fa4ea34a49310dcfa8b2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00158-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "5236b66e321b8461b411bc05b9436968f12ed070ec3153d58f399fcb7b3cc71c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00159-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "90e1c7700865018559cd01ba2184711355214ac5588452944dce7b332eeadfdb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00160-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ea8cfd96213234d954c8ec4cc3de6c199f5544d92ee22b4431760415f54fab11",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00161-of-00225.safetensors",
+      "size": 4987305832,
+      "lfs": {
+        "size": 4987305832,
+        "sha256": "1aed933ccf74bfbc2a0111bf2f3288b966b33a2f1f238b8cf402154afe72f8a5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00162-of-00225.safetensors",
+      "size": 4991252744,
+      "lfs": {
+        "size": 4991252744,
+        "sha256": "f77a5ead58d6b1bc0138e3a7a5bf0d07f9e9a177cdd2f7d03c6d5e9e392d0dfd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00163-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0beb086b2e3c7a9b1b3d3dcbb7b9f3b76eb1c558cd6cb2c677768dceb9fc6474",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00164-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "63b6ced1d30b92ee483cf0a9481a3a98bff1ae269fef12c62c1c7c153da03f1f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00165-of-00225.safetensors",
+      "size": 4668492520,
+      "lfs": {
+        "size": 4668492520,
+        "sha256": "8a481ac278dd6e50b54c23060e37987a7b0e6e562157e3fec9e6db6de8f996fc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00166-of-00225.safetensors",
+      "size": 4999700952,
+      "lfs": {
+        "size": 4999700952,
+        "sha256": "89502c885f8479e2b60777d2251938e80e3278c76823f33566520543cf8731c8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00167-of-00225.safetensors",
+      "size": 4991252824,
+      "lfs": {
+        "size": 4991252824,
+        "sha256": "10965cf34b5e89c9cc7310ca08eabb0a346e6debd95df47081c900084bd982ac",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00168-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "d88831fea3169d572251ff95cfe7f0e0a7aac9ab031115f58eb131f0429f28bf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00169-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "276219856f699c68cef88e3703f7f34f73f65be28ce3ea301221510ecd74c1db",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00170-of-00225.safetensors",
+      "size": 4987305888,
+      "lfs": {
+        "size": 4987305888,
+        "sha256": "6b568ef73903ce4004a232bfd572e98c794ad6475af8a8aecfcded789832941a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00171-of-00225.safetensors",
+      "size": 4991252696,
+      "lfs": {
+        "size": 4991252696,
+        "sha256": "cbb6f5e53dcccbd8ed205f51bd9d23bb77f083b8d874c2fe00924f7282cf8217",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00172-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "470197a946d98be4ef38880f483d55ebf178886546ea5a6bc61501679d9f06e4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00173-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "a707dbf8536b5a19ad9c420493d604aed4391059caa5283d0327de069232eb4f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00174-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "323874ac6839078807813fca1ee809ce73e2b087a1f9861c888bd57348684455",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00175-of-00225.safetensors",
+      "size": 4987305816,
+      "lfs": {
+        "size": 4987305816,
+        "sha256": "85c8bd8fca8b6c0e19b1ba6607def17212d40325a062e6ff0528d7f96afc00c4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00176-of-00225.safetensors",
+      "size": 4991252800,
+      "lfs": {
+        "size": 4991252800,
+        "sha256": "8eb9fdb4cc17bc955eb669a06228d2f23e3d149d72b267ace8ba6fe5ca2c8922",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00177-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "1b6b421b01141a91c11a2e2ab6945c903c4c56af8f5759321e603091f3037aa7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00178-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "9d49a173b65a9bdb002f3ac940a38b4277fc83e51850272e340b001172c44ef8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00179-of-00225.safetensors",
+      "size": 4991515488,
+      "lfs": {
+        "size": 4991515488,
+        "sha256": "bd76de6cabc0786c4d845f1558962bf167bdb01147f5d2cf09fa56055968f120",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00180-of-00225.safetensors",
+      "size": 4991252648,
+      "lfs": {
+        "size": 4991252648,
+        "sha256": "4d82c6b893fbad62facc47d66da0c5d1ee965c06101807e06d860e8239a710f3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00181-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6f68aa685c371e8534383f3d9acea71739ac90224bd32045fd3b682d8cf7d5ec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00182-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6c522540c59832538cda9b813beb5fc6d0220a383563fd6f04dfdbcfc8a13eef",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00183-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "6a1108b62fe6741c5a6106f02720de63ef8e80e6d88aecb1a4a98a0fcbba534a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00184-of-00225.safetensors",
+      "size": 4987305816,
+      "lfs": {
+        "size": 4987305816,
+        "sha256": "4df18511f21d000c3c71c09d4aba5a2dbe10861734eaaedc51a1be6cfbea628a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00185-of-00225.safetensors",
+      "size": 4991252760,
+      "lfs": {
+        "size": 4991252760,
+        "sha256": "70e4c1f9c757023296e0a4cd55e2dfa6c38b172716f3605b7d35b8b53b791d86",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00186-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "9a7421e12122373af956b1500b7f30f8e91cd4b6d7113fc3b24d92663991ceca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00187-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "367024e70903796cc654419a0529b2392f797c5312883541b381112a15951edb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00188-of-00225.safetensors",
+      "size": 4970513704,
+      "lfs": {
+        "size": 4970513704,
+        "sha256": "f09abbfc40f1302113f18e71aaa3acfc07aa6b0ce859be725ecb4232005f0276",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00189-of-00225.safetensors",
+      "size": 4987073248,
+      "lfs": {
+        "size": 4987073248,
+        "sha256": "7f4ae0463a3e30c70fb584fbd1173a4f053bf12fadbe52d8745550b39ff69c91",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00190-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "2feb0f43e11cc70a321204d8135310a49a94de3242979f92816a3571e0500918",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00191-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "a51b2040239ce019c796b2261b549974a5fb72ec771da8ae05d6ae21f80fd3ec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00192-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "df3bba0b19583909a7f263371180d307f2a1e0b3e51ac3d5465fbb142dff6316",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00193-of-00225.safetensors",
+      "size": 4987305848,
+      "lfs": {
+        "size": 4987305848,
+        "sha256": "f8c69fbf4ce33eaf265460e5f85764bbb44caab65e29562097f8ab0c04045072",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00194-of-00225.safetensors",
+      "size": 4991252736,
+      "lfs": {
+        "size": 4991252736,
+        "sha256": "dfc65799225318a702c67d0cb59d0fb9ae5b8a2334143c53e66f604be6b85d57",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00195-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "44a95b37b3b1ab7758e072ccdf198a8944b0bb406488181e221e2e9fc764f781",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00196-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "0d53c78c5ca389beb1b4277de4874528e4f1b9d66cd0de923c2576eee712e011",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00197-of-00225.safetensors",
+      "size": 4962095640,
+      "lfs": {
+        "size": 4962095640,
+        "sha256": "b9fac3189b83ab15ffe064d63536914aec453480209ac6d1a4e18db9f50c66dd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00198-of-00225.safetensors",
+      "size": 4999700952,
+      "lfs": {
+        "size": 4999700952,
+        "sha256": "17ef8b8250a99b14d11f73f4b5dd45f8cd7ca33f0db9a88ad6caa2b4d69ab3b5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00199-of-00225.safetensors",
+      "size": 4991252824,
+      "lfs": {
+        "size": 4991252824,
+        "sha256": "b11bc4b6e47f5b73cd9aa64ae98302319a99d408ee008bcbd73df0e45a34ff95",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00200-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "be1d9b057132d6af23d351fa7978c6ca344f30cc75fe3e8ba37d12b16ddf5030",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00201-of-00225.safetensors",
+      "size": 4991252840,
+      "lfs": {
+        "size": 4991252840,
+        "sha256": "ba72fe411f1e671e3e7620bc09c3b0f76475e8a5c9be5bef24a69f9a86e99caa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00202-of-00225.safetensors",
+      "size": 4987305976,
+      "lfs": {
+        "size": 4987305976,
+        "sha256": "c6c1a70c2ccbb36fbefcdfc124a43330772d51b91c0b57aec6b6705c02a3b967",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00203-of-00225.safetensors",
+      "size": 4991252928,
+      "lfs": {
+        "size": 4991252928,
+        "sha256": "723265618626b0ad3d95220b8644db967f3530e4aec753b83fdbf80d374772be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00204-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "8fe8f15cdb0bc903ffe2b84f6e24e30c315dc14b7a68462e56db7021cdc54cd5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00205-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "f45e0ee6bf7292fef0f35f8f7e3903676141d8f72e7a84f8edf695738a35f44f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00206-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "61a9f4b21de5a830e59ba0283c472ff3542292e5b467c67f06090318fa3fb09e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00207-of-00225.safetensors",
+      "size": 4987306008,
+      "lfs": {
+        "size": 4987306008,
+        "sha256": "8590239bcbbbbee3dd7c5eb6f761474018c36a988d95c26317340bd899bbae4a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00208-of-00225.safetensors",
+      "size": 4991253040,
+      "lfs": {
+        "size": 4991253040,
+        "sha256": "3e36326152bdba2c5a24f79c8deb8d163ebd39f797ba5b65fd27eb0a3afafe54",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00209-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "5ac8967f5c667ec9da04b13b1676dad9e155036dcbfcdc11218a5723b698c021",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00210-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "a1d36891a5b39faf7087b0c075b36d5fdfe52eba13db0fe18bc4d014341fbb5f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00211-of-00225.safetensors",
+      "size": 4987306104,
+      "lfs": {
+        "size": 4987306104,
+        "sha256": "6f2a02ced1cd8076a265292d5ba99e716887dea83c78b2d770ab1b28091ba225",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00212-of-00225.safetensors",
+      "size": 4991252904,
+      "lfs": {
+        "size": 4991252904,
+        "sha256": "8212c7fb20ffab4c0bb9b5a29fe637be5a68a0e45c4002729a182faed24fe529",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00213-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "e7db2385cf9b08577a182e0603f5df6b7a17c333a8e3177959be6591b5ae8e39",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00214-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "a1709389d3fb11fac4c4565f1f91b47dc5621d80558f33f5e8fe11663cb05283",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00215-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "a172477956b6de587d592b52f32763e7491ec016bd0556995a5e992631dae391",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00216-of-00225.safetensors",
+      "size": 4987306000,
+      "lfs": {
+        "size": 4987306000,
+        "sha256": "e780aef402ee755d9a9a6c83b676625011accee1a3fa2345612a9791b7d0aeb9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00217-of-00225.safetensors",
+      "size": 4991253008,
+      "lfs": {
+        "size": 4991253008,
+        "sha256": "6c8c133d9928dc6b1a8bcc73a39ed5357e61dabdf071510d7835880a9c6b77a4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00218-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "8c46026b8eb204480bec5a56b35be86978badefb2e33097b5413b90dbf4dbf36",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00219-of-00225.safetensors",
+      "size": 4991253080,
+      "lfs": {
+        "size": 4991253080,
+        "sha256": "177767ddd65e842034c810a6223f1cf61d940b64d8d185249b8ea3d9060d25db",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00220-of-00225.safetensors",
+      "size": 4123043384,
+      "lfs": {
+        "size": 4123043384,
+        "sha256": "b83227b96ffd1fcb6a4cd2425757010311885661ce5691b2b680c860b40b7527",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00221-of-00225.safetensors",
+      "size": 4999690568,
+      "lfs": {
+        "size": 4999690568,
+        "sha256": "7d78836ccbed0aeb52628c38c109de4c3fde88ee46dfd42bd7e6366b18c65c82",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00222-of-00225.safetensors",
+      "size": 4991251320,
+      "lfs": {
+        "size": 4991251320,
+        "sha256": "0e8fa30de71d09646e3d330800bc016b598d8863300eb9d9c05ddd086b375709",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00223-of-00225.safetensors",
+      "size": 4991251408,
+      "lfs": {
+        "size": 4991251408,
+        "sha256": "1378b75be5efa12ca213e7a5e02db1acbf1ee447940d4f0a845b0d29a4d15deb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00224-of-00225.safetensors",
+      "size": 4991251408,
+      "lfs": {
+        "size": 4991251408,
+        "sha256": "6683f084bbccc96046c912aa207cc00fc9093f9f3b5180469e36e4936596686a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00225-of-00225.safetensors",
+      "size": 4605389936,
+      "lfs": {
+        "size": 4605389936,
+        "sha256": "8abb010f5e296823b95354058fd79d7c4a63fd5c3e1d94e46f407c1f14ce9fae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 5074480,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_nemotron_h.py",
+      "size": 86603,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 813,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 780,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 563,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077484,
+      "lfs": {
+        "size": 17077484,
+        "sha256": "623c34567aebb18582765289fbe23d901c62704d6518d71866e0e58db892b5b7",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 177209,
+      "lfs": null
+    },
+    {
+      "rfilename": "ultra_v3_reasoning_parser.py",
+      "size": 1878,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: openmdw-1.1\nlicense_link: https://openmdw.ai/license/1-1/\npipeline_tag: text-generation\nlanguage:\n- en\nbase_model:\n- nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16\nbase_model_relation: finetune\ndatasets:\n- nvidia/Nemotron-Math-Proofs-v3-RL\ntags:\n- nvidia\n- pytorch\n- nemotron-3\n- latent-moe\n- mtp\ntrack_downloads: true\n---\n# Nemotron-3-Labs-Ultra-Math-RL\n\n*Referred to as Nemotron-3-Ultra-RL in the technical report.*\n\n## Description\n\nNemotron-3-Labs-Ultra-Math-RL is a decoder-only transformer language model specialized for mathematical reasoning, trained to solve difficult mathematical problems and identify mistakes in proofs, and deployed as part of an ensemble system that achieved a gold-medal level score at the International Mathematical Olympiad 2026. \n\nFull details can be found at our technical report [An Open Recipe for IMO Gold: Training Nemotron for Olympiad Mathematics](https://arxiv.org/abs/2609.10712).\n\nNemotron-3-Labs-Ultra-Math-RL was developed by NVIDIA as a part of Nemotron.\n\nThis model is ready for commercial and non-commercial use.\n\n### License/Terms of Use\n\nGoverning Download Terms: Use of this model is governed by the [OpenMDW License Agreement, version 1.1](https://raw.githubusercontent.com/OpenMDW/OpenMDW/refs/heads/main/1.1/LICENSE.OpenMDW-1.1) (OpenMDW-1.1).\n\n### Deployment Geography\n\nGlobal\n\n### Use Case\n\nResearchers and developers focused on AI-driven mathematical reasoning and proof verification, aiming to advance open models for solving complex math problems and improving reasoning capabilities.\n\n### Release Date\n\n**HuggingFace:** September 3, 2026 via https://huggingface.co/collections/nvidia/nemotron-labs-imo-2026\n\n## Reference(s)\n\n* [An Open Recipe for IMO Gold: Training Nemotron for Olympiad Mathematics](https://arxiv.org/abs/2609.10712) (technical report)\n* [nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16)\n* [nvidia/Nemotron-Math-Proofs-v3-RL](https://huggingface.co/datasets/nvidia/Nemotron-Math-Proofs-v3-RL)\n* [nvidia/Nemotron-IMO-Bench](https://huggingface.co/datasets/nvidia/Nemotron-IMO-Bench)\n* Inference pipeline and submitted proofs: https://github.com/NVIDIA-NeMo/Skills/tree/main/recipes/nemotron-imo-tts\n* RL training recipe: https://github.com/NVIDIA-NeMo/RL/blob/imo-26-ultra-v3/docs/guides/nemotron-3-ultra-imo.md\n\n## Model Architecture\n\n**Architecture Type:** Mamba2-Transformer Hybrid Latent Mixture of Experts (LatentMoE) with Multi-Token Prediction (MTP)\n**Network Architecture:** Nemotron Hybrid LatentMoE\n**This model was developed based on [nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16).**\n**Number of model parameters:** 550B Total / 55B Active\n\n## Input\n\n**Input Type(s):** Text\n**Input Format(s):** String\n**Input Parameters:** One-Dimensional (1D)\n**Other Properties Related to Input:** Maximum context length up to 1M tokens\n\n## Output\n\n**Output Type(s):** Text\n**Output Format:** String\n**Output Parameters:** One-Dimensional (1D)\n**Other Properties Related to Output:** Maximum context length up to 1M tokens\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n## Software Integration\n\n**Runtime Engine(s):** vLLM\n**Supported Hardware Microarchitecture Compatibility:**\n* NVIDIA Blackwell\n* NVIDIA Hopper\n\n**Supported Operating System(s):** Linux\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Model Version(s)\n\nNemotron-3-Labs-Ultra-Math-RL v1\n\n## Deployment\n\nThe Ultra BF16 checkpoint is a frontier-scale model. The minimum recommended hardware is:\n\n* **Single-node:** 8\u00d7 B200 (\u22481.5 TB aggregate HBM \u2014 fits BF16 weights plus KV cache with headroom)\n* **Multi-node:** \u22658 GPUs across H100 / H200 / GB200 / GB300, orchestrated with Ray v2\n\nFor more detailed information, please see the [nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16) model card and [this cookbook](https://github.com/NVIDIA-NeMo/Nemotron/blob/main/usage-cookbook/Nemotron-3-Ultra/vllm_cookbook.ipynb).\n\nRecommended container: `vllm/vllm-openai:v0.22.0`.\n\n```shell\nexport MODEL_CKPT=PATH/TO/MODEL/CHECKPOINT\n```\n\n**8\u00d7 B200 single-node deployment:**\n\n```shell\ndocker run -d --name nemotron-ultra-vllm \\\n  --gpus all \\\n  --ipc=host \\\n  --network=host \\\n  --shm-size=16g \\\n  --ulimit memlock=-1 \\\n  --ulimit stack=67108864 \\\n  -v $MODEL_CKPT:/model:ro \\\n  -e VLLM_WORKER_MULTIPROC_METHOD=spawn \\\n  -e SAFETENSORS_FAST_GPU=1 \\\n  -e NVIDIA_TF32_OVERRIDE=1 \\\n  -e VLLM_LOGGING_LEVEL=INFO \\\n  vllm/vllm-openai:v0.22.0 \\\n  /model \\\n  --host 0.0.0.0 \\\n  --port 8000 \\\n  --served-model-name nvidia/Nemotron-3-Labs-Ultra-Math-RL \\\n  --trust-remote-code \\\n  --tensor-parallel-size 8 \\\n  --enable-expert-parallel \\\n  --dtype bfloat16 \\\n  --max-model-len 262144 \\\n  --gpu-memory-utilization 0.90 \\\n  --max-num-seqs 16 \\\n  --max-num-batched-tokens 32768 \\\n  --enable-chunked-prefill \\\n  --enable-prefix-caching \\\n  --reasoning-parser nemotron_v3 \\\n  --enable-auto-tool-choice \\\n  --tool-call-parser qwen3_coder \\\n  --mamba-ssm-cache-dtype float16 \\\n  --mamba-backend flashinfer \\\n  --enable-mamba-cache-stochastic-rounding \\\n  --mamba-cache-philox-rounds 5 \\\n  --speculative-config '{\"method\": \"nemotron_h_mtp\", \"num_speculative_tokens\": 5}' \\\n  --model-loader-extra-config '{\"enable_multithread_load\": true, \"num_threads\": 96}'\n```\n\nContext length defaults to 256k above. To use up to 1M, set `VLLM_ALLOW_LONG_MAX_MODEL_LEN=1` and `--max-model-len 1048576`.\n\n## Training, Testing, and Evaluation Datasets\n\n### Training Dataset\n\n**Data Modality:** Text\n\n**Text Training Data Size:** 9,597 proof-generation prompts (50,430,007 bytes)\n**Data Collection Method by dataset:** Hybrid: Automated, manually-collected, Synthetic\n**Labeling Method by dataset:** Hybrid: Automated, manually-labeled, Synthetic\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** Nemotron-Math-Proofs-v3-RL is a long-form mathematical reasoning dataset for reinforcement learning. The release contains 9,597 proof-generation prompts. The dataset uses [NeMo Gym](https://github.com/NVIDIA-NeMo/gym)-compatible, single-turn user prompts derived from hard proof problems in the [AoPS](https://artofproblemsolving.com/) subset of [nvidia/Nemotron-Math-Proofs-v1](https://huggingface.co/datasets/nvidia/Nemotron-Math-Proofs-v1). The `train` split asks the policy to produce a rigorous solution and self-evaluation. Policy responses and realized rewards are generated during training and are not stored in the file. See [nvidia/Nemotron-Math-Proofs-v3-RL](https://huggingface.co/datasets/nvidia/Nemotron-Math-Proofs-v3-RL).\n\n### Testing Dataset\n\n**Data Collection Method by dataset:** Hybrid: Automated, manually-collected, Synthetic<br>\n**Labeling Method by dataset:** Hybrid: Automated, manually-labeled, Synthetic<br>\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** This corpus comprises only benchmarks for assessing the quality of mathematical proof generation and verification.\n\n### Evaluation Dataset\n\n**Benchmark Score:** As part of an ensemble system, this model achieved a gold-medal-level score at the International Mathematical Olympiad 2026. Additional evaluation results are available in the [Accompanying Tech Report](https://arxiv.org/abs/2609.10712).\n\n**Data Collection Method by dataset:** Hybrid: Automated, manually-collected, Synthetic<br>\n**Labeling Method by dataset:** Hybrid: Automated, manually-labeled, Synthetic<br>\n**Properties (Quantity, Dataset Descriptions, Sensor(s)):** This corpus comprises only benchmarks for assessing the quality of mathematical proof generation and verification.\n\n## Inference\n\n**Acceleration Engine:** vLLM, PyTorch\n**Hardware Requirements (GPU Architecture, Model):**\n* NVIDIA Ampere - A100 80 GB\n* NVIDIA Hopper - H100\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. Developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\nFor more detailed information on ethical considerations for this model, please see the Model Card++ [Explainability](./explainability.md), [Bias](./bias.md), [Safety & Security](./safety.md), and [Privacy](./privacy.md) Subcards.\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "base_model": [
+      "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16"
+    ],
+    "base_model_relation": "finetune",
+    "datasets": [
+      "nvidia/Nemotron-Math-Proofs-v3-RL"
+    ],
+    "tags": [
+      "nvidia",
+      "pytorch",
+      "nemotron-3",
+      "latent-moe",
+      "mtp"
+    ],
+    "track_downloads": true,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

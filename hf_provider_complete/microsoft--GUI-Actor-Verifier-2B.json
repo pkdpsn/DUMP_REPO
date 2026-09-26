@@ -1,0 +1,176 @@
+{
+  "modelId": "microsoft/GUI-Actor-Verifier-2B",
+  "author": "microsoft",
+  "sha": "30dd0db468762d45df20b5a01c4084c5a3ed3ca3",
+  "lastModified": "2025-06-10 02:59:32+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_vl",
+    "image-text-to-text",
+    "conversational",
+    "dataset:OS-Copilot/OS-Atlas-data",
+    "arxiv:2506.03143",
+    "base_model:ByteDance-Seed/UI-TARS-2B-SFT",
+    "base_model:finetune:ByteDance-Seed/UI-TARS-2B-SFT",
+    "license:mit",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 13,
+  "downloads": 266,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "ByteDance-Seed/UI-TARS-2B-SFT"
+    ],
+    "datasets": [
+      "OS-Copilot/OS-Atlas-data"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen2VLForConditionalGeneration"
+    ],
+    "model_type": "qwen2_vl",
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}",
+      "eos_token": "<|diff_marker|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 8857,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 448,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1049,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1352,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 131,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 4417199904,
+      "lfs": {
+        "size": 4417199904,
+        "sha256": "be70c29b1293b35d097cbb7d0d8bd21473b7392b3f99649e77d0792ff28e0587",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 570,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 2438,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11420753,
+      "lfs": {
+        "size": 11420753,
+        "sha256": "b5e3b77495dbe08a59f0f76a2b9c8354d594e2c0cab76e88d9513f9facc9bb91",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 4738,
+      "lfs": null
+    },
+    {
+      "rfilename": "trainer_state.json",
+      "size": 102309,
+      "lfs": null
+    },
+    {
+      "rfilename": "training_args.bin",
+      "size": 5816,
+      "lfs": {
+        "size": 5816,
+        "sha256": "80c85a12c64e0ffc241d7d891ca83b4f2e33884a6c683accc2a9aa8bb8d87462",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nbase_model:\n- ByteDance-Seed/UI-TARS-2B-SFT\ndatasets:\n- OS-Copilot/OS-Atlas-data\nlicense: mit\npipeline_tag: image-text-to-text\nlibrary_name: transformers\n---\n\n# GUI-Actor-Verifier-2B\n\n\nThis model was introduced in the paper [**GUI-Actor: Coordinate-Free Visual Grounding for GUI Agents**](https://huggingface.co/papers/2506.03143).\nIt is developed based on [UI-TARS-2B-SFT](https://huggingface.co/ByteDance-Seed/UI-TARS-2B-SFT) and is designed to predict the correctness of an action position given a language instruction. This model is well-suited for **GUI-Actor**, as its attention map effectively provides diverse candidates for verification with only a single inference.\n\n\nFor more details on model design and evaluation, please check: [\ud83c\udfe0 Project Page](https://microsoft.github.io/GUI-Actor/) | [\ud83d\udcbb Github Repo](https://github.com/microsoft/GUI-Actor) | [\ud83d\udcd1 Paper](https://huggingface.co/papers/2506.03143).\n\n\n| Model List                                  | Hugging Face Link                         |\n|--------------------------------------------|--------------------------------------------|\n| **GUI-Actor-7B-Qwen2-VL**                   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-7B-Qwen2-VL)         |\n| **GUI-Actor-2B-Qwen2-VL**                   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-2B-Qwen2-VL)         |\n| **GUI-Actor-7B-Qwen2.5-VL**   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-7B-Qwen2.5-VL)       |\n| **GUI-Actor-3B-Qwen2.5-VL**   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-3B-Qwen2.5-VL)       |\n| **GUI-Actor-Verifier-2B**                   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-Verifier-2B)        |\n\n\n\n## \ud83d\udcca Performance Comparison on GUI Grounding Benchmarks\nTable 1. Main results on ScreenSpot-Pro, ScreenSpot, and ScreenSpot-v2 with **Qwen2-VL** as the backbone. \u2020 indicates scores obtained from our own evaluation of the official models on Huggingface.\n| Method           | Backbone VLM | ScreenSpot-Pro | ScreenSpot | ScreenSpot-v2 |\n|------------------|--------------|----------------|------------|----------------|\n| **_72B models:_**\n| AGUVIS-72B       | Qwen2-VL     | -              | 89.2       | -              |\n| UGround-V1-72B   | Qwen2-VL     | 34.5           | **89.4**   | -              |\n| UI-TARS-72B      | Qwen2-VL     | **38.1**       | 88.4       | **90.3**       |\n| **_7B models:_**\n| OS-Atlas-7B      | Qwen2-VL     | 18.9           | 82.5       | 84.1           |\n| AGUVIS-7B        | Qwen2-VL     | 22.9           | 84.4       | 86.0\u2020          |\n| UGround-V1-7B    | Qwen2-VL     | 31.1           | 86.3       | 87.6\u2020          |\n| UI-TARS-7B       | Qwen2-VL     | 35.7           | 89.5   | **91.6**       |\n| GUI-Actor-7B     | Qwen2-VL     | 40.7       | 88.3       | 89.5           |\n| GUI-Actor-7B + Verifier     | Qwen2-VL    | **44.2**       | **89.7**       | 90.9           |\n| **_2B models:_**\n| UGround-V1-2B    | Qwen2-VL     | 26.6           | 77.1       | -              |\n| UI-TARS-2B       | Qwen2-VL     | 27.7           | 82.3       | 84.7           |\n| GUI-Actor-2B     | Qwen2-VL     | 36.7       | 86.5   | 88.6       |\n| GUI-Actor-2B + Verifier     | Qwen2-VL    | **41.8**       | **86.9**       | **89.3**           |\n\nTable 2. Main results on the ScreenSpot-Pro and ScreenSpot-v2 with **Qwen2.5-VL** as the backbone.\n| Method         | Backbone VLM | ScreenSpot-Pro | ScreenSpot-v2 |\n|----------------|---------------|----------------|----------------|\n| **_7B models:_**\n| Qwen2.5-VL-7B  | Qwen2.5-VL    | 27.6           | 88.8           |\n| Jedi-7B        | Qwen2.5-VL    | 39.5           | 91.7           |\n| GUI-Actor-7B   | Qwen2.5-VL    | 44.6      | 92.1       |\n| GUI-Actor-7B + Verifier   | Qwen2.5-VL    | **47.7**       | **92.5**       |\n| **_3B models:_**\n| Qwen2.5-VL-3B  | Qwen2.5-VL    | 25.9           | 80.9           |\n| Jedi-3B        | Qwen2.5-VL    | 36.1           | 88.6           |\n| GUI-Actor-3B   | Qwen2.5-VL    | 42.2       | 91.0       |\n| GUI-Actor-3B + Verifier   | Qwen2.5-VL    | **45.9**       | **92.4**       |\n\n## \ud83d\ude80 Usage\nThe verifier takes a language instruction and an image with a red circle marking the target position as input. One example is shown below. It outputs either \u2018True\u2019 or \u2018False\u2019, and you can also use the probability of each label to score the sample.\n\nFor more detailed usage, please refer to our github repo.\n\n<img src=\"https://cdn-uploads.huggingface.co/production/uploads/64d45451c34a346181b130dd/1LTBORYJsO9Ru6B4q_SKl.png\" alt=\"image\" width=\"500\"/>\n\n\n```python\nimport torch\nfrom transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor\nfrom transformers.generation import GenerationConfig\nimport json\nimport re\nimport os\nimport numpy as np\nfrom PIL import Image, ImageDraw\nfrom qwen_vl_utils import process_vision_info\n\n\n\n# load model\nmodel_name_or_path = \"microsoft/GUI-Actor-Verifier-2B\"\nmodel = Qwen2VLForConditionalGeneration.from_pretrained(\n            model_name_or_path, \n            device_map=\"cuda:0\", \n            trust_remote_code=True, \n            torch_dtype=torch.bfloat16,\n            attn_implementation=\"flash_attention_2\"\n        ).eval()\noutput_len = 1\n\ntokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)\nprocessor = AutoProcessor.from_pretrained(model_name_or_path)\n\ndef draw_annotations(img, point_in_pixel, bbox, output_path='test.png', color='red', size=1):\n    draw = ImageDraw.Draw(img)\n    \n    # Draw the ground truth bounding box in green\n    if bbox:\n        # Assuming bbox format is [x1, y1, x2, y2]\n        draw.rectangle(bbox, outline=\"yellow\", width=4)\n    \n    # Draw a small circle around the predicted point in red\n    if point_in_pixel:\n        # Create a small rectangle around the point (5 pixels in each direction)\n        radius = np.ceil(8 * size).astype(int)\n        circle_bbox = [\n            point_in_pixel[0] - radius,  # x1\n            point_in_pixel[1] - radius,  # y1\n            point_in_pixel[0] + radius,  # x2\n            point_in_pixel[1] + radius   # y2\n        ]\n        draw.ellipse(circle_bbox, outline=color, width=np.ceil(4 * size).astype(int))\n    \n    return img\n\ndef ground_only_positive(model, tokenizer, processor, instruction, image, point):\n  if isinstance(image, str):\n      image_path = image\n      image = Image.open(image_path)\n  else:\n      image_path = image_to_temp_filename(image)\n  assert os.path.exists(image_path) and os.path.isfile(image_path), \"Invalid input image path.\"\n\n  width, height = image.size\n  image = draw_annotations(image, point, None, output_path=None, size=height/1000 * 1.2)\n\n  prompt_origin = \"Please observe the screenshot and exame whether the hollow red circle accurately placed on the intended position in the image: '{}'. Answer True or False.\"\n  full_prompt = prompt_origin.format(instruction)\n\n  messages = [\n      {\n          \"role\": \"user\",\n          \"content\": [\n              {\n                  \"type\": \"image\",\n                  \"image\": image,\n              },\n              {\"type\": \"text\", \"text\": full_prompt},\n          ],\n      }\n  ]\n  # Preparation for inference\n  text_input = processor.apply_chat_template(\n      messages, tokenize=False, add_generation_prompt=True\n  )\n  image_inputs, video_inputs = process_vision_info(messages)\n  inputs = processor(\n      text=[text_input],\n      images=image_inputs,\n      videos=video_inputs,\n      padding=True,\n      return_tensors=\"pt\",\n  )\n  inputs = inputs.to(\"cuda:0\")\n\n  generated_ids = model.generate(\n      **inputs,  \n      max_new_tokens=output_len,\n      do_sample=False,\n      temperature=0.0\n  )\n\n  generated_ids_trimmed = [\n      out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)\n  ]\n  response = processor.batch_decode(\n      generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False\n  )[0]\n\n  print(response)\n  matches = re.findall(r'\\b(?:True|False)\\b', response)\n  if not len(matches):\n      answer = 'Error Format'\n  else:\n      answer = matches[-1]\n  return answer\n\n# given the image path and instruction and coorindate\ninstruction = 'close this window'\nimage = Image.open('test.png')\nwidth, height = image.size\npoint = [int(0.9709 * width), int(0.1548, * height)] # The point should be in pixels\nanswer = ground_only_positive(model, tokenizer, processor, instruction, image, point) # output True or False\n```\n\n## \ud83d\udcdd Citation\n```\n@article{wu2025gui,\n  title={GUI-Actor: Coordinate-Free Visual Grounding for GUI Agents},\n  author={Wu, Qianhui and Cheng, Kanzhi and Yang, Rui and Zhang, Chaoyun and Yang, Jianwei and Jiang, Huiqiang and Mu, Jian and Peng, Baolin and Qiao, Bo and Tan, Reuben and others},\n  journal={arXiv preprint arXiv:2506.03143},\n  year={2025}\n}\n```",
+  "cardDataParsed": {
+    "base_model": [
+      "ByteDance-Seed/UI-TARS-2B-SFT"
+    ],
+    "datasets": [
+      "OS-Copilot/OS-Atlas-data"
+    ],
+    "license": "mit",
+    "pipeline_tag": "image-text-to-text",
+    "library_name": "transformers",
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

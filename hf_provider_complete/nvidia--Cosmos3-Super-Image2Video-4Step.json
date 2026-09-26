@@ -1,0 +1,540 @@
+{
+  "modelId": "nvidia/Cosmos3-Super-Image2Video-4Step",
+  "author": "nvidia",
+  "sha": "237df5c63635ab171ad93fdde1d7f17fabae019a",
+  "lastModified": "2026-09-16 19:00:27+00:00",
+  "tags": [
+    "cosmos",
+    "diffusers",
+    "safetensors",
+    "cosmos3_omni",
+    "nvidia",
+    "cosmos3",
+    "vllm-omni",
+    "image-to-video",
+    "video-generation",
+    "arxiv:2405.14867",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "image-to-video",
+  "library_name": "cosmos",
+  "likes": 32,
+  "downloads": 1181,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "cosmos",
+    "license": "other",
+    "license_name": "openmdw1.1-license",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "nvidia",
+      "cosmos",
+      "cosmos3",
+      "vllm-omni",
+      "image-to-video",
+      "video-generation"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Cosmos3ForConditionalGeneration"
+    ],
+    "model_type": "cosmos3_omni",
+    "processor_config": {
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1939,
+      "lfs": null
+    },
+    {
+      "rfilename": "BIAS.md",
+      "size": 4720,
+      "lfs": null
+    },
+    {
+      "rfilename": "EXPLAINABILITY.md",
+      "size": 3189,
+      "lfs": null
+    },
+    {
+      "rfilename": "PRIVACY.md",
+      "size": 1215,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 33581,
+      "lfs": null
+    },
+    {
+      "rfilename": "SAFETY.md",
+      "size": 3677,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/example_first_frame.png",
+      "size": 1956706,
+      "lfs": {
+        "size": 1956706,
+        "sha256": "677259954dfc05b6dd62fbc1d8c4064544e247f86d0df458214e6e8097341988",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/example_output.mp4",
+      "size": 8589231,
+      "lfs": {
+        "size": 8589231,
+        "sha256": "625d490237c02ed103797bc42b6c2aff9b219779b0de29226df7878c671ec907",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/example_output_diffusers.mp4",
+      "size": 1135801,
+      "lfs": {
+        "size": 1135801,
+        "sha256": "7337f6ae74b214bcca061c7de85e952e8cd8206d69755e8fb2fdb46784aa2641",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/example_prompt.json",
+      "size": 2519,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/original_prompt.txt",
+      "size": 70,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 5499,
+      "lfs": null
+    },
+    {
+      "rfilename": "checkpoint.json",
+      "size": 80,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 7546,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 269,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/aa-i2v-all-models-2026-07-17.png",
+      "size": 756320,
+      "lfs": {
+        "size": 756320,
+        "sha256": "358f682335c074222233a0a101f8b091ead7a1bb9806df2e716a3fddb5cf945f",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/aa-i2v-open-models-2026-07-17.png",
+      "size": 429891,
+      "lfs": {
+        "size": 429891,
+        "sha256": "ede7eddb377cb74d02b36c228167b6aaeefdbc12975671edaa308c53cc236af8",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 155085,
+      "lfs": null
+    },
+    {
+      "rfilename": "model_index.json",
+      "size": 445,
+      "lfs": null
+    },
+    {
+      "rfilename": "modular_model_index.json",
+      "size": 1453,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 390,
+      "lfs": null
+    },
+    {
+      "rfilename": "scheduler/scheduler_config.json",
+      "size": 677,
+      "lfs": null
+    },
+    {
+      "rfilename": "scripts/gen_video.py",
+      "size": 2560,
+      "lfs": null
+    },
+    {
+      "rfilename": "scripts/upsample_prompt.py",
+      "size": 11473,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/chat_template.jinja",
+      "size": 5292,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "text_tokenizer/tokenizer_config.json",
+      "size": 5404,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/vocab.json",
+      "size": 2776833,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7032403,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 10868,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformer/config.json",
+      "size": 955,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00001-of-00027.safetensors",
+      "size": 4932286736,
+      "lfs": {
+        "size": 4932286736,
+        "sha256": "309febc99149c3b2061ac766638ff5cd79958f5044af2fa8978462f67fbcf29b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00002-of-00027.safetensors",
+      "size": 4802610968,
+      "lfs": {
+        "size": 4802610968,
+        "sha256": "7d651253a5c5e2b1cd4458c7bacd7a35378f80acd363ef8603de0feeee9228b5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00003-of-00027.safetensors",
+      "size": 4949368056,
+      "lfs": {
+        "size": 4949368056,
+        "sha256": "e97ea3e36b8bf442921fc2d1218d08e117dd13a77a41403e69a8ed5add8fb9ca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00004-of-00027.safetensors",
+      "size": 4802610968,
+      "lfs": {
+        "size": 4802610968,
+        "sha256": "af40d23d49d0765805e81316b83ceceb5921dc10b7053be92456cb1c57cd930b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00005-of-00027.safetensors",
+      "size": 4949368096,
+      "lfs": {
+        "size": 4949368096,
+        "sha256": "95e366f9e2b157927ffae4b20b47a7e9c9d026a91e1ded82862fadb507247a30",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00006-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "ecec5d73db010e86ca6aef662fbcda9189e3cf5eecb53f5879d45341e2a3d2e0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00007-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "fdecb018d1f7df4625a809e835526aac76bd093bc51809b56b4e8f82f6479f91",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00008-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "db40b0148b4a91e790481b66302fb9919f19d1b74e878ff1c122664a12ed3120",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00009-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "cf4268fd76e650bae4c79031797ca1ceb4b11054b05a1f58d8b4448cd8517c1a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00010-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "096dba765eee2d82eb34bba931f66feb116d38cef18de3d365b233880a5ed583",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00011-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "0f487d48eeaee2b74a0f54872a0798075a84ef5828ad178b176ce0e33ec74ff7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00012-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "6c10a536cdb81b804de8bee94b825d31fa0d0b3cd53b51e3cbf7f1d2367f694b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00013-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "3592c2ecc0bee28de4827c59fc1347694e95273c0b68c78ec0e4d50acda2b0b6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00014-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "4126b7488f26a237808a01da126a95cc01b3ff177a695015e905608b473f37e2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00015-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "aa1f16163ca59c7cfdc7d8bbe657eadc54d34d126ef2c546433f95fad6962d75",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00016-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "3ed614f536eb0c77cab0e9a94704d90cebcb78a785914fef05579ad82b2271ad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00017-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "a7c902680a6b684692231b852eb8b150397d793cf95e206681b3e5c64d476bcd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00018-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "289ff8ceb68ca60181e53526507bf970045d4b628806bacc00337206add3cca1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00019-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "89ffc169a9c8144a3cfb19b64f079995daa47e97e48d4e08a374ff4fc05604c0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00020-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "8aac8439b9fd279aa31575a3410d9c9a9a90464080b77d714f18d434a75b26d4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00021-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "74f561e578d8b917d730cc29c52e2ff90e399bad5816f68b4c6f6b98159d16f9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00022-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "5ee0dca323b0cffead126437a8deb97a00b3a5312fb7ef1ac3abf8100edf3311",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00023-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "ce379bc4a73ca2a7d4f084a9a0b9a095bae3fd7a8306e95a0dd1389b4721241a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00024-of-00027.safetensors",
+      "size": 4802611024,
+      "lfs": {
+        "size": 4802611024,
+        "sha256": "75bfd354a9607df4bda37eb4182a00b7b2bb58ce0a32e7d0afab082ad0e3c47f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00025-of-00027.safetensors",
+      "size": 4949368104,
+      "lfs": {
+        "size": 4949368104,
+        "sha256": "25427a1ebdff9a64ccc53135ac510fac8a8043bbd58005d80c4de1938e8155e4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00026-of-00027.safetensors",
+      "size": 4425141960,
+      "lfs": {
+        "size": 4425141960,
+        "sha256": "fb2a1754dd4a4053d240407ccca066b4e19f0fa7c6b0f1ae0dbd69a9f3c608bd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00027-of-00027.safetensors",
+      "size": 1614839048,
+      "lfs": {
+        "size": 1614839048,
+        "sha256": "208793e196a9507552c4580fa5d93b153081a38ec139a80de5d3a2c954a5f34f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "size": 138046,
+      "lfs": null
+    },
+    {
+      "rfilename": "vae/config.json",
+      "size": 1750,
+      "lfs": null
+    },
+    {
+      "rfilename": "vae/diffusion_pytorch_model.safetensors",
+      "size": 1409400600,
+      "lfs": {
+        "size": 1409400600,
+        "sha256": "230496cb59ff85bc9c040487737c4062480cb61c71e697b197b4c30142f2a0da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 385,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}

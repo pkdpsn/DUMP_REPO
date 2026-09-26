@@ -1,0 +1,163 @@
+{
+  "modelId": "google/gemma-2-2b-jpn-it",
+  "author": "google",
+  "sha": "6b046bbc091084a1ec89fe03e58871fde10868eb",
+  "lastModified": "2024-10-02 15:49:51+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "gemma2",
+    "text-generation",
+    "conversational",
+    "ja",
+    "base_model:google/gemma-2-2b-it",
+    "base_model:finetune:google/gemma-2-2b-it",
+    "license:gemma",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 217,
+  "downloads": 5934,
+  "private": false,
+  "gated": "manual",
+  "disabled": false,
+  "cardData": {
+    "base_model": "google/gemma-2-2b-it",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "ja"
+    ],
+    "library_name": "transformers",
+    "license": "gemma",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "conversational"
+    ],
+    "extra_gated_heading": "Access Gemma on Hugging Face",
+    "extra_gated_prompt": "To access Gemma on Hugging Face, you\u2019re required to review and agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license"
+  },
+  "config": {
+    "architectures": [
+      "Gemma2ForCausalLM"
+    ],
+    "model_type": "gemma2",
+    "tokenizer_config": {
+      "bos_token": "<bos>",
+      "chat_template": "{{ bos_token }}{% if messages[0]['role'] == 'system' %}{{ raise_exception('System role not supported') }}{% endif %}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if (message['role'] == 'assistant') %}{% set role = 'model' %}{% else %}{% set role = message['role'] %}{% endif %}{{ '<start_of_turn>' + role + '\n' + message['content'] | trim + '<end_of_turn>\n' }}{% endfor %}{% if add_generation_prompt %}{{'<start_of_turn>model\n'}}{% endif %}",
+      "eos_token": "<eos>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 18978,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 805,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 168,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4988025760,
+      "lfs": {
+        "size": 4988025760,
+        "sha256": "5c6b840381f4b031f9bcb612273a62a96a0950bc38ba9276f05a603ffa458ae3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 240691728,
+      "lfs": {
+        "size": 240691728,
+        "sha256": "cf50b16f8d4e9699b47b3bf920465bb9d4569c31a5316a2b238e988a89dfc654",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 24223,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 555,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17525369,
+      "lfs": {
+        "size": 17525369,
+        "sha256": "7fa178a85ecd933ead78169c82e42ff18f5d1e3e5b4432bfaff18342e0bb9993",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4241111,
+      "lfs": {
+        "size": 4241111,
+        "sha256": "6969e64047744a44bb3abfb5c50f8de0f7ed8b571d5444426ef931f651d1a0ef",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 46921,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: gemma\nlibrary_name: transformers\npipeline_tag: text-generation\nextra_gated_heading: Access Gemma on Hugging Face\nextra_gated_prompt: To access Gemma on Hugging Face, you\u2019re required to review and\n  agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging\n  Face and click below. Requests are processed immediately.\nextra_gated_button_content: Acknowledge license\ntags:\n- conversational\nbase_model: google/gemma-2-2b-it\nlanguage:\n- ja\n---\n\n# Gemma 2 JPN model card\n\n### Resources and Technical Documentation:\n\n-   [Responsible Generative AI Toolkit](https://ai.google.dev/responsible)\n-   [Gemma 2 JPN on Kaggle](https://www.kaggle.com/models/google/gemma-2-2b-jpn-it)\n-   [Gemma 2 JPN on Hugging Face](https://huggingface.co/google/gemma-2-2b-jpn-it)\n\n**Terms of Use**: [Terms](https://ai.google.dev/gemma/terms)\\\n**Authors**: Google\n\n## Model Information\n\nSummary description and brief definition of inputs and outputs.\n\n### Description\n\nGemma is a series of best-in-class open models and draws inspiration and\ntechnological lineage from the Gemini family of models. They are text-to-text,\ndecoder-only large language models with open weights. Gemma models are\nwell-suited for a variety of text generation tasks, including question\nanswering, summarization, and reasoning.\n\nGemma-2-JPN is a Gemma 2 2B model fine-tuned on Japanese text. It supports the\nJapanese language with the same level of performance of English only queries on\nGemma 2.\n\n### Usage\n\nBelow we share some code snippets on how to get quickly started with running the model. First, install the Transformers library with:\n```sh\npip install -U transformers\n```\n\nThen, copy the snippet from the section that is relevant for your usecase.\n\n#### Running with the `pipeline` API\n\n```python\nimport torch\nfrom transformers import pipeline\n\npipe = pipeline(\n    \"text-generation\",\n    model=\"google/gemma-2-2b-jpn-it\",\n    model_kwargs={\"torch_dtype\": torch.bfloat16},\n    device=\"cuda\",  # replace with \"mps\" to run on a Mac device\n)\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"\u30de\u30b7\u30fc\u30f3\u30e9\u30fc\u30cb\u30f3\u30b0\u306b\u3064\u3044\u3066\u306e\u8a69\u3092\u66f8\u3044\u3066\u304f\u3060\u3055\u3044\u3002\"},\n]\n\noutputs = pipe(messages, return_full_text=False, max_new_tokens=256)\nassistant_response = outputs[0][\"generated_text\"].strip()\nprint(assistant_response)\n```\n\n<details>\n<summary>Example output</summary>\n\n```\n## \u30de\u30b7\u30fc\u30f3\u30e9\u30fc\u30cb\u30f3\u30b0\u306e\u8a69\n\n**1.** \n\u30c7\u30fc\u30bf\u306e\u6d77\u3001\u6df1\u6df5\u306e\u5e83\u304c\u308a\u3001\n\u8907\u96d1\u306a\u30d1\u30bf\u30fc\u30f3\u3001\u96a0\u3055\u308c\u305f\u77e5\u8b58\u3002\n\u6a5f\u68b0\u5b66\u7fd2\u3001\u305d\u306e\u529b\u5f37\u3055\u3001\n\u672a\u6765\u3092\u4e88\u6e2c\u3001\u305d\u306e\u9053\u3092\u958b\u304f\u3002\n\n**2.** \n\u30cb\u30e5\u30fc\u30e9\u30eb\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u3001\u8907\u96d1\u306a\u679d\u3001\n\u5b66\u7fd2\u306e\u65c5\u3001\u305d\u306e\u904e\u7a0b\u306f\u9759\u304b\u3002\n\u30c7\u30fc\u30bf\u304b\u3089\u5b66\u3073\u3001\u9032\u5316\u3059\u308b\u59ff\u3001\n\u4e88\u6e2c\u306e\u7cbe\u5ea6\u3001\u305d\u306e\u529b\u5f37\u3055\u3002\n\n**3.** \n\u6559\u5e2b\u3042\u308a\u5b66\u7fd2\u3001\u6b63\u89e3\u3092\u5c0e\u304f\u3001\n\u6559\u5e2b\u306a\u3057\u5b66\u7fd2\u3001\u672a\u77e5\u306e\u4e16\u754c\u3078\u3002\n\u6a5f\u68b0\u5b66\u7fd2\u3001\u305d\u306e\u9032\u5316\u306f\u6b62\u307e\u3089\u306a\u3044\u3001\n\u672a\u6765\u306e\u6249\u3092\u958b\u304f\u3001\u65b0\u305f\u306a\u6642\u4ee3\u3078\u3002\n\n**4.** \n\u753b\u50cf\u8a8d\u8b58\u3001\u97f3\u58f0\u8a8d\u8b58\u3001\n\u8907\u96d1\u306a\u30bf\u30b9\u30af\u3001\u305d\u306e\u7b54\u3048\u3092\u898b\u3064\u3051\u308b\u3002\n\u6a5f\u68b0\u5b66\u7fd2\u3001\u305d\u306e\u529b\u5f37\u3055\u3001\n\u672a\u6765\u306e\u6280\u8853\u3001\u305d\u306e\u53ef\u80fd\u6027\u3092\u8a9e\u308b\u3002\n```\n\n</details>\n\nIt can also be used for translation, as follows:\n\n```python\ntranslation_input_text = f\"Translate the following poem from Japanese to English:\\n\\n{assistant_response}\"\nmessages = [\n    {\"role\": \"user\", \"content\": translation_input_text},\n]\n\noutputs = pipe(messages, return_full_text=False, max_new_tokens=1024)\ntranslated_response = outputs[0][\"generated_text\"].strip()\nprint(translated_response)\n```\n\n<details>\n\n<summary>Example output</summary>\n\n```\n## A Poem About Machine Learning\n\n**1.**\nA vast ocean of data, a deep expanse,\nComplex patterns, hidden knowledge.\nMachine learning, its strength so vast,\nPredicting the future, opening the way.\n\n**2.**\nA neural network, with branches intricate,\nA journey of learning, its process serene.\nLearning from data, evolving in its form,\nThe precision of prediction, its strength.\n\n**3.**\nSupervised learning, guiding the correct answer,\nUnsupervised learning, venturing into the unknown.\nMachine learning, its evolution never ends,\nOpening the doors to the future, a new era.\n\n**4.**\nImage recognition, speech recognition,\nComplex tasks, finding the answer.\nMachine learning, its strength so vast,\nThe possibilities of future technology, a story to be told.\n\n\n\n\n**Explanation:**\n\nThe poem uses vivid imagery and metaphors to describe the power and potential of machine learning. \n\n* **Data as an ocean:**  Represents the vast amount of information available for learning.\n* **Complex patterns:**  Highlights the intricate nature of data and the challenges of extracting meaningful insights.\n* **Future prediction:**  Emphasizes the ability of machine learning to analyze data and make predictions about the future.\n* **Neural network as a tree:**  Represents the interconnectedness and complexity of the learning process.\n* **Learning from data:**  Focuses on the core principle of machine learning, where algorithms learn from data to improve their performance.\n\n\n\nThe poem concludes by highlighting the diverse applications of machine learning, such as image and speech recognition, and emphasizes its potential to shape the future of technology.\n```\n\n</details>\n\n\n#### Running the model on a single / multi GPU\n\n```python\n# pip install accelerate\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\nimport torch\n\ntokenizer = AutoTokenizer.from_pretrained(\"google/gemma-2-2b-jpn-it\")\nmodel = AutoModelForCausalLM.from_pretrained(\n    \"google/gemma-2-2b-jpn-it\",\n    device_map=\"auto\",\n    torch_dtype=torch.bfloat16,\n)\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"\u30de\u30b7\u30fc\u30f3\u30e9\u30fc\u30cb\u30f3\u30b0\u306b\u3064\u3044\u3066\u306e\u8a69\u3092\u66f8\u3044\u3066\u304f\u3060\u3055\u3044\u3002\"},\n]\ninputs = tokenizer.apply_chat_template(messages, return_tensors=\"pt\", add_generation_prompt=True, return_dict=True).to(model.device)\n\noutputs = model.generate(**inputs, max_new_tokens=256)\ngenerated_text = tokenizer.batch_decode(outputs[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]\nprint(generated_text.strip())\n```\n\n\n<a name=\"precisions\"></a>\n#### Running the model on a GPU using different precisions\n\nThe native weights of this model were exported in `bfloat16` precision.\n\nYou can also use `float32` if you skip the dtype, but no precision increase will occur (model weights will just be upcasted to `float32`). See examples below.\n\n* _Upcasting to `torch.float32`_\n\n```python\n# pip install accelerate\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\n\ntokenizer = AutoTokenizer.from_pretrained(\"google/gemma-2-2b-jpn-it\")\nmodel = AutoModelForCausalLM.from_pretrained(\n    \"google/gemma-2-2b-jpn-it\",\n    device_map=\"auto\",\n)\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"\u30de\u30b7\u30fc\u30f3\u30e9\u30fc\u30cb\u30f3\u30b0\u306b\u3064\u3044\u3066\u306e\u8a69\u3092\u66f8\u3044\u3066\u304f\u3060\u3055\u3044\u3002\"},\n]\ninputs = tokenizer.apply_chat_template(messages, return_tensors=\"pt\", add_generation_prompt=True, return_dict=True).to(model.device)\n\noutputs = model.generate(**inputs, max_new_tokens=256)\ngenerated_text = tokenizer.batch_decode(outputs[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]\nprint(generated_text.strip())\n```\n\n\n### Inputs and outputs\n\n-   **Input:** Text string, such as a question, a prompt, or a document to\n    be summarized.\n-   **Output:** Generated Japanese-language text in response to the input,\n    such as an answer to a question, or a summary of a document.\n\n## Model Data\n\nData used for model training and how the data was processed.\n\n### Training Dataset\n\nThese models were trained on a dataset of text data that includes a wide\nvariety of sources, totaling 8 trillion tokens. Here are the key components:\n\n-   Web Documents: A diverse collection of web text ensures the model is\n    exposed to a broad range of linguistic styles, topics, and vocabulary.\n    Primarily English-language content.\n-   Code: Exposing the model to code helps it to learn the syntax and\n    patterns of programming languages, which improves its ability to generate\n    code or understand code-related questions.\n-   Mathematics: Training on mathematical text helps the model learn logical\n    reasoning, symbolic representation, and to address mathematical queries.\n-   Instruction data set: large-scale and high-quality Japanese and\n    multilingual instruction data.\n\nThe combination of these diverse data sources is crucial for training a\npowerful language model that can handle a wide variety of different tasks and\ntext formats.\n\n### Data Preprocessing\n\nHere are the key data cleaning and filtering methods applied to the training\ndata:\n\n-   CSAM Filtering: Rigorous CSAM (Child Sexual Abuse Material) filtering\n    was applied at multiple stages in the data preparation process to ensure\n    the exclusion of harmful and illegal content.\n-   Sensitive Data Filtering: As part of making Gemma pre-trained models\n    safe and reliable, we used automated techniques to filter out certain\n    personal information and other sensitive data from training sets.\n-   Additional methods: Filtering based on content quality and\n    safety in line with [our policies](https://storage.googleapis.com/gweb-uniblog-publish-prod/documents/2023_Google_AI_Principles_Progress_Update.pdf#page=11).\n\n## Implementation Information\n\nDetails about the model internals.\n\n### Hardware\n\nGemma was trained using the latest generation of [Tensor Processing Unit\n(TPU)](https://cloud.google.com/tpu/docs/intro-to-tpu) hardware (TPUv5p).\n\nTraining large language models requires significant computational power. TPUs,\ndesigned specifically for matrix operations common in machine learning, offer\nseveral advantages in this domain:\n\n-   Performance: TPUs are specifically designed to handle the massive\n    computations involved in training LLMs. They can speed up training\n    considerably compared to CPUs.\n-   Memory: TPUs often come with large amounts of high-bandwidth memory,\n    allowing for the handling of large models and batch sizes during training.\n    This can lead to better model quality.\n-   Scalability: TPU Pods (large clusters of TPUs) provide a scalable\n    solution for handling the growing complexity of large foundation models.\n    You can distribute training across multiple TPU devices for faster and more\n    efficient processing.\n-   Cost-effectiveness: In many scenarios, TPUs can provide a more\n    cost-effective solution for training large models compared to CPU-based\n    infrastructure, especially when considering the time and resources saved\n    due to faster training.\n\nThese advantages are aligned with\n[Google's commitments to operate sustainably](https://sustainability.google/operating-sustainably/).\n\n### Software\n\nTraining was done using [JAX](https://github.com/google/jax) and\n[ML Pathways](https://blog.google/technology/ai/introducing-pathways-next-generation-ai-architecture/).\n\nJAX allows researchers to take advantage of the latest generation of hardware,\nincluding TPUs, for faster and more efficient training of large models.\n\nML Pathways is Google's latest effort to build artificially intelligent systems\ncapable of generalizing across multiple tasks. This is specially suitable for\n[foundation models](https://ai.google/discover/foundation-models/), including\nlarge language models like these ones.\n\nTogether, JAX and ML Pathways are used as described in the [paper about the\nGemini family of models](https://goo.gle/gemma2report); \"the 'single controller'\nprogramming model of Jax and Pathways allows a single Python process to\norchestrate the entire training run, dramatically simplifying the development\nworkflow.\"\n\n## Evaluation\n\nTo assess the quality of this model, we collected a diverse set of Japanese\nprompts and evaluated performance using an LLM-as-a-judge approach against\nGPT-3.5. The rating system is based on a 7-scale assessments, which are\nMuchBetterThan, BetterThan, SlightlyBetterThan, AboutTheSame, SlightlyWorse,\nWorseThan, MuchWorseThan associated with the numerical scores 1.5, 1.0, 0.5, 0,\n-0.5, -1.0, -1.5 respectively. We also tracked the ability of the model to\nanswer in the correct language: for a Japanese prompt, the model should\ntypically answer in Japanese rather than defaulting to English.\n\n<table>\n  <thead>\n    <tr>\n      <th><br>\n<strong>Benchmark</strong></th>\n      <th><br>\n<strong>Gemma-2-IT</strong></th>\n      <th><br>\n<strong>Gemma-2-IT-JPN</strong></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td><br>\nPreference vs GPT-3.5</td>\n      <td><br>\n-0.25 \u00b1 0.05 </td>\n      <td><br>\n0.03 \u00b1 0.04</td>\n      <td></td>\n    </tr>\n    <tr>\n      <td><br>\nLanguage correctness</td>\n      <td><br>\n86.47%</td>\n      <td><br>\n98.24%</td>\n      <td></td>\n    </tr>\n  </tbody>\n</table>\n\n## Ethics and Safety\n\nEthics and safety evaluation approach and results.\n\n### Evaluation Approach\n\nOur evaluation methods include structured evaluations and internal red-teaming\ntesting of relevant content policies. Red-teaming was conducted by a number of\ndifferent teams, each with different goals and human evaluation metrics. These\nmodels were evaluated against a number of different categories relevant to\nethics and safety, including:\n\n-   Text-to-Text Content Safety: Human evaluation on prompts covering\n    safety policies including child sexual abuse and exploitation, harassment,\n    violence and gore, and hate speech.\n-   Text-to-Text Representational Harms: Benchmark against relevant academic\n    datasets.\n-   Memorization: Automated evaluation of memorization of training data,\n    including the risk of personally identifiable information exposure.\n-   Large-scale harm: Tests for \"dangerous capabilities,\" such as chemical,\n    biological, radiological, and nuclear (CBRN) risks.\n\n## Usage and Limitations\n\nThese models have certain limitations that users should be aware of.\n\n### Intended Usage\n\nOpen Large Language Models (LLMs) have a wide range of applications across\nvarious industries and domains. The following list of potential uses is not\ncomprehensive. The purpose of this list is to provide contextual information\nabout the possible use-cases that the model creators considered as part of model\ntraining and development.\n\n-   Content Creation and Communication\n    -   Text Generation: These models can be used to generate creative\n        text formats such as poems, scripts, code, marketing copy, and email drafts.\n    -   Chatbots and Conversational AI: Power conversational interfaces\n        for customer service, virtual assistants, or interactive applications.\n    -   Text Summarization: Generate concise summaries of a text corpus,\n        research papers, or reports.\n-   Research and Education\n    -   Natural Language Processing (NLP) Research: These models can\n        serve as a foundation for researchers to experiment with NLP\n        techniques, develop algorithms, and contribute to the advancement of the field.\n    -   Language Learning Tools: Support interactive language learning\n        experiences, aiding in grammar correction or providing writing practice.\n    -   Knowledge Exploration: Assist researchers in exploring large\n        bodies of text by generating summaries or answering questions about\n        specific topics.\n\n### Limitations\n\n-   Training Data\n    -   The quality and diversity of the training data significantly\n        influence the model's capabilities. Biases or gaps in the training data\n        can lead to limitations in the model's responses.\n    -   The scope of the training dataset determines the subject areas\n        the model can handle effectively.\n-   Context and Task Complexity\n    -   LLMs are better at tasks that can be framed with clear prompts\n        and instructions. Open-ended or highly complex tasks might be challenging.\n    -   A model's performance can be influenced by the amount of context\n        provided (longer context generally leads to better outputs, up to a\n        certain point).\n-   Language Ambiguity and Nuance\n    -   Natural language is inherently complex. LLMs might struggle to\n        grasp subtle nuances, sarcasm, or figurative language.\n-   Factual Accuracy\n    -   LLMs generate responses based on information they learned from\n        their training datasets, but they are not knowledge bases. They may\n        generate incorrect or outdated factual statements.\n-   Common Sense\n    -   LLMs rely on statistical patterns in language. They might lack\n        the ability to apply common sense reasoning in certain situations.\n\n### Ethical Considerations and Risks\n\nThe development of large language models (LLMs) raises several ethical\nconcerns. In creating an open model, we have carefully considered the\nfollowing:\n\n-   Bias and Fairness\n    -   LLMs trained on large-scale, real-world text data can reflect\n        socio-cultural biases embedded in the training material. These models\n        underwent careful scrutiny, input data pre-processing described and\n        posterior evaluations reported in this card.\n-   Misinformation and Misuse\n    -   LLMs can be misused to generate text that is false, misleading,\n        or harmful.\n    -   Guidelines are provided for responsible use with the model, see\n        the [Responsible Generative AI Toolkit](https://ai.google.dev/responsible).\n-   Transparency and Accountability:\n    -   This model card summarizes details on the models' architecture,\n        capabilities, limitations, and evaluation processes.\n    -   A responsibly developed open model offers the opportunity to\n        share innovation by making LLM technology accessible to developers and\n        researchers across the AI ecosystem.\n\nRisks identified and mitigations:\n\n-   Perpetuation of biases: It's encouraged to perform continuous\n    monitoring (using evaluation metrics, human review) and the exploration of\n    de-biasing techniques during model training, fine-tuning, and other use cases.\n-   Generation of harmful content: Mechanisms and guidelines for content\n    safety are essential. Developers are encouraged to exercise caution and\n    implement appropriate content safety safeguards based on their specific\n    product policies and application use cases.\n-   Misuse for malicious purposes: Technical limitations and developer and\n    end-user education can help mitigate against malicious applications of\n    LLMs. Educational resources and reporting mechanisms for users to flag\n    misuse are provided. Prohibited uses of Gemma models are outlined in the\n    [Gemma Prohibited Use Policy](https://ai.google.dev/gemma/prohibited_use_policy).\n-   Privacy violations: Models were trained on data filtered for removal of\n    PII (Personally Identifiable Information). Developers are encouraged to\n    adhere to privacy regulations with privacy-preserving techniques.\n\n### Benefits\n\nAt the time of release, this family of models provides high-performance open\nlarge language model implementations designed from the ground up for Responsible\nAI development compared to similarly sized models.\n",
+  "cardDataParsed": {
+    "license": "gemma",
+    "library_name": "transformers",
+    "pipeline_tag": "text-generation",
+    "extra_gated_heading": "Access Gemma on Hugging Face",
+    "extra_gated_prompt": "To access Gemma on Hugging Face, you\u2019re required to review and agree to Google\u2019s usage license. To do this, please ensure you\u2019re logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license",
+    "tags": [
+      "conversational"
+    ],
+    "base_model": "google/gemma-2-2b-it",
+    "language": [
+      "ja"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

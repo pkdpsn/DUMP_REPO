@@ -1,0 +1,130 @@
+{
+  "modelId": "nvidia/segformer-b3-finetuned-cityscapes-1024-1024",
+  "author": "nvidia",
+  "sha": "7fd6d07f04d2511d4efd22e0fd99c004555433b6",
+  "lastModified": "2022-08-09 11:32:45+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "segformer",
+    "vision",
+    "image-segmentation",
+    "dataset:cityscapes",
+    "arxiv:2105.15203",
+    "license:other",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-segmentation",
+  "library_name": "transformers",
+  "likes": 5,
+  "downloads": 2132,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "cityscapes"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "other",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "image-segmentation"
+    ],
+    "widget": [
+      {
+        "src": "https://cdn-media.huggingface.co/Inference-API/Sample-results-on-the-Cityscapes-dataset-The-above-images-show-how-our-method-can-handle.png",
+        "example_title": "Road"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "SegformerForSemanticSegmentation"
+    ],
+    "model_type": "segformer"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3017,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1682,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 272,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 189204985,
+      "lfs": {
+        "size": 189204985,
+        "sha256": "4b3916b8781255eaa6b596be75eb4610001e2ff18083a4aa897539e1d1f41f3f",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 189787044,
+      "lfs": {
+        "size": 189787044,
+        "sha256": "c522e7c5c3416e9c2009fbd90cd6e36912b8d9d8b1cd0c591e1be4daadbfb343",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: other\ntags:\n- vision\n- image-segmentation\ndatasets:\n- cityscapes\nwidget:\n- src: https://cdn-media.huggingface.co/Inference-API/Sample-results-on-the-Cityscapes-dataset-The-above-images-show-how-our-method-can-handle.png\n  example_title: Road\n---\n\n# SegFormer (b3-sized) model fine-tuned on CityScapes\n\nSegFormer model fine-tuned on CityScapes at resolution 1024x1024. It was introduced in the paper [SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers](https://arxiv.org/abs/2105.15203) by Xie et al. and first released in [this repository](https://github.com/NVlabs/SegFormer). \n\nDisclaimer: The team releasing SegFormer did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nSegFormer consists of a hierarchical Transformer encoder and a lightweight all-MLP decode head to achieve great results on semantic segmentation benchmarks such as ADE20K and Cityscapes. The hierarchical Transformer is first pre-trained on ImageNet-1k, after which a decode head is added and fine-tuned altogether on a downstream dataset.\n\n## Intended uses & limitations\n\nYou can use the raw model for semantic segmentation. See the [model hub](https://huggingface.co/models?other=segformer) to look for fine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model to classify an image of the COCO 2017 dataset into one of the 1,000 ImageNet classes:\n\n```python\nfrom transformers import SegformerFeatureExtractor, SegformerForSemanticSegmentation\nfrom PIL import Image\nimport requests\n\nfeature_extractor = SegformerFeatureExtractor.from_pretrained(\"nvidia/segformer-b3-finetuned-cityscapes-1024-1024\")\nmodel = SegformerForSemanticSegmentation.from_pretrained(\"nvidia/segformer-b3-finetuned-cityscapes-1024-1024\")\n\nurl = \"http://images.cocodataset.org/val2017/000000039769.jpg\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\ninputs = feature_extractor(images=image, return_tensors=\"pt\")\noutputs = model(**inputs)\nlogits = outputs.logits  # shape (batch_size, num_labels, height/4, width/4)\n```\n\nFor more code examples, we refer to the [documentation](https://huggingface.co/transformers/model_doc/segformer.html#).\n\n### BibTeX entry and citation info\n\n```bibtex\n@article{DBLP:journals/corr/abs-2105-15203,\n  author    = {Enze Xie and\n               Wenhai Wang and\n               Zhiding Yu and\n               Anima Anandkumar and\n               Jose M. Alvarez and\n               Ping Luo},\n  title     = {SegFormer: Simple and Efficient Design for Semantic Segmentation with\n               Transformers},\n  journal   = {CoRR},\n  volume    = {abs/2105.15203},\n  year      = {2021},\n  url       = {https://arxiv.org/abs/2105.15203},\n  eprinttype = {arXiv},\n  eprint    = {2105.15203},\n  timestamp = {Wed, 02 Jun 2021 11:46:42 +0200},\n  biburl    = {https://dblp.org/rec/journals/corr/abs-2105-15203.bib},\n  bibsource = {dblp computer science bibliography, https://dblp.org}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "other",
+    "tags": [
+      "vision",
+      "image-segmentation"
+    ],
+    "datasets": [
+      "cityscapes"
+    ],
+    "widget": [
+      {
+        "src": "https://cdn-media.huggingface.co/Inference-API/Sample-results-on-the-Cityscapes-dataset-The-above-images-show-how-our-method-can-handle.png",
+        "example_title": "Road"
+      }
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "SegformerForSemanticSegmentation",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": "AutoImageProcessor"
+  }
+}

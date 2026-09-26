@@ -1,0 +1,107 @@
+{
+  "modelId": "microsoft/unispeech-sat-large-sv",
+  "author": "microsoft",
+  "sha": "5448decbeb9ee3546551f8cbc540eb9af8320360",
+  "lastModified": "2021-12-17 18:13:15+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "unispeech-sat",
+    "audio-xvector",
+    "speech",
+    "en",
+    "arxiv:1912.07875",
+    "arxiv:2106.06909",
+    "arxiv:2101.00390",
+    "arxiv:2110.05752",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 5,
+  "downloads": 447,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "speech"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "UniSpeechSatForXVector"
+    ],
+    "model_type": "unispeech-sat"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3947,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 58132,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 212,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1289372369,
+      "lfs": {
+        "size": 1289372369,
+        "sha256": "87f4fedc1b0f16caa57f41a4a4ee25c61fea738410ac5b34d39dbafba28f2c79",
+        "pointer_size": 135
+      }
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\ntags:\n- speech\n---\n\n# UniSpeech-SAT-Large for Speaker Verification\n\n[Microsoft's UniSpeech](https://www.microsoft.com/en-us/research/publication/unispeech-unified-speech-representation-learning-with-labeled-and-unlabeled-data/)\n\nThe model was pretrained on 16kHz sampled speech audio with utterance and speaker contrastive loss. When using the model, make sure that your speech input is also sampled at 16kHz. \n\nThe model was pre-trained on:\n\n- 60,000 hours of [Libri-Light](https://arxiv.org/abs/1912.07875)\n- 10,000 hours of [GigaSpeech](https://arxiv.org/abs/2106.06909)\n- 24,000 hours of [VoxPopuli](https://arxiv.org/abs/2101.00390)\n\n[Paper: UNISPEECH-SAT: UNIVERSAL SPEECH REPRESENTATION LEARNING WITH SPEAKER\nAWARE PRE-TRAINING](https://arxiv.org/abs/2110.05752)\n\nAuthors: Sanyuan Chen, Yu Wu, Chengyi Wang, Zhengyang Chen, Zhuo Chen, Shujie Liu, Jian Wu, Yao Qian, Furu Wei, Jinyu Li, Xiangzhan Yu\n\n**Abstract**\n*Self-supervised learning (SSL) is a long-standing goal for speech processing, since it utilizes large-scale unlabeled data and avoids extensive human labeling. Recent years witness great successes in applying self-supervised learning in speech recognition, while limited exploration was attempted in applying SSL for modeling speaker characteristics. In this paper, we aim to improve the existing SSL framework for speaker representation learning. Two methods are introduced for enhancing the unsupervised speaker information extraction. First, we apply the multi-task learning to the current SSL framework, where we integrate the utterance-wise contrastive loss with the SSL objective function. Second, for better speaker discrimination, we propose an utterance mixing strategy for data augmentation, where additional overlapped utterances are created unsupervisely and incorporate during training. We integrate the proposed methods into the HuBERT framework. Experiment results on SUPERB benchmark show that the proposed system achieves state-of-the-art performance in universal representation learning, especially for speaker identification oriented tasks. An ablation study is performed verifying the efficacy of each proposed method. Finally, we scale up training dataset to 94 thousand hours public audio data and achieve further performance improvement in all SUPERB tasks..*\n\nThe original model can be found under https://github.com/microsoft/UniSpeech/tree/main/UniSpeech-SAT.\n\n# Fine-tuning details\n\nThe model is fine-tuned on the [VoxCeleb1 dataset](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1.html) using an X-Vector head with an Additive Margin Softmax loss\n\n[X-Vectors: Robust DNN Embeddings for Speaker Recognition](https://www.danielpovey.com/files/2018_icassp_xvectors.pdf)\n\n# Usage\n\n## Speaker Verification\n\n```python\nfrom transformers import Wav2Vec2FeatureExtractor, UniSpeechSatForXVector\nfrom datasets import load_dataset\nimport torch\n\ndataset = load_dataset(\"hf-internal-testing/librispeech_asr_demo\", \"clean\", split=\"validation\")\n\nfeature_extractor = Wav2Vec2FeatureExtractor.from_pretrained('microsoft/unispeech-sat-large-sv')\nmodel = UniSpeechSatForXVector.from_pretrained('microsoft/unispeech-sat-large-sv')\n\n# audio files are decoded on the fly\ninputs = feature_extractor(dataset[:2][\"audio\"][\"array\"], return_tensors=\"pt\")\nembeddings = model(**inputs).embeddings\nembeddings = torch.nn.functional.normalize(embeddings, dim=-1).cpu()\n\n# the resulting embeddings can be used for cosine similarity-based retrieval\ncosine_sim = torch.nn.CosineSimilarity(dim=-1)\nsimilarity = cosine_sim(embeddings[0], embeddings[1])\nthreshold = 0.89  # the optimal threshold is dataset-dependent\nif similarity < threshold:\n    print(\"Speakers are not the same!\")\n```\n\n# License\n\nThe official license can be found [here](https://github.com/microsoft/UniSpeech/blob/main/LICENSE)\n\n![design](https://raw.githubusercontent.com/patrickvonplaten/scientific_images/master/UniSpeechSAT.png)",
+  "cardDataParsed": {
+    "language": [
+      "en"
+    ],
+    "datasets": null,
+    "tags": [
+      "speech"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForAudioXVector",
+    "custom_class": null,
+    "pipeline_tag": "audio-xvector",
+    "processor": "AutoProcessor"
+  }
+}

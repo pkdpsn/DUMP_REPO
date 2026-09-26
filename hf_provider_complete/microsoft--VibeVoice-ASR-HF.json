@@ -1,0 +1,399 @@
+{
+  "modelId": "microsoft/VibeVoice-ASR-HF",
+  "author": "microsoft",
+  "sha": "f22241c2062b3b25272bf117397e03d73381037a",
+  "lastModified": "2026-03-09 03:11:35+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "vibevoice_asr",
+    "automatic-speech-recognition",
+    "ASR",
+    "Diarization",
+    "Speech-to-Text",
+    "Transcription",
+    "audio-text-to-text",
+    "en",
+    "zh",
+    "es",
+    "pt",
+    "de",
+    "ja",
+    "ko",
+    "fr",
+    "ru",
+    "id",
+    "sv",
+    "it",
+    "he",
+    "nl",
+    "pl",
+    "no",
+    "tr",
+    "th",
+    "ar",
+    "hu",
+    "ca",
+    "cs",
+    "da",
+    "fa",
+    "af",
+    "hi",
+    "fi",
+    "et",
+    "aa",
+    "el",
+    "ro",
+    "vi",
+    "bg",
+    "is",
+    "sl",
+    "sk",
+    "lt",
+    "sw",
+    "uk",
+    "kl",
+    "lv",
+    "hr",
+    "ne",
+    "sr",
+    "tl",
+    "yi",
+    "ms",
+    "ur",
+    "mn",
+    "hy",
+    "jv",
+    "arxiv:2601.18184",
+    "license:mit",
+    "eval-results",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "audio-text-to-text",
+  "library_name": "transformers",
+  "likes": 180,
+  "downloads": 57534,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "zh",
+      "es",
+      "pt",
+      "de",
+      "ja",
+      "ko",
+      "fr",
+      "ru",
+      "id",
+      "sv",
+      "it",
+      "he",
+      "nl",
+      "pl",
+      "no",
+      "tr",
+      "th",
+      "ar",
+      "hu",
+      "ca",
+      "cs",
+      "da",
+      "fa",
+      "af",
+      "hi",
+      "fi",
+      "et",
+      "aa",
+      "el",
+      "ro",
+      "vi",
+      "bg",
+      "is",
+      "sl",
+      "sk",
+      "lt",
+      "sw",
+      "uk",
+      "kl",
+      "lv",
+      "hr",
+      "ne",
+      "sr",
+      "tl",
+      "yi",
+      "ms",
+      "ur",
+      "mn",
+      "hy",
+      "jv"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "audio-text-to-text",
+    "tags": [
+      "ASR",
+      "Diarization",
+      "Speech-to-Text",
+      "Transcription"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "VibeVoiceAsrForConditionalGeneration"
+    ],
+    "model_type": "vibevoice_asr",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- set system_prompt = system_prompt | default(\"You are a helpful assistant that transcribes audio input into text output in JSON format.\") -%}\n<|im_start|>system\n{{ system_prompt }}<|im_end|>\n{%- set audio_token = audio_token | default(\"<|box_start|>\") -%}\n{%- set audio_start_token = \"<|object_ref_start|>\" -%}\n{%- set audio_end_token = \"<|object_ref_end|>\" -%}\n{%- for message in messages -%}\n    {%- if message['role'] == 'user' -%}\n{{ '\n' }}<|im_start|>user{{ '\n' }}{%- set text_items = message['content'] | selectattr('type', 'equalto', 'text') | list -%}\n        {%- set context_text = text_items[0]['text'] if text_items else none -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'audio' -%}\n{{ audio_start_token }}{{ audio_token }}{{ audio_end_token }}{{ \"\n\" }}{%- if context_text -%}\nThis is a <|AUDIO_DURATION|> seconds audio, with extra info: {{ context_text }}\n\nPlease transcribe it with these keys: Start time, End time, Speaker ID, Content{%- else -%}\nThis is a <|AUDIO_DURATION|> seconds audio, please transcribe it with these keys: Start time, End time, Speaker ID, Content{%- endif -%}\n            {%- endif -%}\n        {%- endfor -%}\n<|im_end|>{{ '\n' }}\n    {%- endif -%}\n{%- endfor -%}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1719,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 21790,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1243,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2920,
+      "lfs": null
+    },
+    {
+      "rfilename": "figures/DER.jpg",
+      "size": 62653,
+      "lfs": null
+    },
+    {
+      "rfilename": "figures/VibeVoice_ASR_archi.png",
+      "size": 149474,
+      "lfs": {
+        "size": 149474,
+        "sha256": "c5973094212c6c5c9c0bba6ee274e396ddbb272d8642f86c0d96c5b9e85dd52b",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "figures/cpWER.jpg",
+      "size": 68492,
+      "lfs": null
+    },
+    {
+      "rfilename": "figures/language_distribution_horizontal.png",
+      "size": 888409,
+      "lfs": {
+        "size": 888409,
+        "sha256": "1151d7587c660c7417df0194bbb7aeefe02a6be5a3ba8a89203d52a3602fa700",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "figures/tcpWER.jpg",
+      "size": 64251,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 281,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00008.safetensors",
+      "size": 2488346304,
+      "lfs": {
+        "size": 2488346304,
+        "sha256": "580189757a1c737ecc6fad16e633b922bc73220268356e31362c24365f081095",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00008.safetensors",
+      "size": 2389316008,
+      "lfs": {
+        "size": 2389316008,
+        "sha256": "65e419d28fc8c87d6938ec611c7b425b38e391c80a2df59c2b4935f6fd65c7c2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00008.safetensors",
+      "size": 2466376400,
+      "lfs": {
+        "size": 2466376400,
+        "sha256": "30f574c764550d26c654cc3f5dd000b90b0c3305db955267c577001c1013fdf7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00008.safetensors",
+      "size": 2466376432,
+      "lfs": {
+        "size": 2466376432,
+        "sha256": "8fa3d9350f0a8cc97524617ff582e451159bfdba2ef0b2e372a627518ef681b1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00008.safetensors",
+      "size": 2499431160,
+      "lfs": {
+        "size": 2499431160,
+        "sha256": "5015ecacc86d897d20d5e42ba52ef83355d42f587d3b158ff897ec94847bd083",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00008.safetensors",
+      "size": 1831435704,
+      "lfs": {
+        "size": 1831435704,
+        "sha256": "7463d75607185c118925cea6a60a5698aaa6f428e626bcee774572bdc28ef55d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00008.safetensors",
+      "size": 2482226384,
+      "lfs": {
+        "size": 2482226384,
+        "sha256": "b52aa2fab9640bcac5201a278f540b018c439ed4e99516d9ff30ea1ae399525e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00008.safetensors",
+      "size": 37262376,
+      "lfs": {
+        "size": 37262376,
+        "sha256": "a66ced85b619507e1970dc51be45786ff55803ccc63658765e412ea23d9a8ace",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 91965,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 537,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11421892,
+      "lfs": {
+        "size": 11421892,
+        "sha256": "3fd169731d2cbde95e10bf356d66d5997fd885dd8dbb6fb4684da3f23b2585d8",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 714,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\n- zh\n- es\n- pt\n- de\n- ja\n- ko\n- fr\n- ru\n- id\n- sv\n- it\n- he\n- nl\n- pl\n- 'no'\n- tr\n- th\n- ar\n- hu\n- ca\n- cs\n- da\n- fa\n- af\n- hi\n- fi\n- et\n- aa\n- el\n- ro\n- vi\n- bg\n- is\n- sl\n- sk\n- lt\n- sw\n- uk\n- kl\n- lv\n- hr\n- ne\n- sr\n- tl\n- yi\n- ms\n- ur\n- mn\n- hy\n- jv\nlicense: mit\npipeline_tag: audio-text-to-text\ntags:\n- ASR\n- Diarization\n- Speech-to-Text\n- Transcription\nlibrary_name: transformers\n---\n\n\n## VibeVoice-ASR (Transformers-compatible version)\n[![GitHub](https://img.shields.io/badge/GitHub-Repo-black?logo=github)](https://github.com/microsoft/VibeVoice)\n[![Deploy on Foundry](https://img.shields.io/badge/Deploy-on_Foundry-blue?logo=microsoft)](https://huggingface.co/docs/microsoft-azure/foundry/guides/vibevoice-asr)\n[![Live Playground](https://img.shields.io/badge/Live-Playground-green?logo=gradio)](https://aka.ms/vibevoice-asr)\n[![Technical Report](https://img.shields.io/badge/arXiv-2601.18184-b31b1b?logo=arxiv)](https://arxiv.org/pdf/2601.18184)\n\n**VibeVoice-ASR** is a unified speech-to-text model designed to handle **60-minute long-form audio** in a single pass, generating structured transcriptions containing **Who (Speaker), When (Timestamps), and What (Content)**, with support for **Customized Hotwords** and over **50 languages**.\n\n\u27a1\ufe0f **Demo:** [VibeVoice-ASR-Demo](https://aka.ms/vibevoice-asr)<br>\n\u27a1\ufe0f **Report:** [VibeVoice-ASR Technical Report](https://arxiv.org/pdf/2601.18184)<br>\n\n<p align=\"left\">\n  <img src=\"figures/VibeVoice_ASR_archi.png\" alt=\"VibeVoice-ASR Architecture\" height=\"250px\">\n</p>\n\n\n## \ud83d\udd25 Key Features\n\n\n- **\ud83d\udd52 60-minute Single-Pass Processing**:\n  Unlike conventional ASR models that slice audio into short chunks (often losing global context), VibeVoice ASR accepts up to **60 minutes** of continuous audio input within 64K token length. This ensures consistent speaker tracking and semantic coherence across the entire hour.\n\n- **\ud83d\udc64 Customized Hotwords**:\n  Users can provide customized hotwords (e.g., specific names, technical terms, or background info) to guide the recognition process, significantly improving accuracy on domain-specific content.\n\n- **\ud83d\udcdd Rich Transcription (Who, When, What)**:\n  The model jointly performs ASR, diarization, and timestamping, producing a structured output that indicates *who* said *what* and *when*.\n  \n- **\ud83c\udf0d Multilingual & Code-Switching Support**:\n  It supports over 50 languages, requires no explicit language setting, and natively handles code-switching within and across utterances. Language distribution can be found [here](#language-distribution).\n\n\n## Usage\n\n### Setup\n\nVibeVoice-ASR is available as of v5.3.0 of Transformers!\n\n```\npip install \"transformers>=5.3.0\"\n```\n\n### Loading model\n\n```python\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id)\n```\n\n### Speaker-timestamped transcription\n\nA notable feature of VibeVoice ASR is its ability to transcribe multi-speaker content, denoting who spoke and when.\n\nThe example below transcribes the following audio.\n\n<audio controls>\n  <source src=\"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/example_output/VibeVoice-1.5B_output.wav\" type=\"audio/wav\">\n</audio>\n\n```python\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\nprint(f\"Model loaded on {model.device} with dtype {model.dtype}\")\n\n# Prepare inputs using `apply_transcription_request`\ninputs = processor.apply_transcription_request(\n    audio=\"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/example_output/VibeVoice-1.5B_output.wav\",\n).to(model.device, model.dtype)\n\n# Apply model\noutput_ids = model.generate(**inputs)\ngenerated_ids = output_ids[:, inputs[\"input_ids\"].shape[1] :]\ntranscription = processor.decode(generated_ids)[0]\nprint(\"\\n\" + \"=\" * 60)\nprint(\"RAW OUTPUT\")\nprint(\"=\" * 60)\nprint(transcription)\n\ntranscription = processor.decode(generated_ids, return_format=\"parsed\")[0]\nprint(\"\\n\" + \"=\" * 60)\nprint(\"TRANSCRIPTION (list of dicts)\")\nprint(\"=\" * 60)\nfor speaker_transcription in transcription:\n    print(speaker_transcription)\n\n# Remove speaker labels, only get raw transcription\ntranscription = processor.decode(generated_ids, return_format=\"transcription_only\")[0]\nprint(\"\\n\" + \"=\" * 60)\nprint(\"TRANSCRIPTION ONLY\")\nprint(\"=\" * 60)\nprint(transcription)\n\n\"\"\"\n============================================================\nRAW OUTPUT\n============================================================\n<|im_start|>assistant\n[{\"Start\":0,\"End\":15.43,\"Speaker\":0,\"Content\":\"Hello everyone and welcome to the Vibe Voice podcast. I'm your host, Alex, and today we're getting into one of the biggest debates in all of sports: who's the greatest basketball player of all time? I'm so excited to have Sam here to talk about it with me.\"},{\"Start\":15.43,\"End\":21.05,\"Speaker\":1,\"Content\":\"Thanks so much for having me, Alex. And you're absolutely right. This question always brings out some seriously strong feelings.\"},{\"Start\":21.05,\"End\":31.66,\"Speaker\":0,\"Content\":\"Okay, so let's get right into it. For me, it has to be Michael Jordan. Six trips to the finals, six championships. That kind of perfection is just incredible.\"},{\"Start\":31.66,\"End\":40.93,\"Speaker\":1,\"Content\":\"Oh man, the first thing that always pops into my head is that shot against the Cleveland Cavaliers back in '89. Jordan just rises, hangs in the air forever, and just sinks it.\"}]<|im_end|>\n<|endoftext|>\n\n============================================================\nTRANSCRIPTION (list of dicts)\n============================================================\n{'Start': 0, 'End': 15.43, 'Speaker': 0, 'Content': \"Hello everyone and welcome to the Vibe Voice podcast. I'm your host, Alex, and today we're getting into one of the biggest debates in all of sports: who's the greatest basketball player of all time? I'm so excited to have Sam here to talk about it with me.\"}\n{'Start': 15.43, 'End': 21.05, 'Speaker': 1, 'Content': \"Thanks so much for having me, Alex. And you're absolutely right. This question always brings out some seriously strong feelings.\"}\n{'Start': 21.05, 'End': 31.66, 'Speaker': 0, 'Content': \"Okay, so let's get right into it. For me, it has to be Michael Jordan. Six trips to the finals, six championships. That kind of perfection is just incredible.\"}\n{'Start': 31.66, 'End': 40.93, 'Speaker': 1, 'Content': \"Oh man, the first thing that always pops into my head is that shot against the Cleveland Cavaliers back in '89. Jordan just rises, hangs in the air forever, and just sinks it.\"}\n\n============================================================\nTRANSCRIPTION ONLY\n============================================================\nHello everyone and welcome to the Vibe Voice podcast. I'm your host, Alex, and today we're getting into one of the biggest debates in all of sports: who's the greatest basketball player of all time? I'm so excited to have Sam here to talk about it with me. Thanks so much for having me, Alex. And you're absolutely right. This question always brings out some seriously strong feelings. Okay, so let's get right into it. For me, it has to be Michael Jordan. Six trips to the finals, six championships. That kind of perfection is just incredible. Oh man, the first thing that always pops into my head is that shot against the Cleveland Cavaliers back in '89. Jordan just rises, hangs in the air forever, and just sinks it.\n\"\"\"\n```\n\nThe VibeVoice ASR model is trained to generate a string that resembles a JSON structure. The flag `return_format=\"parsed\"` tries to return the generated output as a list of dicts, while `return_format=\"transcription_only\"` tries to extract only the transcribed audio. If they fail, the generated output is returned as-is.\n\n### Providing context\n\nIt is also possible to provide context. This can be useful if certain words cannot be transcribed correctly, such as proper nouns.\n\nBelow we transcribe an audio where the speaker (with a German accent) talks about VibeVoice, comparing with and without the context \"About VibeVoice\".\n\n<audio controls>\n  <source src=\"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\" type=\"audio/wav\">\n</audio>\n\n```python\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\nprint(f\"Model loaded on {model.device} with dtype {model.dtype}\")\n\n# Without context\ninputs = processor.apply_transcription_request(\n    audio=\"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n).to(model.device, model.dtype)\noutput_ids = model.generate(**inputs)\ngenerated_ids = output_ids[:, inputs[\"input_ids\"].shape[1] :]\ntranscription = processor.decode(generated_ids, return_format=\"transcription_only\")[0]\nprint(f\"WITHOUT CONTEXT: {transcription}\")\n\n# With context\ninputs = processor.apply_transcription_request(\n    audio=\"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n    prompt=\"About VibeVoice\",\n).to(model.device, model.dtype)\noutput_ids = model.generate(**inputs)\ngenerated_ids = output_ids[:, inputs[\"input_ids\"].shape[1] :]\ntranscription = processor.decode(generated_ids, return_format=\"transcription_only\")[0]\nprint(f\"WITH CONTEXT   : {transcription}\")\n\n\"\"\"\nWITHOUT CONTEXT: Revevoices is a novel framework designed for generating expressive, long-form, multi-speaker conversational audio.\nWITH CONTEXT   : VibeVoice is this novel framework designed for generating expressive, long-form, multi-speaker, conversational audio.\n\"\"\"\n```\n\n\n### Batch inference\n\nBatch inference is possible by passing a list of audio and (if provided) a list of prompts of equal length.\n\n```python\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\naudio = [\n    \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n    \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/example_output/VibeVoice-1.5B_output.wav\"\n]\nprompts = [\"About VibeVoice\", None]\n\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\nprint(f\"Model loaded on {model.device} with dtype {model.dtype}\")\n\ninputs = processor.apply_transcription_request(audio, prompt=prompts).to(model.device, model.dtype)\noutput_ids = model.generate(**inputs)\ngenerated_ids = output_ids[:, inputs[\"input_ids\"].shape[1] :]\ntranscription = processor.decode(generated_ids, return_format=\"transcription_only\")\n\nprint(transcription)\n```\n\n### Adjusting tokenizer chunk (e.g. if out-of-memory)\n\nA key feature of VibeVoice ASR is that it can transcribe up to 60 minutes of continuous audio. This is done by chunking audio into 60-second segments (1440000 samples at 24kHz) and caching the convolution states between each segment.\n\nHowever, if chunks of 60 seconds are too large for your device, the `tokenizer_chunk_size` argument passed to `generate` can be adjusted. *Note it should be a multiple of the hop length (3200 for the original acoustic tokenizer).*\n\n```python\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\ntokenizer_chunk_size = 64000    # default is 1440000 (60s @ 24kHz)\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\naudio = [\n    \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n    \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/example_output/VibeVoice-1.5B_output.wav\"\n]\nprompts = [\"About VibeVoice\", None]\n\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\nprint(f\"Model loaded on {model.device} with dtype {model.dtype}\")\n\ninputs = processor.apply_transcription_request(audio, prompt=prompts).to(model.device, model.dtype)\noutput_ids = model.generate(**inputs, tokenizer_chunk_size=tokenizer_chunk_size)\ngenerated_ids = output_ids[:, inputs[\"input_ids\"].shape[1] :]\ntranscription = processor.decode(generated_ids, return_format=\"transcription_only\")\nprint(transcription)\n```\n\n### Chat template\n\nVibeVoice ASR also accepts chat template inputs (`apply_transcription_request` is actually a wrapper for `apply_chat_template` for convenience):\n```python\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\n\nchat_template = [\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\"type\": \"text\", \"text\": \"About VibeVoice\"},\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n                },\n            ],\n        }\n    ],\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/example_output/VibeVoice-1.5B_output.wav\",\n                },\n            ],\n        }\n    ],\n]\n\ninputs = processor.apply_chat_template(\n    chat_template,\n    tokenize=True,\n    return_dict=True,\n).to(model.device, model.dtype)\n\noutput_ids = model.generate(**inputs)\ngenerated_ids = output_ids[:, inputs[\"input_ids\"].shape[1] :]\ntranscription = processor.decode(generated_ids, return_format=\"transcription_only\")\nprint(transcription)\n```\n\n### Training\n\nVibeVoice ASR can be trained with the loss outputted by the model.\n\n```python\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id, device_map=\"auto\")\nmodel.train()\n\n# Prepare batch of 2\n# -- NOTE: the original model is trained to output transcription, speaker ID, and timestamps in JSON-like format. Below we are only using the transcription text as the label\nchat_template = [\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\"type\": \"text\", \"text\": \"VibeVoice is this novel framework designed for generating expressive, long-form, multi-speaker, conversational audio.\"},\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n                },\n            ],\n        }\n    ],\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\"type\": \"text\", \"text\": \"Hello everyone and welcome to the VibeVoice podcast. I'm your host, Alex, and today we're getting into one of the biggest debates in all of sports: who's the greatest basketball player of all time? I'm so excited to have Sam here to talk about it with me. Thanks so much for having me, Alex. And you're absolutely right. This question always brings out some seriously strong feelings. Okay, so let's get right into it. For me, it has to be Michael Jordan. Six trips to the finals, six championships. That kind of perfection is just incredible. Oh man, the first thing that always pops into my head is that shot against the Cleveland Cavaliers back in '89. Jordan just rises, hangs in the air forever, and just sinks it.\"},\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/example_output/VibeVoice-1.5B_output.wav\",\n                },\n            ],\n        }\n    ],\n]\ninputs = processor.apply_chat_template(\n    chat_template,\n    tokenize=True,\n    return_dict=True,\n    output_labels=True,\n).to(model.device, model.dtype)\n\nloss = model(**inputs).loss\nprint(\"Loss:\", loss.item())\nloss.backward()\n```\n\n### Torch compile\n\nThe model can be compiled for faster inference/training.\n```python\nimport time\nimport torch\nfrom transformers import AutoProcessor, VibeVoiceAsrForConditionalGeneration\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\n\nnum_warmup = 5\nnum_runs = 20\n\n# Load processor + model\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = VibeVoiceAsrForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.bfloat16,).to(\"cuda\")\n\n# Prepare static inputs\nchat_template = [\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"text\",\n                    \"text\": \"VibeVoice is this novel framework designed for generating expressive, long-form, multi-speaker, conversational audio.\",\n                },\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n                },\n            ],\n        }\n    ],\n] * 4  # batch size 4\ninputs = processor.apply_chat_template(\n    chat_template,\n    tokenize=True,\n    return_dict=True,\n).to(\"cuda\", torch.bfloat16)\n\n# Benchmark without compile\nprint(\"Warming up without compile...\")\nwith torch.no_grad():\n    for _ in range(num_warmup):\n        _ = model(**inputs)\n\ntorch.cuda.synchronize()\n\nprint(\"\\nBenchmarking without torch.compile...\")\ntorch.cuda.synchronize()\nstart = time.time()\nwith torch.no_grad():\n    for _ in range(num_runs):\n        _ = model(**inputs)\ntorch.cuda.synchronize()\nno_compile_time = (time.time() - start) / num_runs\nprint(f\"Average time without compile: {no_compile_time:.4f}s\")\n\n# Benchmark with compile\nprint(\"\\nCompiling model...\")\nmodel = torch.compile(model)\n\nprint(\"Warming up with compile (includes graph capture)...\")\nwith torch.no_grad():\n    for _ in range(num_warmup):\n        _ = model(**inputs)\n\ntorch.cuda.synchronize()\n\nprint(\"\\nBenchmarking with torch.compile...\")\ntorch.cuda.synchronize()\nstart = time.time()\nwith torch.no_grad():\n    for _ in range(num_runs):\n        _ = model(**inputs)\ntorch.cuda.synchronize()\ncompile_time = (time.time() - start) / num_runs\nprint(f\"Average time with compile: {compile_time:.4f}s\")\n\nspeedup = no_compile_time / compile_time\nprint(f\"\\nSpeedup: {speedup:.2f}x\")\n```\n\n### Pipeline usage\n\nThe model can be used as a pipeline, but you will have to define your own methods for parsing the raw output.\n\n```python\nfrom transformers import pipeline\n\nmodel_id = \"microsoft/VibeVoice-ASR-HF\"\npipe = pipeline(\"any-to-any\", model=model_id, device_map=\"auto\")\nchat_template = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\"type\": \"text\", \"text\": \"About VibeVoice\"},\n            {\n                \"type\": \"audio\",\n                \"path\": \"https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav\",\n            },\n        ],\n    }\n]\noutputs = pipe(text=chat_template, return_full_text=False)\n\nprint(\"\\n\" + \"=\" * 60)\nprint(\"RAW PIPELINE OUTPUT\")\nprint(\"=\" * 60)\nprint(outputs)\n\n\"\"\"\n============================================================\nRAW PIPELINE OUTPUT\n============================================================\n[{'input_text': [{'role': 'user', 'content': [{'type': 'text', 'text': 'About VibeVoice'}, {'type': 'audio', 'path': 'https://huggingface.co/datasets/bezzam/vibevoice_samples/resolve/main/realtime_model/vibevoice_tts_german.wav'}]}], 'generated_text': 'assistant\\n[{\"Start\":0.0,\"End\":7.56,\"Speaker\":0,\"Content\":\"VibeVoice is this novel framework designed for generating expressive, long-form, multi-speaker conversational audio.\"}]\\n'}]\n\"\"\"\n```\n\n## Evaluation\n\nBelow are results from the [technical report](https://arxiv.org/pdf/2601.18184).\n\n<p align=\"center\">\n  <img src=\"figures/DER.jpg\" alt=\"DER\" width=\"70%\">\n  <img src=\"figures/cpWER.jpg\" alt=\"cpWER\" width=\"70%\">\n  <img src=\"figures/tcpWER.jpg\" alt=\"tcpWER\" width=\"70%\">\n</p>\n\n\n### Open ASR Leaderboard\n\nOn the [Open ASR leaderboard](https://huggingface.co/spaces/hf-audio/open_asr_leaderboard), the following results were obtained:\n\n| Dataset                | WER (%)  |\n| ---------------------- | -------- |\n| ami_test               | 17.20    |\n| earnings22_test        | 13.17    |\n| gigaspeech_test        | 9.67     |\n| librispeech_test.clean | 2.20     |\n| librispeech_test.other | 5.51     |\n| spgispeech_test        | 3.80     |\n| tedlium_test           | 2.57     |\n| voxpopuli_test         | 8.01     |\n| **Average**            | **7.77** |\n| **RTFx**               | **51.80** |\n\n## Language Distribution\n<p align=\"center\">\n  <img src=\"figures/language_distribution_horizontal.png\" alt=\"Language Distribution\" width=\"80%\">\n</p>\n\n\n## License\nThis project is licensed under the MIT License.\n\n## Contact\nThis project was conducted by members of Microsoft Research. We welcome feedback and collaboration from our audience. If you have suggestions, questions, or observe unexpected/offensive behavior in our technology, please contact us at VibeVoice@microsoft.com.\nIf the team receives reports of undesired behavior or identifies issues independently,\u202fwe will\u202fupdate this repository with appropriate mitigations.",
+  "cardDataParsed": {
+    "language": [
+      "en",
+      "zh",
+      "es",
+      "pt",
+      "de",
+      "ja",
+      "ko",
+      "fr",
+      "ru",
+      "id",
+      "sv",
+      "it",
+      "he",
+      "nl",
+      "pl",
+      "no",
+      "tr",
+      "th",
+      "ar",
+      "hu",
+      "ca",
+      "cs",
+      "da",
+      "fa",
+      "af",
+      "hi",
+      "fi",
+      "et",
+      "aa",
+      "el",
+      "ro",
+      "vi",
+      "bg",
+      "is",
+      "sl",
+      "sk",
+      "lt",
+      "sw",
+      "uk",
+      "kl",
+      "lv",
+      "hr",
+      "ne",
+      "sr",
+      "tl",
+      "yi",
+      "ms",
+      "ur",
+      "mn",
+      "hy",
+      "jv"
+    ],
+    "license": "mit",
+    "pipeline_tag": "audio-text-to-text",
+    "tags": [
+      "ASR",
+      "Diarization",
+      "Speech-to-Text",
+      "Transcription"
+    ],
+    "library_name": "transformers",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "automatic-speech-recognition",
+    "processor": "AutoProcessor"
+  }
+}

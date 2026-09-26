@@ -1,0 +1,1079 @@
+{
+  "modelId": "nvidia/Nemotron-Cascade-8B-Thinking",
+  "author": "nvidia",
+  "sha": "922c4fe0b33248fa02d2ed450046755f6442e638",
+  "lastModified": "2026-01-01 01:26:44+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3",
+    "text-generation",
+    "nvidia",
+    "Nemotron-Cascade",
+    "reasoning",
+    "general-purpose",
+    "SFT",
+    "RL",
+    "pytorch",
+    "conversational",
+    "en",
+    "arxiv:2512.13607",
+    "arxiv:2309.00071",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 41,
+  "downloads": 576,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "Nemotron-Cascade",
+      "reasoning",
+      "general-purpose",
+      "SFT",
+      "RL",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3ForCausalLM"
+    ],
+    "model_type": "qwen3",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- else %}\n        {{- 'You are a helpful and harmless assistant.\n\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n        {%- else %}\n        {{- '<|im_start|>system\nYou are a helpful and harmless assistant.<|im_end|>\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\" and loop.index0 != ns.last_query_index) or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + ' /no_think<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"user\" and loop.index0 == ns.last_query_index %}\n        {%- if enable_thinking is defined and enable_thinking is false %}\n            {{- '<|im_start|>' + message.role + '\n' + message.content + ' /no_think<|im_end|>' + '\n' }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\n' + message.content + ' /think<|im_end|>' + '\n' }}\n        {%- endif %}\n    {%- elif message.role == \"assistant\" %}\n        {%- set content = message.content %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is not none %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in message.content %}\n                {%- set content = message.content.split('</think>')[-1].lstrip('\\n') %}\n                {%- set reasoning_content = message.content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 2498,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 8488,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 729,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/README.md",
+      "size": 9572,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/arguments.py",
+      "size": 5643,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/IFBench/data/IFBench_test.jsonl",
+      "size": 419877,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/aime24/test.jsonl",
+      "size": 24778,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/aime24/test_originally_from_qwen2math_which_has_issues.jsonl",
+      "size": 156944,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/aime25/test.json",
+      "size": 20753,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/aime25/test.jsonl",
+      "size": 19701,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/arena-hard-v0.1/question.jsonl",
+      "size": 283598,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/arena-hard-v2.0/question.jsonl",
+      "size": 947596,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/benchmark.py",
+      "size": 44197,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/gpqa/gpqa_diamond.csv",
+      "size": 1373492,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/gpqa/gpqa_diamond.json",
+      "size": 157214,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/gpqa/gpqa_test.json",
+      "size": 157214,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/ifeval/input_data.jsonl",
+      "size": 207111,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/livecodebench/test_aug2024tojan2025.json",
+      "size": 3744943635,
+      "lfs": {
+        "size": 3744943635,
+        "sha256": "ff4f400f1b9bc63f469de0d26d66d711385f6026f8af157112b3666cc231de2b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "evaluation/data/livecodebench/test_feb2025toApr2025.json",
+      "size": 290126099,
+      "lfs": {
+        "size": 290126099,
+        "sha256": "4b4e1e23782502d103a622e48454f829971c6f1c603cc34fe2591afb0f7d1ed4",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/auxiliary_train.json",
+      "size": 170512290,
+      "lfs": {
+        "size": 170512290,
+        "sha256": "a5eb905fec17a4da59d5037081ae3cf0a7b55445bf1ed5e7143a476b223b0dd7",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_abstract_algebra.yaml",
+      "size": 3437,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_anatomy.yaml",
+      "size": 5059,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_astronomy.yaml",
+      "size": 4723,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_business_ethics.yaml",
+      "size": 4909,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_clinical_knowledge.yaml",
+      "size": 2900,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_college_biology.yaml",
+      "size": 5193,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_college_chemistry.yaml",
+      "size": 3237,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_college_computer_science.yaml",
+      "size": 7034,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_college_mathematics.yaml",
+      "size": 4331,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_college_medicine.yaml",
+      "size": 4607,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_college_physics.yaml",
+      "size": 3715,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_computer_security.yaml",
+      "size": 3054,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_conceptual_physics.yaml",
+      "size": 2809,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_econometrics.yaml",
+      "size": 5536,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_electrical_engineering.yaml",
+      "size": 2914,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_elementary_mathematics.yaml",
+      "size": 3504,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_formal_logic.yaml",
+      "size": 5114,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_global_facts.yaml",
+      "size": 2833,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_biology.yaml",
+      "size": 4783,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_chemistry.yaml",
+      "size": 4328,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_computer_science.yaml",
+      "size": 6099,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_european_history.yaml",
+      "size": 15060,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_geography.yaml",
+      "size": 3204,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_government_and_politics.yaml",
+      "size": 3706,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_macroeconomics.yaml",
+      "size": 3175,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_mathematics.yaml",
+      "size": 3101,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_microeconomics.yaml",
+      "size": 3372,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_physics.yaml",
+      "size": 3340,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_psychology.yaml",
+      "size": 4131,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_statistics.yaml",
+      "size": 4953,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_us_history.yaml",
+      "size": 11947,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_high_school_world_history.yaml",
+      "size": 7284,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_human_aging.yaml",
+      "size": 2289,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_human_sexuality.yaml",
+      "size": 2846,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_international_law.yaml",
+      "size": 4656,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_jurisprudence.yaml",
+      "size": 3813,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_logical_fallacies.yaml",
+      "size": 3789,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_machine_learning.yaml",
+      "size": 5222,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_management.yaml",
+      "size": 2755,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_marketing.yaml",
+      "size": 3411,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_medical_genetics.yaml",
+      "size": 3090,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_miscellaneous.yaml",
+      "size": 2309,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_moral_disputes.yaml",
+      "size": 4154,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_moral_scenarios.yaml",
+      "size": 3752,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_nutrition.yaml",
+      "size": 4036,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_philosophy.yaml",
+      "size": 2547,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_prehistory.yaml",
+      "size": 3589,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_professional_accounting.yaml",
+      "size": 4077,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_professional_law.yaml",
+      "size": 9158,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_professional_medicine.yaml",
+      "size": 6138,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_professional_psychology.yaml",
+      "size": 4161,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_public_relations.yaml",
+      "size": 3287,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_security_studies.yaml",
+      "size": 7483,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_sociology.yaml",
+      "size": 3603,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_us_foreign_policy.yaml",
+      "size": 3414,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_virology.yaml",
+      "size": 2569,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/flan_cot_fewshot/mmlu_world_religions.yaml",
+      "size": 2239,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/mmlu_dev.json",
+      "size": 151878,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/mmlu_test.csv",
+      "size": 6667575,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/mmlu_validation.json",
+      "size": 905919,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/mmlu_validation_and_dev_stem.json",
+      "size": 169295,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu/mmlu_validation_stem.json",
+      "size": 130338,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mmlu_pro/test.json",
+      "size": 11100760,
+      "lfs": {
+        "size": 11100760,
+        "sha256": "8a2e15692fd2d44f8f77af28e9a04d08ce90c1b81ff41f99b25898a4bdbfb812",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "evaluation/data/mmlu_pro/validation.json",
+      "size": 75062,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mt_bench/prompts.json",
+      "size": 53948,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/data/mt_bench/question.jsonl",
+      "size": 48929,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/get_scores_code.py",
+      "size": 9150,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/get_scores_gpqa.py",
+      "size": 45329,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/get_scores_math.py",
+      "size": 47535,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/get_scores_mmlu_batch.py",
+      "size": 12287,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/__pycache__/code_verifier_utils.cpython-310.pyc",
+      "size": 15057,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/__pycache__/grader.cpython-310.pyc",
+      "size": 7099,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/code_verifier_utils.py",
+      "size": 21221,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/grader.py",
+      "size": 11925,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/.coveragerc",
+      "size": 641,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/.gitignore",
+      "size": 1821,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/LICENSE.txt",
+      "size": 1075,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/PS.g4",
+      "size": 16073,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/README.md",
+      "size": 5309,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/__pycache__/__init__.cpython-310.pyc",
+      "size": 225,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/__pycache__/latex2sympy2.cpython-310.pyc",
+      "size": 24481,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/antlr-4.11.1-complete.jar",
+      "size": 3547867,
+      "lfs": {
+        "size": 3547867,
+        "sha256": "62975e192b4af2622b72b5f0131553ee3cbce97f76dc2a41632dcc55e25473e1",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/asciimath_printer.py",
+      "size": 1698,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/description.txt",
+      "size": 4381,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/dev-requirements.in",
+      "size": 88,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/dev-requirements.txt",
+      "size": 1124,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/PS.interp",
+      "size": 39889,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/PS.tokens",
+      "size": 4638,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/PSLexer.interp",
+      "size": 101389,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/PSLexer.py",
+      "size": 118575,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/PSLexer.tokens",
+      "size": 4638,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/PSListener.py",
+      "size": 14144,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/PSParser.py",
+      "size": 249713,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/__pycache__/PSLexer.cpython-310.pyc",
+      "size": 128200,
+      "lfs": {
+        "size": 128200,
+        "sha256": "5e71685193ca9045124f2fe01ec067b37bec1da7be5de7f470caced0ea40b0ef",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/__pycache__/PSListener.cpython-310.pyc",
+      "size": 16992,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/__pycache__/PSParser.cpython-310.pyc",
+      "size": 212388,
+      "lfs": {
+        "size": 212388,
+        "sha256": "781cdb3a6a2d481e15d05ad234d85677a00ac397554948ddca37ad211dd25651",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/gen/__pycache__/__init__.cpython-310.pyc",
+      "size": 229,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/icon.png",
+      "size": 11786,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/latex2sympy2.py",
+      "size": 40465,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/requirements.in",
+      "size": 29,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/requirements.txt",
+      "size": 259,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/linalg_equations.py",
+      "size": 410,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/linalg_span.py",
+      "size": 730,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/matrix.py",
+      "size": 1557,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/matrix_placeholders.py",
+      "size": 2202,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/sandbox.py",
+      "size": 853,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/sandbox_equality.py",
+      "size": 2369,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/sectan.py",
+      "size": 1660,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/sandbox/vector.py",
+      "size": 1560,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/compile.sh",
+      "size": 231,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/coverage-ci.sh",
+      "size": 135,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/coverage.sh",
+      "size": 641,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/pre-commit",
+      "size": 861,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/pre-push",
+      "size": 586,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/publish.sh",
+      "size": 61,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/setup-hooks.sh",
+      "size": 75,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/setup.sh",
+      "size": 877,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/scripts/test.sh",
+      "size": 645,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/setup.cfg",
+      "size": 50,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/setup.py",
+      "size": 1682,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/abs_test.py",
+      "size": 773,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/all_bad_test.py",
+      "size": 1767,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/all_good_test.py",
+      "size": 13138,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/atom_expr_test.py",
+      "size": 2245,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/binomial_test.py",
+      "size": 902,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/ceil_test.py",
+      "size": 1474,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/complex_test.py",
+      "size": 447,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/context.py",
+      "size": 3133,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/exp_test.py",
+      "size": 1203,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/floor_test.py",
+      "size": 1482,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/gcd_test.py",
+      "size": 10004,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/greek_test.py",
+      "size": 445,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/grouping_test.py",
+      "size": 2248,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/lcm_test.py",
+      "size": 9873,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/left_right_cdot_test.py",
+      "size": 198,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/linalg_test.py",
+      "size": 728,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/max_test.py",
+      "size": 3756,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/min_test.py",
+      "size": 3756,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/mod_test.py",
+      "size": 3261,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/overline_test.py",
+      "size": 221,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/pi_test.py",
+      "size": 404,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/trig_test.py",
+      "size": 526,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/eval/tools/latex2sympy/tests/variable_test.py",
+      "size": 4274,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/inference.py",
+      "size": 19823,
+      "lfs": null
+    },
+    {
+      "rfilename": "evaluation/run.sh",
+      "size": 2003,
+      "lfs": null
+    },
+    {
+      "rfilename": "fig/lcb_through_cascade_rl.png",
+      "size": 1048210,
+      "lfs": {
+        "size": 1048210,
+        "sha256": "44c23c6e3c65d306aaa46c78bb6fa126cc4fb59bdd4e7cee376c7b7047ded0ad",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "fig/nemotron-cascade-8b-thinking-results.png",
+      "size": 4125177,
+      "lfs": {
+        "size": 4125177,
+        "sha256": "e3523568add7f79b7f4c0c129a36b08ed4ce50874bee99e48f2d430a330495ca",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "fig/pipeline.png",
+      "size": 899215,
+      "lfs": {
+        "size": 899215,
+        "sha256": "e8d9ebb97b82bb15a0b774123361bd40c0bfa71af143e08c8a422a7c59d31ba5",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 118,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4840444056,
+      "lfs": {
+        "size": 4840444056,
+        "sha256": "2dfe3b76ab56caab61b29de1640e88422982e4ffb1fb32c700a65553ccc2be8e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4994549208,
+      "lfs": {
+        "size": 4994549208,
+        "sha256": "857f76146832fc51e86c72e904ff89d38ceba01ce061a50f661b0e6253e3063b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4932755344,
+      "lfs": {
+        "size": 4932755344,
+        "sha256": "af10cd8d7beaea420f8842800f10bd5780563be8414964c377f8b59b3e29ae1d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1613768208,
+      "lfs": {
+        "size": 1613768208,
+        "sha256": "c9c2a9b1c536b2b111f2961ea8b60ff22c990c093ce6f17006dee6eadf44e0e6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 32878,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 10224,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- Nemotron-Cascade\n- reasoning\n- general-purpose\n- SFT\n- RL\n- pytorch\n---\n\n\n# Nemotron-Cascade-8B-Thinking\n\n<p align=\"center\">\n\n[![Technical Report](https://img.shields.io/badge/2512.13607-Technical_Report-blue)](https://arxiv.org/abs/2512.13607)\n[![SFT Dataset](https://img.shields.io/badge/\ud83e\udd17-SFT_Datset-blue)](https://huggingface.co/collections/nvidia/nemotron-cascade)\n[![RL Dataset](https://img.shields.io/badge/\ud83e\udd17-RL_Datset-blue)](https://huggingface.co/collections/nvidia/nemotron-cascade)\n[![Models](https://img.shields.io/badge/\ud83e\udd17-Models-blue)](https://huggingface.co/collections/nvidia/nemotron-cascade)\n</p>\n\n<img src=\"fig/nemotron-cascade-8b-thinking-results.png\" alt=\"main_fig\" style=\"width: 1000px; max-width: 100%;\" />\n\n\n## Introduction\n\nWe're excited to introduce [Nemotron-Cascade-8B-Thinking](https://huggingface.co/nvidia/Nemotron-Cascade-8B-Thinking), a powerful general-purpose model trained through sequential and domain-wise reinforcement learning. Nemotron-Cascade-8B-Thinking is post-trained from the [Qwen3-8B-Base](https://huggingface.co/Qwen/Qwen3-8B-Base) model, and it achieves best-in-class performance across a wide range of benchmarks. Different from [Nemotron-Cascade-8B](https://huggingface.co/nvidia/Nemotron-Cascade-8B), Nemotron-Cascade-8B-Thinking is designed exclusively for the ***thinking*** mode.\n\n\n## Training Pipeline\n<img src=\"fig/pipeline.png\" alt=\"train_pipeline_fig\" style=\"width: 1000px; max-width: 100%;\" />\n\nThe training pipeline for Nemotron-Cascade begins with a multi-stage SFT phase to equip the model with foundational skills. Subsequently, Cascade RL is applied across multiple domains to further enhance the model\u2019s performance in these areas.\n\nNotably, RLHF for alignment, when used as a pre-step, boosts the model\u2019s complex reasoning ability far beyond mere preference optimization, and subsequent domain-wise RLVR stages rarely degrade the benchmark performance attained in earlier domains and may even improve it (see an illustration in the following Figure).\n\n<figure style=\"margin: 0; padding: 0;\">\n  <img src=\"fig/lcb_through_cascade_rl.png\" alt=\"lcb_through_cascade_rl_fig\" style=\"width: 100%; max-width: 100%; margin: 0; padding: 0;\">\n  <figcaption>The LiveCodeBench v6 (08/24\u201305/25) performance of the Nemotron-Cascade-14B-Thinking model throughout the Cascade RL process.</figcaption>\n</figure>\n\n\n## Results\n\n- We evaluate our model against competitive reasoning models on a diverse set of benchmarks, covering general-knowledge reasoning, alignment and instruction following, mathematical reasoning, competitive programming, software engineering, and tool-use proficiency.\n- For Nemotron-Cascade models, we use a maximum generation length of 64K tokens and set the temperature to 0.6 and top-p to 0.95 for reasoning tasks.\n- Our Nemotron-Cascade models achieve best-in-class performance across almost all benchmarks. Remarkably, Nemotron-Cascade-8B and Nemotron-Cascade-8B-Thinking achieve comparable LiveCodeBench (LCB) and LCB Pro scores to DeepSeek-R1-0528 (671B).\n\n| **Benchmark<br>Metric: Pass@1** | **Qwen3-8B** | **Nemotron-Nano-9B-v2** | **DeepSeek-R1-0528 671B** | **Gemini-2.5-Flash-Thinking** | **Nemotron-<br>Cascade-8B-<br>Thinking** | **Nemotron-<br>Cascade-8B** |\n| :---- | :---: | :---: | :---: | :---: | :---: | :---: |\n| ***Knowledge Reasoning*** |\n| MMLU | 83.0 | 82.6 | 89.9 | - | 84.0 | 83.7 |\n| MMLU Pro | 75.1 | 73.3 | 85.0 | 81.9 | 75.5 | 75.7 |\n| GPQA-Diamond | 62.0 | 64.0 | 81.0 | 82.8 | 66.7 | 66.5 |\n| ***Alignment*** |\n| ArenaHard | 85.8 | 74.6 | 95.1 | 95.7 | 85.8 | 87.9 |\n| IFEval (Strict Prompt) | 85.0 | 86.1 | 84.1 | 89.8 | 83.7 | 90.2 |\n| IFBench | 34.4 | 37.4 | 38.0 | 36.1 | 41.4 | 40.8 |\n| ***Math*** |\n| AIME 2024 | 76.0 | 81.9 | 91.4 | 82.3 | 88.8 | 89.5 |\n| AIME 2025 | 67.3 | 72.0 | 87.5 | 72.0 | 81.4 | 80.1 |\n| ***Code*** |\n| LCB v5 (08/24-02/25) | 61.2 | 68.2 | 74.8 | 63.4 | 74.5 | 74.3 |\n| LCB v6 (08/24-05/25) | 58.3 | 65.3 | 73.3 | 61.9 | 71.4 | 71.1 |\n| LCB Pro 25Q2 (Easy) | 46.1 | 59.3 | 63.9 | 47.4 | 64.8 | 65.7 |\n| LCB Pro 25Q2 (Med) | 2.2 | 4.8 | 7.0 | 1.8 | 6.1 | 6.4 |\n| SWE Verified (Agentless) | 20.5 | - | 57.6 | 48.9 | 38.5 | 37.2 |\n| ***Tool Calling*** |\n| BFCL V3 | 68.1 | 66.9 | 67.9 | 68.6 | 67.0 | 64.4 |\n\n\n## Usage Recommendations\n\nFor local deployment, we recommend setting the sampling parameters to temperature = 0.6, top_p = 0.95. We recommend using RoPE scaling with the [YaRN](https://arxiv.org/abs/2309.00071) method for better long-context support. This can be enabled by updating the model\u2019s `config.json` as shown below:\n```json\n  {\n    ...,\n    \"rope_scaling\": {\n        \"rope_type\": \"yarn\",\n        \"factor\": 2.0,\n        \"original_max_position_embeddings\": 32768\n    }\n  }\n```\n\n- **Nemotron-Cascade-14B-Thinking**: use `factor: 3.0` to extend the context length to 90K tokens for SWE Verified (Agentless), and `factor: 2.0` to extend the context length to 64K tokens for other benchmarks.\n- **Nemotron-Cascade-8B** and **Nemotron-Cascade-8B-Thinking**: use `factor: 2.0` across all benchmarks.\n\n\n## Evaluation Tookit\n\nTo reproduce our results, please check evaluation code, scripts, cached prediction files in https://huggingface.co/nvidia/Nemotron-Cascade-8B-Thinking/blob/main/evaluation/README.md\n\n## Chat Template\n\nNemotron-Cascade-8B-Thinking follows the Qwen3-style ChatML template and is designed exclusively for the ***thinking*** mode. To align with the template used in [Nemotron-Cascade-8B](https://huggingface.co/nvidia/Nemotron-Cascade-8B), the `\" /think\"` tag should be appended to the end of the user input. Note that a leading space is included in this tag to ensure correct tokenization.\n\nTo reduce the context length in a multi-turn conversation, we include only the final summary of the model\u2019s output in the conversation history and change the user turn\u2019s `\" /think\"` tag to `\" /no_think\"`.\n\nA brief example is shown below:\n\n```python\nfrom transformers import AutoTokenizer\n\nmodel_name = 'nvidia/Nemotron-Cascade-8B-Thinking'\ntokenizer = AutoTokenizer.from_pretrained(model_name)\n\n'''\nsingle-turn example\n'''\nmessages = [\n    {\"role\": \"user\", \"content\": \"calculate 1+1?\"}\n]\n\n# only thinking mode is supported (enable_thinking=True)\nprompt_thinking = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=True)\n# prompt_thinking = '<|im_start|>system\\nYou are a helpful and harmless assistant.<|im_end|>\\n<|im_start|>user\\ncalculate 1+1? /think<|im_end|>\\n<|im_start|>assistant\\n'\n\n\n'''\nmulti-turn example\n'''\nmessages = [\n    {\"role\": \"user\", \"content\": \"calculate 1+1?\"},\n    {\"role\": \"assistant\", \"content\": \"<think>THINKING_CONTENT</think>\\nTo calculate \\\\(1 + 1\\\\):\\n\\n1. **Identify the operation**: This is a basic addition problem involving two integers.\\n2. **Perform the addition**:  \\n   \\\\(1 + 1 = 2\\\\).\\n\\n**Result**: \\\\(\\\\boxed{2}\\\\)\",},\n    {\"role\": \"user\", \"content\": \"what about 2+2\"}\n]\n\n# only thinking mode is supported (enable_thinking=True)\nprompt_thinking = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=True)\n# prompt_thinking = '<|im_start|>system\\nYou are a helpful and harmless assistant.<|im_end|>\\n<|im_start|>user\\ncalculate 1+1? /no_think<|im_end|>\\n<|im_start|>assistant\\nTo calculate \\\\(1 + 1\\\\):\\n\\n1. **Identify the operation**: This is a basic addition problem involving two integers.\\n2. **Perform the addition**:  \\n   \\\\(1 + 1 = 2\\\\).\\n\\n**Result**: \\\\(\\\\boxed\\{2\\}\\\\)<|im_end|>\\n<|im_start|>user\\nwhat about 2+2 /think<|im_end|>\\n<|im_start|>assistant\\n'\n```\n\n\n## Release Date\nDec 08, 2025\n\n\n## License\nYour use of this model is governed by the [NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/).\n\n\n## Citation\n```\n@article{Nemotron_Cascade_Scaling_Cascaded_Reinforcement_Learning,\n  title={Nemotron-Cascade: Scaling Cascaded Reinforcement Learning for General-Purpose Reasoning Models},\n  author={Wang, Boxin and Lee, Chankyu and Lee, Nayeon and Lin, Sheng-Chieh and Dai, Wenliang and Chen, Yang and Chen, Yangyi and Yang, Zhuolin and Liu, Zihan and Shoeybi, Mohammad and Catanzaro, Bryan and Ping, Wei},\n  year={2025}\n}\n```\n",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "Nemotron-Cascade",
+      "reasoning",
+      "general-purpose",
+      "SFT",
+      "RL",
+      "pytorch"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

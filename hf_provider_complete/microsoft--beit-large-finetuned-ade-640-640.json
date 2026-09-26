@@ -1,0 +1,138 @@
+{
+  "modelId": "microsoft/beit-large-finetuned-ade-640-640",
+  "author": "microsoft",
+  "sha": "a38fe98baf3d5a6f69fa1a07a62b698780e5dcb1",
+  "lastModified": "2024-01-25 11:51:04+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "safetensors",
+    "beit",
+    "vision",
+    "image-segmentation",
+    "dataset:scene_parse_150",
+    "arxiv:2106.08254",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-segmentation",
+  "library_name": "transformers",
+  "likes": 15,
+  "downloads": 29351,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "scene_parse_150"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "image-segmentation"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/hf-internal-testing/fixtures_ade20k/resolve/main/ADE_val_00000001.jpg",
+        "example_title": "House"
+      },
+      {
+        "src": "https://huggingface.co/datasets/hf-internal-testing/fixtures_ade20k/resolve/main/ADE_val_00000002.jpg",
+        "example_title": "Castle"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "BeitForSemanticSegmentation"
+    ],
+    "model_type": "beit"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1229,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5397,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 6969,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 2257394552,
+      "lfs": {
+        "size": 2257394552,
+        "sha256": "49a9dfc6b9d1ee8880886869a6637fe9558fce030e272ecc1cc6b28c408e00be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 276,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 2257538161,
+      "lfs": {
+        "size": 2257538161,
+        "sha256": "476d8d77e1e24b28ffb98bd29253db81eef38008e1193db87ab392890c16311a",
+        "pointer_size": 135
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\n- image-segmentation\ndatasets:\n- scene_parse_150\nwidget:\n- src: https://huggingface.co/datasets/hf-internal-testing/fixtures_ade20k/resolve/main/ADE_val_00000001.jpg\n  example_title: House\n- src: https://huggingface.co/datasets/hf-internal-testing/fixtures_ade20k/resolve/main/ADE_val_00000002.jpg\n  example_title: Castle\n---\n\n# BEiT (large-sized model, fine-tuned on ADE20k) \n\nBEiT model pre-trained in a self-supervised fashion on ImageNet-21k (14 million images, 21,841 classes) at resolution 224x224, and fine-tuned on [ADE20k](https://huggingface.co/datasets/scene_parse_150) (an important benchmark for semantic segmentation of images) at resolution 640x640. It was introduced in the paper [BEIT: BERT Pre-Training of Image Transformers](https://arxiv.org/abs/2106.08254) by Hangbo Bao, Li Dong and Furu Wei and first released in [this repository](https://github.com/microsoft/unilm/tree/master/beit). \n\nDisclaimer: The team releasing BEiT did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nThe BEiT model is a Vision Transformer (ViT), which is a transformer encoder model (BERT-like). In contrast to the original ViT model, BEiT is pretrained on a large collection of images in a self-supervised fashion, namely ImageNet-21k, at a resolution of 224x224 pixels. The pre-training objective for the model is to predict visual tokens from the encoder of OpenAI's DALL-E's VQ-VAE, based on masked patches.\nNext, the model was fine-tuned in a supervised fashion on ImageNet (also referred to as ILSVRC2012), a dataset comprising 1 million images and 1,000 classes, also at resolution 224x224.\n\nImages are presented to the model as a sequence of fixed-size patches (resolution 16x16), which are linearly embedded. Contrary to the original ViT models, BEiT models do use relative position embeddings (similar to T5) instead of absolute position embeddings, and perform classification of images by mean-pooling the final hidden states of the patches, instead of placing a linear layer on top of the final hidden state of the [CLS] token.\n\nBy pre-training the model, it learns an inner representation of images that can then be used to extract features useful for downstream tasks: for semantic segmentation, one can just add one of the decode heads available in the [mmseg library](https://github.com/open-mmlab/mmsegmentation) for example, and fine-tune the model in a supervised fashion on annotated images. This is what the authors did: they fine-tuned BEiT with an UperHead segmentation decode head, allowing it to obtain SOTA results on important benchmarks such as ADE20k and CityScapes.\n\n## Intended uses & limitations\n\nYou can use the raw model for semantic segmentation of images. See the [model hub](https://huggingface.co/models?search=microsoft/beit) to look for fine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model for semantic segmentation:\n\n```python\nfrom transformers import BeitFeatureExtractor, BeitForSemanticSegmentation\nfrom datasets import load_dataset\nfrom PIL import Image\n\n# load ADE20k image\nds = load_dataset(\"hf-internal-testing/fixtures_ade20k\", split=\"test\")\n\nfeature_extractor = BeitFeatureExtractor.from_pretrained('microsoft/beit-large-finetuned-ade-640-640')\nmodel = BeitForSemanticSegmentation.from_pretrained('microsoft/beit-large-finetuned-ade-640-640')\n\ninputs = feature_extractor(images=image, return_tensors=\"pt\")\noutputs = model(**inputs)\n# logits are of shape (batch_size, num_labels, height/4, width/4)\nlogits = outputs.logits\n```\n\nCurrently, both the feature extractor and model support PyTorch.\n\n## Training data\n\nThis BEiT model was pretrained on [ImageNet-21k](http://www.image-net.org/), a dataset consisting of 14 million images and 21k classes, and fine-tuned on [ADE20k](http://sceneparsing.csail.mit.edu/), a dataset consisting of thousands of annotated images and 150 classes. \n\n## Training procedure\n\n### Preprocessing\n\nThe exact details of preprocessing of images during training/validation can be found [here](https://github.com/microsoft/unilm/blob/master/beit/datasets.py). \n\nImages are cropped and padded to the same resolution (640x640) and normalized across the RGB channels with the ImageNet mean and standard deviation.\n\n### Pretraining\n\nFor all pre-training related hyperparameters, we refer to page 15 of the [original paper](https://arxiv.org/abs/2106.08254).\n\n## Evaluation results\n\nFor evaluation results on several image classification benchmarks, we refer to tables 1 and 2 of the original paper. Note that for fine-tuning, the best results are obtained with a higher resolution (384x384). Of course, increasing the model size will result in better performance.\n\n### BibTeX entry and citation info\n\n```@article{DBLP:journals/corr/abs-2106-08254,\n  author    = {Hangbo Bao and\n               Li Dong and\n               Furu Wei},\n  title     = {BEiT: {BERT} Pre-Training of Image Transformers},\n  journal   = {CoRR},\n  volume    = {abs/2106.08254},\n  year      = {2021},\n  url       = {https://arxiv.org/abs/2106.08254},\n  archivePrefix = {arXiv},\n  eprint    = {2106.08254},\n  timestamp = {Tue, 29 Jun 2021 16:55:04 +0200},\n  biburl    = {https://dblp.org/rec/journals/corr/abs-2106-08254.bib},\n  bibsource = {dblp computer science bibliography, https://dblp.org}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision",
+      "image-segmentation"
+    ],
+    "datasets": [
+      "scene_parse_150"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/hf-internal-testing/fixtures_ade20k/resolve/main/ADE_val_00000001.jpg",
+        "example_title": "House"
+      },
+      {
+        "src": "https://huggingface.co/datasets/hf-internal-testing/fixtures_ade20k/resolve/main/ADE_val_00000002.jpg",
+        "example_title": "Castle"
+      }
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "BeitForSemanticSegmentation",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": "AutoImageProcessor"
+  }
+}

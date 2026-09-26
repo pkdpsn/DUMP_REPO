@@ -1,0 +1,975 @@
+{
+  "modelId": "Qwen/Qwen3-235B-A22B-MLX-bf16",
+  "author": "Qwen",
+  "sha": "284ea931f422d64380bd650b5fe4a755b14b3e2b",
+  "lastModified": "2025-07-07 08:21:01+00:00",
+  "tags": [
+    "mlx",
+    "safetensors",
+    "qwen3_moe",
+    "text-generation",
+    "conversational",
+    "arxiv:2309.00071",
+    "arxiv:2505.09388",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "mlx",
+  "likes": 6,
+  "downloads": 238,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "mlx",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": "https://huggingface.co/Qwen/Qwen3-14B/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen3MoeForCausalLM"
+    ],
+    "model_type": "qwen3_moe",
+    "num_experts": 128,
+    "num_experts_per_tok": 8,
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for index in range(ns.last_query_index, -1, -1) %}\n    {%- set message = messages[index] %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and not('<tool_response>' in message.content and '</tool_response>' in message.content) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set content = message.content %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is not none %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in message.content %}\n                {%- set content = message.content.split('</think>')[-1].lstrip('\\n') %}\n                {%- set reasoning_content = message.content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11343,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 14828,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1038,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00095.safetensors",
+      "size": 4609558401,
+      "lfs": {
+        "size": 4609558401,
+        "sha256": "f71e6ce18cb21c750f77145de23609ac0f15cb21493fb347c6e6f2327aaf1ba7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "e722858c98d928427a9c46e43ab0ac8d58875c7e22bfe254d6dc726cf868f421",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "633605c97abc2c934680a5f8292e7e9cef730a6dd22cc9cc054787c5f7128a14",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "a07aa8672b4d5ee60688fd28d9ff354581007bc2bbb5b7199de8dc5cf87c2d41",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00095.safetensors",
+      "size": 4975511426,
+      "lfs": {
+        "size": 4975511426,
+        "sha256": "10c1050b569aa836e168ac7af557607b735b4d2a89d2abd5e846ca7c340a83f0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "91acd08b71512b28622286b616ce75a87727d16a812d9f299b4d65ef44a0ea15",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "bcff27fafc755f702f462e4ba79dc9ad5cdb1ceb2fb2a726492b521413079f73",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "80e6ba7aef3dba3f35865a68e0bc902765eb4aa9e4c4ff58051f3332e8a0c192",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "f207253a633868a5f2c440a790925e39ea27013c34b879f8632dcbcb0b9d62c2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00095.safetensors",
+      "size": 4975511442,
+      "lfs": {
+        "size": 4975511442,
+        "sha256": "2bd546c6c17be5c0b3b8c900865e634b9769998bc63a07d222a03c232d83d489",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00095.safetensors",
+      "size": 4975511459,
+      "lfs": {
+        "size": 4975511459,
+        "sha256": "ef4dcaebdf6ccc7101fb88ff7b80cbe7f898e56d4fd548c0a7c6869a4c98bfb8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "3eefd056c0f9901ca9e3f88ec62622c6b69a20673c8444cd3aaaebd1de4de1fb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "2ba5a6c69dad2935a3ed0f9564a6731028ee4907755ef6542183e5d463ebddad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "1e2116b7eb4bc225f0de2856fd8289b12c6ac5692802445a2ec61cd824b932d6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "8b4f81ba23736b02717e39a07e9d4edc7eb41615410a7a367696b5714cd4b9ed",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00095.safetensors",
+      "size": 4975511430,
+      "lfs": {
+        "size": 4975511430,
+        "sha256": "0998a9d72fb3f6cf42cad851900c05a54bc16e331ae6852b9117c4f3b6df6627",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "eb79897637c0f9f28383538adf8132791b4ffbd3e5686fa6a57679c7e281142b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "c923a71e9bca010c76cf7c7a656ed0f00b9be4642aa1dfe5e2c55c26642a949b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "c0159a7fda7844f6dca842f6be5f17d118b805f071808875032bcca744ad5d94",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "75f399169e26a677def91bcff33bf80512c0a49942aab84b00456763ff754704",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "d9e6d2f3cece39d7ffff65aa9c64c51d7e16a58a12abe0229378c016bd52089a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "af6856693430e86b931366e34b2651449a3e495eeefbc64615df00335fed8125",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "b64d9b4cf23f2d5cf5daa83f76bdb6ad8bd2df17f4a956c4a1d806ef5bab87e4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "602cf76ea03d602f10ac04d1652c0d630dd835778ab28114db6c9ac856bf28f6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00095.safetensors",
+      "size": 4975511436,
+      "lfs": {
+        "size": 4975511436,
+        "sha256": "57299acd4aa0fac8447f0589325cdb8ca24076b68ab131e08d2b82d06d400cf4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "edec74547cbc45026bfc8eceed613e58c3237eb73b0974514ad9ca0eab45ab01",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "08e56b42d542c053ffe8a7cc2ccfc93bbe097ac9a8542591ef65efdd71c7c81c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "55326e133c56fb5f7f9c72e0ace1f167329c30db0c6f0f27ad8b8628176e212b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "816359d22d7d2aba6d814ca6c34fb8b9cf0933f9e049b045431c43457eaa4ad6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "768b96b335ce23221899420d3e858c81bd9fceb8574b630eb919cdc60f967c48",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "b1e5ad08c567a35b8d0c83660fee9a9f89ed202ffbbaf7159bfd3a3a2c64fbd6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00095.safetensors",
+      "size": 4975511438,
+      "lfs": {
+        "size": 4975511438,
+        "sha256": "737199e15ed65319db7a036277e2ec93c562dcdcfbfc15016af0bcd8cb120ba6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00095.safetensors",
+      "size": 4975511438,
+      "lfs": {
+        "size": 4975511438,
+        "sha256": "a70591d2d0b68671a2e64b2116970abdf43f1e0e187530e0ce3ef6100f272efc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "cf58ca02dec615be52f5e44719693565150f5e509be1b2eb3abaabc72efdb1f3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "bfb670243e77279d8b374bc67d9d75adaf4271b29ff7e065d8ae02a1653cb795",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "9144a32f7d41355c7d80cdede43699e3fe6d5e9dd7eece71c31e9c5aa4347c28",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "68f2e9e4608407ff75ab5f4b03cd20b127ead61a47577ec4490976781616c026",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "368d72ae2b6998300ff95bc19b86345be0a80e679cf145b40cda06fbf7d1296b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "ccf7385ed8ce0f89f00e75f80c62fed2b49e87d6e9bbca0801a7565d19403cfb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "3b3d9bc08b9ef178e7b4cb937ce3b54ca3adefc7db6dff57bb7b66f0a36aa5d8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00041-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "a74a157772a3188a64593d20a021d0d60cf787fdb53226e2516137531687261d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00042-of-00095.safetensors",
+      "size": 4975511454,
+      "lfs": {
+        "size": 4975511454,
+        "sha256": "1202865d7b0d992eff0869f0da108b6f8d99c8c37c25c060deb92bc2a73f24c0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "2868b1f3e0cf4beca0913e559676564e516d2d3dde57cbda28bdf2ac464c7ac6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-00095.safetensors",
+      "size": 4975511454,
+      "lfs": {
+        "size": 4975511454,
+        "sha256": "ad1928e9d787f26d105f10b2dc9d580c9663d76d7140376230d7b1c3f6ff6ff3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "e69f22b3da7e9573bb723ce25cf0c77344a064f6a5029397ee7d0acd32bf7756",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "ede5d2a48409d54a97229f0f599d05d1151901f2d4e30d2dee63bf46138af2cc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "c2222c6a1cfc6b25d6142e6a5409cd66015024fffe7ea5d2fdbe4d06f4486182",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "652194e32d526d9970da309c54f2da646af5a84af1d602035028aab95551fb17",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00049-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "7bf60e4e3bf22de752ee7d22f20ad2a917f0f47c9a73922ed1b1ff11d9d724ec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00050-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "e0a6b8e204e39698054ea7d06b59708de77c7237e83526ef2dc07e71eecc59bb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00051-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "f6ef3c2d8a96bec6a99891127c9a38bb30ef9d70a37d43a579679eb77970cd7e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00052-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "3db28d8512548a78feb98a9eb65b4b93f99e5885be75a21bb7b479fd6258964f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00053-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "e7af94cc23bd45b87a4502dd1200e9468b95fe0627475685208e130279b6feea",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00054-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "077fafc01902c0af7568cb8a425b917444a1dc968371dd0f9e64a33315d00ab1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00055-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "278c6c4412343b4e9ec73fc9ec3a90b310e74530fecff3f17df53d9e6d8dbc77",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00056-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "80dc4402316442cf122279933171b42c6daba46a7677d9500987791399c416a2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00057-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "04b281f7acb0978a4ee3dbb35573744f48ad9774004c4b67ee952a8f7b66c465",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00058-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "9e04c96d0e503c6182b5803ce3601f39994cf2f98e4e036f20524422bb794d61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00059-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "ab2b08df44cb2c4ae4a138819221273d4f5e8b397b0c8816e4d5dc7eae5f8cc7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00060-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "f5acfcb23f111b629f3de1be6b411d647b30f06934fae27d9e5b1b8ad12ca60b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00061-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "5990aa584630044408ebcf4ac003fe12630742ac6c63f41e2629f54e79fb2551",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00062-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "3d568c31d7aa7f72c22cccee001d5d61f86bb148cadd6c8826b1c300729b6e6b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00063-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "110fda127dd325eaed5fa2276614212cfe85998bc00ba3f43e5def47e5caeeb6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00064-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "157f444f8dcfcfcabdeea515a7adb12b0613218c83cf03dcd6ebb095f4f90cd5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00065-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "c494e72d88154f68e9e29632f40ef70077ac9cf583c630b3b1cbb417f976e1b8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00066-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "d4b104f7dbfa61ac73331619bc58f1b355895f398704f5aa959dbd67f9eb0bc5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00067-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "286cc107c80a283aa9c0ad091e31d30a527c35f44a0b47057a6baac49e3c909f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00068-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "6d4abd5410e9a6595af2eb90990fa2250831e7b9f765c1596172a75c70917441",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00069-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "73586b7d47a290f29850600e68c9692fa33041fdf76392b2fd2d929e4255d9b6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00070-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "ddbce25c9f12c20a4f91e69eaf4b3b7b180dd0ef21d712aa5acb2db580fb2d6b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00071-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "25a4178b38c14b731ffcb00d863d4d9107042936e98bb07098ace8e4220da4cb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00072-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "b8b9156037d93efab8c0fa711229ee0dffdd8252ad334bc578cc633c84fc6896",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00073-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "3d604058d721a6a2d178768a76459e52918f1b978d09573bef69397d8699b6df",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00074-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "d5211cc19144466e7781b5b06db26a8e521d1026f6592d2fbdb07cdca3d82da9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00075-of-00095.safetensors",
+      "size": 4975511424,
+      "lfs": {
+        "size": 4975511424,
+        "sha256": "a92cc55d1338e4b59e6cd55d4942b92233e697520c78e9e85e41d31d00fda21d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00076-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "9d4defa163cfa037155c8bcf705a2ed9fe4d31e1e4c14757e5c1c5aecd3d3e37",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00077-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "5c353dc75a84ac7d8f8bba6861a84b05546bd208567b6ee51e9daf3392503337",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00078-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "52d33e8ce93c192c88f0744de997a673955463dbcbfb389adf9df5fdd17848f8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00079-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "f2c5ca67482c6ac08602b9bd37d65671d83881b3d62de9952ec9733d68f116e2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00080-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "f5f2bce8316246765f5b3f9987bc2ef0500814cebe73e40d03ba9d81899aaa36",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00081-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "6bff7f887591be2bfcee5424b2f9af30cbb15c8f3fe494bd1bda4b1e8e4e8c66",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00082-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "e52ab7552f234c2f55800542c5f3346ccf2b224c460f2ad09b0f877062aa9711",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00083-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "b5b1738c30dbf2f0b7b73d24d3e783f9114be4562b43b512215c5adc93d07090",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00084-of-00095.safetensors",
+      "size": 4975511454,
+      "lfs": {
+        "size": 4975511454,
+        "sha256": "fe5299797ea588e56e7249fc8a7636dc986fc988a9934a4ed7e7c813d3acce90",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00085-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "39656c1da912c29efdef94b082730d238e8cd418699d1e828e374474b61f5e03",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00086-of-00095.safetensors",
+      "size": 4975511442,
+      "lfs": {
+        "size": 4975511442,
+        "sha256": "06ce4872900ac34f733e11ab9ba37a4e31cafeab89adeac1936616c35e48ec61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00087-of-00095.safetensors",
+      "size": 4975511442,
+      "lfs": {
+        "size": 4975511442,
+        "sha256": "a35d8c0116a4bb3ff6179d8d5a0db6b7829a51ab879a1407755285713d562615",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00088-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "1d8f689cc154783092dab60d80d95410a1d3ba1ff81e3f1abe7399bffcf73136",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00089-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "6e0ee56300068c7e18be3c02e94c8b8e77d9f191497a5bdb582744ceea08f22d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00090-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "a35af16ba5f30aa9a88d31e335e8eadb01e9f2efc177a7fe8467e36d68f650a1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00091-of-00095.safetensors",
+      "size": 4975511448,
+      "lfs": {
+        "size": 4975511448,
+        "sha256": "5bd88563544804c28afcb1f3da662f7327a1e310868bfa90eedc88c58ea794ae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00092-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "766c559ef591a91c7b27354ada50905f644f325037ea9f21ee4934dda5b81f35",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00093-of-00095.safetensors",
+      "size": 4975511460,
+      "lfs": {
+        "size": 4975511460,
+        "sha256": "3164ec5563bc56f9e9626b9a95a5d5191232f54c05c1768007307e5ec34db8e3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00094-of-00095.safetensors",
+      "size": 4975511442,
+      "lfs": {
+        "size": 4975511442,
+        "sha256": "9c65e83dd7849b984dd783601a66e7dbcb065dfa9e667582417b54d87c4dc22e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00095-of-00095.safetensors",
+      "size": 2855280985,
+      "lfs": {
+        "size": 2855280985,
+        "sha256": "0ded4363de56d4336c807378e7a2aecb588d1c8aa807bee73430e898e0744c86",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 100278,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9690,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: mlx\nlicense: apache-2.0\nlicense_link: https://huggingface.co/Qwen/Qwen3-14B/blob/main/LICENSE\npipeline_tag: text-generation\n---\n\n# Qwen3-235B-A22B-MLX-bf16\n<a href=\"https://chat.qwen.ai/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/%F0%9F%92%9C%EF%B8%8F%20Qwen%20Chat%20-536af5\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n\n## Qwen3 Highlights\n\nQwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models. Built upon extensive training, Qwen3 delivers groundbreaking advancements in reasoning, instruction-following, agent capabilities, and multilingual support, with the following key features:\n\n- **Uniquely support of seamless switching between thinking mode** (for complex logical reasoning, math, and coding) and **non-thinking mode** (for efficient, general-purpose dialogue) **within single model**, ensuring optimal performance across various scenarios.\n- **Significantly enhancement in its reasoning capabilities**, surpassing previous QwQ (in thinking mode) and Qwen2.5 instruct models (in non-thinking mode) on mathematics, code generation, and commonsense logical reasoning.\n- **Superior human preference alignment**, excelling in creative writing, role-playing, multi-turn dialogues, and instruction following, to deliver a more natural, engaging, and immersive conversational experience.\n- **Expertise in agent capabilities**, enabling precise integration with external tools in both thinking and unthinking modes and achieving leading performance among open-source models in complex agent-based tasks.\n- **Support of 100+ languages and dialects** with strong capabilities for **multilingual instruction following** and **translation**.\n\n## Model Overview\n\n**Qwen3-235B-A22B** has the following features:\n- Type: Causal Language Models\n- Training Stage: Pretraining & Post-training\n- Number of Parameters: 235B in total and 22B activated\n- Number of Paramaters (Non-Embedding): 234B\n- Number of Layers: 94\n- Number of Attention Heads (GQA): 64 for Q and 4 for KV\n- Number of Experts: 128\n- Number of Activated Experts: 8\n- Context Length: 32,768 natively and [131,072 tokens with YaRN](#processing-long-texts). \n\n\nFor more details, including benchmark evaluation, hardware requirements, and inference performance, please refer to our [blog](https://qwenlm.github.io/blog/qwen3/), [GitHub](https://github.com/QwenLM/Qwen3), and [Documentation](https://qwen.readthedocs.io/en/latest/).\n\n## Quickstart\n\nThe code of Qwen3 has been in the latest versions of both **`transformers` (\u2265\u202f4.52.4)** and **`mlx_lm` (\u2265\u202f0.25.2)**, and we advise you to use the latest version of `transformers` and `mlx_lm`.\nOlder versions (e.g., `transformers<4.51.0`) may raise errors like:\n\n```text\nKeyError: 'qwen3'\n```\n\nInstall or upgrade both packages:\n\n```bash\npip install --upgrade transformers mlx_lm\n```\n\nThe following contains a code snippet illustrating how to use the model generate content based on given inputs. \n\n```python\nfrom mlx_lm import load, generate\n\nmodel, tokenizer = load(\"Qwen/Qwen3-235B-A22B-MLX-bf16\")\nprompt = \"Hello, please introduce yourself and tell me what you can do.\"\n\nif tokenizer.chat_template is not None:\n    messages = [{\"role\": \"user\", \"content\": prompt}]\n    prompt = tokenizer.apply_chat_template(\n        messages,\n        add_generation_prompt=True\n    )\n\nresponse = generate(\n    model,\n    tokenizer,\n    prompt=prompt,\n    verbose=True,\n    max_tokens=1024\n)\n\nprint(response)\n```\n\n## Switching Between Thinking and Non-Thinking Mode\n\n> [!TIP]\n> The `enable_thinking` switch is also available in APIs created by SGLang and vLLM. \n> Please refer to our documentation for [SGLang](https://qwen.readthedocs.io/en/latest/deployment/sglang.html#thinking-non-thinking-modes) and [vLLM](https://qwen.readthedocs.io/en/latest/deployment/vllm.html#thinking-non-thinking-modes) users.\n\n### `enable_thinking=True`\n\nBy default, Qwen3 has thinking capabilities enabled, similar to QwQ-32B. This means the model will use its reasoning abilities to enhance the quality of generated responses. For example, when explicitly setting `enable_thinking=True` or leaving it as the default value in `tokenizer.apply_chat_template`, the model will engage its thinking mode.\n\n```python\ntext = tokenizer.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True,\n    enable_thinking=True  # True is the default value for enable_thinking\n)\n```\n\nIn this mode, the model will generate think content wrapped in a `<think>...</think>` block, followed by the final response.\n\n> [!NOTE]\n> For thinking mode, use `Temperature=0.6`, `TopP=0.95`, `TopK=20`, and `MinP=0` (the default setting in `generation_config.json`). **DO NOT use greedy decoding**, as it can lead to performance degradation and endless repetitions. For more detailed guidance, please refer to the [Best Practices](#best-practices) section.\n\n\n### `enable_thinking=False`\n\nWe provide a hard switch to strictly disable the model's thinking behavior, aligning its functionality with the previous Qwen2.5-Instruct models. This mode is particularly useful in scenarios where disabling thinking is essential for enhancing efficiency.\n\n```python\ntext = tokenizer.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True,\n    enable_thinking=False  # Setting enable_thinking=False disables thinking mode\n)\n```\n\nIn this mode, the model will not generate any think content and will not include a `<think>...</think>` block.\n\n> [!NOTE]\n> For non-thinking mode, we suggest using `Temperature=0.7`, `TopP=0.8`, `TopK=20`, and `MinP=0`. For more detailed guidance, please refer to the [Best Practices](#best-practices) section.\n\n### Advanced Usage: Switching Between Thinking and Non-Thinking Modes via User Input\n\nWe provide a soft switch mechanism that allows users to dynamically control the model's behavior when `enable_thinking=True`. Specifically, you can add `/think` and `/no_think` to user prompts or system messages to switch the model's thinking mode from turn to turn. The model will follow the most recent instruction in multi-turn conversations.\n\nHere is an example of a multi-turn conversation:\n\n```python\nfrom mlx_lm import load, generate\n\n\nclass QwenChatbot:\n    def __init__(self, model_name=\"Qwen/Qwen3-235B-A22B-MLX-bf16\"):\n        self.model, self.tokenizer = load(model_name)\n        self.history = []\n\n    def generate_response(self, user_input):\n        messages = self.history + [{\"role\": \"user\", \"content\": user_input}]\n\n        text = self.tokenizer.apply_chat_template(\n            messages,\n            tokenize=False,\n            add_generation_prompt=True\n        )\n\n        response = generate(\n            self.model,\n            self.tokenizer,\n            prompt=text,\n            verbose=True,\n            max_tokens=32768\n        )\n        # Update history\n        self.history.append({\"role\": \"user\", \"content\": user_input})\n        self.history.append({\"role\": \"assistant\", \"content\": response})\n\n        return response\n\n\n# Example Usage\nif __name__ == \"__main__\":\n    chatbot = QwenChatbot()\n\n    # First input (without /think or /no_think tags, thinking mode is enabled by default)\n    user_input_1 = \"How many 'r's are in strawberries?\"\n    print(f\"User: {user_input_1}\")\n    response_1 = chatbot.generate_response(user_input_1)\n    print(f\"Bot: {response_1}\")\n    print(\"----------------------\")\n\n    # Second input with /no_think\n    user_input_2 = \"Then, how many 'r's are in blueberries? /no_think\"\n    print(f\"User: {user_input_2}\")\n    response_2 = chatbot.generate_response(user_input_2)\n    print(f\"Bot: {response_2}\")\n    print(\"----------------------\")\n\n    # Third input with /think\n    user_input_3 = \"Really? /think\"\n    print(f\"User: {user_input_3}\")\n    response_3 = chatbot.generate_response(user_input_3)\n    print(f\"Bot: {response_3}\")\n```\n\n> [!NOTE]\n> For API compatibility, when `enable_thinking=True`, regardless of whether the user uses `/think` or `/no_think`, the model will always output a block wrapped in `<think>...</think>`. However, the content inside this block may be empty if thinking is disabled.\n> When `enable_thinking=False`, the soft switches are not valid. Regardless of any `/think` or `/no_think` tags input by the user, the model will not generate think content and will not include a `<think>...</think>` block.\n\n## Agentic Use\n\nQwen3 excels in tool calling capabilities. We recommend using [Qwen-Agent](https://github.com/QwenLM/Qwen-Agent) to make the best use of agentic ability of Qwen3. Qwen-Agent encapsulates tool-calling templates and tool-calling parsers internally, greatly reducing coding complexity.\n\nTo define the available tools, you can use the MCP configuration file, use the integrated tool of Qwen-Agent, or integrate other tools by yourself.\n\n```python\nfrom qwen_agent.agents import Assistant\n\n# Define LLM\nllm_cfg = {\n    \"model\": \"Qwen3-235B-A22B-MLX-bf16\",\n\n    # Use the endpoint provided by Alibaba Model Studio:\n    # \"model_type\": \"qwen_dashscope\",\n    # \"api_key\": os.getenv(\"DASHSCOPE_API_KEY\"),\n\n    # Use a custom endpoint compatible with OpenAI API:\n    \"model_server\": \"http://localhost:8000/v1\",  # api_base\n    \"api_key\": \"EMPTY\",\n\n    # Other parameters:\n    # \"generate_cfg\": {\n    #     # Add: When the response content is `<think>this is the thought</think>this is the answer;\n    #     # Do not add: When the response has been separated by reasoning_content and content.\n    #     \"thought_in_content\": True,\n    # },\n}\n\n# Define Tools\ntools = [\n    {\n        \"mcpServers\": {  # You can specify the MCP configuration file\n            \"time\": {\n                \"command\": \"uvx\",\n                \"args\": [\"mcp-server-time\", \"--local-timezone=Asia/Shanghai\"],\n            },\n            \"fetch\": {\n                \"command\": \"uvx\",\n                \"args\": [\"mcp-server-fetch\"],\n            },\n        }\n    },\n    \"code_interpreter\",  # Built-in tools\n]\n\n# Define Agent\nbot = Assistant(llm=llm_cfg, function_list=tools)\n\n# Streaming generation\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": \"https://qwenlm.github.io/blog/ Introduce the latest developments of Qwen\",\n    }\n]\n\nfor responses in bot.run(messages=messages):\n    pass\n\nprint(responses)\n```\n\n## Processing Long Texts\n\nQwen3 natively supports context lengths of up to 32,768 tokens. For conversations where the total length (including both input and output) significantly exceeds this limit, we recommend using RoPE scaling techniques to handle long texts effectively. We have validated the model's performance on context lengths of up to 131,072 tokens using the [YaRN](https://arxiv.org/abs/2309.00071) method.\n\nYaRN is currently supported by several inference frameworks, e.g., `transformers` and `llama.cpp` for local use, `vllm` and `sglang` for deployment. In general, there are two approaches to enabling YaRN for supported frameworks:\n\n- Modifying the model files:\n  In the `config.json` file, add the `rope_scaling` fields:\n    ```json\n    {\n        ...,\n        \"rope_scaling\": {\n            \"rope_type\": \"yarn\",\n            \"factor\": 4.0,\n            \"original_max_position_embeddings\": 32768\n        }\n    }\n    ```\n\n> [!IMPORTANT]\n> If you encounter the following warning\n> ```\n> Unrecognized keys in `rope_scaling` for 'rope_type'='yarn': {'original_max_position_embeddings'}\n> ```\n> please upgrade `transformers>=4.51.0`.\n\n> [!NOTE]\n> All the notable open-source frameworks implement static YaRN, which means the scaling factor remains constant regardless of input length, **potentially impacting performance on shorter texts.**\n> We advise adding the `rope_scaling` configuration only when processing long contexts is required. \n> It is also recommended to modify the `factor` as needed. For example, if the typical context length for your application is 65,536 tokens, it would be better to set `factor` as 2.0. \n\n> [!NOTE]\n> The default `max_position_embeddings` in `config.json` is set to 40,960. This allocation includes reserving 32,768 tokens for outputs and 8,192 tokens for typical prompts, which is sufficient for most scenarios involving short text processing. If the average context length does not exceed 32,768 tokens, we do not recommend enabling YaRN in this scenario, as it may potentially degrade model performance.\n\n> [!TIP]\n> The endpoint provided by Alibaba Model Studio supports dynamic YaRN by default and no extra configuration is needed.\n\n## Best Practices\n\nTo achieve optimal performance, we recommend the following settings:\n\n1. **Sampling Parameters**:\n   - For thinking mode (`enable_thinking=True`), use `Temperature=0.6`, `TopP=0.95`, `TopK=20`, and `MinP=0`. **DO NOT use greedy decoding**, as it can lead to performance degradation and endless repetitions.\n   - For non-thinking mode (`enable_thinking=False`), we suggest using `Temperature=0.7`, `TopP=0.8`, `TopK=20`, and `MinP=0`.\n   - For supported frameworks, you can adjust the `presence_penalty` parameter between 0 and 2 to reduce endless repetitions. However, using a higher value may occasionally result in language mixing and a slight decrease in model performance.\n\n2. **Adequate Output Length**: We recommend using an output length of 32,768 tokens for most queries. For benchmarking on highly complex problems, such as those found in math and programming competitions, we suggest setting the max output length to 38,912 tokens. This provides the model with sufficient space to generate detailed and comprehensive responses, thereby enhancing its overall performance.\n\n3. **Standardize Output Format**: We recommend using prompts to standardize model outputs when benchmarking.\n   - **Math Problems**: Include \"Please reason step by step, and put your final answer within \\boxed{}.\" in the prompt.\n   - **Multiple-Choice Questions**: Add the following JSON structure to the prompt to standardize responses: \"Please show your choice in the `answer` field with only the choice letter, e.g., `\"answer\": \"C\"`.\"\n\n4. **No Thinking Content in History**: In multi-turn conversations, the historical model output should only include the final output part and does not need to include the thinking content. It is implemented in the provided chat template in Jinja2. However, for frameworks that do not directly use the Jinja2 chat template, it is up to the developers to ensure that the best practice is followed.\n\n### Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@misc{qwen3technicalreport,\n      title={Qwen3 Technical Report}, \n      author={Qwen Team},\n      year={2025},\n      eprint={2505.09388},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2505.09388}, \n}\n```",
+  "cardDataParsed": {
+    "library_name": "mlx",
+    "license": "apache-2.0",
+    "license_link": "https://huggingface.co/Qwen/Qwen3-14B/blob/main/LICENSE",
+    "pipeline_tag": "text-generation",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

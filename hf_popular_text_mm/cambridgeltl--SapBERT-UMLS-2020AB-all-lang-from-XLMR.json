@@ -1,0 +1,100 @@
+{
+  "modelId": "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR",
+  "author": "cambridgeltl",
+  "sha": "47b6bd041ba61311584bb2494edfda5c7d9b719f",
+  "lastModified": "2023-06-14 19:00:30+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "safetensors",
+    "xlm-roberta",
+    "feature-extraction",
+    "arxiv:2010.11784",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "feature-extraction",
+  "library_name": "transformers",
+  "likes": 12,
+  "downloads": 195720,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {
+    "architectures": [
+      "XLMRobertaModel"
+    ],
+    "model_type": "xlm-roberta",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "sep_token": "</s>",
+      "cls_token": "<s>",
+      "unk_token": "<unk>",
+      "pad_token": "<pad>",
+      "mask_token": "<mask>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 744,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2282,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 677,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 1112201288,
+      "lfs": {
+        "size": 1112201288,
+        "sha256": "a5102c2c09ac7fd04b685251bd467cf29f9d883c1fd97d5c09268b9e216ea243",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1112261175,
+      "lfs": {
+        "size": 1112261175,
+        "sha256": "bdf40c1bb4ba818b6bb76efc475dd68507eb43a3a2cfae8e2a6b5f8ff72a5582",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "sentencepiece.bpe.model",
+      "size": 5069051,
+      "lfs": {
+        "size": 5069051,
+        "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 150,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 234,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n---\nlanguage: multilingual\n\ntags:\n- biomedical\n- lexical-semantics\n- cross-lingual\n\ndatasets:\n- UMLS\n\n**[news]** A cross-lingual extension of SapBERT will appear in the main onference of **ACL 2021**! <br>\n**[news]** SapBERT will appear in the conference proceedings of **NAACL 2021**!\n\n### SapBERT-XLMR\nSapBERT [(Liu et al. 2020)](https://arxiv.org/pdf/2010.11784.pdf) trained with [UMLS](https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html) 2020AB, using [xlm-roberta-base](https://huggingface.co/xlm-roberta-base) as the base model. Please use [CLS] as the representation of the input.\n\n\n#### Extracting embeddings from SapBERT\n\nThe following script converts a list of strings (entity names) into embeddings.\n```python\nimport numpy as np\nimport torch\nfrom tqdm.auto import tqdm\nfrom transformers import AutoTokenizer, AutoModel  \n\ntokenizer = AutoTokenizer.from_pretrained(\"cambridgeltl/SapBERT-from-PubMedBERT-fulltext\")  \nmodel = AutoModel.from_pretrained(\"cambridgeltl/SapBERT-from-PubMedBERT-fulltext\").cuda()\n\n# replace with your own list of entity names\nall_names = [\"covid-19\", \"Coronavirus infection\", \"high fever\", \"Tumor of posterior wall of oropharynx\"] \n\nbs = 128 # batch size during inference\nall_embs = []\nfor i in tqdm(np.arange(0, len(all_names), bs)):\n    toks = tokenizer.batch_encode_plus(all_names[i:i+bs], \n                                       padding=\"max_length\", \n                                       max_length=25, \n                                       truncation=True,\n                                       return_tensors=\"pt\")\n    toks_cuda = {}\n    for k,v in toks.items():\n        toks_cuda[k] = v.cuda()\n    cls_rep = model(**toks_cuda)[0][:,0,:] # use CLS representation as the embedding\n    all_embs.append(cls_rep.cpu().detach().numpy())\n\nall_embs = np.concatenate(all_embs, axis=0)\n```\n\nFor more details about training and eval, see SapBERT [github repo](https://github.com/cambridgeltl/sapbert).\n\n### Citation\n\n```bibtex\n@inproceedings{liu2021learning,\n\ttitle={Learning Domain-Specialised Representations for Cross-Lingual Biomedical Entity Linking},\n\tauthor={Liu, Fangyu and Vuli{\\'c}, Ivan and Korhonen, Anna and Collier, Nigel},\n\tbooktitle={Proceedings of ACL-IJCNLP 2021},\n\tmonth = aug,\n\tyear={2021}\n}\n```",
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,436 @@
+{
+  "modelId": "nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16",
+  "author": "nvidia",
+  "sha": "ca9543b126e8bf3176916d3d305ccc415f89fd4d",
+  "lastModified": "2026-08-25 06:01:08+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nvidia",
+    "VLM",
+    "image-text-to-text",
+    "conversational",
+    "arxiv:2501.14818",
+    "arxiv:2511.03929",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 91,
+  "downloads": 20600,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "nvidia",
+      "VLM"
+    ]
+  },
+  "config": {
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{%- set ns = namespace(enable_thinking=false, has_sys_prompt=false, non_tool_system_content='', has_video=false, explicit_think_requested=false) -%}{%- set msg = namespace(content='') -%}{%- for message in messages -%}{%- if message['role'] == 'system' -%}{%- set ns.has_sys_prompt = true -%}{# Extract system content without tool flags #}{%- if message['content'] is string -%}{%- set ns.non_tool_system_content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}{%- else -%}{%- set ns.non_tool_system_content = '' -%}{%- for content in message['content'] -%}{%- if content['type'] == 'text' -%}{%- set ns.non_tool_system_content = ns.non_tool_system_content + content['text'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>') -%}{%- endif -%}{%- endfor -%}{%- set ns.non_tool_system_content = ns.non_tool_system_content.strip() -%}{%- endif -%}{%- endif -%}{# Check for video content in all messages #}{%- if message['content'] is not string -%}{%- for content in message['content'] -%}{%- if content['type'] == 'video' or content['type'] == 'video_url' -%}{%- set ns.has_video = true -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- if message['content'] is string -%}{%- if message['role'] == 'user' or message['role'] == 'system' -%}{%- if '/think' in message['content'].replace('</think>', '') -%}{%- set ns.enable_thinking = true -%}{%- set ns.explicit_think_requested = true -%}{%- elif '/no_think' in message['content'] -%}{%- set ns.enable_thinking = false -%}{%- endif -%}{%- endif -%}{%- else -%}{%- for content in message['content'] -%}{%- if content['type'] == 'text' -%}{%- if message['role'] == 'user' or message['role'] == 'system' -%}{%- if '/think' in content['text'].replace('</think>', '') -%}{%- set ns.enable_thinking = true -%}{%- set ns.explicit_think_requested = true -%}{%- elif '/no_think' in content['text'] -%}{%- set ns.enable_thinking = false -%}{%- endif -%}{%- endif -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- endfor -%}{# Error out if video is present and reasoning is explicitly requested #}{%- if ns.has_video and ns.explicit_think_requested -%}{{ raise_exception('Video inputs are not supported with reasoning mode. Please remove /think flag or remove video content.') }}{%- endif -%}{# Automatically disable reasoning if video is present (without explicit /think request) #}{%- if ns.has_video and not ns.explicit_think_requested -%}{%- set ns.enable_thinking = false -%}{%- endif -%}{{- bos_token -}}{%- if messages[0]['role'] != 'system' -%}{{- '<SPECIAL_10>System\n' -}}{%- else -%}{{- '<SPECIAL_10>System\n' + ns.non_tool_system_content }}{%- endif -%}{%- if tools -%}{%- if ns.non_tool_system_content != '' -%}{{- '\n\n' -}}{%- endif -%}{{- 'You can use the following tools to assist the user if required:\n' -}}{{- '<AVAILABLE_TOOLS>[' -}}{%- for tool in tools -%}{{- (tool.function if tool.function is defined else tool) | tojson -}}{{- ', ' if not loop.last else '' -}}{%- endfor -%}{{- ']</AVAILABLE_TOOLS>\n\n' -}}{{- 'If you decide to call any tool(s), use the following format:\n' -}}{{- '<TOOLCALL>[{\"name\": \"tool_name1\", \"arguments\": \"tool_args1\"}, ' -}}{{- '{\"name\": \"tool_name2\", \"arguments\": \"tool_args2\"}]</TOOLCALL>\n\n' -}}{{- 'The user will execute tool-calls and return responses from tool(s) in this format:\n' -}}{{- '<TOOL_RESPONSE>[{\"response\": \"tool_response1\"}, ' -}}{{- '{\"response\": \"tool_response2\"}]</TOOL_RESPONSE>\n\n' -}}{{- 'Based on the tool responses, you can call additional tools if needed, ' -}}{{- 'correct tool calls if any errors are found, or just respond to the user.' -}}{%- endif -%}{{- '\n' -}}{%- set messages = messages[1:] if messages[0]['role'] == 'system' else messages -%}{# Prevent no user or assistant message #}{%- if messages|length == 0 -%}{%- set messages = [{'role': 'user', 'content': ''}] -%}{%- endif -%}{%- for message in messages %}{%- if message['content'] is string -%}{%- set msg.content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}{%- else -%}{%- set msg.content = '' -%}{%- set mm_content = '' -%}{%- set counters = namespace(images=0, videos=0) -%}{%- for content in message['content'] -%}{%- if content['type'] == 'image' -%}{%- set counters.images = counters.images + 1 -%}{%- elif content['type'] == 'video' -%}{%- set counters.videos = counters.videos + 1 -%}{%- elif content['type'] == 'text' -%}{%- set msg.content = msg.content + content['text'] -%}{%- endif -%}{%- endfor -%}{%- if '<image>' in msg.content -%}{%- set counters.images = 0 -%}{%- endif -%}{%- if '<video>' in msg.content -%}{%- set counters.videos = 0 -%}{%- endif -%}{%- if counters.images > 1 -%}{%- set image_tags = namespace(tags=[]) -%}{%- for i in range(counters.images) -%}{%- set image_tags.tags = image_tags.tags + ['<image ' + (i + 1)|string + '><image>'] -%}{%- endfor -%}{%- set mm_content = ' '.join(image_tags.tags) + '\n' -%}{%- elif counters.images == 1 -%}{%- set mm_content = '<image>\n' -%}{%- endif -%}{%- set mm_content = mm_content + '<video>\n' * counters.videos -%}{%- set msg.content = mm_content + msg.content.lstrip('\n') -%}{%- endif -%}{%- if message['role'] == 'user' %}{{- '<SPECIAL_11>User\n' + msg.content.replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() + '\n' }}{%- elif message['role'] == 'tool' %}{%- if loop.first or (messages[loop.index0 - 1].role != 'tool') -%}{{- '<SPECIAL_11>User\n' + '<TOOL_RESPONSE>[' }}{%- endif -%}{{- msg.content -}}{{- ', ' if not loop.last and (messages[loop.index0 + 1].role == 'tool') else '' -}}{%- if loop.last or (messages[loop.index0 + 1].role != 'tool') -%}{{- ']</TOOL_RESPONSE>\n' -}}{%- endif -%}{%- elif message['role'] == 'assistant' %}{%- if '</think>' in msg.content %}{%- set msg.content = msg.content.split('</think>')[1].strip() %}{%- endif %}{{- '<SPECIAL_11>Assistant\n' + msg.content.strip() }}{%- if message.tool_calls -%}{%- if msg.content.strip() != '' -%}{{- '\n\n' -}}{%- endif -%}{{- '<TOOLCALL>[' -}}{%- for call in message.tool_calls -%}{%- set fn = call.function if call.function is defined else call -%}{{- '{\"name\": \"' + fn.name + '\", \"arguments\": ' -}}{%- if fn.arguments is string -%}{{- fn.arguments -}}{%- else -%}{{- fn.arguments | tojson -}}{%- endif -%}{{- '}' + (', ' if not loop.last else '') -}}{%- endfor -%}{{- ']</TOOLCALL>' -}}{%- endif -%}{{- '\n<SPECIAL_12>\n' -}}{%- endif %}{%- endfor -%}{%- if add_generation_prompt %}{{- '<SPECIAL_11>Assistant\n' }}{%- if ns.enable_thinking is defined and ns.enable_thinking is false %}{{- '<think></think>' }}{%- else %}{{- '<think>\n' }}{%- endif %}{%- endif %}",
+      "eos_token": "<SPECIAL_12>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{%- set ns = namespace(enable_thinking=false, has_sys_prompt=false, non_tool_system_content='', has_video=false, explicit_think_requested=false) -%}\r\n{%- set msg = namespace(content='') -%}\r\n{%- for message in messages -%}\r\n    {%- if message['role'] == 'system' -%}\r\n        {%- set ns.has_sys_prompt = true -%}\r\n        {# Extract system content without tool flags #}\r\n        {%- if message['content'] is string -%}\r\n            {%- set ns.non_tool_system_content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}\r\n        {%- else -%}\r\n            {%- set ns.non_tool_system_content = '' -%}\r\n            {%- for content in message['content'] -%}\r\n                {%- if content['type'] == 'text' -%}\r\n                    {%- set ns.non_tool_system_content = ns.non_tool_system_content + content['text'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>') -%}\r\n                {%- endif -%}\r\n            {%- endfor -%}\r\n            {%- set ns.non_tool_system_content = ns.non_tool_system_content.strip() -%}\r\n        {%- endif -%}\r\n    {%- endif -%}\r\n    {# Check for video content in all messages #}\r\n    {%- if message['content'] is not string -%}\r\n        {%- for content in message['content'] -%}\r\n            {%- if content['type'] == 'video' or content['type'] == 'video_url' -%}\r\n                {%- set ns.has_video = true -%}\r\n            {%- endif -%}\r\n        {%- endfor -%}\r\n    {%- endif -%}\r\n    {%- if message['content'] is string -%}\r\n        {%- if message['role'] == 'user' or message['role'] == 'system' -%}\r\n            {%- if '/think' in message['content'].replace('</think>', '') -%}\r\n                {%- set ns.enable_thinking = true -%}\r\n                {%- set ns.explicit_think_requested = true -%}\r\n            {%- elif '/no_think' in message['content'] -%}\r\n                {%- set ns.enable_thinking = false -%}\r\n            {%- endif -%}\r\n        {%- endif -%}\r\n    {%- else -%}\r\n        {%- for content in message['content'] -%}\r\n            {%- if content['type'] == 'text' -%}\r\n                {%- if message['role'] == 'user' or message['role'] == 'system' -%}\r\n                    {%- if '/think' in content['text'].replace('</think>', '') -%}\r\n                        {%- set ns.enable_thinking = true -%}\r\n                        {%- set ns.explicit_think_requested = true -%}\r\n                    {%- elif '/no_think' in content['text'] -%}\r\n                        {%- set ns.enable_thinking = false -%}\r\n                    {%- endif -%}\r\n                {%- endif -%}\r\n            {%- endif -%}\r\n        {%- endfor -%}\r\n    {%- endif -%}\r\n{%- endfor -%}\r\n\r\n{# Error out if video is present and reasoning is explicitly requested #}\r\n{%- if ns.has_video and ns.explicit_think_requested -%}\r\n    {{ raise_exception('Video inputs are not supported with reasoning mode. Please remove /think flag or remove video content.') }}\r\n{%- endif -%}\r\n\r\n{# Automatically disable reasoning if video is present (without explicit /think request) #}\r\n{%- if ns.has_video and not ns.explicit_think_requested -%}\r\n    {%- set ns.enable_thinking = false -%}\r\n{%- endif -%}\r\n\r\n{{- bos_token -}}\r\n{%- if messages[0]['role'] != 'system' -%}\r\n    {{- '<SPECIAL_10>System\\n' -}}\r\n{%- else -%}\r\n    {{- '<SPECIAL_10>System\\n' + ns.non_tool_system_content }}\r\n{%- endif -%}\r\n\r\n{%- if tools -%}\r\n    {%- if ns.non_tool_system_content != '' -%}\r\n        {{- '\\n\\n' -}}\r\n    {%- endif -%}\r\n    {{- 'You can use the following tools to assist the user if required:\\n' -}}\r\n    {{- '<AVAILABLE_TOOLS>[' -}}\r\n    {%- for tool in tools -%}\r\n        {{- (tool.function if tool.function is defined else tool) | tojson -}}\r\n        {{- ', ' if not loop.last else '' -}}\r\n    {%- endfor -%}\r\n    {{- ']</AVAILABLE_TOOLS>\\n\\n' -}}\r\n    \r\n    {{- 'If you decide to call any tool(s), use the following format:\\n' -}}\r\n    {{- '<TOOLCALL>[{\"name\": \"tool_name1\", \"arguments\": \"tool_args1\"}, ' -}}\r\n    {{- '{\"name\": \"tool_name2\", \"arguments\": \"tool_args2\"}]</TOOLCALL>\\n\\n' -}}\r\n    \r\n    {{- 'The user will execute tool-calls and return responses from tool(s) in this format:\\n' -}}\r\n    {{- '<TOOL_RESPONSE>[{\"response\": \"tool_response1\"}, ' -}}\r\n    {{- '{\"response\": \"tool_response2\"}]</TOOL_RESPONSE>\\n\\n' -}}\r\n    \r\n    {{- 'Based on the tool responses, you can call additional tools if needed, ' -}}\r\n    {{- 'correct tool calls if any errors are found, or just respond to the user.' -}}\r\n{%- endif -%}\r\n{{- '\\n' -}}\r\n\r\n{%- set messages = messages[1:] if messages[0]['role'] == 'system' else messages -%}\r\n\r\n{# Prevent no user or assistant message #}\r\n{%- if messages|length == 0 -%}\r\n    {%- set messages = [{'role': 'user', 'content': ''}] -%}\r\n{%- endif -%}\r\n\r\n{%- for message in messages %}\r\n    {%- if message['content'] is string -%}\r\n        {%- set msg.content = message['content'].replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() -%}\r\n    {%- else -%}\r\n        {%- set msg.content = '' -%}\r\n        {%- set mm_content = '' -%}\r\n        {%- set counters = namespace(images=0, videos=0) -%}\r\n\r\n        {%- for content in message['content'] -%}\r\n            {%- if content['type'] == 'image' -%}\r\n                {%- set counters.images = counters.images + 1 -%}\r\n            {%- elif content['type'] == 'video' -%}\r\n                {%- set counters.videos = counters.videos + 1 -%}\r\n            {%- elif content['type'] == 'text' -%}\r\n                {%- set msg.content = msg.content + content['text'] -%}\r\n            {%- endif -%}\r\n        {%- endfor -%}\r\n        {%- if '<image>' in msg.content -%}\r\n            {%- set counters.images = 0 -%}\r\n        {%- endif -%}\r\n        {%- if '<video>' in msg.content -%}\r\n            {%- set counters.videos = 0 -%}\r\n        {%- endif -%}\r\n        {%- if counters.images > 1 -%}\r\n            {%- set image_tags = namespace(tags=[]) -%}\r\n            {%- for i in range(counters.images) -%}\r\n                {%- set image_tags.tags = image_tags.tags + ['<image ' + (i + 1)|string + '><image>'] -%}\r\n            {%- endfor -%}\r\n            {%- set mm_content = ' '.join(image_tags.tags) + '\\n' -%}\r\n        {%- elif counters.images == 1 -%}\r\n            {%- set mm_content = '<image>\\n' -%}\r\n        {%- endif -%}\r\n        {%- set mm_content = mm_content + '<video>\\n' * counters.videos -%}\r\n        {%- set msg.content = mm_content + msg.content.lstrip('\\n') -%}\r\n    {%- endif -%}\r\n\r\n    {%- if message['role'] == 'user' %}\r\n        {{- '<SPECIAL_11>User\\n' + msg.content.replace('</think>', '<_end_think>').replace('/think', '').replace('/no_think', '').replace('<_end_think>', '</think>').strip() + '\\n' }}\r\n    {%- elif message['role'] == 'tool' %}\r\n        {%- if loop.first or (messages[loop.index0 - 1].role != 'tool') -%}\r\n            {{- '<SPECIAL_11>User\\n' + '<TOOL_RESPONSE>[' }}\r\n        {%- endif -%}\r\n        {{- msg.content -}}\r\n        {{- ', ' if not loop.last and (messages[loop.index0 + 1].role == 'tool') else '' -}}\r\n        {%- if loop.last or (messages[loop.index0 + 1].role != 'tool') -%}\r\n            {{- ']</TOOL_RESPONSE>\\n' -}}\r\n        {%- endif -%}\r\n    {%- elif message['role'] == 'assistant' %}\r\n        {%- if '</think>' in msg.content %}\r\n            {%- set msg.content = msg.content.split('</think>')[1].strip() %}\r\n        {%- endif %}\r\n        {{- '<SPECIAL_11>Assistant\\n' + msg.content.strip() }}\r\n        {%- if message.tool_calls -%}\r\n            {%- if msg.content.strip() != '' -%}\r\n                {{- '\\n\\n' -}}\r\n            {%- endif -%}\r\n            {{- '<TOOLCALL>[' -}}\r\n            {%- for call in message.tool_calls -%}\r\n                {%- set fn = call.function if call.function is defined else call -%}\r\n                {{- '{\"name\": \"' + fn.name + '\", \"arguments\": ' -}}\r\n                {%- if fn.arguments is string -%}\r\n                    {{- fn.arguments -}}\r\n                {%- else -%}\r\n                    {{- fn.arguments | tojson -}}\r\n                {%- endif -%}\r\n                {{- '}' + (', ' if not loop.last else '') -}}\r\n            {%- endfor -%}\r\n            {{- ']</TOOLCALL>' -}}\r\n        {%- endif -%}\r\n        {{- '\\n<SPECIAL_12>\\n' -}}\r\n    {%- endif %}\r\n{%- endfor -%}\r\n{%- if add_generation_prompt %}\r\n    {{- '<SPECIAL_11>Assistant\\n' }}\r\n    {%- if ns.enable_thinking is defined and ns.enable_thinking is false %}\r\n        {{- '<think></think>' }}\r\n    {%- else %}\r\n        {{- '<think>\\n' }}\r\n    {%- endif %}\r\n{%- endif %}\r\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 20241,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 2891,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 8616,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 8692,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration.py",
+      "size": 2650,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_nemotron_h.py",
+      "size": 12078,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_radio.py",
+      "size": 5693,
+      "lfs": null
+    },
+    {
+      "rfilename": "evs.py",
+      "size": 3527,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 3363,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 158,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processing.py",
+      "size": 6158,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/demo.mp4",
+      "size": 7333182,
+      "lfs": {
+        "size": 7333182,
+        "sha256": "e77cbba796091e59490b57e9ef814a9f295a0f7669d42b99537685e1958e974d",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0000.jpg",
+      "size": 532176,
+      "lfs": {
+        "size": 532176,
+        "sha256": "0c664ba20597a961daf435f4ce30c93febbba02eb964e2e595525eaca256483d",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0001.jpg",
+      "size": 525666,
+      "lfs": {
+        "size": 525666,
+        "sha256": "f961cda1f4ad1e44fb75cc8951eaeef628e75a05c602a71e815ffd3bf8a26d22",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0002.jpg",
+      "size": 522853,
+      "lfs": {
+        "size": 522853,
+        "sha256": "8609912cbe164a3baadd0c3e7150afd8b9d68988b9f8d115948e44d2d14a996b",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0003.jpg",
+      "size": 510824,
+      "lfs": {
+        "size": 510824,
+        "sha256": "e5d7b553d7366562884ae77ea16c65b92d6796b7b3b76d3fd568d4e74c4a03da",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0004.jpg",
+      "size": 494798,
+      "lfs": {
+        "size": 494798,
+        "sha256": "151ee1231201c8b6dc3c0cb56c0c7b84d6b1e16fb874059becbe5335df03682b",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0005.jpg",
+      "size": 435068,
+      "lfs": {
+        "size": 435068,
+        "sha256": "959f473ea000c8bc87952e6c390d050ea8c7f865c44531e6bfa1f29833fadbd8",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0006.jpg",
+      "size": 466415,
+      "lfs": {
+        "size": 466415,
+        "sha256": "a608b7cfe92096baceab221be7c7d608ec6057c9f4c182bc7dac28dc18fac706",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0007.jpg",
+      "size": 451954,
+      "lfs": {
+        "size": 451954,
+        "sha256": "dff13f52befedf7d2749a64ec40e14bb47c8997af7a153e4e6dc0fbfb075ced7",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0008.jpg",
+      "size": 446495,
+      "lfs": {
+        "size": 446495,
+        "sha256": "06f01f307849ffaf7b33fe0a2a2ad9174c5c36599f13978a656ef6a4505b134d",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0009.jpg",
+      "size": 442849,
+      "lfs": {
+        "size": 442849,
+        "sha256": "2b8a4689a908a2d04e33e13037bbb2dcf4994df5236f66804d6e4e597423c223",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0010.jpg",
+      "size": 399499,
+      "lfs": {
+        "size": 399499,
+        "sha256": "aad1ffb23eaf1dc3afe1eddf024f0573ce7636e726fd4ae4d0d8cf95a07dc59c",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0011.jpg",
+      "size": 399758,
+      "lfs": {
+        "size": 399758,
+        "sha256": "48d68cc5255a1c538f0f5606475a9a56da3e45adec02b054bef4853b0c134958",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0012.jpg",
+      "size": 374855,
+      "lfs": {
+        "size": 374855,
+        "sha256": "6857551a744ed3e83f31f6b9e24465a7d3c65d7a9d1f9255d6d8ea70736106d4",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0013.jpg",
+      "size": 361900,
+      "lfs": {
+        "size": 361900,
+        "sha256": "ec3d3ac4b0e30d2f0956fdd5c96de10e54a7d766a8fad3910d4c3df7c2eca71a",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/frame_0014.jpg",
+      "size": 425102,
+      "lfs": {
+        "size": 425102,
+        "sha256": "651bdd06eb684ff83f44cd6b30d129b2d1861ef4a21f91b572f27768b4342ed9",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/demo_frames/metadata.json",
+      "size": 623,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/example1a.jpeg",
+      "size": 14890,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/example1b.jpeg",
+      "size": 12075,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/table.png",
+      "size": 131014,
+      "lfs": {
+        "size": 131014,
+        "sha256": "001461d8dd271602ce849013c9a226113279e0ae6156a27a12332bace6225e33",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/tech.png",
+      "size": 222054,
+      "lfs": {
+        "size": 222054,
+        "sha256": "4ae75f51f941a0d05b9c7c9a5025f962930e3e7526a68a627602c47846278109",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "model-00001-of-00007.safetensors",
+      "size": 3831944248,
+      "lfs": {
+        "size": 3831944248,
+        "sha256": "ac6d735e46b9ae89bd75f462c4a8080e3325692924ba5e2289e5a6b04c89819a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00007.safetensors",
+      "size": 3908097776,
+      "lfs": {
+        "size": 3908097776,
+        "sha256": "1c9bfacf484b2c7178e1aecc0086aef67de88b33692526049875a42dd0ff5352",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00007.safetensors",
+      "size": 3908097808,
+      "lfs": {
+        "size": 3908097808,
+        "sha256": "a31e6b86866116c028d99b4b3e1fb82e01fd3fdb0a3530955eed4268f6d63131",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00007.safetensors",
+      "size": 3824190384,
+      "lfs": {
+        "size": 3824190384,
+        "sha256": "a45fe2b6f4af25a32738f013009b72f7d2a7e749ea16258829cb98ad179a9440",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00007.safetensors",
+      "size": 3908097808,
+      "lfs": {
+        "size": 3908097808,
+        "sha256": "fc5898c8e1a872928ccd162f5ea80c1471c3d1e959f1f0ec86022347d70bab9c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00007.safetensors",
+      "size": 3908097808,
+      "lfs": {
+        "size": 3908097808,
+        "sha256": "40dfa0068329788adf9d17a42e20dc10f91d117a1dcfd7eaf8b5d298dc8c3c0d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00007.safetensors",
+      "size": 3075291960,
+      "lfs": {
+        "size": 3075291960,
+        "sha256": "28c456af5e605d472277f69ec68c298ae39442f72f825f06cb1c2df5043a1ba0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 72736,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling.py",
+      "size": 13555,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_nemotron_h.py",
+      "size": 78570,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 518,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 2765,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing.py",
+      "size": 14828,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_utils.py",
+      "size": 3628,
+      "lfs": null
+    },
+    {
+      "rfilename": "quick_test_image.py",
+      "size": 6917,
+      "lfs": null
+    },
+    {
+      "rfilename": "quick_test_video.py",
+      "size": 6248,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 2943,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 422,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17079976,
+      "lfs": {
+        "size": 17079976,
+        "sha256": "db8e35444fca3a2b98e2c8e927a8f1d8b1ba9d4b349e13ce5aafdb11b6404205",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 185845,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_io.py",
+      "size": 3536,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": null
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "modelId": "microsoft/unispeech-1350-en-353-fr-ft-1h",
+  "author": "microsoft",
+  "sha": "22b27346e4a5fec130c7010443589141251e6c0e",
+  "lastModified": "2021-12-19 23:14:27+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "unispeech",
+    "automatic-speech-recognition",
+    "audio",
+    "fr",
+    "dataset:common_voice",
+    "arxiv:2101.07597",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "automatic-speech-recognition",
+  "library_name": "transformers",
+  "likes": 0,
+  "downloads": 88,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "common_voice"
+    ],
+    "eval_results": null,
+    "language": [
+      "fr"
+    ],
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "audio",
+      "automatic-speech-recognition"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "UniSpeechForCTC"
+    ],
+    "model_type": "unispeech",
+    "tokenizer_config": {
+      "unk_token": "<unk>",
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3343,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1845,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 254,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1262090495,
+      "lfs": {
+        "size": 1262090495,
+        "sha256": "d49a68c65a579a935c948dd402e9de8d458a23dca57ff8b6ceeaeea4da5b5fa8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 85,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 220,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 456,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- fr\ndatasets:\n- common_voice\ntags:\n- audio\n- automatic-speech-recognition\n---\n\n# UniSpeech-Large-plus FRENCH\n\n[Microsoft's UniSpeech](https://www.microsoft.com/en-us/research/publication/unispeech-unified-speech-representation-learning-with-labeled-and-unlabeled-data/)\n\nThe large model pretrained on 16kHz sampled speech audio and phonetic labels and consequently fine-tuned on 1h of French phonemes. \nWhen using the model make sure that your speech input is also sampled at 16kHz and your text in converted into a sequence of phonemes. \n\n[Paper: UniSpeech: Unified Speech Representation Learning\nwith Labeled and Unlabeled Data](https://arxiv.org/abs/2101.07597)\n\nAuthors: Chengyi Wang, Yu Wu, Yao Qian, Kenichi Kumatani, Shujie Liu, Furu Wei, Michael Zeng, Xuedong Huang\n\n**Abstract**\n*In this paper, we propose a unified pre-training approach called UniSpeech to learn speech representations with both unlabeled and labeled data, in which supervised phonetic CTC learning and phonetically-aware contrastive self-supervised learning are conducted in a multi-task learning manner. The resultant representations can capture information more correlated with phonetic structures and improve the generalization across languages and domains. We evaluate the effectiveness of UniSpeech for cross-lingual representation learning on public CommonVoice corpus. The results show that UniSpeech outperforms self-supervised pretraining and supervised transfer learning for speech recognition by a maximum of 13.4% and 17.8% relative phone error rate reductions respectively (averaged over all testing languages). The transferability of UniSpeech is also demonstrated on a domain-shift speech recognition task, i.e., a relative word error rate reduction of 6% against the previous approach.*\n\nThe original model can be found under https://github.com/microsoft/UniSpeech/tree/main/UniSpeech.\n\n# Usage\n\nThis is an speech model that has been fine-tuned on phoneme classification.\n\n## Inference\n\n```python\nimport torch\nfrom datasets import load_dataset\nfrom transformers import AutoModelForCTC, AutoProcessor\nimport torchaudio.functional as F\n\nmodel_id = \"microsoft/unispeech-1350-en-353-fr-ft-1h\"\n\nsample = next(iter(load_dataset(\"common_voice\", \"fr\", split=\"test\", streaming=True)))\nresampled_audio = F.resample(torch.tensor(sample[\"audio\"][\"array\"]), 48_000, 16_000).numpy()\n\nmodel = AutoModelForCTC.from_pretrained(model_id)\nprocessor = AutoProcessor.from_pretrained(model_id)\n\ninput_values = processor(resampled_audio, return_tensors=\"pt\").input_values\n\nwith torch.no_grad():\n    logits = model(input_values).logits\n\nprediction_ids = torch.argmax(logits, dim=-1)\ntranscription = processor.batch_decode(prediction_ids)\n# gives -> '\u0153\u0303 v \u0281 \u025b t \u0281 a v a j \u025b\u0303 t e \u0281 \u025b s \u0251\u0303 v a \u0251\u0303 f \u025b\u0303 \u025b t \u0281 \u0259 m \u0259 n e s y \u0281 s \u0259 s y \u0292 \u025b'\n# for 'Un vrai travail int\u00e9ressant va, enfin, \u00eatre men\u00e9 sur ce sujet.'\n```\n\n# Contribution\n\nThe model was contributed by [cywang](https://huggingface.co/cywang) and [patrickvonplaten](https://huggingface.co/patrickvonplaten).\n\n# License\n\nThe official license can be found [here](https://github.com/microsoft/UniSpeech/blob/main/LICENSE)\n\n# Official Results\n\nSee *UniSpeeech-L^{+}* - *fr*:\n\n![design](https://raw.githubusercontent.com/patrickvonplaten/scientific_images/master/unispeech_results.png)",
+  "cardDataParsed": {
+    "language": [
+      "fr"
+    ],
+    "datasets": [
+      "common_voice"
+    ],
+    "tags": [
+      "audio",
+      "automatic-speech-recognition"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCTC",
+    "custom_class": null,
+    "pipeline_tag": "automatic-speech-recognition",
+    "processor": "AutoProcessor"
+  }
+}

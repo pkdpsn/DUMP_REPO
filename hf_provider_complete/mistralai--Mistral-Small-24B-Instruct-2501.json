@@ -1,0 +1,244 @@
+{
+  "modelId": "mistralai/Mistral-Small-24B-Instruct-2501",
+  "author": "mistralai",
+  "sha": "9527884be6e5616bdd54de542f9ae13384489724",
+  "lastModified": "2025-07-28 17:26:22+00:00",
+  "tags": [
+    "vllm",
+    "safetensors",
+    "mistral",
+    "en",
+    "fr",
+    "de",
+    "es",
+    "it",
+    "pt",
+    "zh",
+    "ja",
+    "ru",
+    "ko",
+    "base_model:mistralai/Mistral-Small-24B-Base-2501",
+    "base_model:finetune:mistralai/Mistral-Small-24B-Base-2501",
+    "license:apache-2.0",
+    "eval-results",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "vllm",
+  "likes": 970,
+  "downloads": 52250,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "mistralai/Mistral-Small-24B-Base-2501"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "it",
+      "pt",
+      "zh",
+      "ja",
+      "ru",
+      "ko"
+    ],
+    "library_name": "vllm",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vllm"
+    ],
+    "inference": false,
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>."
+  },
+  "config": {
+    "architectures": [
+      "MistralForCausalLM"
+    ],
+    "model_type": "mistral",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{%- set today = strftime_now(\"%Y-%m-%d\") %}\n{%- set default_system_message = \"You are Mistral Small 3, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.\\nYour knowledge base was last updated on 2023-10-01. The current date is \" + today + \".\\n\\nWhen you're not sure about some information, you say that you don't have the information and don't make up anything.\\nIf the user's question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. \\\"What are some good restaurants around me?\\\" => \\\"Where are you?\\\" or \\\"When is the next flight to Tokyo\\\" => \\\"Where do you travel from?\\\")\" %}\n\n{{- bos_token }}\n\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content'] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = default_system_message %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n{{- '[SYSTEM_PROMPT]' + system_message + '[/SYSTEM_PROMPT]' }}\n\n{%- for message in loop_messages %}\n    {%- if message['role'] == 'user' %}\n        {{- '[INST]' + message['content'] + '[/INST]' }}\n    {%- elif message['role'] == 'system' %}\n        {{- '[SYSTEM_PROMPT]' + message['content'] + '[/SYSTEM_PROMPT]' }}\n    {%- elif message['role'] == 'assistant' %}\n        {{- message['content'] + eos_token }}\n    {%- else %}\n        {{- raise_exception('Only user, system and assistant roles are supported!') }}\n    {%- endif %}\n{%- endfor %}",
+      "eos_token": "</s>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1618,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 14757,
+      "lfs": null
+    },
+    {
+      "rfilename": "SYSTEM_PROMPT.txt",
+      "size": 997,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 623,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated.safetensors",
+      "size": 47144846024,
+      "lfs": {
+        "size": 47144846024,
+        "sha256": "82718244a767b5b3545a46736801a0dfbdc4aacb581f7cfd9c08a2bdfdd4333e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 160,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00010.safetensors",
+      "size": 4781571736,
+      "lfs": {
+        "size": 4781571736,
+        "sha256": "75a14c708eea501700a723dc74bc886cf36a1393686a3fb098ee106b160da32f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00010.safetensors",
+      "size": 4781592784,
+      "lfs": {
+        "size": 4781592784,
+        "sha256": "1ff40fbfd9e042b7dab3f3c9442f870a4701f53e394dda769807a160ba40f32a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00010.safetensors",
+      "size": 4781592800,
+      "lfs": {
+        "size": 4781592800,
+        "sha256": "4cc2d059fded71efd2947a414f32053b4ed3fa84383edf97b6d91fd9f04e4235",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00010.safetensors",
+      "size": 4886471600,
+      "lfs": {
+        "size": 4886471600,
+        "sha256": "aa0e9acacf161c45ae0d71ca3f7e4ec9ee55dae2153398da52f81ee4f9e1b8d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00010.safetensors",
+      "size": 4781592824,
+      "lfs": {
+        "size": 4781592824,
+        "sha256": "dafb696763d31a1fda58010b73ecc05c19d395da8ec2c24aa9c41da33f2230d3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00010.safetensors",
+      "size": 4781592816,
+      "lfs": {
+        "size": 4781592816,
+        "sha256": "d9a433b19fd4d6986660a616a0d6fc7d02d9e8c0ab3c9b98940217ee6bd4e053",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00010.safetensors",
+      "size": 4886471600,
+      "lfs": {
+        "size": 4886471600,
+        "sha256": "5ac5c7b042491f917016c3e9635583177058f736be5fa315019b959fc3c43b63",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00010.safetensors",
+      "size": 4781592824,
+      "lfs": {
+        "size": 4781592824,
+        "sha256": "3c460c5b957ab3ac81f03bb20c0348820225dd9b819fa4487ae733b1e696e573",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00010.safetensors",
+      "size": 4781592816,
+      "lfs": {
+        "size": 4781592816,
+        "sha256": "304f66de1aeb55f0b4e1181885e3d15b65b485d5ce5c93b4adcdf7dd2c2d8cc5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00010.safetensors",
+      "size": 3900777072,
+      "lfs": {
+        "size": 3900777072,
+        "sha256": "c4c3bcedc02f4dd7e04c8b0fe1199f4f27de7a37790d1510a8772ffe05093543",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 29894,
+      "lfs": null
+    },
+    {
+      "rfilename": "params.json",
+      "size": 270,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 21311,
+      "lfs": null
+    },
+    {
+      "rfilename": "tekken.json",
+      "size": 14801223,
+      "lfs": {
+        "size": 14801223,
+        "sha256": "c4b90a968dbc67ef3975129d0b78a2e3cbb6bea340ab9205f22e8a0308b1ffc5",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17078037,
+      "lfs": {
+        "size": 17078037,
+        "sha256": "b76085f9923309d873994d444989f7eb6ec074b06f25b58f1e8d7b7741070949",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 199695,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}

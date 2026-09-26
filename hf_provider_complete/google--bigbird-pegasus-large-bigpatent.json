@@ -1,0 +1,182 @@
+{
+  "modelId": "google/bigbird-pegasus-large-bigpatent",
+  "author": "google",
+  "sha": "d76208892930b15ab2f4ea0cc49b8d9f74c352df",
+  "lastModified": "2023-01-24 16:36:44+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "bigbird_pegasus",
+    "text2text-generation",
+    "summarization",
+    "en",
+    "dataset:big_patent",
+    "arxiv:2007.14062",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "summarization",
+  "library_name": "transformers",
+  "likes": 41,
+  "downloads": 417,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "big_patent"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "summarization"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "BigBirdPegasusForConditionalGeneration"
+    ],
+    "model_type": "bigbird_pegasus",
+    "tokenizer_config": {
+      "pad_token": {
+        "content": "<pad>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "eos_token": {
+        "content": "</s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "unk_token": {
+        "content": "<unk>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "mask_token": "[MASK]",
+      "bos_token": {
+        "content": "<s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "sep_token": {
+        "content": "[SEP]",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "cls_token": {
+        "content": "[CLS]",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 690,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2825,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1053,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 232,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 2308148159,
+      "lfs": {
+        "size": 2308148159,
+        "sha256": "52a5b27a631d0ae2445e77ce97e9fcd7d13402079a741111eea024cc46e5c9d4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 775,
+      "lfs": null
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 1915455,
+      "lfs": {
+        "size": 1915455,
+        "sha256": "fe1b40df7e8825709c0172639c47338a68d5622e9e3b6cc0fae516537cae738b",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 3508743,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1198,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\nlicense: apache-2.0\ndatasets:\n- big_patent\ntags:\n- summarization\n---\n\n# BigBirdPegasus model (large)\n\nBigBird, is a sparse-attention based transformer which extends Transformer based models, such as BERT to much longer sequences. Moreover, BigBird comes along with a theoretical understanding of the capabilities of a complete transformer that the sparse model can handle. \n\nBigBird was introduced in this [paper](https://arxiv.org/abs/2007.14062) and first released in this [repository](https://github.com/google-research/bigbird).\n\nDisclaimer: The team releasing BigBird did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nBigBird relies on **block sparse attention** instead of normal attention (i.e. BERT's attention) and can handle sequences up to a length of 4096 at a much lower compute cost compared to BERT. It has achieved SOTA on various tasks involving very long sequences such as long documents summarization, question-answering with long contexts.\n\n## How to use\n\nHere is how to use this model to get the features of a given text in PyTorch:\n\n```python\nfrom transformers import BigBirdPegasusForConditionalGeneration, AutoTokenizer\n\ntokenizer = AutoTokenizer.from_pretrained(\"google/bigbird-pegasus-large-bigpatent\")\n\n# by default encoder-attention is `block_sparse` with num_random_blocks=3, block_size=64\nmodel = BigBirdPegasusForConditionalGeneration.from_pretrained(\"google/bigbird-pegasus-large-bigpatent\")\n\n# decoder attention type can't be changed & will be \"original_full\"\n# you can change `attention_type` (encoder only) to full attention like this:\nmodel = BigBirdPegasusForConditionalGeneration.from_pretrained(\"google/bigbird-pegasus-large-bigpatent\", attention_type=\"original_full\")\n\n# you can change `block_size` & `num_random_blocks` like this:\nmodel = BigBirdPegasusForConditionalGeneration.from_pretrained(\"google/bigbird-pegasus-large-bigpatent\", block_size=16, num_random_blocks=2)\n\ntext = \"Replace me by any text you'd like.\"\ninputs = tokenizer(text, return_tensors='pt')\nprediction = model.generate(**inputs)\nprediction = tokenizer.batch_decode(prediction)\n```\n\n## Training Procedure\n\nThis checkpoint is obtained after fine-tuning `BigBirdPegasusForConditionalGeneration` for **summarization** on [big_patent](https://huggingface.co/datasets/big_patent) dataset.\n\n## BibTeX entry and citation info\n\n```tex\n@misc{zaheer2021big,\n      title={Big Bird: Transformers for Longer Sequences}, \n      author={Manzil Zaheer and Guru Guruganesh and Avinava Dubey and Joshua Ainslie and Chris Alberti and Santiago Ontanon and Philip Pham and Anirudh Ravula and Qifan Wang and Li Yang and Amr Ahmed},\n      year={2021},\n      eprint={2007.14062},\n      archivePrefix={arXiv},\n      primaryClass={cs.LG}\n}\n```\n",
+  "cardDataParsed": {
+    "language": "en",
+    "license": "apache-2.0",
+    "datasets": [
+      "big_patent"
+    ],
+    "tags": [
+      "summarization"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

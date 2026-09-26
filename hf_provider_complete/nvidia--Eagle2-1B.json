@@ -1,0 +1,210 @@
+{
+  "modelId": "nvidia/Eagle2-1B",
+  "author": "nvidia",
+  "sha": "508bc72fb1a946db3d5c1ebca50165079afef782",
+  "lastModified": "2025-04-27 14:06:42+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "eagle_2_5_vl",
+    "feature-extraction",
+    "eagle",
+    "VLM",
+    "image-text-to-text",
+    "conversational",
+    "custom_code",
+    "multilingual",
+    "arxiv:2501.14818",
+    "base_model:Qwen/Qwen2.5-0.5B-Instruct",
+    "base_model:merge:Qwen/Qwen2.5-0.5B-Instruct",
+    "base_model:google/paligemma-3b-mix-448",
+    "base_model:merge:google/paligemma-3b-mix-448",
+    "base_model:google/siglip-so400m-patch14-384",
+    "base_model:merge:google/siglip-so400m-patch14-384",
+    "license:cc-by-nc-4.0",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 31,
+  "downloads": 336,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "google/paligemma-3b-mix-448",
+      "Qwen/Qwen2.5-0.5B-Instruct",
+      "google/siglip-so400m-patch14-384"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "transformers",
+    "license": "cc-by-nc-4.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "eagle",
+      "VLM"
+    ],
+    "base_model_relation": "merge"
+  },
+  "config": {
+    "architectures": [
+      "Eagle2_5_VLForConditionalGeneration"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_eagle2_5_vl.Eagle2_5_VLConfig",
+      "AutoModel": "modeling_eagle2_5_vl.Eagle2_5_VLForConditionalGeneration"
+    },
+    "model_type": "eagle_2_5_vl",
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}<image {{ image_count.value }}>{% endif %}<image-{{ image_count.value }}>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}<video {{ video_count.value }}>{% endif %}<video-{{ video_count.value }}>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 13987,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 790,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1018,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3944,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_eagle2_5_vl.py",
+      "size": 4966,
+      "lfs": null
+    },
+    {
+      "rfilename": "demo.py",
+      "size": 2000,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 69,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processing_eagle2.py",
+      "size": 35107,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processing_eagle2_5_vl_fast.py",
+      "size": 18553,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1670344,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 2126511128,
+      "lfs": {
+        "size": 2126511128,
+        "sha256": "a67b1a076346d99d202427f39c173b22cf79fd6c666dd4461d3cade62dfa38ed",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "modeling_eagle2_5_vl.py",
+      "size": 16245,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 672,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_eagle2_5_vl.py",
+      "size": 35692,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 492,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 744,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9024,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 3383407,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: cc-by-nc-4.0\npipeline_tag: image-text-to-text\nlibrary_name: transformers\nbase_model:\n- google/paligemma-3b-mix-448\n- Qwen/Qwen2.5-0.5B-Instruct\n- google/siglip-so400m-patch14-384\nbase_model_relation: merge\nlanguage:\n- multilingual\ntags:\n- eagle\n- VLM\n---\n\n\n# Eagle-2\n\n\n[\\[\ud83d\udcc2 GitHub\\]](https://github.com/NVlabs/EAGLE)   [\\[\ud83d\udcdc Eagle2 Tech Report\\]](http://arxiv.org/abs/2501.14818)\n[\\[\ud83e\udd17 HF Demo\\]](https://huggingface.co/spaces/nvidia/Eagle2-Demo)  \n\n# News:\n- We update the model arch to `eagle_2_5_vl` to support  `generate` feature.\n\n## Introduction\n\nWe are thrilled to release our latest Eagle2 series Vision-Language Model. Open-source Vision-Language Models (VLMs) have made significant strides in narrowing the gap with proprietary models. However, critical details about data strategies and implementation are often missing, limiting reproducibility and innovation. In this project, we focus on VLM post-training from a data-centric perspective, sharing insights into building effective data strategies from scratch. By combining these strategies with robust training recipes and model design, we introduce Eagle2, a family of performant VLMs. Our work aims to empower the open-source community to develop competitive VLMs with transparent processes.\n\n\nIn this repo, we are open-sourcing Eagle2-1B, a compact and efficient model designed for scenarios requiring fast inference and minimal computational resources, without compromising essential performance\n\n\n\n\n\n\n\n\n## Model Zoo\nWe provide the following models:\n\n| model name         | LLM  | Vision  | Max Length| HF Link|\n| ----------- | ------- |---------|-|-|\n| Eagle2-1B | [Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct) |  Siglip    | 16K| [\ud83e\udd17 link](https://huggingface.co/NVIDIA/Eagle2-1B)|\n| Eagle2-2B | [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) |  Siglip    | 16K| [\ud83e\udd17 link](https://huggingface.co/NVIDIA/Eagle2-2B)|\n| Eagle2-9B | [Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |  Siglip+ConvNext    | 16K| [\ud83e\udd17 link](https://huggingface.co/NVIDIA/Eagle2-9B)|\n\n## Benchmark Results\n|          Benchmark           | LLaVa-One-Vision-0.5B | InternVL2-1B | InternVL2.5-1B |Qwen2-VL-2B| Eagle2-1B|\n| :--------------------------: | :------------------: | :----------------: | :----------: |:----------: |:----------: |  \n|    DocVQA<sub>test</sub>     |         70.0         |        81.7        |     84.8     |90.1|81.8|\n|    ChartQA<sub>test</sub>    |          61.4         |        72.9        |     75.9     |73.0|77.0|\n|    InfoVQA<sub>test</sub>    |          41.8           |        50.9        |     56.0     |65.5|54.8|\n|    TextVQA<sub>val</sub>     |         -         |        70.0       |     72.0     |79.7|76.6|\n|           OCRBench           |         565          |        754         |     785      |809|767|\n|      MME<sub>sum</sub>       |        1438.0     |       1794.4      |    1950.5   |  1872.0| 1790.2|\n|         RealWorldQA          |        55.6     |        50.3       |    57.5     |62.6|55.4|\n|     AI2D<sub>test</sub>      |         57.1         |        64.1        |     69.3    | 74.7 |70.9|\n|      MMMU<sub>val</sub>      |          31.4       |    36.7     | 40.9  |41.1|38.8|\n| MMVet<sub>GPT-4-Turbo</sub>  |         32.2       |        32.7       |    48.8    | 49.5|40.9|             HallBench<sub>avg</sub>    |         27.9      |        34.0       |     39.0     |**41.7**|35.3\n| MathVista<sub>testmini</sub> |         33.8         |        37.7        |     43.2     |43.0|45.3|\n| MMstar |             37.7    |       45.7      |     50.1|48.0|48.5|\n\n\n\n## Quick Start\n\n\n\nWe provide a [inference script](./demo.py) to help you quickly start using the model. We support different input types: \n- pure text input\n- single image input\n- multiple image input\n- video input\n\n###  Install the dependencies\n\n```bash\npip install transformers\npip install flash-attn\n```\n\n\n### single image\n\n```python\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, AutoModel\nimport torch\nmodel = AutoModel.from_pretrained(\"nvidia/Eagle2-1B\",trust_remote_code=True, torch_dtype=torch.bfloat16)\nprocessor = AutoProcessor.from_pretrained(\"nvidia/Eagle2-1B\", trust_remote_code=True, use_fast=True)\nprocessor.tokenizer.padding_side = \"left\"\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"https://www.ilankelman.org/stopsigns/australia.jpg\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n\ntext_list = [processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)]\nimage_inputs, video_inputs = processor.process_vision_info(messages)\ninputs = processor(text = text_list, images=image_inputs, videos=video_inputs, return_tensors=\"pt\", padding=True)\ninputs = inputs.to(\"cuda\")\nmodel = model.to(\"cuda\")\ngenerated_ids = model.generate(**inputs, max_new_tokens=1024)\noutput_text = processor.batch_decode(\n    generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n\n### stream generation\n\n```python\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, AutoModel, AutoTokenizer\nimport torch\n\nfrom transformers import TextIteratorStreamer\nimport threading\n\n\nmodel = AutoModel.from_pretrained(\"nvidia/Eagle2-1B\",trust_remote_code=True, attn_implementation='flash_attention_2', torch_dtype=torch.bfloat16)\ntokenizer = AutoTokenizer.from_pretrained(\"nvidia/Eagle2-1B\", trust_remote_code=True, use_fast=True)\nprocessor = AutoProcessor.from_pretrained(\"nvidia/Eagle2-1B\", trust_remote_code=True, use_fast=True)\nprocessor.tokenizer.padding_side = \"left\"\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"https://www.ilankelman.org/stopsigns/australia.jpg\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n\ntext_list = [processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)]\nimage_inputs, video_inputs = processor.process_vision_info(messages)\ninputs = processor(text = text_list, images=image_inputs, videos=video_inputs, return_tensors=\"pt\", padding=True)\ninputs = inputs.to(\"cuda\")\nmodel = model.to(\"cuda\")\n\nstreamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)\n\ngeneration_kwargs = dict(\n    **inputs,\n    streamer=streamer,\n    max_new_tokens=1024,\n    do_sample=True,\n    top_p=0.95,\n    temperature=0.8\n)\nthread = threading.Thread(target=model.generate, kwargs=generation_kwargs)\nthread.start()\n\n\nfor new_text in streamer:\n    print(new_text, end=\"\", flush=True)\n```\n\n### multiple-images \n\n```python\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, AutoModel\nimport torch\nmodel = AutoModel.from_pretrained(\"nvidia/Eagle2-1B\",trust_remote_code=True, torch_dtype=torch.bfloat16)\nprocessor = AutoProcessor.from_pretrained(\"nvidia/Eagle2-1B\", trust_remote_code=True, use_fast=True)\nprocessor.tokenizer.padding_side = \"left\"\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"https://www.ilankelman.org/stopsigns/australia.jpg\",\n            },\n            {\n                \"type\": \"image\",\n                \"image\": \"https://www.nvidia.com/content/dam/en-zz/Solutions/about-nvidia/logo-and-brand/01-nvidia-logo-vert-500x200-2c50-d@2x.png\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe these two images.\"},\n        ],\n    }\n]\n\ntext_list = [processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)]\nimage_inputs, video_inputs = processor.process_vision_info(messages)\ninputs = processor(text = text_list, images=image_inputs, videos=video_inputs, return_tensors=\"pt\", padding=True)\ninputs = inputs.to(\"cuda\")\nmodel = model.to(\"cuda\")\ngenerated_ids = model.generate(**inputs, max_new_tokens=1024)\noutput_text = processor.batch_decode(\n    generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n\n### single video \n\n```python\n\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, AutoModel\nimport torch\nmodel = AutoModel.from_pretrained(\"nvidia/Eagle2-1B\",trust_remote_code=True, torch_dtype=torch.bfloat16)\nprocessor = AutoProcessor.from_pretrained(\"nvidia/Eagle2-1B\", trust_remote_code=True, use_fast=True)\nprocessor.tokenizer.padding_side = \"left\"\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"video\",\n                \"video\": \"../Eagle2-8B/space_woaudio.mp4\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe this video.\"},\n        ],\n    }\n]\n\ntext_list = [processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)]\nimage_inputs, video_inputs, video_kwargs = processor.process_vision_info(messages, return_video_kwargs=True)\n\ninputs = processor(text = text_list, images=image_inputs, videos=video_inputs, return_tensors=\"pt\", padding=True, videos_kwargs=video_kwargs)\ninputs = inputs.to(\"cuda\")\nmodel = model.to(\"cuda\")\ngenerated_ids = model.generate(**inputs, max_new_tokens=1024)\noutput_text = processor.batch_decode(\n    generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n\n```\n\n### multieple videos\n\n```python\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, AutoModel\nimport torch\nmodel = AutoModel.from_pretrained(\"nvidia/Eagle2-1B\",trust_remote_code=True, torch_dtype=torch.bfloat16)\nprocessor = AutoProcessor.from_pretrained(\"nvidia/Eagle2-1B\", trust_remote_code=True, use_fast=True)\nprocessor.tokenizer.padding_side = \"left\"\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"video\",\n                \"video\": \"../Eagle2-8B/space_woaudio.mp4\",\n                \"nframes\": 10,\n            },\n            {\n                \"type\": \"video\",\n                \"video\": \"../Eagle2-8B/video_ocr.mp4\",\n                \"nframes\": 10,\n            },\n            {\"type\": \"text\", \"text\": \"Describe these two videos respectively.\"},\n        ],\n    }\n]\n\ntext_list = [processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)]\nimage_inputs, video_inputs, video_kwargs = processor.process_vision_info(messages, return_video_kwargs=True)\ninputs = processor(text = text_list, images=image_inputs, videos=video_inputs, return_tensors=\"pt\", padding=True, videos_kwargs=video_kwargs)\ninputs = inputs.to(\"cuda\")\nmodel = model.to(\"cuda\")\ngenerated_ids = model.generate(**inputs, max_new_tokens=1024)\noutput_text = processor.batch_decode(\n    generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n\n### batch inference\n\n```python\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, AutoModel\nimport torch\nmodel = AutoModel.from_pretrained(\"nvidia/Eagle2-1B\",trust_remote_code=True, torch_dtype=torch.bfloat16)\nprocessor = AutoProcessor.from_pretrained(\"nvidia/Eagle2-1B\", trust_remote_code=True, use_fast=True)\nprocessor.tokenizer.padding_side = \"left\"\n\nmessages1 = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"https://www.ilankelman.org/stopsigns/australia.jpg\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n\nmessages2 = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"https://www.nvidia.com/content/dam/en-zz/Solutions/about-nvidia/logo-and-brand/01-nvidia-logo-vert-500x200-2c50-d@2x.png\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n\ntext_list = [processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n) for messages in [messages1, messages2]]\nimage_inputs, video_inputs = processor.process_vision_info([messages1, messages2])\ninputs = processor(text = text_list, images=image_inputs, videos=video_inputs, return_tensors=\"pt\", padding=True)\ninputs = inputs.to(\"cuda\")\nmodel = model.to(\"cuda\")\ngenerated_ids = model.generate(**inputs, max_new_tokens=1024)\noutput_text = processor.batch_decode(\n    generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n\n\n## TODO\n- [ ] Support vLLM Inference\n- [ ] Provide AWQ Quantization Weights\n- [ ] Provide fine-tuning scripts\n\n\n## License/Terms of Use\n- The code is released under the Apache 2.0 license as found in the [LICENSE](https://huggingface.co/NVEagle/Eagle-X5-13B-Chat/blob/main/LICENSE) file.\n- The pretrained model weights are released under the [Creative Commons Attribution: Non-Commercial 4.0 International](https://spdx.org/licenses/CC-BY-NC-4.0) <br>\n- The service is a research preview intended for non-commercial use only, and is subject to the following licenses and terms:\n  - Model License of Qwen2.5-0.5B-Instruct: [Apache-2.0](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE)\n  - Model License of PaliGemma: [Gemma license](https://ai.google.dev/gemma/terms)\n\n\n\n## Citation\n\n## Ethical Considerations\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.    \n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n ",
+  "cardDataParsed": {
+    "license": "cc-by-nc-4.0",
+    "pipeline_tag": "image-text-to-text",
+    "library_name": "transformers",
+    "base_model": [
+      "google/paligemma-3b-mix-448",
+      "Qwen/Qwen2.5-0.5B-Instruct",
+      "google/siglip-so400m-patch14-384"
+    ],
+    "base_model_relation": "merge",
+    "language": [
+      "multilingual"
+    ],
+    "tags": [
+      "eagle",
+      "VLM"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_eagle2_5_vl.Eagle2_5_VLForConditionalGeneration",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

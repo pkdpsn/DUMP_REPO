@@ -1,0 +1,83 @@
+{
+  "modelId": "google/timesfm-2.5-200m-pytorch",
+  "author": "google",
+  "sha": "1d952420fba87f3c6dee4f240de0f1a0fbc790e3",
+  "lastModified": "2025-10-02 17:21:38+00:00",
+  "tags": [
+    "timesfm",
+    "safetensors",
+    "time-series-forecasting",
+    "arxiv:2310.10688",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "time-series-forecasting",
+  "library_name": "timesfm",
+  "likes": 266,
+  "downloads": 1632393,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "timesfm",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "time-series-forecasting",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "TimesFmModelForPrediction"
+    ],
+    "model_type": "timesfm"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2496,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 475,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 925181104,
+      "lfs": {
+        "size": 925181104,
+        "sha256": "2f776efe6245e42b24bc4153ffdf61810140210e4bd3b01fb21f7aa779ab6ce8",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlibrary_name: timesfm\npipeline_tag: time-series-forecasting\n---\n\n# TimesFM\n\nTimesFM (Time Series Foundation Model) is a pretrained time-series foundation model developed by Google Research for time-series forecasting.\n\n# Updates\n\n* October 2, 2025: We changed the structure of the model to fuse QKV matrices into one for speed optimization.\n  Please reinstall the latest version of the timesfm package to reflect these changes. Results should be unchanged.\n\n**Resources and Technical Documentation**:\n* Paper: [A decoder-only foundation model for time-series forecasting](https://arxiv.org/abs/2310.10688), ICML 2024.\n* [Google Research blog](https://research.google/blog/a-decoder-only-foundation-model-for-time-series-forecasting/)\n* [GitHub repo](https://github.com/google-research/timesfm)\n\n**Authors**: Google Research\n\nThis checkpoint is not an officially supported Google product. See [TimesFM in BigQuery](https://cloud.google.com/bigquery/docs/timesfm-model) for Google official support.\n\n## Checkpoint `timesfm-2.5-200m`\n\n`timesfm-2.5-200m` is the third open model checkpoint.\n\n\n### Data\n\n`timesfm-2.5-200m` is pretrained using\n\n- [GiftEvalPretrain](https://huggingface.co/datasets/Salesforce/GiftEvalPretrain)\n- [Wikimedia Pageviews](https://meta.wikimedia.org/wiki/Pageviews_Analysis), cutoff Nov 2023 (see [paper](https://arxiv.org/abs/2310.10688) for details).\n- [Google Trends](https://trends.google.com/trends/) top queries, cutoff EoY 2022 (see [paper](https://arxiv.org/abs/2310.10688) for details).\n- Synthetic and augmented data.\n\n### Install\n\n`pip install` from PyPI coming soon. At this point, please run\n\n```shell\ngit clone https://github.com/google-research/timesfm.git\ncd timesfm\npip install -e .\n```\n\n### Code Example\n\n```python\nimport numpy as np\nimport timesfm\nmodel = timesfm.TimesFM_2p5_200M_torch.from_pretrained(\"google/timesfm-2.5-200m-pytorch\", torch_compile=True)\n\nmodel.compile(\n    timesfm.ForecastConfig(\n        max_context=1024,\n        max_horizon=256,\n        normalize_inputs=True,\n        use_continuous_quantile_head=True,\n        force_flip_invariance=True,\n        infer_is_positive=True,\n        fix_quantile_crossing=True,\n    )\n)\npoint_forecast, quantile_forecast = model.forecast(\n    horizon=12,\n    inputs=[\n        np.linspace(0, 1, 100),\n        np.sin(np.linspace(0, 20, 67)),\n    ],  # Two dummy inputs\n)\npoint_forecast.shape  # (2, 12)\nquantile_forecast.shape  # (2, 12, 10): mean, then 10th to 90th quantiles.\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "library_name": "timesfm",
+    "pipeline_tag": "time-series-forecasting",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

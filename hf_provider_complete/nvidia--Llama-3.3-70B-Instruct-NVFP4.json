@@ -1,0 +1,209 @@
+{
+  "modelId": "nvidia/Llama-3.3-70B-Instruct-NVFP4",
+  "author": "nvidia",
+  "sha": "f792b707002f2c613e0729c6b37bbcedc4efa94e",
+  "lastModified": "2025-08-22 06:26:43+00:00",
+  "tags": [
+    "safetensors",
+    "llama",
+    "base_model:meta-llama/Llama-3.3-70B-Instruct",
+    "base_model:finetune:meta-llama/Llama-3.3-70B-Instruct",
+    "license:llama3.3",
+    "8-bit",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": null,
+  "likes": 50,
+  "downloads": 258795,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "meta-llama/Llama-3.3-70B-Instruct"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "llama3.3",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "LlamaForCausalLM"
+    ],
+    "model_type": "llama",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- set date_string = \"26 Jul 2024\" %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = none %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message + builtin tools #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{%- if builtin_tools is defined or tools is not none %}\n    {{- \"Environment: ipython\\n\" }}\n{%- endif %}\n{%- if builtin_tools is defined %}\n    {{- \"Tools: \" + builtin_tools | reject('equalto', 'code_interpreter') | join(\", \") + \"\\n\\n\"}}\n{%- endif %}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{%- if tools is not none and not tools_in_user_message %}\n    {{- \"You have access to the following functions. To call a function, please respond with JSON for a function call.\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n{%- endif %}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{#- Custom tools are passed in a user message with some extra guidance #}\n{%- if tools_in_user_message and not tools is none %}\n    {#- Extract the first user message so we can plug it in here #}\n    {%- if messages | length != 0 %}\n        {%- set first_user_message = messages[0]['content']|trim %}\n        {%- set messages = messages[1:] %}\n    {%- else %}\n        {{- raise_exception(\"Cannot put tools in the first user message when there's no first user message!\") }}\n{%- endif %}\n    {{- '<|start_header_id|>user<|end_header_id|>\\n\\n' -}}\n    {{- \"Given the following functions, please respond with a JSON for a function call \" }}\n    {{- \"with its proper arguments that best answers the given prompt.\\n\\n\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n    {{- first_user_message + \"<|eot_id|>\"}}\n{%- endif %}\n\n{%- for message in messages %}\n    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n    {%- elif 'tool_calls' in message %}\n        {%- if not message.tool_calls|length == 1 %}\n            {{- raise_exception(\"This model only supports single tool-calls at once!\") }}\n        {%- endif %}\n        {%- set tool_call = message.tool_calls[0].function %}\n        {%- if builtin_tools is defined and tool_call.name in builtin_tools %}\n            {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n            {{- \"<|python_tag|>\" + tool_call.name + \".call(\" }}\n            {%- for arg_name, arg_val in tool_call.arguments | items %}\n                {{- arg_name + '=\"' + arg_val + '\"' }}\n                {%- if not loop.last %}\n                    {{- \", \" }}\n                {%- endif %}\n                {%- endfor %}\n            {{- \")\" }}\n        {%- else  %}\n            {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n            {{- '{\"name\": \"' + tool_call.name + '\", ' }}\n            {{- '\"parameters\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- \"}\" }}\n        {%- endif %}\n        {%- if builtin_tools is defined %}\n            {#- This means we're in ipython mode #}\n            {{- \"<|eom_id|>\" }}\n        {%- else %}\n            {{- \"<|eot_id|>\" }}\n        {%- endif %}\n    {%- elif message.role == \"tool\" or message.role == \"ipython\" %}\n        {{- \"<|start_header_id|>ipython<|end_header_id|>\\n\\n\" }}\n        {%- if message.content is mapping or message.content is iterable %}\n            {{- message.content | tojson }}\n        {%- else %}\n            {{- message.content }}\n        {%- endif %}\n        {{- \"<|eot_id|>\" }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|eot_id|>",
+      "pad_token": "<|finetune_right_pad_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1618,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE.pdf",
+      "size": 151612,
+      "lfs": {
+        "size": 151612,
+        "sha256": "396d7de220f6b0e6fcfe33836f1b99a9943769b97c56330444f8efe1b441f607",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4882,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 940,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 184,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 269,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00009.safetensors",
+      "size": 4989342736,
+      "lfs": {
+        "size": 4989342736,
+        "sha256": "a74f146988a79d5f85aa72b73c59c5df3e0f82a33b1d464f97aa6f232446f8e8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00009.safetensors",
+      "size": 4898263386,
+      "lfs": {
+        "size": 4898263386,
+        "sha256": "06279ed785b12bcd77cdf4929c12e89dcba54b9bc122aba9ad8c28ea0f48eca2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00009.safetensors",
+      "size": 4945447880,
+      "lfs": {
+        "size": 4945447880,
+        "sha256": "e4d7f3f0016f28f8f924469a0ea78b7cac03e49e6217e2d66d40099bb3d01d02",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00009.safetensors",
+      "size": 4945447872,
+      "lfs": {
+        "size": 4945447872,
+        "sha256": "546a5556e147952fd73585c933e26e085ed930c33287bed461981bb42f2546d0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00009.safetensors",
+      "size": 4992668346,
+      "lfs": {
+        "size": 4992668346,
+        "sha256": "2d25d2373ef3898d4eedcf7935a28ce74335c75fe4376b19ac55c7c0ef556803",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00009.safetensors",
+      "size": 4983197070,
+      "lfs": {
+        "size": 4983197070,
+        "sha256": "1a52977e1b1c9094d543aa7614e5a5f4c2184c98b46a768f90f6e088b0cb6719",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00009.safetensors",
+      "size": 4945447872,
+      "lfs": {
+        "size": 4945447872,
+        "sha256": "1b9c5d23fcfa5d1ce4c29922e459dd61bdfdc052a7fc423bddb1dc8dc12b19e0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00009.safetensors",
+      "size": 4992668346,
+      "lfs": {
+        "size": 4992668346,
+        "sha256": "906b5fb504b99bbe21078cddaf0135cba6fc0eb62b30b74d181a06117027d3fa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00009.safetensors",
+      "size": 3016840884,
+      "lfs": {
+        "size": 3016840884,
+        "sha256": "e8a5a8d96b7c315abd04052dc19a7ff4191c5b7b8108e6a8f5a093fc9abbb95e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 220264,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 325,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17209920,
+      "lfs": {
+        "size": 17209920,
+        "sha256": "6b9e4e7fb171f92fd137b777cc2714bf87d11576700a1dcd7a399e7bbe39537b",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 55425,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nbase_model:\n- meta-llama/Llama-3.3-70B-Instruct\nlicense: llama3.3\n---\n# Model Overview\n\n## Description:\nThe NVIDIA Llama 3.3 70B Instruct FP4 model is the quantized version of the Meta's Llama 3.3 70B Instruct model, which is an auto-regressive language model that uses an optimized transformer architecture. For more information, please check [here](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct). The NVIDIA Llama 3.3 70B Instruct FP4 model is quantized with [TensorRT Model Optimizer](https://github.com/NVIDIA/TensorRT-Model-Optimizer).\n\nThis model is ready for commercial/non-commercial use.  <br>\n\n## Third-Party Community Consideration\nThis model is not owned or developed by NVIDIA. This model has been developed and built to a third-party\u2019s requirements for this application and use case; see link to Non-NVIDIA [(Meta-Llama-3.3-70B-Instruct) Model Card](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct).\n\n### License/Terms of Use:\n[nvidia-open-model-license](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/)\n\n[llama3.3](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct/blob/main/LICENSE)\n\n## Model Architecture:\n**Architecture Type:** Transformers  <br>\n**Network Architecture:** Llama3.3 <br>\n\n## Input:\n**Input Type(s):** Text <br>\n**Input Format(s):** String <br>\n**Input Parameters:** 1D (One Dimensional): Sequences <br>\n**Other Properties Related to Input:** Context length up to 128K <br>\n\n## Output:\n**Output Type(s):** Text <br>\n**Output Format:** String <br>\n**Output Parameters:** 1D (One Dimensional): Sequences <br>\n**Other Properties Related to Output:** N/A <br>\n\n## Software Integration:\n**Supported Runtime Engine(s):** <br>\n* Tensor(RT)-LLM <br>\n\n**Supported Hardware Microarchitecture Compatibility:** <br>\n* NVIDIA Blackwell <br>\n\n**Preferred Operating System(s):** <br>\n* Linux <br>\n\n## Model Version(s):\nThe model is quantized with nvidia-modelopt **v0.23.0**  <br>\n\n## Datasets:\n* Calibration Dataset: [cnn_dailymail](https://huggingface.co/datasets/abisee/cnn_dailymail) <br>\n** Data collection method: Automated. <br>\n** Labeling method: Unknown. <br>\n\n\n## Inference:\n**Engine:** Tensor(RT)-LLM <br>\n**Test Hardware:** B200 <br>\n\n## Post Training Quantization\nThis model was obtained by quantizing the weights and activations of Meta-Llama-3.3-70B-Instruct to FP4 data type, ready for inference with TensorRT-LLM. Only the weights and activations of the linear operators within transformers blocks are quantized. This optimization reduces the number of bits per parameter from 16 to 4, reducing the disk size and GPU memory requirements by approximately 3.3x.\n\n## Usage\n\n### Deploy with TensorRT-LLM\n\nTo deploy the quantized checkpoint with [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) LLM API, follow the sample codes below:\n\n* LLM API sample usage:\n```\nfrom tensorrt_llm import LLM, SamplingParams\n\n\ndef main():\n\n    prompts = [\n        \"Hello, my name is\",\n        \"The president of the United States is\",\n        \"The capital of France is\",\n        \"The future of AI is\",\n    ]\n    sampling_params = SamplingParams(temperature=0.8, top_p=0.95)\n\n    llm = LLM(model=\"nvidia/Llama-3.3-70B-Instruct-FP4\")\n\n    outputs = llm.generate(prompts, sampling_params)\n\n    # Print the outputs.\n    for output in outputs:\n        prompt = output.prompt\n        generated_text = output.outputs[0].text\n        print(f\"Prompt: {prompt!r}, Generated text: {generated_text!r}\")\n\n\n# The entry point of the program need to be protected for spawning processes.\nif __name__ == '__main__':\n    main()\n\n```\n\nPlease refer to the [TensorRT-LLM llm-api documentation](https://nvidia.github.io/TensorRT-LLM/llm-api/index.html) for more details.\n\n#### Evaluation\nThe accuracy benchmark results are presented in the table below:\n<table>\n  <tr>\n   <td><strong>Precision</strong>\n   </td>\n   <td><strong>MMLU</strong>\n   </td>\n   <td><strong>GSM8K_COT</strong>\n   </td>\n   <td><strong>ARC Challenge</strong>\n   </td>\n   <td><strong>IFEVAL</strong>\n   </td>\n  </tr>\n  <tr>\n   <td>BF16\n   </td>\n   <td>83.3\n   </td>\n   <td>95.3\n   </td>\n   <td>93.7\n   </td>\n   <td>92.1\n   </td>\n  </tr>\n  <tr>\n   <td>FP4\n   </td>\n   <td>81.1\n   </td>\n   <td>92.6\n   </td>\n   <td>93.3\n   </td>\n   <td>92.0\n   </td>\n  </tr>\n  <tr>\n</table>\n\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).",
+  "cardDataParsed": {
+    "base_model": [
+      "meta-llama/Llama-3.3-70B-Instruct"
+    ],
+    "license": "llama3.3",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

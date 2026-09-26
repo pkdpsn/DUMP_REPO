@@ -1,0 +1,194 @@
+{
+  "modelId": "microsoft/VibeVoice-ASR-Streaming-1.5B",
+  "author": "microsoft",
+  "sha": "4262d23d8a539a6530cf64fbd0b1751ef9a30853",
+  "lastModified": "2026-09-03 05:35:41+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "vibevoice",
+    "ASR",
+    "Transcription",
+    "Speech-to-Text",
+    "Streaming",
+    "automatic-speech-recognition",
+    "en",
+    "zh",
+    "es",
+    "pt",
+    "de",
+    "ja",
+    "ko",
+    "fr",
+    "ru",
+    "it",
+    "arxiv:2609.02812",
+    "license:mit",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "automatic-speech-recognition",
+  "library_name": "transformers",
+  "likes": 58,
+  "downloads": 11673,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "zh",
+      "es",
+      "pt",
+      "de",
+      "ja",
+      "ko",
+      "fr",
+      "ru",
+      "it"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "automatic-speech-recognition",
+    "tags": [
+      "ASR",
+      "Transcription",
+      "Speech-to-Text",
+      "Streaming"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "VibeVoiceForASRStreamingTraining"
+    ],
+    "model_type": "vibevoice",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {%- if messages[0]['content'] is string %}\n            {{- messages[0]['content'] }}\n        {%- else %}\n            {%- for part in messages[0]['content'] %}\n                {%- if part['type'] == 'text' %}\n                    {{- part['text'] }}\n                {%- elif part['type'] == 'audio' or part['type'] == 'audio_url' %}\n                    {{- '<|AUDIO|>' }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n    {%- else %}\n        {{- 'You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0]['content'] is string %}\n            {{- messages[0]['content'] }}\n        {%- else %}\n            {%- for part in messages[0]['content'] %}\n                {%- if part['type'] == 'text' %}\n                    {{- part['text'] }}\n                {%- elif part['type'] == 'audio' or part['type'] == 'audio_url' %}\n                    {{- '<|AUDIO|>' }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message['content'] is string %}\n            {{- message['content'] }}\n        {%- else %}\n            {%- for part in message['content'] %}\n                {%- if part['type'] == 'text' %}\n                    {{- part['text'] }}\n                {%- elif part['type'] == 'audio' or part['type'] == 'audio_url' %}\n                    {{- '<|AUDIO|>' }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1735,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2238,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 714,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2941,
+      "lfs": null
+    },
+    {
+      "rfilename": "figures/VibeVoice_ASR_Streaming_architecture.png",
+      "size": 191728,
+      "lfs": {
+        "size": 191728,
+        "sha256": "2b38df286fe4d133d3ccbaf97e3195be349aca09dad011ff463b8d3b656c678f",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "figures/VibeVoice_ASR_Streaming_results.png",
+      "size": 623135,
+      "lfs": {
+        "size": 623135,
+        "sha256": "fa83f98d6506ea7ed9039e0c886baa375a9614a12ad915d71009bb76b6b15535",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 2498354152,
+      "lfs": {
+        "size": 2498354152,
+        "sha256": "788e6206a158c614e1e6777ab843baf64ca8a3f555e3cb72c26d5d79b925d4b9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 2486576066,
+      "lfs": {
+        "size": 2486576066,
+        "sha256": "4d58b3ce47ac6b0ac5d3b142d54e56f10e02a928cf016b493e9e6a3f91beb75d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 643458072,
+      "lfs": {
+        "size": 643458072,
+        "sha256": "884b560dcd3024436d8827d32c7e211c545751c099df4ee75101c1ee2196f427",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 120114,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 191,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 769,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422657,
+      "lfs": {
+        "size": 11422657,
+        "sha256": "d198a051741ee47805797b744e6524c259b08a59b58d1ec159cfd7f1da5f2df7",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 9330,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "VibeVoiceForASRStreamingTraining",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": "AutoProcessor"
+  }
+}

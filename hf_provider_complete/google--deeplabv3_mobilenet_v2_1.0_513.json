@@ -1,0 +1,120 @@
+{
+  "modelId": "google/deeplabv3_mobilenet_v2_1.0_513",
+  "author": "google",
+  "sha": "5282e0eaf10de7cc7f35ee5e40f47981b801bf63",
+  "lastModified": "2022-11-10 16:28:13+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "mobilenet_v2",
+    "vision",
+    "image-segmentation",
+    "dataset:pascal-voc",
+    "arxiv:1801.04381",
+    "arxiv:1802.02611",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-segmentation",
+  "library_name": "transformers",
+  "likes": 10,
+  "downloads": 431,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "pascal-voc"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "other",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "image-segmentation"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/cat-2.jpg",
+        "example_title": "Cat"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "MobileNetV2ForSemanticSegmentation"
+    ],
+    "model_type": "mobilenet_v2"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1477,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2740,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1384,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 406,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 10353385,
+      "lfs": {
+        "size": 10353385,
+        "sha256": "200b0384f844fa8675669e0db321f8e93946e348515a4cdc3ae7fc13abde5047",
+        "pointer_size": 133
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: other\ntags:\n- vision\n- image-segmentation\ndatasets:\n- pascal-voc\nwidget:\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/cat-2.jpg\n  example_title: Cat\n---\n\n# MobileNetV2 with DeepLabV3+\n\nMobileNet V2 model pre-trained on PASCAL VOC at resolution 513x513. It was introduced in [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381) by Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, Liang-Chieh Chen. It was first released in [this repository](https://github.com/tensorflow/models/tree/master/research/deeplab).\n\nDisclaimer: The team releasing MobileNet V2 did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nFrom the [original README](https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet_v1.md):\n\n> MobileNets are small, low-latency, low-power models parameterized to meet the resource constraints of a variety of use cases. They can be built upon for classification, detection, embeddings and segmentation similar to how other popular large scale models, such as Inception, are used. MobileNets can be run efficiently on mobile devices [...] MobileNets trade off between latency, size and accuracy while comparing favorably with popular models from the literature.\n\nThe model in this repo adds a [DeepLabV3+](https://arxiv.org/abs/1802.02611) head to the MobileNetV2 backbone for semantic segmentation.\n\n## Intended uses & limitations\n\nYou can use the raw model for semantic segmentation. See the [model hub](https://huggingface.co/models?search=mobilenet_v2) to look for fine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model:\n\n```python\nfrom transformers import AutoImageProcessor, AutoModelForSemanticSegmentation\nfrom PIL import Image\nimport requests\n\nurl = \"http://images.cocodataset.org/val2017/000000039769.jpg\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\npreprocessor = AutoImageProcessor.from_pretrained(\"google/deeplabv3_mobilenet_v2_1.0_513\")\nmodel = AutoModelForSemanticSegmentation.from_pretrained(\"google/deeplabv3_mobilenet_v2_1.0_513\")\n\ninputs = preprocessor(images=image, return_tensors=\"pt\")\n\noutputs = model(**inputs)\npredicted_mask = preprocessor.post_process_semantic_segmentation(outputs)\n```\n\nCurrently, both the feature extractor and model support PyTorch.\n\n### BibTeX entry and citation info\n\n```bibtex\n@inproceedings{deeplabv3plus2018,\n  title={Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation},\n  author={Liang-Chieh Chen and Yukun Zhu and George Papandreou and Florian Schroff and Hartwig Adam},\n  booktitle={ECCV},\n  year={2018}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "other",
+    "tags": [
+      "vision",
+      "image-segmentation"
+    ],
+    "datasets": [
+      "pascal-voc"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/cat-2.jpg",
+        "example_title": "Cat"
+      }
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "MobileNetV2ForSemanticSegmentation",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": "AutoImageProcessor"
+  }
+}

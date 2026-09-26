@@ -1,0 +1,85 @@
+{
+  "modelId": "nvidia/fourcastnet1",
+  "author": "nvidia",
+  "sha": "f63c56bd37c3fad04836422fd5a3a10329f95141",
+  "lastModified": "2026-03-05 17:48:44+00:00",
+  "tags": [
+    "arxiv:2202.11214",
+    "arxiv:2111.13587",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": null,
+  "likes": 4,
+  "downloads": 387,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1670,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5504,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 22,
+      "lfs": null
+    },
+    {
+      "rfilename": "fcn.mdlus",
+      "size": 301168640,
+      "lfs": {
+        "size": 301168640,
+        "sha256": "995cdfdc3b64330caade5518aff09e0ce8f941b4262f3f8eb792b6fea8b6423a",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "global_means.npy",
+      "size": 336,
+      "lfs": {
+        "size": 336,
+        "sha256": "dd207b78084ad28387c1dc1110ac6db3bc85b25182433ce854ddb8968f219921",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "global_stds.npy",
+      "size": 336,
+      "lfs": {
+        "size": 336,
+        "sha256": "d2adff90952d7980e1951e3b7688451dbb11b63eb04c1b43991e30b2d65e3dcb",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "metadata.json",
+      "size": 75,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n# Earth-2 Checkpoints: FourCastNet \n\nFourCastNet, short for Fourier Forecasting Neural Network, is a global data-driven weather forecasting model that provides accurate short to medium-range global predictions.\nFourCastNet accurately forecasts high-resolution, fast-timescale variables such as the surface wind speed, precipitation, and atmospheric water vapor.\nFourCastNet uses the the Adaptive Fourier Neural Operator (AFNO) archiecture.\nThis particular neural network architecture is appealing as it is specifically designed for high-resolution inputs and synthesizes several key recent advances in DL into one model.\n\nRelease Date: October 25, 2023\n\nThis model is ready for commercial/non-commercial use.\n\n### License/Terms of Use:\n\n[Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0)\n\n### Deployment Geography:\n\nGlobal\n\n### Use Case:\n\nIndustry, academic, and government research teams interested in medium-range and\nsubseasonal-to-seasonal weather forecasting, and climate modeling.\n\n### References:\n\n**Papers**:\n\n- [FourCastNet: A Global Data-driven High-resolution Weather Model using Adaptive Fourier Neural Operators](https://arxiv.org/abs/2202.11214)\n- [Adaptive Fourier Neural Operators: Efficient Token Mixers for Transformers](https://arxiv.org/abs/2111.13587)\n- [The ERA5 global reanalysis](https://doi.org/10.1002/qj.3803)\n\n**Code**:\n\n- [PhysicsNeMo](https://github.com/NVIDIA/physicsnemo)\n- [Earth2Studio](https://github.com/NVIDIA/earth2studio)\n\n## Model Architecture:\n\n**Architecture Type:** Neural Operator <br>\n\n**Network Architecture:** Adaptive Fourier Neural Operator <br>\n\n## Input:\n\n**Input Type:**\n\n- Tensor (26 surface and pressure-level variables)\n\n**Input Format:** PyTorch Tensor  <br>\n**Input Parameters:**\n\n- Six Dimensional (6D) (batch, time, lead time, variable, latitude, longitude) <br>\n\n**Other Properties Related to Input:**\n\n- Input equi-rectangular latitude/longitude grid: 0.25 degree 720 x 1440 (south-pole excluding)\n- Input state weather variables:  `u10m`, `v10m`, `t2m`, `sp`, `msl`, `t850`, `u1000`, `v1000`, `z1000`, `u850`, `v850`, `z850`, `u500`, `v500`, `z500`, `t500`, `z50`, `r500`,`r850`,`tcwv`,`u100m`,`v100m`,`u250`,`v250`,`z250`,`t250`\n- Time: datetime64\n\nFor variable name information, review the Lexicon at [Earth2Studio](https://github.com/NVIDIA/earth2studio).\n\n## Output:\n\n**Output Type:** Tensor (26 surface and pressure-level variables) <br>\n**Output Format:** Pytorch Tensor <br>\n**Output Parameters:** Six Dimensional (6D) (batch, time, lead time, variable,\n latitude, longitude)  <br>\n**Other Properties Related to Output:**\n\n- Output latitude/longitude grid: 0.25 degree 72 x 1440, same as input.\n- Output state weather variables: same as above.\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems.\nBy leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA\nlibraries), the model achieves faster training and inference times compared to\nCPU-only solutions.\n\n## Software Integration:\n\n**Runtime Engine:** Pytorch <br>\n**Supported Hardware Microarchitecture Compatibility:** <br>\n\n- NVIDIA Ampere <br>\n- NVIDIA Hopper <br>\n- NVIDIA Turing <br>\n\n**Supported Operating System:**\n\n- Linux <br>\n\n## Model Version:\n\n**Model Version:** v1 <br>\n\n## Training Dataset:\n\n**Link:** [ERA5](https://cds.climate.copernicus.eu/) <br>\n\n**Data Collection Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Labeling Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Properties:**\nERA5 data for the period 1980-2015. ERA5 provides hourly estimates of various\natmospheric, land, and oceanic climate variables. The data covers the Earth on a 30km\ngrid and resolves the atmosphere at 137 levels. <br>\n\n## Testing Dataset:\n\n**Link:** [ERA5](https://cds.climate.copernicus.eu/) <br>\n\n**Data Collection Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Labeling Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Properties:**\nERA5 data for the period 2016-2017. ERA5 provides hourly estimates of various\natmospheric, land, and oceanic climate variables. The data covers the Earth on a 30km\ngrid and resolves the atmosphere at 137 levels. <br>\n\n## Evaluation Dataset:\n\n**Link:** [ERA5](https://cds.climate.copernicus.eu/) <br>\n\n**Data Collection Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Labeling Method by dataset** <br>\n\n- Automatic/Sensors <br>\n\n**Properties:**\nERA5 data for the period 2018-2019. ERA5 provides hourly estimates of various\natmospheric, land, and oceanic climate variables. The data covers the Earth on a 30km\ngrid and resolves the atmosphere at 137 levels. <br>\n\n## Inference:\n\n**Acceleration Engine:** PhysicsNeMo, PyTorch <br>\n**Test Hardware:**\n\n- A100 <br>\n- H100 <br>\n- L40S <br>\n\n## Ethical Considerations:\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established\npolicies and practices to enable development for a wide array of AI applications.\nWhen downloaded or used in accordance with our terms of service, developers should\nwork with their internal model team to ensure this model meets requirements for the\nrelevant industry and use case and addresses unforeseen product misuse.\n\nFor more detailed information on ethical considerations for this model, please see the\nModel Card++ Explainability, Bias, Safety & Security, and Privacy Subcards.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n",
+  "cardDataParsed": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

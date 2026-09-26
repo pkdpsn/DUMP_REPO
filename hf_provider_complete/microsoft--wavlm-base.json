@@ -1,0 +1,106 @@
+{
+  "modelId": "microsoft/wavlm-base",
+  "author": "microsoft",
+  "sha": "efa81aae7ff777e464159e0f877d54eac5b84f81",
+  "lastModified": "2021-12-22 17:23:36+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "wavlm",
+    "feature-extraction",
+    "speech",
+    "en",
+    "arxiv:2110.13900",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "feature-extraction",
+  "library_name": "transformers",
+  "likes": 12,
+  "downloads": 48826,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "speech"
+    ],
+    "inference": false
+  },
+  "config": {
+    "architectures": [
+      "WavLMModel"
+    ],
+    "model_type": "wavlm"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3774,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2236,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 215,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 377617425,
+      "lfs": {
+        "size": 377617425,
+        "sha256": "b41ab60fdcdc113ff164212c72b371dcd420a5773ca1f6c8f54d6809225ce072",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\ntags:\n- speech\ninference: false\n---\n\n# WavLM-Base\n\n[Microsoft's WavLM](https://github.com/microsoft/unilm/tree/master/wavlm)\n\nThe base model pretrained on 16kHz sampled speech audio. When using the model, make sure that your speech input is also sampled at 16kHz. \n\n**Note**: This model does not have a tokenizer as it was pretrained on audio alone. In order to use this model **speech recognition**, a tokenizer should be created and the model should be fine-tuned on labeled text data. Check out [this blog](https://huggingface.co/blog/fine-tune-wav2vec2-english) for more in-detail explanation of how to fine-tune the model.\n\nThe model was pre-trained on 960h of [Librispeech](https://huggingface.co/datasets/librispeech_asr).\n\n[Paper: WavLM: Large-Scale Self-Supervised Pre-Training for Full Stack Speech Processing](https://arxiv.org/abs/2110.13900)\n\nAuthors: Sanyuan Chen, Chengyi Wang, Zhengyang Chen, Yu Wu, Shujie Liu, Zhuo Chen, Jinyu Li, Naoyuki Kanda, Takuya Yoshioka, Xiong Xiao, Jian Wu, Long Zhou, Shuo Ren, Yanmin Qian, Yao Qian, Jian Wu, Michael Zeng, Furu Wei\n\n**Abstract**\n*Self-supervised learning (SSL) achieves great success in speech recognition, while limited exploration has been attempted for other speech processing tasks. As speech signal contains multi-faceted information including speaker identity, paralinguistics, spoken content, etc., learning universal representations for all speech tasks is challenging. In this paper, we propose a new pre-trained model, WavLM, to solve full-stack downstream speech tasks. WavLM is built based on the HuBERT framework, with an emphasis on both spoken content modeling and speaker identity preservation. We first equip the Transformer structure with gated relative position bias to improve its capability on recognition tasks. For better speaker discrimination, we propose an utterance mixing training strategy, where additional overlapped utterances are created unsupervisely and incorporated during model training. Lastly, we scale up the training dataset from 60k hours to 94k hours. WavLM Large achieves state-of-the-art performance on the SUPERB benchmark, and brings significant improvements for various speech processing tasks on their representative benchmarks.*\n\nThe original model can be found under https://github.com/microsoft/unilm/tree/master/wavlm.\n\n# Usage\n\nThis is an English pre-trained speech model that has to be fine-tuned on a downstream task like speech recognition or audio classification before it can be \nused in inference. The model was pre-trained in English and should therefore perform well only in English. The model has been shown to work well on the [SUPERB benchmark](https://superbbenchmark.org/).\n\n**Note**: The model was pre-trained on phonemes rather than characters. This means that one should make sure that the input text is converted to a sequence \nof phonemes before fine-tuning.\n\n## Speech Recognition\n\nTo fine-tune the model for speech recognition, see [the official speech recognition example](https://github.com/huggingface/transformers/tree/master/examples/pytorch/speech-recognition).\n\n## Speech Classification\n\nTo fine-tune the model for speech classification, see [the official audio classification example](https://github.com/huggingface/transformers/tree/master/examples/pytorch/audio-classification).\n\n## Speaker Verification\n\nTODO\n\n## Speaker Diarization\n\nTODO\n\n# Contribution\n\nThe model was contributed by [cywang](https://huggingface.co/cywang) and [patrickvonplaten](https://huggingface.co/patrickvonplaten).\n\n# License\n\nThe official license can be found [here](https://github.com/microsoft/UniSpeech/blob/main/LICENSE)\n\n![design](https://raw.githubusercontent.com/patrickvonplaten/scientific_images/master/wavlm.png)",
+  "cardDataParsed": {
+    "language": [
+      "en"
+    ],
+    "datasets": null,
+    "tags": [
+      "speech"
+    ],
+    "inference": false,
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoProcessor"
+  }
+}

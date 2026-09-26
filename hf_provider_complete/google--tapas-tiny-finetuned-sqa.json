@@ -1,0 +1,133 @@
+{
+  "modelId": "google/tapas-tiny-finetuned-sqa",
+  "author": "google",
+  "sha": "9e62729ba223d47b8812e264d621e719d7fdaaf5",
+  "lastModified": "2021-11-29 13:08:47+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "tapas",
+    "table-question-answering",
+    "en",
+    "dataset:msr_sqa",
+    "arxiv:2004.02349",
+    "arxiv:2010.00571",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "table-question-answering",
+  "library_name": "transformers",
+  "likes": 1,
+  "downloads": 3644,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "msr_sqa"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "tapas"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "TapasForQuestionAnswering"
+    ],
+    "model_type": "tapas",
+    "tokenizer_config": {
+      "unk_token": "[UNK]",
+      "sep_token": "[SEP]",
+      "pad_token": "[PAD]",
+      "cls_token": "[CLS]",
+      "mask_token": "[MASK]"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7703,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1546,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 18095095,
+      "lfs": {
+        "size": 18095095,
+        "sha256": "4242eb0c322266181e548b44c71d875ee7527f92eee209a6eb537ea93d9a7477",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 154,
+      "lfs": null
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 18153496,
+      "lfs": {
+        "size": 18153496,
+        "sha256": "f2599db9036f19bd46c47e76b4cfd969f9801e0db1114f858ee6f39a9edf0479",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 490,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.txt",
+      "size": 262028,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\ntags:\n- tapas\nlicense: apache-2.0\ndatasets:\n- msr_sqa\n---\n\n# TAPAS tiny model fine-tuned on Sequential Question Answering (SQA)\n\nThis model has 2 versions which can be used. The default version corresponds to the `tapas_sqa_inter_masklm_tiny_reset` checkpoint of the [original Github repository](https://github.com/google-research/tapas).\nThis model was pre-trained on MLM and an additional step which the authors call intermediate pre-training, and then fine-tuned on [SQA](https://www.microsoft.com/en-us/download/details.aspx?id=54253). It uses relative position embeddings (i.e. resetting the position index at every cell of the table).\n\nThe other (non-default) version which can be used is: \n- `no_reset`, which corresponds to `tapas_sqa_inter_masklm_tiny` (intermediate pre-training, absolute position embeddings). \n\nDisclaimer: The team releasing TAPAS did not write a model card for this model so this model card has been written by\nthe Hugging Face team and contributors.\n\n## Results on SQA - Dev Accuracy\n\nSize     |  Reset  | Dev Accuracy | Link\n-------- | --------| -------- | ----\nLARGE | noreset | 0.7223 | [tapas-large-finetuned-sqa (absolute pos embeddings)](https://huggingface.co/google/tapas-large-finetuned-sqa/tree/no_reset)\nLARGE | reset | 0.7289 | [tapas-large-finetuned-sqa](https://huggingface.co/google/tapas-large-finetuned-sqa/tree/main)\nBASE | noreset | 0.6737 | [tapas-base-finetuned-sqa (absolute pos embeddings)](https://huggingface.co/google/tapas-base-finetuned-sqa/tree/no_reset)\nBASE | reset | 0.6874 | [tapas-base-finetuned-sqa](https://huggingface.co/google/tapas-base-finetuned-sqa/tree/main)\nMEDIUM | noreset | 0.6464 | [tapas-medium-finetuned-sqa (absolute pos embeddings)](https://huggingface.co/google/tapas-medium-finetuned-sqa/tree/no_reset)\nMEDIUM | reset | 0.6561 | [tapas-medium-finetuned-sqa](https://huggingface.co/google/tapas-medium-finetuned-sqa/tree/main)\nSMALL | noreset | 0.5876 | [tapas-small-finetuned-sqa (absolute pos embeddings)](https://huggingface.co/google/tapas-small-finetuned-sqa/tree/no_reset)\nSMALL | reset | 0.6155 | [tapas-small-finetuned-sqa](https://huggingface.co/google/tapas-small-finetuned-sqa/tree/main)\nMINI | noreset | 0.4574 | [tapas-mini-finetuned-sqa (absolute pos embeddings)](https://huggingface.co/google/tapas-mini-finetuned-sqa/tree/no_reset)\nMINI | reset | 0.5148 | [tapas-mini-finetuned-sqa](https://huggingface.co/google/tapas-mini-finetuned-sqa/tree/main))\n**TINY** | **noreset** | **0.2004** | [tapas-tiny-finetuned-sqa (absolute pos embeddings)](https://huggingface.co/google/tapas-tiny-finetuned-sqa/tree/no_reset)\n**TINY** | **reset** | **0.2375** | [tapas-tiny-finetuned-sqa](https://huggingface.co/google/tapas-tiny-finetuned-sqa/tree/main)\n\n## Model description\n\nTAPAS is a BERT-like transformers model pretrained on a large corpus of English data from Wikipedia in a self-supervised fashion. \nThis means it was pretrained on the raw tables and associated texts only, with no humans labelling them in any way (which is why it\ncan use lots of publicly available data) with an automatic process to generate inputs and labels from those texts. More precisely, it\nwas pretrained with two objectives:\n\n- Masked language modeling (MLM): taking a (flattened) table and associated context, the model randomly masks 15% of the words in \n  the input, then runs the entire (partially masked) sequence through the model. The model then has to predict the masked words. \n  This is different from traditional recurrent neural networks (RNNs) that usually see the words one after the other, \n  or from autoregressive models like GPT which internally mask the future tokens. It allows the model to learn a bidirectional \n  representation of a table and associated text.\n- Intermediate pre-training: to encourage numerical reasoning on tables, the authors additionally pre-trained the model by creating \n  a balanced dataset of millions of syntactically created training examples. Here, the model must predict (classify) whether a sentence \n  is supported or refuted by the contents of a table. The training examples are created based on synthetic as well as counterfactual statements.\n\nThis way, the model learns an inner representation of the English language used in tables and associated texts, which can then be used \nto extract features useful for downstream tasks such as answering questions about a table, or determining whether a sentence is entailed\nor refuted by the contents of a table. Fine-tuning is done by adding a cell selection head on top of the pre-trained model, and then jointly\ntrain this randomly initialized classification head with the base model on SQA. \n\n\n## Intended uses & limitations\n\nYou can use this model for answering questions related to a table in a conversational set-up.\n\nFor code examples, we refer to the documentation of TAPAS on the HuggingFace website. \n\n\n## Training procedure\n\n### Preprocessing\n\nThe texts are lowercased and tokenized using WordPiece and a vocabulary size of 30,000. The inputs of the model are\nthen of the form:\n\n```\n[CLS] Question [SEP] Flattened table [SEP]\n```\n\n### Fine-tuning\n\nThe model was fine-tuned on 32 Cloud TPU v3 cores for 200,000 steps with maximum sequence length 512 and batch size of 128.\nIn this setup, fine-tuning takes around 20 hours. The optimizer used is Adam with a learning rate of 1.25e-5, and a warmup ratio \nof 0.2. An inductive bias is added such that the model only selects cells of the same column. This is reflected by the \n`select_one_column` parameter of `TapasConfig`. See also table 12 of the [original paper](https://arxiv.org/abs/2004.02349).\n\n\n### BibTeX entry and citation info\n\n```bibtex\n@misc{herzig2020tapas,\n      title={TAPAS: Weakly Supervised Table Parsing via Pre-training}, \n      author={Jonathan Herzig and Pawe\u00c3\u2026\u00e2\u20ac\u0161 Krzysztof Nowak and Thomas M\u00c3\u0192\u00c2\u00bcller and Francesco Piccinno and Julian Martin Eisenschlos},\n      year={2020},\n      eprint={2004.02349},\n      archivePrefix={arXiv},\n      primaryClass={cs.IR}\n}\n```\n\n```bibtex\n@misc{eisenschlos2020understanding,\n      title={Understanding tables with intermediate pre-training}, \n      author={Julian Martin Eisenschlos and Syrine Krichene and Thomas M\u00c3\u0192\u00c2\u00bcller},\n      year={2020},\n      eprint={2010.00571},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL}\n}\n```\n\n```bibtex\n@InProceedings{iyyer2017search-based,\nauthor = {Iyyer, Mohit and Yih, Scott Wen-tau and Chang, Ming-Wei},\ntitle = {Search-based Neural Structured Learning for Sequential Question Answering},\nbooktitle = {Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics},\nyear = {2017},\nmonth = {July},\nabstract = {Recent work in semantic parsing for question answering has focused on long and complicated questions, many of which would seem unnatural if asked in a normal conversation between two humans. In an effort to explore a conversational QA setting, we present a more realistic task: answering sequences of simple but inter-related questions. We collect a dataset of 6,066 question sequences that inquire about semi-structured tables from Wikipedia, with 17,553 question-answer pairs in total. To solve this sequential question answering task, we propose a novel dynamic neural semantic parsing framework trained using a weakly supervised reward-guided search. Our model effectively leverages the sequential context to outperform state-of-the-art QA systems that are designed to answer highly complex questions.},\npublisher = {Association for Computational Linguistics},\nurl = {https://www.microsoft.com/en-us/research/publication/search-based-neural-structured-learning-sequential-question-answering/},\n}\n```",
+  "cardDataParsed": {
+    "language": "en",
+    "tags": [
+      "tapas"
+    ],
+    "license": "apache-2.0",
+    "datasets": [
+      "msr_sqa"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForTableQuestionAnswering",
+    "custom_class": null,
+    "pipeline_tag": "table-question-answering",
+    "processor": "AutoTokenizer"
+  }
+}

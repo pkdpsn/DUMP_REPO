@@ -1,0 +1,197 @@
+{
+  "modelId": "microsoft/Fara1.5-4B",
+  "author": "microsoft",
+  "sha": "776a33ae5b2ad503796a97ae20fdc66f61d2feea",
+  "lastModified": "2026-07-27 15:40:01+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_5",
+    "image-text-to-text",
+    "computer-use",
+    "cua",
+    "web-agent",
+    "multimodal",
+    "vision-language",
+    "agent",
+    "browser-automation",
+    "magentic",
+    "fara",
+    "conversational",
+    "en",
+    "arxiv:2606.20785",
+    "base_model:Qwen/Qwen3.5-4B",
+    "base_model:finetune:Qwen/Qwen3.5-4B",
+    "license:mit",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 47,
+  "downloads": 1544,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3.5-4B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "computer-use",
+      "cua",
+      "web-agent",
+      "multimodal",
+      "vision-language",
+      "agent",
+      "browser-automation",
+      "magentic",
+      "fara"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3_5ForConditionalGeneration"
+    ],
+    "model_type": "qwen3_5",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 15600,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 7756,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2827,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 116,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 3353259,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 5960243904,
+      "lfs": {
+        "size": 5960243904,
+        "sha256": "b4a1c0f5b68d117ea9cd909b9fe4db0f06d4bed86dac5579f8c59a78f416e4b1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 3118376552,
+      "lfs": {
+        "size": 3118376552,
+        "sha256": "6812e81b576cb925aeb011095eff3788349ae481765159fae43ed6f9b101bdf2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 66236,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 390,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 1190,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 19989343,
+      "lfs": {
+        "size": 19989343,
+        "sha256": "87a7830d63fcf43bf241c3c5242e96e62dd3fdc29224ca26fed8ea333db72de4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1183,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 6722759,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlibrary_name: transformers\npipeline_tag: image-text-to-text\nlanguage:\n- en\nbase_model:\n- Qwen/Qwen3.5-4B\ntags:\n- computer-use\n- cua\n- web-agent\n- multimodal\n- vision-language\n- agent\n- browser-automation\n- magentic\n- fara\n---\n\n# Fara1.5-4B\n\n[![Microsoft](https://img.shields.io/badge/Microsoft-Project-0078D4?logo=microsoft)](https://aka.ms/fara1.5)\n[![Github](https://img.shields.io/badge/Github-181717?logo=github&logoColor=white)](https://github.com/microsoft/fara)\n[![Paper](https://img.shields.io/badge/Paper-2606.20785-red)](https://huggingface.co/papers/2606.20785)\n[![Foundry](https://img.shields.io/badge/Azure-Foundry-0089D6)](https://aka.ms/fara1.5-4B-foundry)\n\n\nFara1.5-4B is a multimodal **computer use agent (CUA)** for web browsers, from **Microsoft Research AI Frontiers**. It observes the browser through screenshots and acts on the user's behalf by emitting structured tool calls \u2014 click, type, scroll, visit URL, web search, and so on \u2014 to complete tasks end-to-end.\n\nThe model is vision-only at perception time: it sees the browser through screenshots, not the DOM or accessibility tree. Internal reasoning and trajectory history are tracked as text. Given the latest screenshot and prior actions, it predicts the next action with grounded arguments (e.g., pixel coordinates for a click).\n\nFara1.5-4B is supervised fine-tuned from Qwen3.5-4B on data generated by **FaraGen1.5**, our multi-agent pipeline that synthesizes web tasks, executes trajectories to solve them, and verifies the results before training.\n\nPlease use only with the harness developped in [Github/fara CLI](https://github.com/microsoft/fara) or [Magentic-Lite](https://github.com/microsoft/magentic-ui).\n\nIt's co-designed with **MagenticLite**, and that's the recommended deployment for both research and production.\n\n## Highlights\n\n- **End-to-end web task completion.** Fills forms, books reservations, applies for jobs, plans trips, runs shopping carts. Not just clicking around \u2014 sequencing actions toward a goal.\n- **Vision-only perception.** Operates on screenshots alone, no DOM access required. Matches the input modality available to a human user.\n- **Coordinate-grounded actions.** Predicts pixel-level click and drag targets directly. No separate grounding model needed.\n- **Critical-points safety design.** Trained to stop and ask before personal info entry, payments, submissions, sign-ins, sending messages, or other irreversible actions \u2014 even if it could technically continue.\n- **262K context.** Long enough for multi-screenshot trajectories with full action history.\n- **On-device viable.** 4B parameters means it runs on a single A100/H100/B200 with room for the screenshot history.\n\n## Model Details\n\n| | |\n|---|---|\n| **Developer** | Microsoft Research AI Frontiers |\n| **Architecture** | Multimodal decoder-only LM (image + text \u2192 text) |\n| **Parameters** | 4B |\n| **Context length** | 262,144 tokens |\n| **Inputs** | User goal (text), current screenshot(s), prior agent thoughts and actions |\n| **Outputs** | Chain-of-thought block followed by a tool-call block (XML-tagged) |\n| **Training period** | January 2026 \u2013 April 2026 |\n| **Training compute** | 32 \u00d7 NVIDIA B200, 2 days |\n| **Release date** | 21 May 2026 |\n| **License** | MIT |\n| **Base model** | Qwen3.5-4B |\n\n## Recommended Deployment: MagenticLite\n\nThe safest way to run Fara1.5-4B is inside **MagenticLite**, which provides:\n\n- **Sandboxing** \u2014 the browser runs in a Docker container with no access to host files or environment variables\n- **Allow-lists** \u2014 restrict navigation to a user-specified set of domains\n- **Watch-mode** \u2014 real-time monitoring of every action with full trace logs\n- **Pause** \u2014 immediate halt of agent activity at any point\n\nIf you integrate Fara1.5-4B directly, you're responsible for these controls. Don't run this model with unrestricted browser access on a machine that has anything sensitive on it.\n\n## Quickstart\n\n### Requirements\n\n- `torch >= 2.11.0`\n- `transformers >= 5.2.0`\n- `vllm >= 0.19.1`\n- A GPU with enough memory for a 4B model in bf16 (A6000, A100, H100, and B200 have been tested)\n\n### Serve with vLLM\n\n```bash\nvllm serve microsoft/Fara1.5-4B \\\n  --dtype bfloat16 \\\n  --max-model-len 262144 \\\n  --limit-mm-per-prompt image=10\n```\n\n### System prompt\n\nFara1.5-4B is trained against a specific system prompt. Use it verbatim for best results:\n\n```text\nYou are Fara, a computer use agent (CUA) specialized for web browsers. You are developed by Microsoft AI Frontiers. You assist users with completing and automating tasks that require the use of a web browser.\n\nThe model was trained in the timeframe of January - April 2026. You can effectively perform tasks even beyond this range by accessing the web browser and using the latest information on the live web. But your knowledge cutoff is limited to early 2026, so you may not be aware of events or developments that occurred after that time, without explicitly browsing and searching for latest information on the web.\n\nThis edition of the model was trained using SFT on top of Qwen3.5-4B, using a synthetic data mixture generated and developed by Microsoft AI Frontiers.\n\nA critical point is a situation where we must pause and request information or confirmation from the user before proceeding. There are three types:\n\nCase 1: Missing User Information \u2014 The task requires personal information that the user has not provided (e.g., email, phone number, address, payment details). Never fabricate or assume personal information. Fill in only what the user has explicitly provided, then pause and ask for any missing required fields.\n\nCase 2: Underspecified Task \u2014 The task description is ambiguous or missing details needed to make a decision at the current step. Pause and ask for clarification.\n\nCase 3: Irreversible Action \u2014 We are about to perform an action that cannot be undone (e.g., submitting a form, completing a purchase, sending a message, deleting data). If the user explicitly authorized the action, proceed. Otherwise, stop and ask for confirmation.\n\nOnly stop at a critical point if (1) required information is missing, (2) the task is ambiguous, OR (3) an irreversible action lacks explicit user authorization.\n```\n\nThe full system prompt, including the complete `computer_use` tool schema, ships with the model in MagenticLite.\n\n### Tool schema\n\nFara1.5-4B emits actions as `<tool_call>...</tool_call>` XML blocks containing a JSON object that calls the `computer_use` function. Supported actions:\n\n| Action | Purpose |\n|---|---|\n| `left_click`, `right_click`, `double_click`, `triple_click` | Mouse clicks at `(x, y)` |\n| `mouse_move`, `left_click_drag` | Cursor positioning and drag |\n| `type`, `key` | Keyboard input |\n| `scroll`, `hscroll` | Page scrolling |\n| `visit_url`, `history_back` | Browser navigation |\n| `web_search` | Search query |\n| `pause_and_memorize_fact` | Persist a fact across the trajectory |\n| `ask_user_question` | Surface a clarifying question to the user |\n| `wait` | Sleep for N seconds |\n| `terminate` | End the task with a final answer |\n\nThe screen resolution Fara is most commonly trained with is **1440\u00d7900**. Match this in your sandbox for the most reliable grounding.\n\n### Minimal agent loop\n\nNote: We strongly recommend to use only with the harness developped in [Github/fara](https://github.com/microsoft/fara) or [Magentic-Lite](https://github.com/microsoft/magentic-ui).\n\n```python\n# Pseudocode for a single-step interaction. Use vLLM's OpenAI-compatible\n# endpoint and pass the screenshot as an image content part.\n\nscreenshot_b64 = capture_browser_screenshot()  # base64 PNG\n\nmessages = [\n    {\"role\": \"system\", \"content\": FARA_SYSTEM_PROMPT},\n    {\"role\": \"user\", \"content\": [\n        {\"type\": \"text\", \"text\": \"Book a table for 2 at a sushi place in Sunnyvale for Friday 7pm.\"},\n        {\"type\": \"image_url\", \"image_url\": {\"url\": f\"data:image/png;base64,{screenshot_b64}\"}},\n    ]},\n]\n\nresponse = client.chat.completions.create(\n    model=\"microsoft/Fara1.5-4B\",\n    messages=messages,\n    temperature=0.0,\n    max_tokens=2048,\n)\n\n# Parse the assistant's reply: it will contain chain-of-thought text\n# followed by <tool_call>{\"name\": \"computer_use\", \"arguments\": {...}}</tool_call>.\n# Execute the action in your sandboxed browser, capture the new screenshot,\n# append the assistant turn and a tool/observation turn, and loop until\n# the model emits action=\"terminate\". We only keep the most recent 3 screenshots\n# in the chat history.\n```\n\nA reference implementation of the full agent loop, including screenshot capture and Docker sandboxing, is in MagenticLite.\n\n## Critical Points: Safety by Design\n\nFara1.5-4B is trained to **pause and ask the user** at three types of critical points:\n\n1. **Missing user information.** If the task needs personal data (name, email, phone, address, payment) the user hasn't provided, fill in what's available and stop to ask for the rest. Never fabricate.\n2. **Underspecified tasks.** If the goal is ambiguous at the current decision point (e.g., \"book me a flight\" with no destination), stop and clarify.\n3. **Irreversible actions.** Submitting forms, completing purchases, sending messages, deleting data \u2014 stop unless the user explicitly authorized the action upfront.\n\nConcrete actions Fara is trained to stop on without explicit authorization:\n\n- Entering personal information (name, email, phone)\n- Entering credit card or shipping/billing details\n- Completing purchases or bookings\n- Making phone calls\n- Sending emails\n- Submitting job applications\n- Signing into accounts\n\nIf the user grants authorization, the model proceeds. The principle is that costly, irreversible actions require a human in the loop.\n\n## Evaluation\n\nWe evaluate Fara1.5-4B on end-to-end web agent benchmarks. For WebTailBench, we report outcome success.\n\n| Model       | [WebVoyager](https://github.com/MinorJerry/WebVoyager) | [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web) | [WebTailBench](https://huggingface.co/datasets/microsoft/WebTailBench) |\n| ----------- | -----------------------------------------------------: | ------------------------------------------------------------------------: | ---------------------------------------------------------------------: |\n| Fara1.5-4B  |                                                   80.8 |                                                                      57.3 |                                                                   27.4 |\n| Fara1.5-9B  |                                                   86.6 |                                                                      63.4 |                                                                   32.3 |\n| Fara1.5-27B |                                                   89.3 |                                                                      72.3 |                                                                   40.2 |\n\n\n## Training\n\n### Approach\n\nSupervised Fine-Tuning on top of Qwen3.5-4B. Training mix is generated by FaraGen1.5, our multi-agent data pipeline, supplemented with curated public datasets for grounding and UI understanding.\n\n### Data sources\n\n- **Synthetic trajectories** \u2014 Tasks seeded from URLs sampled from a large web index and from open-source seed datasets (e.g., Mind2Web). A multi-agent system attempts each task while recording screenshots, thoughts, and actions. A verifier agent then keeps only successful trajectories.\n- **Grounding** \u2014 Curated datasets for predicting actions and pixel coordinates from screenshots, with images, text, and bounding boxes.\n- **UI understanding** \u2014 Visual question answering, captioning, and OCR over web page screenshots collected by the pipeline.\n- **Safety and instruction following** \u2014 Refusal data covering harmful or unsafe tasks the model should decline.\n\n### Scale\n\n- Approximately 1 billion text tokens\n- Less than 1 billion training images\n- Latest data acquisition: March 20, 2026\n- Training start: January 2026\n\nThe corpus is static. Future updates will ship as separately versioned models with their own model cards.\n\n## Intended Use and Limitations\n\n### Primary use cases\n\nAutomating repetitive web tasks: filling forms, shopping, booking travel, restaurant reservations, information seeking, account workflows. Fara1.5-4B can also serve as a grounding model for other agents that need pixel-accurate action prediction.\n\n### Out of scope\n\n- Languages other than English (training data is English-only)\n- High-stakes domains (legal, health, financial advice) where inaccurate actions could cause harm\n- Allocation decisions affecting legal status, housing, employment, or credit\n- Unsandboxed deployments with access to sensitive accounts or files\n- Commercial or real-world production use without additional testing and safeguards\n\n### Known limitations\n\n- **Vision-only perception** means the model can be misled by deceptive or low-quality page rendering, prompt injections embedded in page content, or visual ambiguity in UI elements\n- **Multi-step trajectories accumulate error** \u2014 a misclick early in a sequence can compound\n- **Run-to-run variance** on multi-turn tasks is non-trivial; benchmark numbers are averaged over multiple runs\n- The model can hallucinate page state or misattribute information from earlier screenshots\n\n## Responsible AI Considerations\n\nComputer use is a powerful capability. An agent that can click, type, and submit in a real browser can also do those things wrong. We strongly recommend:\n\n- **Human-in-the-loop monitoring** of Fara's actions on the live web with a fast way to halt execution\n- **Sandboxed execution** \u2014 run Fara in an isolated container with no access to host files, environment variables, or sensitive credentials\n- **Allow-listed or block-listed browsing** \u2014 restrict the agent's reachable surface to limit exposure to malicious pages\n- **No credential or PII sharing** with the agent unless absolutely required and the user has authorized it\n- **Output verification** \u2014 Fara can hallucinate, misattribute sources, or be misled by deceptive content; verify before acting on its outputs\n\n### Safety evaluation\n\nFara1.5-4B was evaluated via automated red-teaming on Azure. Coverage included groundedness, jailbreak resistance, harmful content (hate, violence, self-harm), and copyright violations. Safety post-training includes both refusal data for malicious tasks and the critical-points framework described above.\n\n### Known model risks\n\nLike all language models, Fara1.5-4B can produce unfair, unreliable, or offensive outputs. Specific concerns:\n\n- **Quality of service** varies across English dialects and is worse for non-English content\n- **Representation harms** may persist despite safety post-training due to base-model biases\n- **Information reliability** \u2014 generated content may be inaccurate or outdated\n- **Prompt injection** \u2014 Fara reads page content, and adversarial content on a page may attempt to redirect its behavior\n\nDevelopers deploying Fara1.5-4B should apply responsible AI best practices and ensure compliance with applicable laws and regulations. Using safety services like [Azure AI Content Safety](https://azure.microsoft.com/en-us/products/ai-services/ai-content-safety/) is recommended.\n\n## License\n\nReleased under the **MIT License**.\n\n## Contact\n\nFor information requests under the EU AI Act and related inquiries: **MSFTAIActRequest@microsoft.com**\n\nAuthorized representative: Microsoft Ireland Operations Limited, 70 Sir John Rogerson's Quay, Dublin 2, D02 R296, Ireland.",
+  "cardDataParsed": {
+    "license": "mit",
+    "library_name": "transformers",
+    "pipeline_tag": "image-text-to-text",
+    "language": [
+      "en"
+    ],
+    "base_model": [
+      "Qwen/Qwen3.5-4B"
+    ],
+    "tags": [
+      "computer-use",
+      "cua",
+      "web-agent",
+      "multimodal",
+      "vision-language",
+      "agent",
+      "browser-automation",
+      "magentic",
+      "fara"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

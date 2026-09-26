@@ -1,0 +1,366 @@
+{
+  "modelId": "Qwen/Qwen-AgentWorld-35B-A3B",
+  "author": "Qwen",
+  "sha": "60d2b0434a53d2e62a7c00a489586815d94ebffb",
+  "lastModified": "2026-06-25 07:24:16+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_5_moe",
+    "image-text-to-text",
+    "qwen",
+    "world-model",
+    "agent",
+    "environment-simulation",
+    "text-generation",
+    "conversational",
+    "dataset:Qwen/AgentWorldBench",
+    "arxiv:2606.24597",
+    "base_model:Qwen/Qwen3.5-35B-A3B-Base",
+    "base_model:finetune:Qwen/Qwen3.5-35B-A3B-Base",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "deploy:sagemaker",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 724,
+  "downloads": 15092,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3.5-35B-A3B-Base"
+    ],
+    "datasets": [
+      "Qwen/AgentWorldBench"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": "https://huggingface.co/Qwen/Qwen-AgentWorld-35B-A3B/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "qwen",
+      "world-model",
+      "agent",
+      "environment-simulation"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3_5MoeForConditionalGeneration"
+    ],
+    "model_type": "qwen3_5_moe",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'audio' in item or item.type == 'audio' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain audio.') }}\n                {%- endif %}\n                {{- '<|audio_start|><|audio_pad|><|audio_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if (preserve_thinking is defined and preserve_thinking is true) or (loop.index0 > ns.last_query_index) %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | string if args_value is string else args_value | tojson | safe %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'audio' in item or item.type == 'audio' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain audio.') }}\n                {%- endif %}\n                {{- '<|audio_start|><|audio_pad|><|audio_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if (preserve_thinking is defined and preserve_thinking is true) or (loop.index0 > ns.last_query_index) %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | string if args_value is string else args_value | tojson | safe %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11343,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 11190,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 8051,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3583,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration.json",
+      "size": 48,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 202,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 3353259,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00021.safetensors",
+      "size": 3221427536,
+      "lfs": {
+        "size": 3221427536,
+        "sha256": "87e3b0dd296f3d0e723b72e58474bc61d613a4428dce91025234a68770c7308b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00021.safetensors",
+      "size": 3258975384,
+      "lfs": {
+        "size": 3258975384,
+        "sha256": "e3d857f4d5ce2df35b7f1db4d0376aed7d08e0ca0c66e74f9a59fe94a4ec43c7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00021.safetensors",
+      "size": 3221226048,
+      "lfs": {
+        "size": 3221226048,
+        "sha256": "094da1e16b80fc3a3ea69272a399f5ce8f589fa133cf8eb7da07be7e9ebe96e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00021.safetensors",
+      "size": 3263173992,
+      "lfs": {
+        "size": 3263173992,
+        "sha256": "b4b35aa2a06f25d1999584554c93939b7153f5e3bd742020a8c8577f292bf3f5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00021.safetensors",
+      "size": 3271755384,
+      "lfs": {
+        "size": 3271755384,
+        "sha256": "e404f494eed7dba0cc17275c2a78f6bebac892fea9e36b3ca4bf0ef6f6bacaa5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00021.safetensors",
+      "size": 3221226048,
+      "lfs": {
+        "size": 3221226048,
+        "sha256": "df8e50cc4b39e20b6a9230f74dccd5983a5ea122ec034ea64681781f010b5058",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00021.safetensors",
+      "size": 3222340416,
+      "lfs": {
+        "size": 3222340416,
+        "sha256": "ea1106a42dc1ad5ef8eca0368b8554b9baa2f80382ffdbe3bcb2b37c76e251ce",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00021.safetensors",
+      "size": 3221230464,
+      "lfs": {
+        "size": 3221230464,
+        "sha256": "a55da43e6b0a7b4e6cb694a99e5771f41bd7ccfe2ab17fdbb4ce61ac720f78b0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00021.safetensors",
+      "size": 3256877912,
+      "lfs": {
+        "size": 3256877912,
+        "sha256": "40d11673e7439f6bb40323daf220b2bca0d5234ed1b61f796e0ab3ffd1193bfe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00021.safetensors",
+      "size": 3363838800,
+      "lfs": {
+        "size": 3363838800,
+        "sha256": "8fef1c12dfed720dc8e7842a872a678393e3289cc68a49183766bd22ae70acb0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00021.safetensors",
+      "size": 3784847976,
+      "lfs": {
+        "size": 3784847976,
+        "sha256": "e3eb8dc24da411913a950a4191d513f9ae8a70a26b1c0488b887cc8a59b2f603",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00021.safetensors",
+      "size": 3221230280,
+      "lfs": {
+        "size": 3221230280,
+        "sha256": "b60240c4d2f5a3cc489b4c4f197bff4cbb56b1b38bc139b57f78cdaa20e62ba5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00021.safetensors",
+      "size": 3259172088,
+      "lfs": {
+        "size": 3259172088,
+        "sha256": "8ee5d6246bb4996157944090ee0b940e29769998cda46d86d3b7c70cb664228c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00021.safetensors",
+      "size": 3222278984,
+      "lfs": {
+        "size": 3222278984,
+        "sha256": "3132403084227cf9b40aa1fc238d4cb8e820bb1516524683a87fe14f6ffa2b88",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00021.safetensors",
+      "size": 3254780624,
+      "lfs": {
+        "size": 3254780624,
+        "sha256": "02a8a1c0978a4ad942bb9b08d373b87818a051d725c5f3986376a15c48bda681",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00021.safetensors",
+      "size": 3223389016,
+      "lfs": {
+        "size": 3223389016,
+        "sha256": "4fc007b8c939ff8a5d1a17fefa80f8ec093889f22ab08484311cc87391557631",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00021.safetensors",
+      "size": 3254784856,
+      "lfs": {
+        "size": 3254784856,
+        "sha256": "633b3eefe26ddb3d7b65d4e07883da8cb11e8579e4602e21a8ca6b5e8dc0926c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00021.safetensors",
+      "size": 3242394864,
+      "lfs": {
+        "size": 3242394864,
+        "sha256": "732b4f76adf16c1bfc47b16b8df39c81bb241d0ccd214e6a5bd14f7ea42570c8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00021.safetensors",
+      "size": 3221226048,
+      "lfs": {
+        "size": 3221226048,
+        "sha256": "bf1c8f06059a0dc4c4cd60f737afeb21a3227414f9dfd23862bf3ad5f883a23c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00021.safetensors",
+      "size": 3225424872,
+      "lfs": {
+        "size": 3225424872,
+        "sha256": "6ae74e2261e1e6589cc1f9e82aa4cb02c7cda3d60a7a76816bd27098a5de51da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00021.safetensors",
+      "size": 3889712984,
+      "lfs": {
+        "size": 3889712984,
+        "sha256": "e6379e7108900493e234856276c32250c113e4fc461511f72d6b1015441e6057",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 69682,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 390,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 12807982,
+      "lfs": {
+        "size": 12807982,
+        "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 17010,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 385,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 6722759,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: apache-2.0\nlicense_link: https://huggingface.co/Qwen/Qwen-AgentWorld-35B-A3B/blob/main/LICENSE\npipeline_tag: text-generation\nbase_model:\n- Qwen/Qwen3.5-35B-A3B-Base\ndatasets:\n- Qwen/AgentWorldBench\ntags:\n- qwen\n- world-model\n- agent\n- environment-simulation\n---\n\n# Qwen-AgentWorld-35B-A3B\n\n<div style=\"text-align: center\">\n  <img width=\"400px\" src=\"https://qianwen-res.oss-accelerate-overseas.aliyuncs.com/Qwen-AgentWorld/logo.png\">\n  <p>\n    <a href=\"http://arxiv.org/abs/2606.24597\">\ud83d\udcd1 Technical Report</a> |\n    <a href=\"https://qwen.ai/blog?id=qwen-agentworld\">\ud83d\udcd6 Blog</a> |\n    <a href=\"https://huggingface.co/collections/Qwen/qwen-agentworld\">\ud83e\udd17 Hugging Face</a> |\n    <a href=\"https://modelscope.cn/collections/Qwen/Qwen-AgentWorld\">\ud83e\udd16 ModelScope</a> |\n    <a href=\"https://github.com/QwenLM/Qwen-AgentWorld\">\ud83d\udcbb GitHub</a> |\n    <a href=\"https://qwen.ai/blog?id=qwen-agentworld#interactive-demo-interactive-demo\">\ud83d\udda5\ufe0f Demo</a>\n  </p>\n</div>\n\n> [!Note]\n> This repository contains the model weights and configuration files for **Qwen-AgentWorld-35B-A3B**, a native language world model trained for agentic environment simulation.\n>\n> These artifacts are compatible with Hugging Face Transformers, vLLM, SGLang, etc.\n\n**Qwen-AgentWorld** is the first language world model to cover seven agent interaction domains within a single model. It simulates agentic environments via long chain-of-thought reasoning, predicting the next environment state given an agent's action and interaction history. Trained through a three-stage pipeline \u2014 CPT injects environment knowledge, SFT activates next-state-prediction reasoning, RL sharpens simulation fidelity \u2014 Qwen-AgentWorld is a **native world model**: environment modeling is the training objective from the CPT stage onward, not a post-hoc add-on.\n\n\n## Highlights\n\n- **Seven Unified Domains.** A single model covers MCP (tool calling), Search, Terminal, SWE (software engineering), Android, Web, and OS \u2014 spanning both text and GUI interaction environments.\n- **Native World Model.** Environment modeling from CPT onward, not post-hoc adaptation on a general-purpose LLM.\n- **Generalizable, Scalable & Controllable Simulator.** Zero-shot generalization to OOD environments (e.g., OpenClaw); controllable perturbations and fictional-world construction surpass real-environment training.\n- **Agent Foundation Model.** LWM RL warm-up on single-turn, non-agentic trajectories transfers to multi-turn, tool-calling agentic tasks across 7 benchmarks, including 3 entirely out-of-domain.\n\n\n## Model Overview\n\n- Type: Causal Language Model (Language World Model)\n- Base Model: [Qwen3.5-35B-A3B-Base](https://huggingface.co/Qwen/Qwen3.5-35B-A3B-Base)\n- Training Stage: Continual Pre-Training (CPT) \u2192 Supervised Fine-Tuning (SFT) \u2192 Reinforcement Learning (RL, GSPO)\n- Number of Parameters: 35B in total and 3B activated\n- Hidden Dimension: 2048\n- Token Embedding: 248320 (Padded)\n- Number of Layers: 40\n- Hidden Layout: 10 \u00d7 (3 \u00d7 (Gated DeltaNet \u2192 MoE) \u2192 1 \u00d7 (Gated Attention \u2192 MoE))\n- Gated DeltaNet:\n    - Number of Linear Attention Heads: 32 for V and 16 for QK\n    - Head Dimension: 128\n- Gated Attention:\n    - Number of Attention Heads: 16 for Q and 2 for KV\n    - Head Dimension: 256\n    - Rotary Position Embedding Dimension: 64\n- Mixture Of Experts\n    - Number of Experts: 256\n    - Number of Activated Experts: 8 Routed + 1 Shared\n    - Expert Intermediate Dimension: 512\n- Context Length: 262,144 tokens\n- Disclaimer: No outputs from external API services are included in the training pipeline.\n\n## Performance\n\n### AgentWorldBench (Open-Ended Evaluation)\n\nFive-dimensional rubric mean per domain, normalized to 0-100 scale.\n\n| Model | MCP | Search | Term. | SWE | Android | Web | OS | **Overall** |\n|:------|:---:|:------:|:-----:|:---:|:-------:|:---:|:--:|:-----------:|\n| GPT-5.4 | **70.10** | 37.26 | 53.69 | 66.29 | 60.00 | 51.80 | 68.58 | 58.25 |\n| Claude Opus 4.8 | 54.93 | 35.14 | **59.18** | 64.10 | 61.50 | **54.66** | 66.62 | 56.59 |\n| Claude Opus 4.6 | 69.90 | 29.30 | 57.51 | 64.55 | **61.74** | 51.42 | **70.20** | 57.80 |\n| Gemini 3.1 Pro | 59.07 | 30.21 | 52.47 | 59.07 | 61.40 | 52.83 | 66.92 | 54.57 |\n| Claude Sonnet 4.6 | 70.00 | 28.79 | 56.98 | 64.52 | 58.03 | 50.78 | 63.17 | 56.04 |\n| DeepSeek-V4-Pro | 63.27 | 27.61 | 51.26 | 59.44 | 55.17 | 50.32 | 63.70 | 52.97 |\n| GLM-5.1 | 67.60 | 22.46 | 47.32 | 52.07 | 59.10 | 51.50 | 59.13 | 51.31 |\n| Kimi K2.6 | 65.23 | 27.48 | 52.54 | 58.77 | 58.93 | 50.20 | 60.80 | 53.42 |\n| MiniMax-M2.7 | 55.82 | 27.30 | 41.62 | 37.44 | 52.40 | 50.52 | 57.73 | 46.12 |\n| Qwen3.5-35B-A3B | 57.87 | 25.98 | 46.13 | 47.58 | 53.18 | 47.10 | 56.27 | 47.73 |\n| Qwen3.5-397B-A17B | 68.31 | 30.81 | 55.30 | 64.44 | 54.90 | 48.55 | 60.85 | 54.74 |\n| Qwen3.6-Plus | 55.28 | 21.94 | 50.58 | 59.08 | 57.65 | 50.78 | 60.33 | 50.81 |\n| **Qwen-AgentWorld-35B-A3B** | 64.79 | 36.69 | 53.96 | 65.63 | 58.17 | 49.55 | 65.92 | 56.39 |\n| **Qwen-AgentWorld-397B-A17B** | 68.24 | **37.82** | 57.73 | **68.49** | 60.20 | 50.98 | 67.89 | **58.71** |\n\n## Quickstart\n\n### Deployment\n\nQwen-AgentWorld-35B-A3B can be served via APIs with popular inference frameworks. In the following, we show example commands to launch OpenAI-compatible API servers.\n\n> [!Important]\n> The model has a default context length of 262,144 tokens.\n> If you encounter out-of-memory (OOM) errors, consider reducing the context window.\n> However, because Qwen-AgentWorld leverages extended context for multi-turn environment simulation, we advise maintaining a context length of at least 128K tokens.\n\n#### SGLang\n\n[SGLang](https://github.com/sgl-project/sglang) is a fast serving framework for large language models.\n\n```bash\npython -m sglang.launch_server \\\n    --model-path Qwen/Qwen-AgentWorld-35B-A3B \\\n    --port 8000 \\\n    --tp-size 4 \\\n    --context-length 262144 \\\n    --reasoning-parser qwen3\n```\n\nAn OpenAI-compatible API will be available at `http://localhost:8000/v1`.\n\n#### vLLM\n\n[vLLM](https://github.com/vllm-project/vllm) is a high-throughput and memory-efficient inference engine for LLMs.\n\n```bash\nvllm serve Qwen/Qwen-AgentWorld-35B-A3B \\\n    --port 8000 \\\n    --tensor-parallel-size 4 \\\n    --max-model-len 262144 \\\n    --reasoning-parser qwen3 \\\n    --language-model-only \\ \n    --trust-remote-code\n```\n\n> The `--language-model-only` flag is required because the model architecture includes visual component definitions but the checkpoint only contains language model weights. Without this flag, vLLM will attempt to initialize visual modules and fail.\n\nAn OpenAI-compatible API will be available at `http://localhost:8000/v1`.\n\n\n### Inference with Transformers\n\n```python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_name = \"Qwen/Qwen-AgentWorld-35B-A3B\"\ntokenizer = AutoTokenizer.from_pretrained(model_name)\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    torch_dtype=\"auto\",\n    device_map=\"auto\",\n)\n\nmessages = [\n    {\n        \"role\": \"system\",\n        \"content\": \"You are a language world model simulating a Linux terminal environment. \"\n                   \"Given the user's command, predict the terminal output.\"\n    },\n    {\n        \"role\": \"user\",\n        \"content\": \"Action: execute_bash\\nCommand: ls -la /home/user/project/\"\n    }\n]\n\ntext = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)\ninputs = tokenizer([text], return_tensors=\"pt\").to(model.device)\noutputs = model.generate(**inputs, max_new_tokens=2048, temperature=0.6)\nresponse = tokenizer.decode(outputs[0][inputs.input_ids.shape[-1]:], skip_special_tokens=True)\nprint(response)\n```\n\n### Using via the Chat Completions API\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url=\"http://localhost:8000/v1\",\n    api_key=\"EMPTY\",\n)\n\n# Terminal domain example\nmessages = [\n    {\n        \"role\": \"system\",\n        \"content\": \"You are a language world model simulating a Linux terminal environment. \"\n                   \"Given the user's command, predict the terminal output.\"\n    },\n    {\n        \"role\": \"user\",\n        \"content\": \"Action: execute_bash\\nCommand: ls -la /home/user/project/\"\n    }\n]\n\nresponse = client.chat.completions.create(\n    model=\"Qwen/Qwen-AgentWorld-35B-A3B\",\n    messages=messages,\n    max_tokens=32768,\n    temperature=0.6,\n)\nprint(response.choices[0].message.content)\n```\n\n> [!Note]\n> We provide **domain-specific world model system prompt templates** in [`prompts/`](https://github.com/QwenLM/Qwen-AgentWorld/tree/master/prompts) of the GitHub repository for all 7 domains. These serve as general-purpose system prompts when using Qwen-AgentWorld as an environment simulator. Each domain folder contains a `system_prompt.txt` (world model system prompt) and a `judge_system_prompt.txt` (evaluation prompt).\n\n\n## Evaluate on AgentWorldBench\n\nAgentWorldBench evaluates language world models by scoring each predicted environment observation on 5 dimensions: **Format**, **Factuality**, **Consistency**, **Realism**, and **Quality**.\n\n### Setup\n\n```bash\n# Clone the evaluation repository\ngit clone https://github.com/QwenLM/Qwen-AgentWorld.git\ncd Qwen-AgentWorld\n\n# Download the benchmark\nhuggingface-cli download Qwen/AgentWorldBench --repo-type dataset --local-dir ./AgentWorldBench\n\n# Install dependencies\npip install openai\n```\n\n### Run Evaluation\n\nThe evaluation follows a three-step pipeline:\n\n```bash\ncd eval\n\n# Step 1: Run world model inference\npython eval.py infer \\\n    --data-dir ../AgentWorldBench \\\n    --model-base-url http://localhost:8000/v1 \\\n    --model-name Qwen/Qwen-AgentWorld-35B-A3B \\\n    --output-dir ./results\n\n# Step 2: Run LLM judge scoring\nexport OPENAI_API_KEY=\"your-api-key\"\npython eval.py judge \\\n    --predictions ./results/predictions.jsonl \\\n    --judge-base-url https://api.openai.com/v1 \\\n    --judge-model gpt-5.2-2025-12-11 \\\n    --output-dir ./results\n\n# Step 3: Aggregate and display scores\npython eval.py score --predictions ./results/judged.jsonl\n```\n\n\n## Best Practices\n\n1. **Sampling Parameters**: We recommend `temperature=0.6`, `top_p=0.95`, `top_k=20` for world model inference. The model uses thinking mode by default (`<think>...</think>`) to reason about environment state transitions before producing the predicted observation.\n\n2. **Adequate Output Length**: We recommend an output length of 32,768 tokens for most queries. For long, multi-step trajectories, you may increase the max output length to accommodate detailed environment observations.\n\n3. **Domain-Specific System Prompts**: For optimal simulation fidelity, use the domain-specific system prompts provided in the [`prompts/`](https://github.com/QwenLM/Qwen-AgentWorld/tree/master/prompts) directory of the GitHub repository.\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```bibtex\n@article{zuo2026qwen,\n  title={Qwen-agentworld: language world models for general agents},\n  author={Zuo, Yuxin and Xiao, Zikai and Sheng, Li and Huang, Fei and Tu, Jianhong and Liu, Yuxuan and Tang, Tianyi and Hu, Xiaomeng and Su, Yang and Lan, Qingfeng and others},\n  journal={arXiv preprint arXiv:2606.24597},\n  year={2026}\n}\n```\n",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_link": "https://huggingface.co/Qwen/Qwen-AgentWorld-35B-A3B/blob/main/LICENSE",
+    "pipeline_tag": "text-generation",
+    "base_model": [
+      "Qwen/Qwen3.5-35B-A3B-Base"
+    ],
+    "datasets": [
+      "Qwen/AgentWorldBench"
+    ],
+    "tags": [
+      "qwen",
+      "world-model",
+      "agent",
+      "environment-simulation"
+    ],
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

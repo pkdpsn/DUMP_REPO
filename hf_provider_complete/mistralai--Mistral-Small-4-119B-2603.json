@@ -1,0 +1,362 @@
+{
+  "modelId": "mistralai/Mistral-Small-4-119B-2603",
+  "author": "mistralai",
+  "sha": "a11f36bebf709121056b1dbcc943d1c6afbe494d",
+  "lastModified": "2026-07-15 12:23:29+00:00",
+  "tags": [
+    "safetensors",
+    "mistral3",
+    "vLLM",
+    "en",
+    "fr",
+    "de",
+    "es",
+    "pt",
+    "it",
+    "ja",
+    "ko",
+    "ru",
+    "zh",
+    "ar",
+    "fa",
+    "id",
+    "ms",
+    "ne",
+    "pl",
+    "ro",
+    "sr",
+    "sv",
+    "tr",
+    "uk",
+    "vi",
+    "hi",
+    "bn",
+    "license:apache-2.0",
+    "eval-results",
+    "fp8",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": null,
+  "likes": 429,
+  "downloads": 50070,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "pt",
+      "it",
+      "ja",
+      "ko",
+      "ru",
+      "zh",
+      "ar",
+      "fa",
+      "id",
+      "ms",
+      "ne",
+      "pl",
+      "ro",
+      "sr",
+      "sv",
+      "tr",
+      "uk",
+      "vi",
+      "hi",
+      "bn"
+    ],
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vLLM"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Mistral3ForConditionalGeneration"
+    ],
+    "model_type": "mistral3",
+    "quantization_config": {
+      "modules_to_not_convert": [
+        "model.vision_tower",
+        "model.multi_modal_projector",
+        "lm_head"
+      ],
+      "quant_method": "fp8"
+    },
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{#- Default system message if no system prompt is passed. #}\n{%- set default_system_message = 'You are Mistral-Small-4-119B-2603, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.\nYou power an AI assistant called Le Chat.\nYour knowledge base was last updated on Friday, November 1, 2024.\nThe current date is {today}.\n\nWhen you\\'re not sure about some information or when the user\\'s request requires up-to-date or specific data, you must use the available tools to fetch the information. Do not hesitate to use tools whenever they can provide a more accurate or complete response. If no relevant tools are available, then clearly state that you don\\'t have the information and avoid making up anything.\nIf the user\\'s question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. \"What are some good restaurants around me?\" => \"Where are you?\" or \"When is the next flight to Tokyo\" => \"Where do you travel from?\").\nYou are always very attentive to dates, in particular you try to resolve dates (e.g. \"yesterday\" is {yesterday}) and when asked about information at specific dates, you discard information that is at another date.\nYou follow these instructions in all languages, and always respond to the user in the language they use or request.\nNext sections describe the capabilities that you have.\n\n# WEB BROWSING INSTRUCTIONS\n\nYou cannot perform any web search or access internet to open URLs, links etc. If it seems like the user is expecting you to do so, you clarify the situation and ask the user to copy paste the text directly in the chat.\n\n# MULTI-MODAL INSTRUCTIONS\n\nYou have the ability to read images, but you cannot generate images. You also cannot read nor transcribe audio files or videos.\n\n# TOOL CALLING INSTRUCTIONS\n\nYou may have access to tools that you can use to fetch information or perform actions. You must use these tools in the following situations:\n\n1. When the request requires up-to-date information.\n2. When the request requires specific data that you do not have in your knowledge base.\n3. When the request involves actions that you cannot perform without tools.\n\nAlways prioritize using tools to provide the most accurate and helpful response. If tools are not available, inform the user that you cannot perform the requested action at the moment.' %}\n\n{#- Begin of sequence token. #}\n{{- bos_token }}\n\n\n{#- Handle system prompt if it exists. #}\n{%- set loop_messages = messages %}\n{%- if messages[0]['role'] != 'system' and default_system_message != '' %}\n    {{- '[SYSTEM_PROMPT]' + default_system_message + '[/SYSTEM_PROMPT]' }}\n{%- endif %}\n\n\n{#- Tools and model settings definition #}\n{%- set available_tools = '' %}\n{%- set has_tools = false %}\n{%- if tools is defined and tools is not none and tools|length > 0 %}\n    {%- set has_tools = true %}\n    {%- set available_tools = '[AVAILABLE_TOOLS]' + (tools| tojson) + '[/AVAILABLE_TOOLS]' %}\n{%- endif %}\n{%- if reasoning_effort is not defined or reasoning_effort is none %}\n    {%- set reasoning_effort = 'none' %}\n{%- endif %}\n{%- if reasoning_effort not in ['none', 'high'] %}\n    {{- raise_exception('reasoning_effort must be either \"none\" or \"high\"') }}\n{%- endif %}\n{%- set model_settings = '[MODEL_SETTINGS]{\"reasoning_effort\": \"' + reasoning_effort + '\"}[/MODEL_SETTINGS]' %}\n\n{#- Macros #}\n{%- macro render_content(content, context_name, supported_types_desc, support_thinking, support_images) -%}\n    {%- if content is string -%}\n        {{- content -}}\n    {%- elif content -%}\n        {%- for block in content -%}\n            {%- if block['type'] == 'text' -%}\n                {{- block['text'] -}}\n            {%- elif support_thinking and block['type'] == 'thinking' -%}\n                {{- '[THINK]' + block['thinking'] -}}\n                {%- if block.get('closed', true) -%}{{- '[/THINK]' -}}{%- endif -%}\n            {%- elif support_images and block['type'] in ['image', 'image_url'] -%}\n                {{- '[IMG]' -}}\n            {%- else -%}\n                {{- raise_exception('Only ' + supported_types_desc + ' chunks are supported in ' + context_name + '.') -}}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{- raise_exception(context_name + ' must have non-empty content.') -}}\n    {%- endif -%}\n{%- endmacro -%}\n\n{#- Aggregate consecutive messages with the same role except system and tool. #}\n{#- A sentinel message is appended so the last group gets flushed inside the loop. #}\n{%- set ns_agg = namespace(messages=[], current_group=[], current_role=none) %}\n{%- for message in loop_messages + [{'role': '__sentinel__'}] %}\n    {%- if message['role'] != ns_agg.current_role or message['role'] == 'system' or message['role'] == 'tool' %}\n        {%- if ns_agg.current_role == 'tool' %}\n            {%- set ns_agg.messages = ns_agg.messages + ns_agg.current_group %}\n        {%- elif ns_agg.current_role is not none %}\n            {%- set ns_c = namespace(text_parts=[], chunks=[], has_non_text=false, tool_calls=[]) %}\n            {%- for msg in ns_agg.current_group %}\n                {#- Convert reasoning / reasoning_content to a leading thinking chunk. #}\n                {%- set reasoning = msg.get('reasoning_content', msg.get('reasoning', none)) %}\n                {%- if reasoning is not none and reasoning != '' %}\n                    {%- if msg['content'] is not none and msg['content'] is not string %}\n                        {%- for block in msg['content'] %}\n                            {%- if block['type'] == 'thinking' %}\n                                {{- raise_exception('Message cannot have both thinking chunks in content and a top-level `reasoning` or `reasoning_content` field.') }}\n                            {%- endif %}\n                        {%- endfor %}\n                    {%- endif %}\n                    {%- set think_chunk = {'type': 'thinking', 'thinking': reasoning} %}\n                    {%- if msg['content'] is string and msg['content'] != '' %}\n                        {%- set new_content = [think_chunk, {'type': 'text', 'text': msg['content']}] %}\n                    {%- elif msg['content'] is not none and msg['content'] is not string and msg['content'] | length > 0 %}\n                        {%- set new_content = [think_chunk] + msg['content'] | list %}\n                    {%- else %}\n                        {%- set new_content = [think_chunk] %}\n                    {%- endif %}\n                    {%- if msg['tool_calls'] is defined and msg['tool_calls'] is not none %}\n                        {%- set msg = {'role': msg['role'], 'content': new_content, 'tool_calls': msg['tool_calls']} %}\n                    {%- else %}\n                        {%- set msg = {'role': msg['role'], 'content': new_content} %}\n                    {%- endif %}\n                {%- endif %}\n                {%- if msg['content'] is string %}\n                    {%- set ns_c.text_parts = ns_c.text_parts + [msg['content']] %}\n                {%- elif msg['content'] is not none %}\n                    {%- set ns_msg = namespace(msg_text_parts=[]) %}\n                    {%- for block in msg['content'] %}\n                        {%- if block['type'] == 'text' %}\n                            {%- set ns_msg.msg_text_parts = ns_msg.msg_text_parts + [block['text']] %}\n                        {%- else %}\n                            {%- if ns_msg.msg_text_parts | length > 0 %}\n                                {%- set ns_c.text_parts = ns_c.text_parts + [ns_msg.msg_text_parts | join('')] %}\n                                {%- set ns_msg.msg_text_parts = [] %}\n                            {%- endif %}\n                            {%- if ns_c.text_parts | length > 0 %}\n                                {%- set ns_c.chunks = ns_c.chunks + [{'type': 'text', 'text': ns_c.text_parts | join('\\n\\n')}] %}\n                                {%- set ns_c.text_parts = [] %}\n                            {%- endif %}\n                            {%- set ns_c.chunks = ns_c.chunks + [block] %}\n                            {%- set ns_c.has_non_text = true %}\n                        {%- endif %}\n                    {%- endfor %}\n                    {%- if ns_msg.msg_text_parts | length > 0 %}\n                        {%- set ns_c.text_parts = ns_c.text_parts + [ns_msg.msg_text_parts | join('')] %}\n                    {%- endif %}\n                {%- endif %}\n                {%- if msg['tool_calls'] is defined and msg['tool_calls'] is not none %}\n                    {%- set ns_c.tool_calls = ns_c.tool_calls + msg['tool_calls'] | list %}\n                {%- endif %}\n            {%- endfor %}\n            {%- if ns_c.has_non_text %}\n                {%- if ns_c.text_parts | length > 0 %}\n                    {%- set ns_c.chunks = ns_c.chunks + [{'type': 'text', 'text': ns_c.text_parts | join('\\n\\n')}] %}\n                {%- endif %}\n                {%- set merged_content = ns_c.chunks %}\n            {%- else %}\n                {%- set merged_content = ns_c.text_parts | join('\\n\\n') %}\n            {%- endif %}\n            {%- if ns_c.tool_calls | length > 0 %}\n                {%- set ns_agg.messages = ns_agg.messages + [{'role': ns_agg.current_role, 'content': merged_content, 'tool_calls': ns_c.tool_calls}] %}\n            {%- else %}\n                {%- set ns_agg.messages = ns_agg.messages + [{'role': ns_agg.current_role, 'content': merged_content}] %}\n            {%- endif %}\n        {%- endif %}\n        {%- if message['role'] != '__sentinel__' %}\n            {%- set ns_agg.current_group = [message] %}\n            {%- set ns_agg.current_role = message['role'] %}\n        {%- endif %}\n    {%- else %}\n        {%- set ns_agg.current_group = ns_agg.current_group + [message] %}\n    {%- endif %}\n{%- endfor %}\n{%- set loop_messages = ns_agg.messages %}\n\n{#- Validates message ordering. #}\n{%- set ns = namespace(available_tools_and_settings_emitted=false) %}\n{%- if loop_messages | length > 0 and loop_messages[0]['role'] not in ['user', 'system'] %}\n    {{- raise_exception('Conversation must start with a user or system message, got ' + loop_messages[0]['role'] + '.') }}\n{%- endif %}\n{%- set ns_order = namespace(previous_role=none) %}\n{%- for message in loop_messages %}\n    {%- set current_role = message['role'] %}\n    {%- if ns_order.previous_role is not none %}\n        {%- if ns_order.previous_role == 'system' %}\n            {%- if current_role not in ['user', 'assistant', 'system'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'user' %}\n            {%- if current_role not in ['assistant', 'system', 'user'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'assistant' %}\n            {%- if current_role not in ['assistant', 'user', 'tool'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'tool' %}\n            {%- if current_role not in ['assistant', 'tool', 'user'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- endif %}\n    {%- endif %}\n    {%- set ns_order.previous_role = current_role %}\n{%- endfor %}\n\n{#- Handle conversation messages. #}\n{%- for message in loop_messages %}\n    {#- User messages supports text, image and image_url content. #}\n    {%- if message['role'] == 'user' %}\n        {%- if not ns.available_tools_and_settings_emitted %}\n            {{- available_tools }}\n            {{- model_settings }}\n            {%- set ns.available_tools_and_settings_emitted = true %}\n        {%- endif %}\n        {%- if message['content'] is not string and message['content'] %}\n            {#- When content has exactly one image and one text block, put image first. #}\n            {%- if message['content'] | length == 2 and message['content'][0]['type'] == 'text' and message['content'][1]['type'] in ['image', 'image_url'] %}\n                {%- set blocks = [message['content'][1], message['content'][0]] %}\n            {%- else %}\n                {%- set blocks = message['content'] %}\n            {%- endif %}\n            {%- set user_content = blocks %}\n        {%- else %}\n            {%- set user_content = message['content'] %}\n        {%- endif %}\n        {{- '[INST]' -}}\n        {{- render_content(user_content, 'user message content', supported_types_desc='text, image and image_url', support_thinking=false, support_images=true) -}}\n        {{- '[/INST]' }}\n\n    {#- Assistant messages supports text and thinking content. #}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if (message['content'] is none or message['content'] == '' or message['content']|length == 0) and (message['tool_calls'] is not defined or message['tool_calls'] is none or message['tool_calls']|length == 0) %}\n            {{- raise_exception('Assistant message must have a string or a list of chunks in content or a list of tool calls.') }}\n        {%- endif %}\n\n        {%- if message['content'] %}\n            {{- render_content(message['content'], 'assistant message contents', supported_types_desc='text and thinking', support_thinking=true, support_images=false) -}}\n        {%- endif %}\n\n        {%- if message['tool_calls'] is defined and message['tool_calls'] is not none and message['tool_calls']|length > 0 %}\n            {%- for tool in message['tool_calls'] %}\n                {{- '[TOOL_CALLS]' }}\n                {%- set name = tool['function']['name'] %}\n                {%- set arguments = tool['function']['arguments'] %}\n                {%- if arguments is not string %}\n                    {%- set arguments = arguments|tojson|safe %}\n                {%- elif arguments == '' %}\n                    {%- set arguments = '{}' %}\n                {%- endif %}\n                {{- name + '[ARGS]' + arguments }}\n            {%- endfor %}\n        {%- endif %}\n\n        {{- eos_token }}\n\n    {#- Tool messages (multimodal). #}\n    {%- elif message['role'] == 'tool' %}\n        {{- '[TOOL_RESULTS]' -}}\n        {{- render_content(message['content'], 'tool message contents', supported_types_desc='text and image', support_images=true) -}}\n        {{- '[/TOOL_RESULTS]' }}\n\n    {#- System messages. #}\n    {%- elif message['role'] == 'system' %}\n        {{- '[SYSTEM_PROMPT]' -}}\n        {{- render_content(message['content'], 'system message contents', supported_types_desc='text', support_thinking=false, support_images=false) -}}\n        {{- '[/SYSTEM_PROMPT]' -}}\n\n    {#- Raise exception for unsupported roles. #}\n    {%- else %}\n        {{- raise_exception('Only user, assistant, system and tool roles are supported, got ' + message['role'] + '.') }}\n    {%- endif %}\n{%- endfor %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1939,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 16483,
+      "lfs": null
+    },
+    {
+      "rfilename": "SYSTEM_PROMPT.txt",
+      "size": 2372,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 15168,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2436,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated-00001-of-00007.safetensors",
+      "size": 20000632534,
+      "lfs": {
+        "size": 20000632534,
+        "sha256": "e493a53149d9fb05e48d5e814e4e40f97a605d32c0d579d15ebc60684af51ae6",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00002-of-00007.safetensors",
+      "size": 19997737172,
+      "lfs": {
+        "size": 19997737172,
+        "sha256": "82bf13d11290a0d3ee344e5a07224c623ae5f9c473fe774e24dfccb3506fe7b9",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00003-of-00007.safetensors",
+      "size": 19997736948,
+      "lfs": {
+        "size": 19997736948,
+        "sha256": "1410d0d2223d665800f7d5b05d7d8adf2df4fb9c7e2e71f3b272f5a5bf07f1e6",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00004-of-00007.safetensors",
+      "size": 19997737108,
+      "lfs": {
+        "size": 19997737108,
+        "sha256": "8725562ee8c0ee67056fe128220f201456abad6fa2039c61bc7421de8baa4dbd",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00005-of-00007.safetensors",
+      "size": 19997738276,
+      "lfs": {
+        "size": 19997738276,
+        "sha256": "ee67e9f47175ac89750790fcc5751a497ecedfb424779a66d9d5e7fcab468364",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00006-of-00007.safetensors",
+      "size": 19861887138,
+      "lfs": {
+        "size": 19861887138,
+        "sha256": "793e1be0042f616a50d73f083e47aadaf98ab65e9c909b8986a81e6611565428",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00007-of-00007.safetensors",
+      "size": 1073741920,
+      "lfs": {
+        "size": 1073741920,
+        "sha256": "55ec7d746e71207f12b5303c65377b84612859bc78a0cceefe9ccfc60cc7e6de",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "consolidated.safetensors.index.json",
+      "size": 3619748,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 132,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/aime.png",
+      "size": 601172,
+      "lfs": {
+        "size": 601172,
+        "sha256": "da1ee41ac7cebc824d1e732bef13853ac855dacf08b8c5811fd201f7c7cb7180",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/image2.png",
+      "size": 152184,
+      "lfs": {
+        "size": 152184,
+        "sha256": "abde364d45a8f25096dbe279b15db1acd1d4ea6f74fe858281266d5748ffd377",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/image3.png",
+      "size": 220228,
+      "lfs": {
+        "size": 220228,
+        "sha256": "b38c8a96b124ff831fa9e7270939123565b396485b48f3219f0387142661b735",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/lcr.png",
+      "size": 586377,
+      "lfs": {
+        "size": 586377,
+        "sha256": "bbbe6dd105653d399b6641ab2093502e4d0d9dddf485480e18b93c67c1bf1bba",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "images/livecode.png",
+      "size": 571479,
+      "lfs": {
+        "size": 571479,
+        "sha256": "f7e7c298ddfd1730e14aa79983bf94c6cfac332558561f083e85787629ecaea3",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 49078433296,
+      "lfs": {
+        "size": 49078433296,
+        "sha256": "811a33f74a5160806bf59a5134f015a86386eea49d1b8d2f51c6509382cf5f03",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 49132710896,
+      "lfs": {
+        "size": 49132710896,
+        "sha256": "50f010b6318591e49c41dda94926dfaa436f17219ec79f27289a72dd93e1effa",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 22711829744,
+      "lfs": {
+        "size": 22711829744,
+        "sha256": "166755c02c0c0682302d460c0eadcf138758a022d9a578c7eb74f3251e770999",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 159870,
+      "lfs": null
+    },
+    {
+      "rfilename": "params.json",
+      "size": 1510,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 701,
+      "lfs": null
+    },
+    {
+      "rfilename": "tekken.json",
+      "size": 16275354,
+      "lfs": {
+        "size": 16275354,
+        "sha256": "b1272b956bd6edd2d2c674c76896c7661308c9e723997b0afb55ecb429cb5dc7",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077420,
+      "lfs": {
+        "size": 17077420,
+        "sha256": "2ba5b3330fd84d5376fcca797cfb3b42eee6241ce23e3271e6fb2a115a8751bd",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 21140,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlanguage:\n- en\n- fr\n- de\n- es\n- pt\n- it\n- ja\n- ko\n- ru\n- zh\n- ar\n- fa\n- id\n- ms\n- ne\n- pl\n- ro\n- sr\n- sv\n- tr\n- uk\n- vi\n- hi\n- bn\ntags:\n- vLLM\n---\n\n# Mistral Small 4 119B A6B\n\nMistral Small 4 is a powerful hybrid model capable of acting as both a general instruction model and a reasoning model. It unifies the capabilities of three different model families\u2014**Instruct**, **Reasoning** (previously called Magistral), and **Devstral**\u2014into a single, unified model.\n\nWith its multimodal capabilities, efficient architecture, and flexible mode switching, it is a powerful general-purpose model for any task. In a latency-optimized setup, Mistral Small 4 achieves a **40% reduction in end-to-end completion time**, and in a throughput-optimized setup, it handles **3x more requests per second** compared to Mistral Small 3.\n\nTo further improve efficiency you can either take advantages of:\n- Speculative decoding thanks to our trained eagle head [`mistralai/Mistral-Small-4-119B-2603-eagle`](https://huggingface.co/mistralai/Mistral-Small-4-119B-2603-eagle).\n- 4 bit float precision quantization thanks to our NVFP4 checkpoint [`mistralai/Mistral-Small-4-119B-2603-NVFP4`](https://huggingface.co/mistralai/Mistral-Small-4-119B-2603-NVFP4).\n\n## Key Features\n\nMistral Small 4 includes the following architectural choices:\n\n- **MoE**: 128 experts, 4 active.\n- **119B parameters**, with **6.5B activated per token**.\n- **256k context length**.\n- **Multimodal input**: Accepts both text and image input, with text output.\n- **Instruct and Reasoning functionalities** with function calls (reasoning effort configurable per request).\n\nMistral Small 4 offers the following capabilities:\n\n- **Reasoning Mode**: Toggle between fast instant reply mode and reasoning mode, boosting performance with test-time compute when requested.\n- **Vision**: Analyzes images and provides insights based on visual content, in addition to text.\n- **Multilingual**: Supports dozens of languages, including English, French, Spanish, German, Italian, Portuguese, Dutch, Chinese, Japanese, Korean, and Arabic.\n- **System Prompt**: Strong adherence and support for system prompts.\n- **Agentic**: Best-in-class agentic capabilities with native function calling and JSON output.\n- **Speed-Optimized**: Delivers best-in-class performance and speed.\n- **Apache 2.0 License**: Open-source license for both commercial and non-commercial use.\n- **Large Context Window**: Supports a 256k context window.\n\n## Recommended Settings\n\n- **Reasoning Effort**:\n  - `'none'` \u2192 Do not use reasoning\n  - `'high'` \u2192 Use reasoning (recommended for complex prompts)\n  Use `reasoning_effort=\"high\"` for complex tasks\n- **Temperature**: 0.7 for `reasoning_effort=\"high\"`. Temp between 0.0 and 0.7 for `reasoning_effort=\"none\"` depending on task.\n\n## Use Cases\n\nMistral Small 4 is designed for general chat assistants, coding, agentic tasks, and reasoning tasks (with reasoning mode toggled). Its multimodal capabilities also enable document and image understanding for data extraction and analysis.\n\nIts capabilities are ideal for:\n- Developers interested in coding and agentic capabilities for SWE automation and codebase exploration.\n- Enterprises seeking general chat assistants, agents, and document understanding.\n- Researchers leveraging its math and research capabilities.\n\nMistral Small 4 is also well-suited for customization and fine-tuning for more specialized tasks.\n\n### Examples\n- General chat assistant\n- Document parsing and extraction\n- Coding agent\n- Research assistant\n- Customization & fine-tuning\n- And more...\n\n## Benchmarks\n\n### Comparison with internal models\n\nDepending on your tasks you can trigger reasoning thanks to the support of the **per-request** parameter `reasoning_effort`. Set it to:\n- `reasoning_effort=\"none\"`: Fast, lightweight responses for everyday tasks, equivalent to the same chat style of [`mistralai/Mistral-Small-3.2-24B-Instruct-2506`](https://huggingface.co/mistralai/Mistral-Small-3.2-24B-Instruct-2506).\n- `reasoning_effort=\"high\"`: Deep, step-by-step reasoning for complex problems, with equivalent verbosity to previous Magistral models such as [`mistralai/Magistral-Small-2509`](https://huggingface.co/mistralai/Magistral-Small-2509).\n\n![Internal benchmark](https://huggingface.co/mistralai/Mistral-Small-4-119B-2603/resolve/main/images/image2.png)\n\n#### Comparing Reasoning Models\n\n![Internal benchmark - Reasoning](https://huggingface.co/mistralai/Mistral-Small-4-119B-2603/resolve/main/images/image3.png)\n\n\n### Comparison with other models\n\nMistral Small 4 with reasoning achieves competitive scores, matching or surpassing GPT-OSS 120B across all three benchmarks while generating significantly\nshorter outputs. On AA LCR, Mistral Small 4 scores **0.72** with just **1.6K characters**, whereas Qwen models require **3.5-4x more output** (5.8-6.1K)\nfor comparable performance. On LiveCodeBench, Mistral Small 4 outperforms GPT-OSS 120B while producing **20% less output**.\nThis efficiency reduces latency, inference costs, and improves user experience.\n\n![Comparison benchmark - LCR](https://huggingface.co/mistralai/Mistral-Small-4-119B-2603/resolve/main/images/lcr.png)\n![Comparison benchmark - LiveCodeBench](https://huggingface.co/mistralai/Mistral-Small-4-119B-2603/resolve/main/images/livecode.png)\n![Comparison benchmark - AIME25](https://huggingface.co/mistralai/Mistral-Small-4-119B-2603/resolve/main/images/aime.png)\n\n## Usage\n\nYou can find Mistral Small 4 support on multiple libraries for inference and fine-tuning. We here thank every contributors and maintainers that helped us making it happen.\n\n### Inference\n\nThe model can be deployed with:\n- [`vllm (recommended)`](https://github.com/vllm-project/vllm): See [here](#vllm-recommended)\n- [`llama.cpp`](https://github.com/ggml-org/llama.cpp): See [here](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF) for Unsloth's GGUFs\n- [`LM studio`](https://lmstudio.ai/): See [here](https://lmstudio.ai/models/mistralai/mistral-small-4)\n- [`SGLang`](https://github.com/sgl-project/sglang): See [here](https://docs.sglang.io/basic_usage/send_request.html)\n- [`transformers`](https://github.com/huggingface/transformers): See [here](#transformers)\n\nFor optimal performance, we recommend using the Mistral AI API if local serving is subpar.\n\n### Fine-Tuning\n\nFine-tune the model via:\n- [`Axolotl`](https://github.com/axolotl-ai-cloud/axolotl): See [here](https://github.com/axolotl-ai-cloud/axolotl/tree/main/examples/mistral4).\n\n## vLLM (Recommended)\n\nWe recommend using Mistral Small 4 with the [vLLM library](https://github.com/vllm-project/vllm) for production-ready inference.\n\n### Installation\n\nInstall latest **vllm**:\n\n```\nuv pip install -U vllm\n```\n\nDoing so should automatically install [`mistral_common >= 1.11.0`](https://github.com/mistralai/mistral-common/releases/tag/v1.11.0).\n\nTo check:\n```\npython -c \"import mistral_common; print(mistral_common.__version__)\"\n```\n\nYou can also make use of a ready-to-go [docker image](https://github.com/vllm-project/vllm/blob/main/docker/Dockerfile) or on the [docker hub](https://hub.docker.com/layers/vllm/vllm-openai/latest).\n\n### Serve the Model\n\nWe recommend a server/client setup:\n```bash\nvllm serve mistralai/Mistral-Small-4-119B-2603 --max-model-len 262144 --tensor-parallel-size 2 --attention-backend FLASH_ATTN_MLA \\\n  --tool-call-parser mistral --enable-auto-tool-choice --reasoning-parser mistral --max_num_batched_tokens 16384 --max_num_seqs 128 \\\n  --gpu_memory_utilization 0.8\n```\n\n### Ping the Server\n\n<details>\n  <summary>Instruction Following</summary>\n\nMistral Small 4 can follow your instructions to the letter.\n\n\n```python\nfrom datetime import datetime, timedelta\n\nfrom openai import OpenAI\nfrom huggingface_hub import hf_hub_download\n\n# Modify OpenAI's API key and API base to use vLLM's API server.\nopenai_api_key = \"EMPTY\"\nopenai_api_base = \"http://localhost:8000/v1\"\n\nTEMP = 0.1\n# use TEMP = 0.7 for reasoning=\"high\"\n\nclient = OpenAI(\n    api_key=openai_api_key,\n    base_url=openai_api_base,\n)\n\nmodels = client.models.list()\nmodel = models.data[0].id\n\n\ndef load_system_prompt(repo_id: str, filename: str) -> str:\n    file_path = hf_hub_download(repo_id=repo_id, filename=filename)\n    with open(file_path, \"r\") as file:\n        system_prompt = file.read()\n    today = datetime.today().strftime(\"%Y-%m-%d\")\n    yesterday = (datetime.today() - timedelta(days=1)).strftime(\"%Y-%m-%d\")\n    model_name = repo_id.split(\"/\")[-1]\n    return system_prompt.format(name=model_name, today=today, yesterday=yesterday)\n\n\nSYSTEM_PROMPT = load_system_prompt(model, \"SYSTEM_PROMPT.txt\")\n\nmessages = [\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\n        \"role\": \"user\",\n        \"content\": \"Write me a sentence where every word starts with the next letter in the alphabet - start with 'a' and end with 'z'.\",\n    },\n]\n\nresponse = client.chat.completions.create(\n    model=model,\n    messages=messages,\n    temperature=TEMP,\n    reasoning_effort=\"none\",\n)\n\nassistant_message = response.choices[0].message.content\nprint(assistant_message)\n```\n\n</details>\n\n<details>\n  <summary>Tool Call</summary>\n\nLet's solve some equations thanks to our simple Python calculator tool.\n\n\n```python\nimport json\nfrom datetime import datetime, timedelta\n\nfrom openai import OpenAI\nfrom huggingface_hub import hf_hub_download\n\n# Modify OpenAI's API key and API base to use vLLM's API server.\nopenai_api_key = \"EMPTY\"\nopenai_api_base = \"http://localhost:8000/v1\"\n\nTEMP = 0.1\n\nclient = OpenAI(\n    api_key=openai_api_key,\n    base_url=openai_api_base,\n)\n\nmodels = client.models.list()\nmodel = models.data[0].id\n\n\ndef load_system_prompt(repo_id: str, filename: str) -> str:\n    file_path = hf_hub_download(repo_id=repo_id, filename=filename)\n    with open(file_path, \"r\") as file:\n        system_prompt = file.read()\n    today = datetime.today().strftime(\"%Y-%m-%d\")\n    yesterday = (datetime.today() - timedelta(days=1)).strftime(\"%Y-%m-%d\")\n    model_name = repo_id.split(\"/\")[-1]\n    return system_prompt.format(name=model_name, today=today, yesterday=yesterday)\n\n\nSYSTEM_PROMPT = load_system_prompt(model, \"SYSTEM_PROMPT.txt\")\n\nimage_url = \"https://math-coaching.com/img/fiche/46/expressions-mathematiques.jpg\"\n\n\ndef my_calculator(expression: str) -> str:\n    return str(eval(expression))\n\n\ntools = [\n    {\n        \"type\": \"function\",\n        \"function\": {\n            \"name\": \"my_calculator\",\n            \"description\": \"A calculator that can evaluate a mathematical expression.\",\n            \"parameters\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"expression\": {\n                        \"type\": \"string\",\n                        \"description\": \"The mathematical expression to evaluate.\",\n                    },\n                },\n                \"required\": [\"expression\"],\n            },\n        },\n    },\n    {\n        \"type\": \"function\",\n        \"function\": {\n            \"name\": \"rewrite\",\n            \"description\": \"Rewrite a given text for improved clarity\",\n            \"parameters\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"text\": {\n                        \"type\": \"string\",\n                        \"description\": \"The input text to rewrite\",\n                    }\n                },\n            },\n        },\n    },\n]\n\nmessages = [\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"text\": \"Thanks to your calculator, compute the results for the equations that involve numbers displayed in the image.\",\n            },\n            {\n                \"type\": \"image_url\",\n                \"image_url\": {\n                    \"url\": image_url,\n                },\n            },\n        ],\n    },\n]\n\nresponse = client.chat.completions.create(\n    model=model,\n    messages=messages,\n    temperature=TEMP,\n    tools=tools,\n    tool_choice=\"auto\",\n    reasoning_effort=\"none\",\n)\n\ntool_calls = response.choices[0].message.tool_calls\n\nresults = []\nfor tool_call in tool_calls:\n    function_name = tool_call.function.name\n    function_args = tool_call.function.arguments\n    if function_name == \"my_calculator\":\n        result = my_calculator(**json.loads(function_args))\n        results.append(result)\n\nmessages.append({\"role\": \"assistant\", \"tool_calls\": tool_calls})\nfor tool_call, result in zip(tool_calls, results):\n    messages.append(\n        {\n            \"role\": \"tool\",\n            \"tool_call_id\": tool_call.id,\n            \"name\": tool_call.function.name,\n            \"content\": result,\n        }\n    )\n\n\nresponse = client.chat.completions.create(\n    model=model,\n    messages=messages,\n    temperature=TEMP,\n    reasoning_effort=\"none\",\n)\n\nprint(response.choices[0].message.content)\n```\n\n</details>\n\n<details>\n  <summary>Vision Reasoning</summary>\n\nLet's see if the Mistral Small 4 knows when to pick a fight !\n\n```python\nfrom datetime import datetime, timedelta\n\nfrom openai import OpenAI\nfrom huggingface_hub import hf_hub_download\n\n# Modify OpenAI's API key and API base to use vLLM's API server.\nopenai_api_key = \"EMPTY\"\nopenai_api_base = \"http://localhost:8000/v1\"\n\nTEMP = 0.7\n\nclient = OpenAI(\n    api_key=openai_api_key,\n    base_url=openai_api_base,\n)\n\nmodels = client.models.list()\nmodel = models.data[0].id\n\n\ndef load_system_prompt(repo_id: str, filename: str) -> str:\n    file_path = hf_hub_download(repo_id=repo_id, filename=filename)\n    with open(file_path, \"r\") as file:\n        system_prompt = file.read()\n    today = datetime.today().strftime(\"%Y-%m-%d\")\n    yesterday = (datetime.today() - timedelta(days=1)).strftime(\"%Y-%m-%d\")\n    model_name = repo_id.split(\"/\")[-1]\n    return system_prompt.format(name=model_name, today=today, yesterday=yesterday)\n\n\nSYSTEM_PROMPT = load_system_prompt(model, \"SYSTEM_PROMPT.txt\")\nimage_url = \"https://static.wikia.nocookie.net/essentialsdocs/images/7/70/Battle.png/revision/latest?cb=20220523172438\"\n\nmessages = [\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"text\": \"What action do you think I should take in this situation? List all the possible actions and explain why you think they are good or bad.\",\n            },\n            {\"type\": \"image_url\", \"image_url\": {\"url\": image_url}},\n        ],\n    },\n]\n\n\nresponse = client.chat.completions.create(\n    model=model,\n    messages=messages,\n    temperature=TEMP,\n    reasoning_effort=\"high\",\n)\n\nprint(response.choices[0].message.content)\n```\n\n</details>\n\n## Transformers\n\n### Installation\n\nYou need to install the main branch of Transformers to use Mistral Small 4:\n\n```bash\nuv pip install git+https://github.com/huggingface/transformers.git\n```\n\n### Inference\n\n<details>\n<summary>Python Inference Snippet</summary>\n\n```python\nimport torch\nfrom transformers import AutoProcessor, Mistral3ForConditionalGeneration\n\n\nmodel_id = \"mistralai/Mistral-Small-4-119B-2603\"\n\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = Mistral3ForConditionalGeneration.from_pretrained(\n    model_id, device_map=\"auto\"\n)\n\nimage_url = \"https://static.wikia.nocookie.net/essentialsdocs/images/7/70/Battle.png/revision/latest?cb=20220523172438\"\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"text\": \"What action do you think I should take in this situation? List all the possible actions and explain why you think they are good or bad.\",\n            },\n            {\"type\": \"image_url\", \"image_url\": {\"url\": image_url}},\n        ],\n    },\n]\n\ninputs = processor.apply_chat_template(messages, return_tensors=\"pt\", tokenize=True, return_dict=True, reasoning_effort=\"high\")\ninputs = inputs.to(model.device)\n\noutput = model.generate(\n    **inputs,\n    max_new_tokens=1024,\n    do_sample=True,\n    temperature=0.7,\n)[0]\n\n# Setting `skip_special_tokens=False` to visualize reasoning trace between [THINK] [/THINK] tags.\ndecoded_output = processor.decode(output[len(inputs[\"input_ids\"][0]):], skip_special_tokens=False) \nprint(decoded_output)\n```\n</details>\n\n## License\n\nThis model is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0.txt).\n\n*You must not use this model in a manner that infringes, misappropriates, or violates any third party\u2019s rights, including intellectual property rights.*",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "pt",
+      "it",
+      "ja",
+      "ko",
+      "ru",
+      "zh",
+      "ar",
+      "fa",
+      "id",
+      "ms",
+      "ne",
+      "pl",
+      "ro",
+      "sr",
+      "sv",
+      "tr",
+      "uk",
+      "vi",
+      "hi",
+      "bn"
+    ],
+    "tags": [
+      "vLLM"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

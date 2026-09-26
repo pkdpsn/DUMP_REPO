@@ -1,0 +1,199 @@
+{
+  "modelId": "nvidia/audio-flamingo-next-captioner-hf",
+  "author": "nvidia",
+  "sha": "62aa63a66927f04f8308620f8e4b65696d3ea0a6",
+  "lastModified": "2026-05-13 18:38:05+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "musicflamingo",
+    "text2text-generation",
+    "audio",
+    "speech",
+    "sound",
+    "music",
+    "reasoning",
+    "audio understanding",
+    "audio captioning",
+    "long-context",
+    "long-form-captioning",
+    "audio-language-model",
+    "long-audio",
+    "timestamp-grounding",
+    "audio-text-to-text",
+    "en",
+    "dataset:nvidia/LongAudio",
+    "dataset:nvidia/AF-Skills",
+    "dataset:nvidia/AF-Chat",
+    "dataset:nvidia/AF-Think",
+    "arxiv:2604.10905",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "audio-text-to-text",
+  "library_name": "transformers",
+  "likes": 19,
+  "downloads": 13195,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "nvidia/LongAudio",
+      "nvidia/AF-Skills",
+      "nvidia/AF-Chat",
+      "nvidia/AF-Think"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "audio-text-to-text",
+    "tags": [
+      "audio",
+      "speech",
+      "sound",
+      "music",
+      "reasoning",
+      "audio understanding",
+      "audio captioning",
+      "long-context",
+      "long-form-captioning",
+      "audio-language-model",
+      "long-audio",
+      "timestamp-grounding"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "MusicFlamingoForConditionalGeneration"
+    ],
+    "model_type": "musicflamingo",
+    "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "<|im_end|>",
+      "pad_token": "[PAD]",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% if messages[0]['role'] != 'system' %}<|im_start|>system\nYou are Audio Flamingo-Next, a multimodal assistant for language and audio. On each turn you receive an optional audio clip which may contain speech, music, or ambient sounds and optional text, you will receive at least one or both; use your world knowledge and reasoning to help the user with any task. Interpret the entirety of the content of any input audio\u2014regardless of whether the user calls it audio, speech, music, or sound.<|im_end|>\n{% endif %}{% for m in messages if m['content'] is not none %}<|im_start|>{{ m['role'] }}\n{% if m['content'] is string %}{{ m['content'] }}{% else %}{% set audio = namespace(found=False) %}{% set text_buf = namespace(v='') %}{% for c in m['content'] %}{% if c.get('type') == 'audio' or 'audio' in c %}{% set audio.found = True %}{% elif c.get('type') == 'text' or 'text' in c %}{% set text_buf.v = text_buf.v + c['text'] %}{% endif %}{% endfor %}{% if audio.found %}{{ '<sound>' }}{% endif %}{{ text_buf.v }}{% endif %}<|im_end|>\n{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 12283,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1109,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2391,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 147,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 16534531504,
+      "lfs": {
+        "size": 16534531504,
+        "sha256": "f1a0bb8e491f95c765559b435b8d091b5ad0055a16a93898bb4f5db0ffa3fb5e",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 544,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/NVIDIA OneWay Noncommercial License_22Mar2022 (academic).docx",
+      "size": 20697,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/NVIDIA-OneWay-Noncommercial-License_22Mar2022-academic.docx",
+      "size": 20697,
+      "lfs": null
+    },
+    {
+      "rfilename": "static/afnext_logo.webp",
+      "size": 56200,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11423197,
+      "lfs": {
+        "size": 11423197,
+        "sha256": "a64cc913679c6eaf01ba137504e15a55d174d590944fe06f7b3899b2ae82de31",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 510,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlanguage:\n- en\ntags:\n- audio\n- speech\n- sound\n- music\n- reasoning\n- audio understanding\n- audio captioning\n- long-context\n- long-form-captioning\n- audio-language-model\n- long-audio\n- timestamp-grounding\ndatasets:\n- nvidia/LongAudio\n- nvidia/AF-Skills\n- nvidia/AF-Chat\n- nvidia/AF-Think\npipeline_tag: audio-text-to-text\nlibrary_name: transformers\n---\n# Model Overview\n\n<div align=\"center\" style=\"display: flex; justify-content: center; align-items: center; text-align: center;\">\n  <a href=\"https://afnext-umd-nvidia.github.io/\" style=\"text-decoration: none; display: flex; align-items: center;\">\n    <img src=\"static/afnext_logo.webp\" alt=\"Audio Flamingo Next Captioner\" width=\"120\">\n  </a>\n</div>\n<div align=\"center\" style=\"display: flex; justify-content: center; align-items: center; text-align: center;\">\n  <h2>\n    Audio Flamingo Next Captioner: Long-Form Audio Captioning for Speech, Sound, and Music\n  </h2>\n</div>\n\n<div align=\"center\" style=\"display: flex; justify-content: center; margin-top: 10px; flex-wrap: wrap; gap: 5px;\">\n  <a href=\"https://afnext-umd-nvidia.github.io/\"><img src=\"https://img.shields.io/badge/Project%20Page-AF--Next-0F766E\" alt=\"Project Page\"></a>\n  <a href=\"https://arxiv.org/abs/2604.10905\"><img src=\"https://img.shields.io/badge/arXiv-2604.10905-B31B1B.svg\" alt=\"arXiv\"></a>\n  <a href=\"https://github.com/NVIDIA/audio-flamingo\"><img src=\"https://img.shields.io/badge/GitHub-AF--Next-0E7490\" alt=\"GitHub\"></a>\n  <a href=\"https://github.com/NVIDIA/audio-flamingo/stargazers\"><img src=\"https://img.shields.io/github/stars/NVIDIA/audio-flamingo.svg?style=social\" alt=\"GitHub stars\"></a>\n</div>\n\n<div align=\"center\" style=\"display: flex; justify-content: center; margin-top: 10px; flex-wrap: wrap; gap: 5px;\">\n  <a href=\"https://huggingface.co/nvidia/audio-flamingo-next-captioner-hf\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Checkpoint-ED5A22.svg\" alt=\"Checkpoint\">\n  </a>\n  <a href=\"https://huggingface.co/datasets/nvidia/LongAudio\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Dataset:%20LongAudio-ED5A22.svg\" alt=\"LongAudio dataset\">\n  </a>\n  <a href=\"https://huggingface.co/datasets/nvidia/AF-Skills\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Dataset:%20AF--Skills-ED5A22.svg\" alt=\"AF-Skills dataset\">\n  </a>\n  <a href=\"https://huggingface.co/datasets/nvidia/AF-Chat\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Dataset:%20AF--Chat-ED5A22.svg\" alt=\"AF-Chat dataset\">\n  </a>\n  <a href=\"https://huggingface.co/datasets/nvidia/AF-Think\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Dataset:%20AF--Think-ED5A22.svg\" alt=\"AF-Think dataset\">\n  </a>\n  <a href=\"https://huggingface.co/spaces/nvidia/audio-flamingo-next-captioner\">\n    <img src=\"https://img.shields.io/badge/\ud83e\udd17-Gradio%20Demo-5F9EA0.svg\" alt=\"Gradio Demo\">\n  </a>\n</div>\n\n`nvidia/audio-flamingo-next-captioner-hf` is the long-form captioning checkpoint in the Audio Flamingo Next family. It is designed for rich, descriptive outputs over long and complex audio, including speech-heavy recordings, environmental sound scenes, and music.\n\n## Description\n\nAudio Flamingo Next (AF-Next) is the next-generation open audio-language model in the Audio Flamingo series, built for speech, environmental sound, and music understanding with audio inputs up to `30` minutes.\n\nThis checkpoint corresponds to **AF-Next-Captioner**, the model obtained at the end of AF-Next mid-training after the training mixture is expanded with newly collected long-audio captioning and QA datasets. It is the best AF-Next variant when you want:\n\n- long-form descriptive captions\n- verbose summaries of long audio\n- timestamp-aware scene breakdowns\n- exhaustive descriptions of events, speakers, and background audio\n\n## Best For\n\n- detailed audio captions that integrate speech, sound effects, ambience, and music in one response\n- prompts that ask for a broad caption while also transcribing spoken content by all speakers precisely\n- long-form summaries, timestamp-aware event descriptions, and dense scene breakdowns\n- showcase-style qualitative outputs where you want the model to describe how the audio evolves over time\n\n## AF-Next Variants\n\n| Checkpoint | Use when you need |\n| --- | --- |\n| `nvidia/audio-flamingo-next-hf` | default QA, chat, ASR / AST, and direct assistant-style answers |\n| `nvidia/audio-flamingo-next-think-hf` | explicit multi-step reasoning, timestamp-grounded evidence, and longer reasoning traces |\n| `nvidia/audio-flamingo-next-captioner-hf` | dense long-form captions, timestamped scene breakdowns, and more descriptive outputs |\n\nBecause this checkpoint comes before the RL-based assistant alignment stage, it is often more verbose and more caption-like than `nvidia/audio-flamingo-next-hf`. If you want chat-oriented or safer assistant-style behavior, use the instruct checkpoint instead.\n\nThese Hub weights are released as an `audio-text-to-text` model. The broader AF-Next project also discusses streaming TTS and voice-to-voice interaction, but those components are not part of this checkpoint.\n\n**This model is for non-commercial research purposes only.**\n\n## Usage\n\n### Install\n\nAF-Next is supported in Transformers:\n\n```bash\npip install --upgrade pip\npip install --upgrade transformers accelerate\n```\n\n### Notes\n\n- The processor expects mono `16 kHz` audio.\n- Audio is internally processed in `30`-second windows.\n- The released processor is configured for up to `1800` seconds of audio, i.e. `30` minutes.\n- This checkpoint is best used with prompts that ask for descriptive, coherent, or timestamped captions.\n- Prompting matters: this checkpoint is strongest when you ask explicitly for a dense caption, timestamped scene summary, lyrics, or a speaker-aware breakdown.\n\n### Prompt Guide\n\n| Task | Prompt | Recommended Checkpoint(s) |\n| --- | --- | --- |\n| ASR | `Transcribe the input speech.` | `Instruct`, `Think` |\n| AST | `Translate any speech you hear from <src_lang> into <tgt_lang>.` | `Instruct`, `Think` |\n| Short Audio Captioning | `Generate a caption for the input audio.` | `Captioner`, `Think` |\n| Long Audio Captioning | `Generate a detailed caption for the input audio. In the caption, transcribe all spoken content by all speakers in the audio precisely.` | `Captioner`, `Think` |\n| Music Captioning | `Summarize the track with precision: mention its musical style, BPM, key, arrangement, production choices, and the emotions or story it conveys.` | `Captioner`, `Instruct`, `Think` |\n| Lyrics | `Generate a lyrics transcription from the input song.` | `Instruct`, `Captioner`, `Think` |\n| QA | `What precise description did the commentator use for the punch that ended the fight?` | `Instruct`, `Think` |\n| Timestamped Multi-Talker ASR | `Transcribe the input audio. If multiple speakers are present, provide diarized transcripts with speaker labels.`<br>`[Speaker 1] ...`<br>`[Speaker 2] ...` | `Instruct`, `Think` |\n\n### Long-Form Captioning Example\n\n```python\nimport torch\nfrom transformers import AutoModel, AutoProcessor\n\nmodel_id = \"nvidia/audio-flamingo-next-captioner-hf\"\n\nprocessor = AutoProcessor.from_pretrained(model_id)\nmodel = AutoModel.from_pretrained(\n    model_id,\n    torch_dtype=torch.bfloat16,\n    device_map=\"auto\",\n).eval()\n\nconversation = [\n    [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\n                    \"type\": \"text\",\n                    \"text\": (\n                        \"Write a detailed caption of this audio. Cover the speakers, \"\n                        \"background sounds, major events, and how the scene changes over time.\"\n                    ),\n                },\n                {\n                    \"type\": \"audio\",\n                    \"path\": \"https://huggingface.co/datasets/nvidia/AudioSkills/resolve/main/assets/videoplayback_superman.wav\",\n                },\n            ],\n        }\n    ]\n]\n\nbatch = processor.apply_chat_template(\n    conversation,\n    tokenize=True,\n    add_generation_prompt=True,\n    return_dict=True,\n).to(model.device)\n\nif \"input_features\" in batch:\n    batch[\"input_features\"] = batch[\"input_features\"].to(model.dtype)\n\ngenerated = model.generate(\n    **batch,\n    max_new_tokens=2048,\n    repetition_penalty=1.2,\n)\n\nprompt_len = batch[\"input_ids\"].shape[1]\ncompletion = generated[:, prompt_len:]\ntext = processor.batch_decode(\n    completion,\n    skip_special_tokens=True,\n    clean_up_tokenization_spaces=False,\n)[0]\n\nprint(text)\n```\n\n### Prompting Tip\n\nAF-Next-Captioner responds best to prompts like:\n\n- \"Write a rich caption of the full audio.\"\n- \"Describe how the audio scene evolves over time.\"\n- \"Give a timestamped summary with speaker and sound-event details.\"\n\n## Training Summary\n\nAF-Next-Captioner is the checkpoint produced after AF-Next mid-training. In that stage, the model:\n\n- retains the earlier AF-Next recognition and skill data mixture\n- adds newly collected long-audio captioning and QA data\n- increases the maximum audio length to `30` minutes\n- increases the total context length to `128K`\n- emphasizes long-form data by down-sampling the earlier stage mixture and assigning full blend weight to long-audio datasets\n\nThe broader AF-Next training recipe also includes:\n\n- AudioSkills-XL, LongAudio-XL, AF-Think, AF-Chat, and MF-Skills\n- `45K` additional multi-talker speech samples\n- `200K+` long-form internet videos\n- `2M+` real-world short audio skill samples\n- `1M` multi-audio instruction examples\n- `30K` multi-turn chat examples\n- `386K` safety and instruction-following examples\n- multilingual ASR and AST data from Emilia, CoVoST, MUST, Amazon-SIFT, ALI Meeting, aidatatang, AISHELL, and Granary\n- training on `128` NVIDIA H100 GPUs\n\n## Architecture\n\nThe released checkpoint exposes `AudioFlamingoNextForConditionalGeneration` with `AudioFlamingoNextProcessor`. At a high level, AF-Next combines:\n\n- an AF-Whisper audio encoder using `128`-bin log-mel features\n- non-overlapping `30`-second audio chunking\n- a `2`-layer MLP audio adaptor\n- a Qwen2.5-family text backbone extended to long context\n- RoTE for timestamp-aware temporal grounding\n\nThe released config uses:\n\n- `audio_config.hidden_size = 1280`\n- `audio_config.num_hidden_layers = 32`\n- `text_config.hidden_size = 3584`\n- `text_config.num_hidden_layers = 28`\n- `text_config.max_position_embeddings = 131072`\n\n## Selected Results\n\nFrom the AF-Next paper, the captioner-style variant is especially strong on broad open-ended benchmarks:\n\n- `MMAU v05.15.25 average`: `75.76` for `+Captioner`\n- `MMAR`: `63.0` for `+Captioner`\n- `MMSU`: `63.3` for `+Captioner`\n\nThe paper positions this variant as the most caption-oriented AF-Next checkpoint, particularly for long-form descriptive prompting.\n\n## Limitations\n\nThe paper highlights several limitations:\n\n- internet-scale audio remains noisy and unevenly distributed across domains and languages\n- low-resource languages, rare events, and specialized domains are still underrepresented\n- very long-context reasoning remains challenging when evidence is distant or sparse\n- evaluation does not yet fully cover all AF-Next capabilities, including diarization, timestamped captioning, and voice-to-voice interaction\n\nIf you want better assistant alignment, use `nvidia/audio-flamingo-next-hf`. If you want explicit reasoning traces, use `nvidia/audio-flamingo-next-think-hf`.\n\n## License / Terms of Use\n\nThe model is released under the [NVIDIA OneWay Noncommercial License](static/NVIDIA-OneWay-Noncommercial-License_22Mar2022-academic.docx). Portions of the dataset generation are also subject to the [Qwen Research License](https://huggingface.co/Qwen/Qwen2.5-3B/blob/main/LICENSE) and OpenAI's [Terms of Use](https://openai.com/policies/terms-of-use).\n\n## Citation\n\n```bibtex\n@misc{ghosh2026audioflamingonext,\n  title={Audio Flamingo Next: Next-Generation Open Audio-Language Models for Speech, Sound, and Music},\n  author={Sreyan Ghosh and Arushi Goel and Kaousheik Jayakumar and Lasha Koroshinadze and Nishit Anand and Zhifeng Kong and Siddharth Gururani and Sang-gil Lee and Jaehyeon Kim and Aya Aljafari and Chao-Han Huck Yang and Sungwon Kim and Ramani Duraiswami and Dinesh Manocha and Mohammad Shoeybi and Bryan Catanzaro and Ming-Yu Liu and Wei Ping},\n  year={2026},\n  howpublished={Technical report},\n  url={https://afnext-umd-nvidia.github.io/}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "other",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "audio",
+      "speech",
+      "sound",
+      "music",
+      "reasoning",
+      "audio understanding",
+      "audio captioning",
+      "long-context",
+      "long-form-captioning",
+      "audio-language-model",
+      "long-audio",
+      "timestamp-grounding"
+    ],
+    "datasets": [
+      "nvidia/LongAudio",
+      "nvidia/AF-Skills",
+      "nvidia/AF-Chat",
+      "nvidia/AF-Think"
+    ],
+    "pipeline_tag": "audio-text-to-text",
+    "library_name": "transformers",
+    "base_model": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoProcessor"
+  }
+}

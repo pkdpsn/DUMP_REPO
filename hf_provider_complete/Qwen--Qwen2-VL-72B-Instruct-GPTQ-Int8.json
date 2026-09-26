@@ -1,0 +1,352 @@
+{
+  "modelId": "Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8",
+  "author": "Qwen",
+  "sha": "d1eab90fe682fdad9c15857d459efa1d5e32db34",
+  "lastModified": "2024-09-24 05:08:42+00:00",
+  "tags": [
+    "safetensors",
+    "qwen2_vl",
+    "multimodal",
+    "image-text-to-text",
+    "conversational",
+    "en",
+    "arxiv:2308.12966",
+    "base_model:Qwen/Qwen2-VL-72B-Instruct",
+    "base_model:quantized:Qwen/Qwen2-VL-72B-Instruct",
+    "license:other",
+    "8-bit",
+    "gptq",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": null,
+  "likes": 11,
+  "downloads": 185,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "Qwen/Qwen2-VL-72B-Instruct",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "other",
+    "license_name": "tongyi-qianwen",
+    "license_link": "https://huggingface.co/Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "multimodal"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2VLForConditionalGeneration"
+    ],
+    "model_type": "qwen2_vl",
+    "quantization_config": {
+      "bits": 8,
+      "quant_method": "gptq"
+    },
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 6962,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 18529,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 392,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1049,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1389,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 247,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00021.safetensors",
+      "size": 3967506288,
+      "lfs": {
+        "size": 3967506288,
+        "sha256": "96a93ab55db26d489521b171077f3134b1bd82248ab51914ba4c1649c9592949",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00021.safetensors",
+      "size": 3933722616,
+      "lfs": {
+        "size": 3933722616,
+        "sha256": "22b21f6727ea22cc69edecb38bfb2939b7f5501b617a36eda68355f2e0b2ee50",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00021.safetensors",
+      "size": 3856284568,
+      "lfs": {
+        "size": 3856284568,
+        "sha256": "493b6a9b2df51300de7c77c59db0a4a1c0e1d56e562229f763a333be82a9500f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00021.safetensors",
+      "size": 3933653192,
+      "lfs": {
+        "size": 3933653192,
+        "sha256": "bc1b2bcc5ccc001827901e93d244641b7fc466107f8a41afbc7efa2cb97e33f2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00021.safetensors",
+      "size": 3933722760,
+      "lfs": {
+        "size": 3933722760,
+        "sha256": "110c935df7e411c8f74f2967aaca9e6a4de82025e75257d23c5c322c47ba4593",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00021.safetensors",
+      "size": 3856284704,
+      "lfs": {
+        "size": 3856284704,
+        "sha256": "51dcd557a8c049e4a71651c8ed636dd28aa04fc7cd9ae1bb0089894fb9fe2e7a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00021.safetensors",
+      "size": 3933653240,
+      "lfs": {
+        "size": 3933653240,
+        "sha256": "63a2ebb51123b1726a9bd68b0773cd1c3dc31cf8be36551b74624767ef716968",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00021.safetensors",
+      "size": 3933722760,
+      "lfs": {
+        "size": 3933722760,
+        "sha256": "ffcc710199307f40b8e0854233c57561da443fe33300b00fcc401a3d7a94420c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00021.safetensors",
+      "size": 3856284704,
+      "lfs": {
+        "size": 3856284704,
+        "sha256": "d8dca5803cb00b40867bef50951ab8c15f9c10cd7487f164ae5dffbbd3893914",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00021.safetensors",
+      "size": 3933653240,
+      "lfs": {
+        "size": 3933653240,
+        "sha256": "081e6a9f411358b7a91b3444f4ae49534d884232e05e6d9b420d6339e3d25662",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00021.safetensors",
+      "size": 3933722760,
+      "lfs": {
+        "size": 3933722760,
+        "sha256": "4f1893bc6b77673e185c8bcfcb10aacc9f1c63785522cafb6c090250919ff1ee",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00021.safetensors",
+      "size": 3856284704,
+      "lfs": {
+        "size": 3856284704,
+        "sha256": "7ebcfd57658001265ac2e935bf6c323f2d850fe61d6589abe80a5a327733befe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00021.safetensors",
+      "size": 3933653240,
+      "lfs": {
+        "size": 3933653240,
+        "sha256": "81bd0841831608340f38cb807e72c5bc624f8ac2e991c12dbc84b74c1bb2e4cd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00021.safetensors",
+      "size": 3933722760,
+      "lfs": {
+        "size": 3933722760,
+        "sha256": "3a19deab70a4fba0534f53ae393720b47e8a22ae9c3b87509ec4c936438b86de",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00021.safetensors",
+      "size": 3856284704,
+      "lfs": {
+        "size": 3856284704,
+        "sha256": "02cf34da9b4ed556bde70032e3afe4c3d8caa3a7145c9ea8fef2977624383ee6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00021.safetensors",
+      "size": 3933653240,
+      "lfs": {
+        "size": 3933653240,
+        "sha256": "07ba4cad0397cdeef6c2c7d3c37e7923913c778a9efdfeecb84bc8f25c6ea625",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00021.safetensors",
+      "size": 3933722760,
+      "lfs": {
+        "size": 3933722760,
+        "sha256": "a3257b539618933c2dbaa57d0b133815bd167415fedf06f0ce76f7aebc3b9bd9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00021.safetensors",
+      "size": 3856284704,
+      "lfs": {
+        "size": 3856284704,
+        "sha256": "d32113a8a028c7ee42a5695cd0ca766ef8615f1b7732e4e28f14dd22f061887c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00021.safetensors",
+      "size": 3933653240,
+      "lfs": {
+        "size": 3933653240,
+        "sha256": "f663fddc7364084668196c5fb56c1a635822257e8340b79eed4eb1dd6c4932be",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00021.safetensors",
+      "size": 1726321024,
+      "lfs": {
+        "size": 1726321024,
+        "sha256": "680110343579090179e68f0fc5133fe79cd7589525dee02f6a63dbd52957a700",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00021.safetensors",
+      "size": 2491416704,
+      "lfs": {
+        "size": 2491416704,
+        "sha256": "58d90147fcf5bcc7691d9f1f01993b879f4c70d758272d3ce41f9106e3a5fa05",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 244332,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 594,
+      "lfs": null
+    },
+    {
+      "rfilename": "quantize_config.json",
+      "size": 207,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7030315,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 4297,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: tongyi-qianwen\nlicense_link: https://huggingface.co/Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8/blob/main/LICENSE\nlanguage:\n- en\npipeline_tag: image-text-to-text\ntags:\n- multimodal\nbase_model: Qwen/Qwen2-VL-72B-Instruct\n---\n\n# Qwen2-VL-72B-Instruct-GPTQ-Int8\n\n## Introduction\n\nWe're excited to unveil **Qwen2-VL**, the latest iteration of our Qwen-VL model, representing nearly a year of innovation.\n\n### What\u2019s New in Qwen2-VL?\n\n#### Key Enhancements:\n\n\n* **SoTA understanding of images of various resolution & ratio**: Qwen2-VL achieves state-of-the-art performance on visual understanding benchmarks, including MathVista, DocVQA, RealWorldQA, MTVQA, etc.\n\n* **Understanding videos of 20min+**: Qwen2-VL can understand videos over 20 minutes for high-quality video-based question answering, dialog, content creation, etc.\n\n* **Agent that can operate your mobiles, robots, etc.**: with the abilities of complex reasoning and decision making, Qwen2-VL can be integrated with devices like mobile phones, robots, etc., for automatic operation based on visual environment and text instructions.\n\n* **Multilingual Support**: to serve global users, besides English and Chinese, Qwen2-VL now supports the understanding of texts in different languages inside images, including most European languages, Japanese, Korean, Arabic, Vietnamese, etc.\n\n\n#### Model Architecture Updates:\n\n* **Naive Dynamic Resolution**: Unlike before, Qwen2-VL can handle arbitrary image resolutions, mapping them into a dynamic number of visual tokens, offering a more human-like visual processing experience.\n\n<p align=\"center\">\n    <img src=\"https://qianwen-res.oss-accelerate-overseas.aliyuncs.com/Qwen2-VL/qwen2_vl.jpg\" width=\"80%\"/>\n<p>\n\n* **Multimodal Rotary Position Embedding (M-ROPE)**: Decomposes positional embedding into parts to capture 1D textual, 2D visual, and 3D video positional information, enhancing its multimodal processing capabilities.\n\n<p align=\"center\">\n    <img src=\"http://qianwen-res.oss-accelerate-overseas.aliyuncs.com/Qwen2-VL/mrope.png\" width=\"80%\"/>\n<p>\n\nWe have three models with 2, 8 and 72 billion parameters. This repo contains the quantized instruction-tuned 72B Qwen2-VL model. For more information, visit our [Blog](https://qwenlm.github.io/blog/qwen2-vl/) and [GitHub](https://github.com/QwenLM/Qwen2-VL).\n\n\n\n### Benchmark\n#### Performance of Quantized Models\nThis section reports the generation performance of quantized models (including GPTQ and AWQ) of the Qwen2-VL series. Specifically, we report:\n\n- MMMU_VAL (Accuracy)\n- DocVQA_VAL (Accuracy)\n- MMBench_DEV_EN (Accuracy)\n- MathVista_MINI (Accuracy)\n\nWe use [VLMEvalkit](https://github.com/kq-chen/VLMEvalKit/tree/add_qwen2vl) to evaluate all models.\n\n\n| Model Size | Quantization | MMMU | DocVQA | MMBench | MathVista  |\n| --- | --- | --- | --- | --- | --- |\n| Qwen2-VL-72B-Instruct | BF16<br><sup>([\ud83e\udd17](https://huggingface.co/Qwen/Qwen2-VL-72B-Instruct)[\ud83e\udd16](https://modelscope.cn/models/qwen/Qwen2-VL-72B-Instruct)) | 65.44 | 95.79 | 86.94 | 70.19 |\n|  | GPTQ-Int8<br><sup>([\ud83e\udd17](https://huggingface.co/Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8)[\ud83e\udd16](https://modelscope.cn/models/qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8)) | 64.56 | 95.84 | 87.03 | 68.90 |\n|  | GPTQ-Int4<br><sup>([\ud83e\udd17](https://huggingface.co/Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int4)[\ud83e\udd16](https://modelscope.cn/models/qwen/Qwen2-VL-72B-Instruct-GPTQ-Int4)) | 64.00 | 95.70 | 86.68 | 69.20 |\n|  | AWQ<br><sup>([\ud83e\udd17](https://huggingface.co/Qwen/Qwen2-VL-72B-Instruct-AWQ)[\ud83e\udd16](https://modelscope.cn/models/qwen/Qwen2-VL-72B-Instruct-AWQ)) | 64.22 | 95.72 | 86.43 | 68.40 |\n\n\n\n#### Speed Benchmark\nThis section reports the speed performance of bf16 models, quantized models (including GPTQ-Int4, GPTQ-Int8 and AWQ) of the Qwen2-VL series. Specifically, we report the inference speed (tokens/s) as well as memory footprint (GB) under the conditions of different context lengths.\n\nThe environment of the evaluation with huggingface transformers is:\n\n- NVIDIA A100 80GB\n- CUDA 11.8\n- Pytorch 2.2.1+cu118\n- Flash Attention 2.6.1\n- Transformers 4.38.2\n- AutoGPTQ 0.6.0+cu118\n- AutoAWQ 0.2.5+cu118 (autoawq_kernels 0.0.6+cu118)\n\nNote:\n\n- We use the batch size of 1 and the least number of GPUs as possible for the evalution.\n- We test the speed and memory of generating 2048 tokens with the input lengths of 1, 6144, 14336, 30720, 63488, and 129024 tokens (>32k is only avaliable for Qwen2-72B-Instuct and Qwen2-7B-Instuct).\n\n- Qwen2-VL-72B (transformers)\n\n| Model | Input Length | Quantization | GPU Num | Speed(tokens/s) | GPU Memory(GB) |\n| --- | --- | --- | --- | --- | --- |\n| Qwen2-VL-72B-Instruct | 1 | BF16 | 2 | 8.90 | 138.74 |\n|  |  | GPTQ-Int8 | 2 | 9.53 | 75.173 |\n|  |  | GPTQ-Int4 | 1 | 11.04 | 42.46 |\n|  |  | AWQ | 1 | 12.00 | 41.98 |\n|  | 6144 | BF16 | 2 | 6.53 | 148.66 |\n|  |  | GPTQ-Int8 | 2 | 6.97 | 85.09 |\n|  |  | GPTQ-Int4 | 1 | 7.62 | 49.05 |\n|  |  | AWQ | 1 | 8.33 | 48.58 |\n|  | 14336 | BF16 | 3 | 4.39 | 165.92 |\n|  |  | GPTQ-Int8 | 2 | 5.04 | 99.31 |\n|  |  | GPTQ-Int4 | 1 | 5.39 | 58.76 |\n|  |  | AWQ | 1 | 5.72 | 58.29 |\n|  | 30720 | BF16 | 4 | 2.93 | 204.33 |\n|  |  | GPTQ-Int8 | 2 | 3.16 | 127.77 |\n|  |  | GPTQ-Int4 | 2 | 3.27 | 85.13 |\n|  |  | AWQ | 2 | 3.39 | 94.65 |\n\n\n\n\n\n## Requirements\nThe code of Qwen2-VL has been in the latest Hugging face transformers and we advise you to build from source with command `pip install git+https://github.com/huggingface/transformers`, or you might encounter the following error:\n```\nKeyError: 'qwen2_vl'\n```\n\n## Quickstart\nWe offer a toolkit to help you handle various types of visual input more conveniently. This includes base64, URLs, and interleaved images and videos. You can install it using the following command:\n\n```bash\npip install qwen-vl-utils\n```\n\nHere we show a code snippet to show you how to use the chat model with `transformers` and `qwen_vl_utils`:\n\n```python\nfrom transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor\nfrom qwen_vl_utils import process_vision_info\n\n# default: Load the model on the available device(s)\nmodel = Qwen2VLForConditionalGeneration.from_pretrained(\n    \"Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8\", torch_dtype=\"auto\", device_map=\"auto\"\n)\n\n# We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.\n# model = Qwen2VLForConditionalGeneration.from_pretrained(\n#     \"Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8\",\n#     torch_dtype=torch.bfloat16,\n#     attn_implementation=\"flash_attention_2\",\n#     device_map=\"auto\",\n# )\n\n# default processer\nprocessor = AutoProcessor.from_pretrained(\"Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8\")\n\n# The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.\n# min_pixels = 256*28*28\n# max_pixels = 1280*28*28\n# processor = AutoProcessor.from_pretrained(\"Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8\", min_pixels=min_pixels, max_pixels=max_pixels)\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n\n# Preparation for inference\ntext = processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)\nimage_inputs, video_inputs = process_vision_info(messages)\ninputs = processor(\n    text=[text],\n    images=image_inputs,\n    videos=video_inputs,\n    padding=True,\n    return_tensors=\"pt\",\n)\ninputs = inputs.to(\"cuda\")\n\n# Inference: Generation of the output\ngenerated_ids = model.generate(**inputs, max_new_tokens=128)\ngenerated_ids_trimmed = [\n    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)\n]\noutput_text = processor.batch_decode(\n    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n<details>\n<summary>Without qwen_vl_utils</summary>\n\n```python\nfrom PIL import Image\nimport requests\nimport torch\nfrom torchvision import io\nfrom typing import Dict\nfrom transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor\n\n# Load the model in half-precision on the available device(s)\nmodel = Qwen2VLForConditionalGeneration.from_pretrained(\n    \"Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8\", torch_dtype=\"auto\", device_map=\"auto\"\n)\nprocessor = AutoProcessor.from_pretrained(\"Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8\")\n\n# Image\nurl = \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\nconversation = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n\n\n# Preprocess the inputs\ntext_prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)\n# Excepted output: '<|im_start|>system\\nYou are a helpful assistant.<|im_end|>\\n<|im_start|>user\\n<|vision_start|><|image_pad|><|vision_end|>Describe this image.<|im_end|>\\n<|im_start|>assistant\\n'\n\ninputs = processor(\n    text=[text_prompt], images=[image], padding=True, return_tensors=\"pt\"\n)\ninputs = inputs.to(\"cuda\")\n\n# Inference: Generation of the output\noutput_ids = model.generate(**inputs, max_new_tokens=128)\ngenerated_ids = [\n    output_ids[len(input_ids) :]\n    for input_ids, output_ids in zip(inputs.input_ids, output_ids)\n]\noutput_text = processor.batch_decode(\n    generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True\n)\nprint(output_text)\n```\n</details>\n<details>\n<summary>Multi image inference</summary>\n\n```python\n# Messages containing multiple images and a text query\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\"type\": \"image\", \"image\": \"file:///path/to/image1.jpg\"},\n            {\"type\": \"image\", \"image\": \"file:///path/to/image2.jpg\"},\n            {\"type\": \"text\", \"text\": \"Identify the similarities between these images.\"},\n        ],\n    }\n]\n\n# Preparation for inference\ntext = processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)\nimage_inputs, video_inputs = process_vision_info(messages)\ninputs = processor(\n    text=[text],\n    images=image_inputs,\n    videos=video_inputs,\n    padding=True,\n    return_tensors=\"pt\",\n)\ninputs = inputs.to(\"cuda\")\n\n# Inference\ngenerated_ids = model.generate(**inputs, max_new_tokens=128)\ngenerated_ids_trimmed = [\n    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)\n]\noutput_text = processor.batch_decode(\n    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n</details>\n\n<details>\n<summary>Video inference</summary>\n\n```python\n# Messages containing a images list as a video and a text query\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"video\",\n                \"video\": [\n                    \"file:///path/to/frame1.jpg\",\n                    \"file:///path/to/frame2.jpg\",\n                    \"file:///path/to/frame3.jpg\",\n                    \"file:///path/to/frame4.jpg\",\n                ],\n                \"fps\": 1.0,\n            },\n            {\"type\": \"text\", \"text\": \"Describe this video.\"},\n        ],\n    }\n]\n# Messages containing a video and a text query\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"video\",\n                \"video\": \"file:///path/to/video1.mp4\",\n                \"max_pixels\": 360 * 420,\n                \"fps\": 1.0,\n            },\n            {\"type\": \"text\", \"text\": \"Describe this video.\"},\n        ],\n    }\n]\n\n# Preparation for inference\ntext = processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)\nimage_inputs, video_inputs = process_vision_info(messages)\ninputs = processor(\n    text=[text],\n    images=image_inputs,\n    videos=video_inputs,\n    padding=True,\n    return_tensors=\"pt\",\n)\ninputs = inputs.to(\"cuda\")\n\n# Inference\ngenerated_ids = model.generate(**inputs, max_new_tokens=128)\ngenerated_ids_trimmed = [\n    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)\n]\noutput_text = processor.batch_decode(\n    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n</details>\n\n<details>\n<summary>Batch inference</summary>\n\n```python\n# Sample messages for batch inference\nmessages1 = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\"type\": \"image\", \"image\": \"file:///path/to/image1.jpg\"},\n            {\"type\": \"image\", \"image\": \"file:///path/to/image2.jpg\"},\n            {\"type\": \"text\", \"text\": \"What are the common elements in these pictures?\"},\n        ],\n    }\n]\nmessages2 = [\n    {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\n    {\"role\": \"user\", \"content\": \"Who are you?\"},\n]\n# Combine messages for batch processing\nmessages = [messages1, messages1]\n\n# Preparation for batch inference\ntexts = [\n    processor.apply_chat_template(msg, tokenize=False, add_generation_prompt=True)\n    for msg in messages\n]\nimage_inputs, video_inputs = process_vision_info(messages)\ninputs = processor(\n    text=texts,\n    images=image_inputs,\n    videos=video_inputs,\n    padding=True,\n    return_tensors=\"pt\",\n)\ninputs = inputs.to(\"cuda\")\n\n# Batch Inference\ngenerated_ids = model.generate(**inputs, max_new_tokens=128)\ngenerated_ids_trimmed = [\n    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)\n]\noutput_texts = processor.batch_decode(\n    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_texts)\n```\n</details>\n\n### More Usage Tips\n\nFor input images, we support local files, base64, and URLs. For videos, we currently only support local files.\n\n```python\n# You can directly insert a local file path, a URL, or a base64-encoded image into the position where you want in the text.\n## Local file path\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\"type\": \"image\", \"image\": \"file:///path/to/your/image.jpg\"},\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n## Image URL\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\"type\": \"image\", \"image\": \"http://path/to/your/image.jpg\"},\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n## Base64 encoded image\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\"type\": \"image\", \"image\": \"data:image;base64,/9j/...\"},\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n```\n#### Image Resolution for performance boost\n\nThe model supports a wide range of resolution inputs. By default, it uses the native resolution for input, but higher resolutions can enhance performance at the cost of more computation. Users can set the minimum and maximum number of pixels to achieve an optimal configuration for their needs, such as a token count range of 256-1280, to balance speed and memory usage.\n\n```python\nmin_pixels = 256 * 28 * 28\nmax_pixels = 1280 * 28 * 28\nprocessor = AutoProcessor.from_pretrained(\n    \"Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8\", min_pixels=min_pixels, max_pixels=max_pixels\n)\n```\n\nBesides, We provide two methods for fine-grained control over the image size input to the model:\n\n1. Define min_pixels and max_pixels: Images will be resized to maintain their aspect ratio within the range of min_pixels and max_pixels.\n   \n2. Specify exact dimensions: Directly set `resized_height` and `resized_width`. These values will be rounded to the nearest multiple of 28.\n\n```python\n# min_pixels and max_pixels\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"file:///path/to/your/image.jpg\",\n                \"resized_height\": 280,\n                \"resized_width\": 420,\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n# resized_height and resized_width\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"file:///path/to/your/image.jpg\",\n                \"min_pixels\": 50176,\n                \"max_pixels\": 50176,\n            },\n            {\"type\": \"text\", \"text\": \"Describe this image.\"},\n        ],\n    }\n]\n```\n\n## Limitations\n\nWhile Qwen2-VL are applicable to a wide range of visual tasks, it is equally important to understand its limitations. Here are some known restrictions:\n\n1. Lack of Audio Support: The current model does **not comprehend audio information** within videos.\n2. Data timeliness: Our image dataset is **updated until June 2023**, and information subsequent to this date may not be covered.\n3. Constraints in Individuals and Intellectual Property (IP): The model's capacity to recognize specific individuals or IPs is limited, potentially failing to comprehensively cover all well-known personalities or brands.\n4. Limited Capacity for Complex Instruction: When faced with intricate multi-step instructions, the model's understanding and execution capabilities require enhancement.\n5. Insufficient Counting Accuracy: Particularly in complex scenes, the accuracy of object counting is not high, necessitating further improvements.\n6. Weak Spatial Reasoning Skills: Especially in 3D spaces, the model's inference of object positional relationships is inadequate, making it difficult to precisely judge the relative positions of objects.\n\nThese limitations serve as ongoing directions for model optimization and improvement, and we are committed to continually enhancing the model's performance and scope of application.\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{Qwen2-VL,\n  title={Qwen2-VL},\n  author={Qwen team},\n  year={2024}\n}\n\n@article{Qwen-VL,\n  title={Qwen-VL: A Versatile Vision-Language Model for Understanding, Localization, Text Reading, and Beyond},\n  author={Bai, Jinze and Bai, Shuai and Yang, Shusheng and Wang, Shijie and Tan, Sinan and Wang, Peng and Lin, Junyang and Zhou, Chang and Zhou, Jingren},\n  journal={arXiv preprint arXiv:2308.12966},\n  year={2023}\n}\n```",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "tongyi-qianwen",
+    "license_link": "https://huggingface.co/Qwen/Qwen2-VL-72B-Instruct-GPTQ-Int8/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "multimodal"
+    ],
+    "base_model": "Qwen/Qwen2-VL-72B-Instruct",
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": null
+}

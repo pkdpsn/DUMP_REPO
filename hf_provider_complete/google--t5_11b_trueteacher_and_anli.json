@@ -1,0 +1,183 @@
+{
+  "modelId": "google/t5_11b_trueteacher_and_anli",
+  "author": "google",
+  "sha": "ffbbef2471b16d16160ef6c25abeebf3667cee58",
+  "lastModified": "2023-12-26 10:15:09+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "t5",
+    "text2text-generation",
+    "natural-language-inference",
+    "news-articles-summarization",
+    "en",
+    "dataset:google/trueteacher",
+    "dataset:anli",
+    "dataset:cnn_dailymail",
+    "arxiv:2305.11171",
+    "arxiv:2210.11416",
+    "arxiv:2204.04991",
+    "license:cc-by-nc-4.0",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 16,
+  "downloads": 257,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "google/trueteacher",
+      "anli",
+      "cnn_dailymail"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "cc-by-nc-4.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "natural-language-inference",
+      "news-articles-summarization"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "T5ForConditionalGeneration"
+    ],
+    "model_type": "t5",
+    "tokenizer_config": {
+      "eos_token": "</s>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4972,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1580,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model-00001-of-00005.bin",
+      "size": 9862528612,
+      "lfs": {
+        "size": 9862528612,
+        "sha256": "116cf8518e7ca3fdfdbd7ab5cf81c8faa974bfe6de144d8feedb0bdf3ae55297",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00002-of-00005.bin",
+      "size": 9996755851,
+      "lfs": {
+        "size": 9996755851,
+        "sha256": "9f3675a90200682bc5eccb07507c4ddbc6edbce2ca8fccc7b855fb018fbc7327",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00003-of-00005.bin",
+      "size": 9932266453,
+      "lfs": {
+        "size": 9932266453,
+        "sha256": "880b15283a557caf3c62dcec342fde619010f4dd38dd83d23a842e8462bc569c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00004-of-00005.bin",
+      "size": 9932261297,
+      "lfs": {
+        "size": 9932261297,
+        "sha256": "6c4aca98fb5f5a8c5d60eb61c1a36de9fd4a9e3729de177b714fb23758f3782b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00005-of-00005.bin",
+      "size": 5768832538,
+      "lfs": {
+        "size": 5768832538,
+        "sha256": "87a96c63aeae136d10707c70ca1e55c46f7fc8311390f4e632fbc3d4ad0595eb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin.index.json",
+      "size": 46145,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 2201,
+      "lfs": null
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 791656,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 2422095,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 2619,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: cc-by-nc-4.0\nlanguage:\n- en\ndatasets:\n- google/trueteacher\n- anli\n- cnn_dailymail\ntags:\n- natural-language-inference\n- news-articles-summarization\n---\n\n# **TrueTeacher**\n\nThis is a **Factual Consistency Evaluation** model, introduced in the [TrueTeacher paper (Gekhman et al, 2023)](https://aclanthology.org/2023.emnlp-main.127.pdf).\n\n## Model Details\n\nThe model is optimized for evaluating factual consistency in **summarization**.\n\nIt is the main model from the paper (see \"T5-11B w. ANLI + TrueTeacher full\" in Table 1) which is based on a **T5-11B** [(Raffel\net al., 2020)](https://jmlr.org/papers/volume21/20-074/20-074.pdf) fine-tuned with a mixture of the following datasets:\n- [TrueTeacher](https://huggingface.co/datasets/google/trueteacher) ([Gekhman et al., 2023](https://arxiv.org/pdf/2305.11171.pdf))\n- [ANLI](https://huggingface.co/datasets/anli) ([Nie et al., 2020](https://aclanthology.org/2020.acl-main.441.pdf))\n\nThe TrueTeacher dataset contains model-generated summaries of articles from the train split of the **CNN/DailyMail** dataset [(Hermann et al., 2015)](https://proceedings.neurips.cc/paper_files/paper/2015/file/afdec7005cc9f14302cd0474fd0f3c96-Paper.pdf) \nwhich are annotated for factual consistency using **FLAN-PaLM 540B** [(Chung et al.,2022)](https://arxiv.org/pdf/2210.11416.pdf). \nSummaries were generated using summarization models which were trained on the **XSum** dataset [(Narayan et  al.,  2018)](https://aclanthology.org/D18-1206.pdf).\n\nThe input format for the model is: \"premise: GROUNDING_DOCUMENT hypothesis: HYPOTHESIS_SUMMARY\".\nTo accomodate the input length of common summarization datasets we recommend setting **max_length** to **2048**.\n\nThe model predicts a binary label ('1' - Factualy Consistent, '0' - Factualy Inconsistent).\n\n## Evaluation results\n\nThis model achieves the following ROC AUC results on the summarization subset of the [TRUE benchmark (Honovich et al, 2022)](https://arxiv.org/pdf/2204.04991.pdf):\n\n| **MNBM** | **QAGS-X** | **FRANK** | **SummEval** | **QAGS-C** | **Average** |\n|----------|-----------|-----------|--------------|-----------|-------------|\n| 78.1     | 89.4      | 93.6      | 88.5         | 89.4      | 87.8        |\n\n\n## Intended Use\n\nThis model is intended for a research use (**non-commercial**) in English.\n\nThe recommended use case is evaluating factual consistency in summarization.\n\n## Out-of-scope use \nAny use cases which violate the **cc-by-nc-4.0** license.\n\nUsage in languages other than English. \n\n## Usage examples\n\n#### classification\n```python\nfrom transformers import T5ForConditionalGeneration\nfrom transformers import T5Tokenizer\n\nmodel_path = 'google/t5_11b_trueteacher_and_anli'\ntokenizer = T5Tokenizer.from_pretrained(model_path)\nmodel = T5ForConditionalGeneration.from_pretrained(model_path)\n\npremise = 'the sun is shining'\nfor hypothesis, expected in [('the sun is out in the sky', '1'), \n                             ('the cat is shiny', '0')]:\n  input_ids = tokenizer(\n      f'premise: {premise} hypothesis: {hypothesis}',\n      return_tensors='pt',\n      truncation=True,\n      max_length=2048).input_ids\n  outputs = model.generate(input_ids)\n  result = tokenizer.decode(outputs[0], skip_special_tokens=True)\n  print(f'premise: {premise}')\n  print(f'hypothesis: {hypothesis}')\n  print(f'result: {result} (expected: {expected})\\n')\n```\n\n#### scoring\n```python\nfrom transformers import T5ForConditionalGeneration\nfrom transformers import T5Tokenizer\nimport torch\n\nmodel_path = 'google/t5_11b_trueteacher_and_anli'\ntokenizer = T5Tokenizer.from_pretrained(model_path)\nmodel = T5ForConditionalGeneration.from_pretrained(model_path)\n\npremise = 'the sun is shining'\nfor hypothesis, expected in [('the sun is out in the sky', '>> 0.5'), \n                             ('the cat is shiny', '<< 0.5')]:\n  input_ids = tokenizer(\n      f'premise: {premise} hypothesis: {hypothesis}',\n      return_tensors='pt',\n      truncation=True,\n      max_length=2048).input_ids\n  decoder_input_ids = torch.tensor([[tokenizer.pad_token_id]])\n  outputs = model(input_ids=input_ids, decoder_input_ids=decoder_input_ids)\n  logits = outputs.logits\n  probs = torch.softmax(logits[0], dim=-1)\n  one_token_id = tokenizer('1').input_ids[0]\n  entailment_prob = probs[0, one_token_id].item()\n  print(f'premise: {premise}')\n  print(f'hypothesis: {hypothesis}')\n  print(f'score: {entailment_prob:.3f} (expected: {expected})\\n')\n```\n\n## Citation\n\nIf you use this model for a research publication, please cite the TrueTeacher paper (using the bibtex entry below), as well as the ANLI, CNN/DailyMail, XSum, T5 and FLAN papers mentioned above.\n\n```\n@misc{gekhman2023trueteacher,\n      title={TrueTeacher: Learning Factual Consistency Evaluation with Large Language Models}, \n      author={Zorik Gekhman and Jonathan Herzig and Roee Aharoni and Chen Elkind and Idan Szpektor},\n      year={2023},\n      eprint={2305.11171},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL}\n}\n```",
+  "cardDataParsed": {
+    "license": "cc-by-nc-4.0",
+    "language": [
+      "en"
+    ],
+    "datasets": [
+      "google/trueteacher",
+      "anli",
+      "cnn_dailymail"
+    ],
+    "tags": [
+      "natural-language-inference",
+      "news-articles-summarization"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

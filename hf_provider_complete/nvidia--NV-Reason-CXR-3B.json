@@ -1,0 +1,193 @@
+{
+  "modelId": "nvidia/NV-Reason-CXR-3B",
+  "author": "nvidia",
+  "sha": "056bd0383b35226554da9dc5866e095df174ae19",
+  "lastModified": "2025-10-27 03:22:52+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_5_vl",
+    "image-text-to-text",
+    "nvidia",
+    "cxr",
+    "x-ray",
+    "conversational",
+    "en",
+    "base_model:Qwen/Qwen2.5-VL-3B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-VL-3B-Instruct",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 32,
+  "downloads": 830,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-VL-3B-Instruct"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nsclv1",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "nvidia",
+      "cxr",
+      "x-ray"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2_5_VLForConditionalGeneration"
+    ],
+    "model_type": "qwen2_5_vl",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 4345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7249,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1017,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3394,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 188,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4997750760,
+      "lfs": {
+        "size": 4997750760,
+        "sha256": "4d7c2918d730a8732c07f2808a3122f01de8fd43e3c16507cb8538b9e02eac61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 3133917248,
+      "lfs": {
+        "size": 3133917248,
+        "sha256": "9559a3c324420ed677e9493d0ea33e14cec8e045203c2d54d7e3c7f50052d657",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 65542,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 789,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422063,
+      "lfs": {
+        "size": 11422063,
+        "sha256": "5eee858c5123a4279c3e1f7b81247343f356ac767940b2692a928ad929543214",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 4902,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 933,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: nsclv1\nlicense_link: LICENSE\nlanguage:\n- en\nbase_model:\n- Qwen/Qwen2.5-VL-3B-Instruct\npipeline_tag: image-text-to-text\nlibrary_name: transformers\ntags:\n- nvidia\n- cxr\n- x-ray\n---\n\n\n# NV-Reason-CXR-3B Overview\n\n## Description:\nNV-Reason-CXR-3B is a specialized vision-language model designed for medical reasoning and interpretation of chest X-ray images, with detailed explanations. The model combines visual understanding with medical reasoning capabilities, enabling healthcare professionals to access comprehensive analyses and engage in follow-up discussions about radiological findings. NV-Reason-CXR-3B provides step-by-step reasoning that mirrors clinical thinking patterns, making it valuable for educational and research applications in medical imaging.\n\nThis model is for research and development only.\n\n\ud83d\udcbb [\\[Github code\\]](https://github.com/NVIDIA-Medtech/NV-Reason-CXR)   \n\ud83e\ude7b [\\[Web Demo\\]](https://huggingface.co/spaces/nvidia/nv-reason-cxr)\n\n## Quick start\n\n```python\nimport torch\nfrom transformers import AutoModelForImageTextToText, AutoProcessor\nfrom PIL import Image\n\n\n# Load the model \nmodel_name = \"nvidia/NV-Reason-CXR-3B\"\nmodel = AutoModelForImageTextToText.from_pretrained(\n    model_name,\n    torch_dtype=torch.float16,\n).eval().to(\"cuda\")\n\nprocessor = AutoProcessor.from_pretrained(model_name)\n\n# Load chest x-ray image\nimage = Image.open(\"chest_xray.png\")\n\n# Prepare input with clinical context\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": image,\n            },\n            {\n                \"type\": \"text\",\n                \"text\": \"Find abnormalities and support devices.\"\n            }\n        ]\n    }\n]\n\n\n# Create prompt using chat template\ntext = processor.apply_chat_template(messages, add_generation_prompt=True)\n\n# Process inputs\ninputs = processor(text=text, images=[image], return_tensors=\"pt\")\ninputs = inputs.to(model.device)\n\n# Generate \ngenerated_ids = model.generate(**inputs,  max_new_tokens=2048)\n\n# Trim and decode\ntrimmed_generated_ids = [\n    out_ids[len(in_ids):]\n    for in_ids, out_ids in zip(inputs.input_ids, generated_ids)\n]\ngenerated_text = processor.batch_decode(\n    trimmed_generated_ids,\n    skip_special_tokens=True,\n    clean_up_tokenization_spaces=False\n)[0]\n\n\nprint(\"Output:\")\nprint(generated_text)\n\n```\n\n### Framework versions\n\n- Transformers: 4.56.1\n- Pytorch: 2.7.1\n- Tokenizers: 0.22.0\n\n### License/Terms of Use:\nNVIDIA OneWay Non-Commercial License for academic research purposes\n\n### Deployment Geography:\nGlobal\n\n### Use Case:\nRadiologists, medical students, and medical researchers would be expected to use this system for chest X-ray interpretation with detailed reasoning, educational training with AI-generated explanations, and research applications requiring explainable medical AI analyses.\n\n**Important Medical AI Considerations:**\nThis model is designed for research and educational purposes only and should not be used for clinical diagnosis or treatment decisions. All outputs should be reviewed by qualified medical professionals. The model's reasoning capabilities are intended to support medical education and research, not replace clinical judgment.\n\n### Release Date:\nHuggingface: 10/27/2025 via https://huggingface.co/NVIDIA\n\n## Model Architecture:\n- **Architecture Type:** Transformer\n- **Network Architecture:** Vision-Language Model based on Qwen2.5-VL architecture with medical reasoning capabilities\n\nThis model was developed by fine-tuning Qwen2.5-VL-3B using Supervised Fine-Tuning (SFT) and Group Relative Policy Optimization (GRPO) for enhanced medical reasoning.\n**Number of model parameters:** 3B\n\n\n## Input:\n- **Input Type(s):** Image, Text\n- **Input Format(s):** Medical images (JPEG, PNG), Text prompts (string)\n- **Input Parameters:** Two-Dimensional (2D) images with accompanying text queries (1D)\n- **Other Properties Related to Input:** Supports frontal chest X-ray images with flexible scaling. Accepts natural language prompts for medical queries, follow-up questions, and reasoning requests. Input images are automatically processed without specific size constraints.\n\n### Input Specifications:\n- **Medical Images:** Chest X-ray images in standard medical imaging formats\n- **Text Prompts:** Natural language queries about radiological findings, diagnostic questions, or requests for detailed explanations\n- **Interactive Dialogue:** Support for follow-up questions and clarification requests\n\n## Output:\n- **Output Type(s):** Text\n- **Output Format:** Structured reasoning with XML-like tags\n- **Output Parameters:** One-Dimensional (1D) Natural language reasoning and analysis\n- **Other Properties Related to Output:** Outputs contain structured thinking processes enclosed in `<thinking>` tags showing step-by-step medical reasoning, followed by concise answers in `<answer>` tags. This format enables transparency in the model's diagnostic reasoning process and supports educational use cases.\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA's hardware (GPU cores) and software frameworks (CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n## Software Integration:\n**Runtime Engine(s):**\n* PyTorch\n* Transformers library\n\n**Supported Hardware Microarchitecture Compatibility:**\n* NVIDIA Ampere \n* NVIDIA Hopper \n* NVIDIA Lovelace \n\n**Supported Operating System(s):**\n* Linux\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Model Version(s):\n0.1 - Initial release version for chest X-ray reasoning and interpretation with structured thinking output\n\n## Training, Testing, and Evaluation Datasets:\n\n### Dataset Overview:\nLarge-scale chest X-ray datasets including MIMIC-CXR, ChestXRay14, and CheXpert.\n\n## Training Dataset:\n**Data Modality:**\n* Image\n* Text\n\n## Inference:\n**Acceleration Engine:** PyTorch, Transformers\n**Test Hardware:**\n* A100 \n* H100\n* L40S\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. Please make sure you have proper rights and permissions for all input image and video content; if image or video includes people, personal health information, or intellectual property, the image or video generated will not blur or maintain proportions of image subjects included.\n\nPlease report model quality, risk, security vulnerabilities or concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "nsclv1",
+    "license_link": "LICENSE",
+    "language": [
+      "en"
+    ],
+    "base_model": [
+      "Qwen/Qwen2.5-VL-3B-Instruct"
+    ],
+    "pipeline_tag": "image-text-to-text",
+    "library_name": "transformers",
+    "tags": [
+      "nvidia",
+      "cxr",
+      "x-ray"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

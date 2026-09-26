@@ -1,0 +1,402 @@
+{
+  "modelId": "nvidia/Llama-3_3-Nemotron-Super-49B-v1",
+  "author": "nvidia",
+  "sha": "387156d8d6868c19f3472fa607aa9bfc4f662333",
+  "lastModified": "2025-10-15 16:20:57+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron-nas",
+    "text-generation",
+    "nvidia",
+    "llama-3",
+    "pytorch",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2411.19146",
+    "arxiv:2505.00949",
+    "arxiv:2502.00203",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 329,
+  "downloads": 40705,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "DeciLMForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_decilm.DeciLMConfig",
+      "AutoModelForCausalLM": "modeling_decilm.DeciLMForCausalLM"
+    },
+    "model_type": "nemotron-nas",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}{%- if messages[0]['role'] == 'system' %}{%- set system_message = messages[0]['content']|trim %}{%- set messages = messages[1:] %}{%- else %}{%- set system_message = \"\" %}{%- endif %}{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}{{- system_message }}{{- \"<|eot_id|>\" }}{%- for message in messages %}{%- if message['role'] == 'assistant' and '</think>' in message['content'] %}{%- set content = message['content'].split('</think>')[-1].lstrip() %}{%- else %}{%- set content = message['content'] %}{%- endif %}{{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n' + content | trim + '<|eot_id|>' }}{%- endfor %}{%- if add_generation_prompt %}{{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}{%- endif %}",
+      "eos_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1615,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 17710,
+      "lfs": null
+    },
+    {
+      "rfilename": "accuracy_plot.png",
+      "size": 65316,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 276,
+      "lfs": null
+    },
+    {
+      "rfilename": "block_config.py",
+      "size": 4347,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 37070,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_decilm.py",
+      "size": 2573,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 2951,
+      "lfs": null
+    },
+    {
+      "rfilename": "flow.png",
+      "size": 254791,
+      "lfs": {
+        "size": 254791,
+        "sha256": "a6d9325407851dabdab25700b536e94bb22b15635995d4525cd238285c266598",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 176,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00021.safetensors",
+      "size": 4987112064,
+      "lfs": {
+        "size": 4987112064,
+        "sha256": "5c783cb78f9b73fbc08c58fcdd9cdbaab3cc18b17affd87ccfbcfd5a2189b666",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00021.safetensors",
+      "size": 4966157048,
+      "lfs": {
+        "size": 4966157048,
+        "sha256": "143911f6fce7cd8cc408e8aaf921ae1ad04347dd8f2f2a04e093c1df5a667467",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00021.safetensors",
+      "size": 4999712064,
+      "lfs": {
+        "size": 4999712064,
+        "sha256": "b6ef7c455e68110552172b88d7bf0e43e71349a3f01c9ec33bc5d930113e2747",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00021.safetensors",
+      "size": 4907436920,
+      "lfs": {
+        "size": 4907436920,
+        "sha256": "d638446a5873772604c03629e0d9d1d711373d93a39213931701335d80bd5671",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00021.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "0f08de9d7aa97857017fe206d09945a8fec200f3b9de261dbe6796c9ed7d0f33",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00021.safetensors",
+      "size": 4999695232,
+      "lfs": {
+        "size": 4999695232,
+        "sha256": "7f663499b22c16867fb889860a61e042f0ebf3b8357f782a2a7b4d79d63ce968",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00021.safetensors",
+      "size": 4966157072,
+      "lfs": {
+        "size": 4966157072,
+        "sha256": "4201ccb2ccd023139d597db81aac7d722b9cefefbbdd3562beac80855e26c3fb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00021.safetensors",
+      "size": 4664150920,
+      "lfs": {
+        "size": 4664150920,
+        "sha256": "4ed8f95f5e6700a13c03ed041ea60757e88f4aa2eec0017e2d95a36681153c91",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00021.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "2f343ef42b5b014e063e1ba8edd825401a16bef45a8170f053dfb5f8109009e1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00021.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "8a734e91c0f7e32fc178f7279c625cfed322b4db284c308200d62f417b58a823",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00021.safetensors",
+      "size": 4999695232,
+      "lfs": {
+        "size": 4999695232,
+        "sha256": "4d86d69f314697e3fdd3ec642f55ec1967fac1d338161bc51deaef975ab7d40f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00021.safetensors",
+      "size": 4966157072,
+      "lfs": {
+        "size": 4966157072,
+        "sha256": "325bed8f23a5e5049263ad557f140bee0af9062543ff42e7578c381402c3379f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00021.safetensors",
+      "size": 4664150920,
+      "lfs": {
+        "size": 4664150920,
+        "sha256": "669830c7f7520244fdbadf3a0cc363f733fe05fd996ccbc2a1725359afc81a02",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00021.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "854985b5c7703bf468e389c83bf59287587c239224c1ef8d785b6937408a5030",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00021.safetensors",
+      "size": 4764847328,
+      "lfs": {
+        "size": 4764847328,
+        "sha256": "ca12a0f7457f6c7e2f751a9179ca0a839dd564cd48a9350ff499dfa0815152a6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00021.safetensors",
+      "size": 4764847664,
+      "lfs": {
+        "size": 4764847664,
+        "sha256": "7743450f190f588700ab60d77392bc1b7a3791542f181b8680d3fdf082987da7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00021.safetensors",
+      "size": 4924432792,
+      "lfs": {
+        "size": 4924432792,
+        "sha256": "d05c90d8fbf8635139018b7f272d9f552c4617a0d1d65bcb3b1b0af3501d64e0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00021.safetensors",
+      "size": 4664150920,
+      "lfs": {
+        "size": 4664150920,
+        "sha256": "77430254bcd97f064105260fd826faec547976e8c24582f64c29c2b778a5e0d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00021.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "1da1833a6bee3e5239a878aff41dd0892d2ba353f2d0178c5a342b1d5657b5ba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00021.safetensors",
+      "size": 4664167416,
+      "lfs": {
+        "size": 4664167416,
+        "sha256": "0654718f1a0e04010298cd01be24357b009f418d6767519c6a899e452ae69fe9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00021.safetensors",
+      "size": 3510649400,
+      "lfs": {
+        "size": 3510649400,
+        "sha256": "7fb3509b81a348aee61ea67998e9ced46f2a7b8255ad17157f716d79d319dc5e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 46790,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_decilm.py",
+      "size": 78580,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 583,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 940,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 296,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17209920,
+      "lfs": {
+        "size": 17209920,
+        "sha256": "6b9e4e7fb171f92fd137b777cc2714bf87d11576700a1dcd7a399e7bbe39537b",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 51311,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__activations.py",
+      "size": 8189,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__cache_utils.py",
+      "size": 64589,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__configuration_llama.py",
+      "size": 11066,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_attn_mask_utils.py",
+      "size": 21330,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_flash_attention_utils_backward_compat.py",
+      "size": 15751,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_outputs.py",
+      "size": 112579,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_rope_utils.py",
+      "size": 28067,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__pytorch_utils.py",
+      "size": 666,
+      "lfs": null
+    },
+    {
+      "rfilename": "variable_cache.py",
+      "size": 6206,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_decilm.DeciLMForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

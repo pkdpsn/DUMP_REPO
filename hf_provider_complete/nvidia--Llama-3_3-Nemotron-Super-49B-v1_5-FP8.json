@@ -1,0 +1,297 @@
+{
+  "modelId": "nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-FP8",
+  "author": "nvidia",
+  "sha": "04822723e77e036ddf2d24e83c6d469d3b009252",
+  "lastModified": "2025-10-15 16:21:30+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron-nas",
+    "text-generation",
+    "nvidia",
+    "llama-3",
+    "pytorch",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2411.19146",
+    "arxiv:2505.00949",
+    "arxiv:2502.00203",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 28,
+  "downloads": 132855,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "DeciLMForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_decilm.DeciLMConfig",
+      "AutoModelForCausalLM": "modeling_decilm.DeciLMForCausalLM"
+    },
+    "model_type": "nemotron-nas",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{% set bos = \"<|begin_of_text|>\" %}{%- set enable_thinking = true -%}{% set system_start_header = \"<|start_header_id|>\" %}{% set system_end_header = \"<|end_header_id|>\n\n\" %}{% set start_header = \"<|start_header_id|>\" %}{% set end_header = \"<|end_header_id|>\n\n\" %}{% set eot = \"<|eot_id|>\" %}{% set system_token = \"system\" %}{% set user_token = \"user\" %}{% set assistant_token = \"assistant\" %}{% set tool_token = \"tool\" %}{{- bos ~ system_start_header ~ system_token ~ system_end_header -}}{%- if messages[0].role == 'system' and messages[0].content != '' -%}{%- set system_content = messages[0].content -%}{%- if '/no_think' in system_content -%}{%- set system_content = system_content.replace('/no_think', '')|trim -%}{%- set enable_thinking = false -%}{%- elif '/think' in system_content -%}{%- set system_content = system_content.replace('/think', '')|trim -%}{%- set enable_thinking = true -%}{%- endif -%}{{- system_content + '\n\n' -}}{%- endif -%}{%- if tools -%}{{- 'You can use the following tools to assist the user if required:\n<AVAILABLE_TOOLS>[' -}}{%- for tool in tools -%}{{- (tool.function if tool.function is defined else tool) | tojson -}}{{- ', ' if not loop.last else '' -}}{%- endfor -%}{{- ']</AVAILABLE_TOOLS>\n\nIf you decide to call any tool(s), use the following format:\n<TOOLCALL>[{{\"name\": \"tool_name1\", \"arguments\": \"tool_args1\"}}, {{\"name\": \"tool_name2\", \"arguments\": \"tool_args2\"}}]</TOOLCALL>\n\nResponse from tool(s) will be returned in this format:\n<TOOL_RESPONSE>[{{\"response\": \"tool_response1\"}}, {{\"response\": \"tool_response2\"}}]</TOOL_RESPONSE>\n\nBased on the results returned by the tool(s), you can call additional tools if needed, correct tool calls if any errors are found, or just respond with the answer to the user.' -}}{%- endif -%}{{- eot -}}{%- for message in messages -%}{%- if message.role == user_token -%}{{- start_header ~ user_token ~ end_header -}}{{ message.content -}}{{ eot -}}{%- elif message.role == assistant_token -%}{%- if '</think>' in message.content -%}{%- set content = message.content.split('</think>')[-1].lstrip() -%}{%- else -%}{%- set content = message.content -%}{%- endif -%}{{- start_header ~ assistant_token ~ end_header -}}{{ content -}}{%- if message.tool_calls -%}{{- '<TOOLCALL>[' -}}{%- for call in message.tool_calls -%}{%- set fn = call.function if call.function is defined else call -%}{{- '{\"name\": \"' + fn.name + '\", \"arguments\": ' -}}{%- if fn.arguments is string -%}{{- fn.arguments -}}{%- else -%}{{- fn.arguments | tojson -}}{%- endif -%}{{- '}' + (', ' if not loop.last else '') -}}{%- endfor -%}{{- ']</TOOLCALL>' -}}{%- endif -%}{{- eot -}}{%- elif message.role == tool_token -%}{%- if loop.first or (messages[loop.index0 - 1].role != tool_token) -%}{{- start_header ~ tool_token ~ end_header -}}{{ '<TOOL_RESPONSE>[' -}}{%- endif -%}{{- message.content -}}{{- ', ' if not loop.last and (messages[loop.index0 + 1].role == tool_token) else '' -}}{%- if loop.last or (messages[loop.index0 + 1].role != tool_token) -%}{{- ']</TOOL_RESPONSE>' -}}{{ eot -}}{%- endif -%}{%- endif -%}{%- endfor -%}{%- if add_generation_prompt -%}{{- start_header ~ assistant_token ~ end_header -}}{%- if not enable_thinking -%}{{- '<think>\n\n</think>\n\n' -}}{%- endif -%}{%- endif -%}",
+      "eos_token": "<|eot_id|>",
+      "pad_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1625,
+      "lfs": null
+    },
+    {
+      "rfilename": "BIAS.md",
+      "size": 208,
+      "lfs": null
+    },
+    {
+      "rfilename": "EXPLAINABILITY.md",
+      "size": 3005,
+      "lfs": null
+    },
+    {
+      "rfilename": "PRIVACY.md",
+      "size": 514,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 17713,
+      "lfs": null
+    },
+    {
+      "rfilename": "SAFETY&SECURITY.md",
+      "size": 920,
+      "lfs": null
+    },
+    {
+      "rfilename": "accuracy_chart.png",
+      "size": 182877,
+      "lfs": {
+        "size": 182877,
+        "sha256": "8e143b9ca5694d56de76de5ccab81c255dc93c6e7ffc3ad1e51f6ceaeca84b46",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "block_config.py",
+      "size": 4347,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 37076,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_decilm.py",
+      "size": 2573,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 176,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 266,
+      "lfs": null
+    },
+    {
+      "rfilename": "llama_nemotron_toolcall_parser_no_streaming.py",
+      "size": 21381,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00011.safetensors",
+      "size": 4936837336,
+      "lfs": {
+        "size": 4936837336,
+        "sha256": "ffe25ea458e224161f4a9bd8e001f959f742c6296048d18b6c9df1a286879ab6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00011.safetensors",
+      "size": 4983045136,
+      "lfs": {
+        "size": 4983045136,
+        "sha256": "c610f0fc06a29fd88d8330417f44342d3f6f9b20a215cbbf9126baff07b31fb5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00011.safetensors",
+      "size": 4953684488,
+      "lfs": {
+        "size": 4953684488,
+        "sha256": "d906e4f9bbca215cc501acf15e32ddaffca30fe16a0d30b406f19c88b31f0f68",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00011.safetensors",
+      "size": 4899142912,
+      "lfs": {
+        "size": 4899142912,
+        "sha256": "869ca1df98819efc1d945b86a517f5512ed27d299379798f31b6a5107fc9b566",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00011.safetensors",
+      "size": 4899159416,
+      "lfs": {
+        "size": 4899159416,
+        "sha256": "d50c18b15da1148fb72854d8f2d66d31dc000c9fa54cbb8c7bb3cc438fc0989e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00011.safetensors",
+      "size": 4899159408,
+      "lfs": {
+        "size": 4899159408,
+        "sha256": "cf9db356f800685fb49313a75313cd0e1b3324014d0d744f1f7992babedfc7ca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00011.safetensors",
+      "size": 4983027800,
+      "lfs": {
+        "size": 4983027800,
+        "sha256": "5891e6f5c5a4fd706dda472543b29ee201e98d4b6f0ccf0ed4a358a783cf8524",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00011.safetensors",
+      "size": 4915987960,
+      "lfs": {
+        "size": 4915987960,
+        "sha256": "2c811b6fbf8b571c368282786463f35db7b2883c5988949d8c159b26b06f1c86",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00011.safetensors",
+      "size": 4794509832,
+      "lfs": {
+        "size": 4794509832,
+        "sha256": "1381bccbac295a85636a356212a0707161daaba8b5ee8685c08d2503734dfe96",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00011.safetensors",
+      "size": 4899159408,
+      "lfs": {
+        "size": 4899159408,
+        "sha256": "17ebb09fa889d962b46ea0ffa3d8855fcc870cde81e35ea9a9d4aac24773541a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00011.safetensors",
+      "size": 2806006920,
+      "lfs": {
+        "size": 2806006920,
+        "sha256": "7594d3fa04a233e9a81fd93910b24be0ae0a6cc18fbbb85a0db61c4868ddbbcc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 130331,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 439,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17209920,
+      "lfs": {
+        "size": 17209920,
+        "sha256": "6b9e4e7fb171f92fd137b777cc2714bf87d11576700a1dcd7a399e7bbe39537b",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 53893,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__configuration_llama.py",
+      "size": 11066,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_rope_utils.py",
+      "size": 28067,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- llama-3\n- pytorch\n---\n\n# Llama-3.3-Nemotron-Super-49B-v1.5-FP8\n\n![image](./accuracy_chart.png)\n\n## Model Overview \n\nLlama-3.3-Nemotron-Super-49B-v1.5-FP8 is a significantly upgraded version of Llama-3.3-Nemotron-Super-49B-v1 and is a large language model (LLM) which is a derivative of Meta Llama-3.3-70B-Instruct (AKA the reference model). It is a reasoning model that is post trained for reasoning, human chat preferences, and agentic tasks, such as RAG and tool calling. The model supports a context length of 128K tokens.\n\nLlama-3.3-Nemotron-Super-49B-v1.5-FP8 is a model which offers a great tradeoff between model accuracy and efficiency. Efficiency (throughput) directly translates to savings. Using a novel Neural Architecture Search (NAS) approach, we greatly reduce the model\u2019s memory footprint, enabling larger workloads, as well as fitting the model on a single GPU at high workloads (H200). This NAS approach enables the selection of a desired point in the accuracy-efficiency tradeoff. For more information on the NAS approach, please refer to [this paper](https://arxiv.org/abs/2411.19146)\n\nThe model underwent a multi-phase post-training process to enhance both its reasoning and non-reasoning capabilities. This includes a supervised fine-tuning stage for Math, Code, Science, and Tool Calling. Additionally, the model went through multiple stages of Reinforcement Learning (RL) including Reward-aware Preference Optimization (RPO) for chat, Reinforcement Learning with Verifiable Rewards (RLVR) for reasoning, and iterative Direct Preference Optimization (DPO) for Tool Calling capability enhancements. The final checkpoint was achieved after merging several RL and DPO checkpoints.\n\nThis model is part of the Llama Nemotron Collection. You can find the other model(s) in this family here: \n- [Llama-3.1-Nemotron-Nano-4B-v1.1](https://huggingface.co/nvidia/Llama-3.1-Nemotron-Nano-4B-v1.1)\n- [Llama-3.1-Nemotron-Ultra-253B-v1](https://huggingface.co/nvidia/Llama-3_1-Nemotron-Ultra-253B-v1)\n\nThis model is ready for commercial use. \n\n## Feature Voting\n\nWe want to hear from you! Share your ideas, vote on what matters, and help [shape the future of Nemotron](https://nemotron.ideas.nvidia.com/).\n\n## License/Terms of Use\n\nGOVERNING TERMS: Your use of this model is governed by the [NVIDIA Open Model License.](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/) Additional Information: [Llama 3.3 Community License Agreement](https://www.llama.com/llama3_3/license/). Built with Llama.\n\n**Model Developer:** NVIDIA\n\n**Model Dates:** Trained between November 2024 and July 2025\n\n**Data Freshness:**  The pretraining data has a cutoff of 2023 per Meta Llama 3.3 70B\n\n## Deployment Geography\nGlobal\n\n### Use Case: <br>\nDevelopers designing AI Agent systems, chatbots, RAG systems, and other AI-powered applications. Also suitable for typical instruction-following tasks. <br>\n\n### Release Date:  <br>\n- Hugging Face 7/25/2025 via [Llama-3_3-Nemotron-Super-49B-v1_5](https://huggingface.co/nvidia/Llama-3_3-Nemotron-Super-49B-v1_5)\n- build.nvidia.com 7/25/2025 [Llama-3_3-Nemotron-Super-49B-v1_5](https://build.nvidia.com/nvidia/llama-3_3-nemotron-super-49b-v1_5)\n\n## References\n\n* [\\[2505.00949\\] Llama-Nemotron: Efficient Reasoning Models](https://arxiv.org/abs/2505.00949)\n* [\\[2502.00203\\] Reward-aware Preference Optimization: A Unified Mathematical Framework for Model Alignment](https://arxiv.org/abs/2502.00203)  \n* [\\[2411.19146\\]Puzzle: Distillation-Based NAS for Inference-Optimized LLMs](https://arxiv.org/abs/2411.19146)  \n\n## Model Architecture\n\n**Architecture Type:** Dense decoder-only Transformer model\n\n**Network Architecture:** Llama 3.3 70B Instruct, customized through Neural Architecture Search (NAS)\n\nThe model is a derivative of Meta\u2019s Llama-3.3-70B-Instruct, using Neural Architecture Search (NAS). The NAS algorithm results in non-standard and non-repetitive blocks. This includes the following: \n\nSkip attention: In some blocks, the attention is skipped entirely, or replaced with a single linear layer.\nVariable FFN: The expansion/compression ratio in the FFN layer is different between blocks. \n\nWe utilize a block-wise distillation of the reference model, where for each block we create multiple variants providing different tradeoffs of quality vs. computational complexity, discussed in more depth below. We then search over the blocks to create a model which meets the required throughput and memory (optimized for a single H100-80GB GPU) while minimizing the quality degradation. The model then undergoes knowledge distillation (KD), with a focus on English single and multi-turn chat use-cases. The KD step included 40 billion tokens consisting of a mixture of 3 datasets - FineWeb, Buzz-V1.2 and Dolma.\n\n## Intended use\n\nLlama-3.3-Nemotron-Super-49B-v1.5-FP8 is a general purpose reasoning and chat model intended to be used in English and coding languages. Other non-English languages (German, French, Italian, Portuguese, Hindi, Spanish, and Thai) are also supported. \n\n## Input\n- **Input Type:** Text\n- **Input Format:** String\n- **Input Parameters:** One-Dimensional (1D)\n- **Other Properties Related to Input:** Context length up to 131,072 tokens\n\n## Output\n- **Output Type:** Text\n- **Output Format:** String\n- **Output Parameters:** One-Dimensional (1D)\n- **Other Properties Related to Output:** Context length up to 131,072 tokens\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions.\n\n## Model Version\n1.5 (07/25/2025)\n\n## Software Integration\n- **Runtime Engine:** Transformers\n\n- **Recommended Hardware Microarchitecture Compatibility:** \n  - NVIDIA Ampere \n  - NVIDIA Hopper \n- **Preferred Operating System(s):** Linux \n\n## Quick Start and Usage Recommendations:\n\n1. By default (empty system prompt) the model will respond in reasoning ON mode. Setting `/no_think` in the system prompt will enable reasoning OFF mode.\n2. We recommend setting temperature to `0.6`, and Top P to `0.95` for Reasoning ON mode\n3. We recommend using greedy decoding for Reasoning OFF mode\n\nYou can try this model out through the preview API, using this link: [Llama-3_3-Nemotron-Super-49B-v1_5](https://build.nvidia.com/nvidia/llama-3_3-nemotron-super-49b-v1_5).\n\n## Use It with vLLM\n\n```pip install vllm==0.9.2```\n\nAn example on how to serve with vLLM:\n\n```console\n$ python3 -m vllm.entrypoints.openai.api_server \\\n  --model \"nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-FP8\" \\\n  --trust-remote-code \\\n  --seed=1 \\\n  --host=\"0.0.0.0\" \\\n  --port=5000 \\\n  --served-model-name \"Llama-3_3-Nemotron-Super-49B-v1_5-FP8\" \\\n  --tensor-parallel-size=8 \\\n  --max-model-len=65536 \\\n  --gpu-memory-utilization 0.95 \\\n  --enforce-eager \\\n  --quantization=modelopt\n```\n\n### Running a vLLM Server with Tool-call Support\nTo enable tool calling usage with this model, we provide a tool parser in the repository. Here is an example on how to use it:\n\n\n```console\n$ git clone https://huggingface.co/nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-FP8\n\n$ conda create -n vllm python=3.12 -y\n$ conda activate vllm\n$ pip install vllm==0.9.2\n\n$ python3 -m vllm.entrypoints.openai.api_server \\\n  --model Llama-3_3-Nemotron-Super-49B-v1_5-FP8 \\\n  --trust-remote-code \\\n  --seed=1 \\\n  --host=\"0.0.0.0\" \\\n  --port=5000 \\\n  --served-model-name \"Llama-3_3-Nemotron-Super-49B-v1_5-FP8\" \\\n  --tensor-parallel-size=8 \\\n  --max-model-len=65536 \\\n  --gpu-memory-utilization 0.95 \\\n  --enforce-eager \\\n  --quantization=modelopt \\\n  --enable-auto-tool-choice \\\n  --tool-parser-plugin \"Llama-3_3-Nemotron-Super-49B-v1_5-FP8/llama_nemotron_toolcall_parser_no_streaming.py\" \\\n  --tool-call-parser \"llama_nemotron_json\"\n```\n\nAfter launching a vLLM server, you can call the server with tool-call support using a Python script like below.\n\n```python\nfrom openai import OpenAI\nclient = OpenAI(\n    base_url=\"http://0.0.0.0:5000/v1\",\n    api_key=\"dummy\",\n)\ncompletion = client.chat.completions.create(\n    model=\"Llama-3_3-Nemotron-Super-49B-v1_5-FP8\",\n    messages=[\n        {\"role\": \"system\", \"content\": \"\"},\n        {\"role\": \"user\", \"content\": \"My bill is $100. What will be the amount for 18% tip?\"}\n    ],\n    tools=[\n        {\n            \"type\": \"function\",\n            \"function\": {\n                \"name\": \"calculate_tip\",\n                \"parameters\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"bill_total\": {\n                            \"type\": \"integer\",\n                            \"description\": \"The total amount of the bill\"\n                        },\n                        \"tip_percentage\": {\n                            \"type\": \"integer\",\n                            \"description\": \"The percentage of tip to be applied\"\n                        }\n                    },\n                    \"required\": [\"bill_total\", \"tip_percentage\"]\n                }\n            }\n        },\n        {\n            \"type\": \"function\",\n            \"function\": {\n                \"name\": \"convert_currency\",\n                \"parameters\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"amount\": {\n                            \"type\": \"integer\",\n                            \"description\": \"The amount to be converted\"\n                        },\n                        \"from_currency\": {\n                            \"type\": \"string\",\n                            \"description\": \"The currency code to convert from\"\n                        },\n                        \"to_currency\": {\n                            \"type\": \"string\",\n                            \"description\": \"The currency code to convert to\"\n                        }\n                    },\n                    \"required\": [\"from_currency\", \"amount\", \"to_currency\"]\n                }\n            }\n        }\n    ],\n    temperature=0.6,\n    top_p=0.95,\n    max_tokens=32768,\n    stream=False\n)\nprint(completion.choices[0].message.content)\n'''\n<think>\nOkay, let's see. The user has a bill of $100 and wants to know the amount for an 18% tip. Hmm, I need to calculate the tip based on the bill total and the percentage. The tools provided include calculate_tip, which takes bill_total and tip_percentage as parameters. So the bill_total here is 100, and the tip_percentage is 18. I should call the calculate_tip function with these values. Wait, do I need to check if the parameters are integers? The bill is $100, which is an integer, and 18% is also an integer. So that fits the function's requirements. I don't need to convert any currency here because the user is asking about a tip in the same currency. So the correct tool to use is calculate_tip with those parameters.\n</think>\n'''\nprint(completion.choices[0].message.tool_calls)\n'''\n[ChatCompletionMessageToolCall(id='chatcmpl-tool-e341c6954d2c48c2a0e9071c7bdefd8b', function=Function(arguments='{\"bill_total\": 100, \"tip_percentage\": 18}', name='calculate_tip'), type='function')]\n'''\n```\n\n## Training and Evaluation Datasets\n\n## Training Datasets\n\nA large variety of training data was used for the knowledge distillation phase before post-training pipeline, 3 of which included: FineWeb, Buzz-V1.2, and Dolma.\n\nThe data for the multi-stage post-training phases for improvements in Code, Math, and Reasoning is a compilation of SFT and RL data that supports improvements of math, code, general reasoning, and instruction following capabilities of the original Llama instruct model. \n\nPrompts have been sourced from either public and open corpus or synthetically generated. Responses were synthetically generated by a variety of models, with some prompts containing responses for both reasoning on and off modes, to train the model to distinguish between two modes. \n\nWe have released our [Nemotron-Post-Training-Dataset-v1](https://huggingface.co/datasets/nvidia/Nemotron-Post-Training-Dataset-v1) to promote openness and transparency in model development and improvement.\n\n**Data Collection for Training Datasets:**\nHybrid: Automated, Human, Synthetic\n\n**Data Labeling for Training Datasets:**\nHybrid: Automated, Human, Synthetic\n\n## Evaluation Datasets \n\nWe used the datasets listed below to evaluate Llama-3.3-Nemotron-Super-49B-v1.5-FP8. \n\nData Collection for Evaluation Datasets:\n- Hybrid: Human. Synthetic\n\nData Labeling for Evaluation Datasets:\n- Hybrid: Human, Synthetic, Automatic\n\n## Evaluation Results\nWe evaluate the model using temperature=`0.6`, top_p=`0.95`, and 64k sequence length. We run the benchmarks up to 16 times and average the scores to be more accurate.\n\n### MATH500\n\n| Reasoning Mode | pass@1 (avg. over 4 runs) |\n|--------------|------------|\n| Reasoning On | 97.8 |\n\n### AIME 2024\n\n| Reasoning Mode | pass@1 (avg. over 16 runs) |\n|--------------|------------|\n| Reasoning On | 88.54 |\n\n### AIME 2025\n\n| Reasoning Mode | pass@1 (avg. over 16 runs) |\n|--------------|------------|\n| Reasoning On | 83.75 |\n\n### GPQA\n\n| Reasoning Mode | pass@1 (avg. over 4 runs) |\n|--------------|------------|\n| Reasoning On | 69.57 |\n\n### LiveCodeBench 24.10-25.02\n\n| Reasoning Mode | pass@1 (avg. over 4 runs) |\n|--------------|------------|\n| Reasoning On | 69.52 |\n\n### BFCL v3\n\n| Reasoning Mode | pass@1 (avg. over 2 runs) |\n|--------------|------------|\n| Reasoning On | 71.11 |\n\n### IFEval\n\n| Reasoning Mode | Strict:Instruction |\n|--------------|------------|\n| Reasoning On | 87.05 | \n\n### ArenaHard\n\n| Reasoning Mode | pass@1 (avg. over 1 runs) |\n|--------------|------------|\n| Reasoning On | 88.7 | \n\n\nAll evaluations were done using the [NeMo-Skills](https://github.com/NVIDIA/NeMo-Skills) repository.\n\n## Inference:\n\n**Engine:**\n- Transformers\n\n**Test Hardware:**\n- 1x NVIDIA H100-80GB GPU\n\n## Ethical Considerations:\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. \n\nFor more detailed information on ethical considerations for this model, please see the Model Card++ [Explainability](./EXPLAINABILITY.md), [Bias](./BIAS.md), [Safety & Security](./SAFETY&SECURITY.md), and [Privacy](./PRIVACY.md) Subcards.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n## Citation\n\n```\n@misc{bercovich2025llamanemotronefficientreasoningmodels,\n      title={Llama-Nemotron: Efficient Reasoning Models}, \n      author={Akhiad Bercovich and Itay Levy and Izik Golan and Mohammad Dabbah and Ran El-Yaniv and Omri Puny and Ido Galil and Zach Moshe and Tomer Ronen and Najeeb Nabwani and Ido Shahaf and Oren Tropp and Ehud Karpas and Ran Zilberstein and Jiaqi Zeng and Soumye Singhal and Alexander Bukharin and Yian Zhang and Tugrul Konuk and Gerald Shen and Ameya Sunil Mahabaleshwarkar and Bilal Kartal and Yoshi Suhara and Olivier Delalleau and Zijia Chen and Zhilin Wang and David Mosallanezhad and Adi Renduchintala and Haifeng Qian and Dima Rekesh and Fei Jia and Somshubra Majumdar and Vahid Noroozi and Wasi Uddin Ahmad and Sean Narenthiran and Aleksander Ficek and Mehrzad Samadi and Jocelyn Huang and Siddhartha Jain and Igor Gitman and Ivan Moshkov and Wei Du and Shubham Toshniwal and George Armstrong and Branislav Kisacanin and Matvei Novikov and Daria Gitman and Evelina Bakhturina and Jane Polak Scowcroft and John Kamalu and Dan Su and Kezhi Kong and Markus Kliegl and Rabeeh Karimi and Ying Lin and Sanjeev Satheesh and Jupinder Parmar and Pritam Gundecha and Brandon Norick and Joseph Jennings and Shrimai Prabhumoye and Syeda Nahida Akter and Mostofa Patwary and Abhinav Khattar and Deepak Narayanan and Roger Waleffe and Jimmy Zhang and Bor-Yiing Su and Guyue Huang and Terry Kong and Parth Chadha and Sahil Jain and Christine Harvey and Elad Segal and Jining Huang and Sergey Kashirsky and Robert McQueen and Izzy Putterman and George Lam and Arun Venkatesan and Sherry Wu and Vinh Nguyen and Manoj Kilaru and Andrew Wang and Anna Warno and Abhilash Somasamudramath and Sandip Bhaskar and Maka Dong and Nave Assaf and Shahar Mor and Omer Ullman Argov and Scot Junkin and Oleksandr Romanenko and Pedro Larroy and Monika Katariya and Marco Rovinelli and Viji Balas and Nicholas Edelman and Anahita Bhiwandiwalla and Muthu Subramaniam and Smita Ithape and Karthik Ramamoorthy and Yuting Wu and Suguna Varshini Velury and Omri Almog and Joyjit Daw and Denys Fridman and Erick Galinkin and Michael Evans and Katherine Luna and Leon Derczynski and Nikki Pope and Eileen Long and Seth Schneider and Guillermo Siman and Tomasz Grzegorzek and Pablo Ribalta and Monika Katariya and Joey Conway and Trisha Saar and Ann Guan and Krzysztof Pawelec and Shyamala Prayaga and Oleksii Kuchaiev and Boris Ginsburg and Oluwatobi Olabiyi and Kari Briski and Jonathan Cohen and Bryan Catanzaro and Jonah Alben and Yonatan Geifman and Eric Chung and Chris Alexiuk},\n      year={2025},\n      eprint={2505.00949},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2505.00949}, \n}\n```\n\n",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_decilm.DeciLMForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

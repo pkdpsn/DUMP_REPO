@@ -1,0 +1,1629 @@
+{
+  "modelId": "deepseek-ai/DeepSeek-R1-Zero",
+  "author": "deepseek-ai",
+  "sha": "72234287cbc67dbf474d911359ae32b61a2fdc7e",
+  "lastModified": "2025-03-27 04:02:04+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "deepseek_v3",
+    "text-generation",
+    "conversational",
+    "custom_code",
+    "arxiv:2501.12948",
+    "license:mit",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "fp8",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 966,
+  "downloads": 12404,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "DeepseekV3ForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_deepseek.DeepseekV3Config",
+      "AutoModel": "modeling_deepseek.DeepseekV3Model",
+      "AutoModelForCausalLM": "modeling_deepseek.DeepseekV3ForCausalLM"
+    },
+    "model_type": "deepseek_v3",
+    "num_experts_per_tok": 8,
+    "quantization_config": {
+      "quant_method": "fp8"
+    },
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "unk_token": null,
+      "chat_template": "{% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% set ns = namespace(is_first=false, is_tool=false, is_output_first=true, system_prompt='', is_first_sp=true) %}{%- for message in messages %}{%- if message['role'] == 'system' %}{%- if ns.is_first_sp %}{% set ns.system_prompt = ns.system_prompt + message['content'] %}{% set ns.is_first_sp = false %}{%- else %}{% set ns.system_prompt = ns.system_prompt + '\\n\\n' + message['content'] %}{%- endif %}{%- endif %}{%- endfor %}{{ bos_token }}{{ ns.system_prompt }}{%- for message in messages %}{%- if message['role'] == 'user' %}{%- set ns.is_tool = false -%}{{'<\uff5cUser\uff5c>' + message['content']}}{%- endif %}{%- if message['role'] == 'assistant' and 'tool_calls' in message %}{%- set ns.is_tool = false -%}{%- for tool in message['tool_calls'] %}{%- if not ns.is_first %}{%- if message['content'] is none %}{{'<\uff5cAssistant\uff5c><\uff5ctool\u2581calls\u2581begin\uff5c><\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\\n' + '```json' + '\\n' + tool['function']['arguments'] + '\\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{%- else %}{{'<\uff5cAssistant\uff5c>' + message['content'] + '<\uff5ctool\u2581calls\u2581begin\uff5c><\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\\n' + '```json' + '\\n' + tool['function']['arguments'] + '\\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{%- endif %}{%- set ns.is_first = true -%}{%- else %}{{'\\n' + '<\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\\n' + '```json' + '\\n' + tool['function']['arguments'] + '\\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{%- endif %}{%- endfor %}{{'<\uff5ctool\u2581calls\u2581end\uff5c><\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- endif %}{%- if message['role'] == 'assistant' and 'tool_calls' not in message %}{%- if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>' + message['content'] + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- set ns.is_tool = false -%}{%- else %}{% set content = message['content'] %}{% if '</think>' in content %}{% set content = content.split('</think>')[-1] %}{% endif %}{{'<\uff5cAssistant\uff5c>' + content + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- endif %}{%- endif %}{%- if message['role'] == 'tool' %}{%- set ns.is_tool = true -%}{%- if ns.is_output_first %}{{'<\uff5ctool\u2581outputs\u2581begin\uff5c><\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}{%- set ns.is_output_first = false %}{%- else %}{{'<\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}{%- endif %}{%- endif %}{%- endfor -%}{% if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>'}}{% endif %}{% if add_generation_prompt and not ns.is_tool %}{{'<\uff5cAssistant\uff5c><think>\\n'}}{% endif %}"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 1064,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 15994,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1660,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_deepseek.py",
+      "size": 9897,
+      "lfs": null
+    },
+    {
+      "rfilename": "figures/benchmark.jpg",
+      "size": 777314,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 171,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-000163.safetensors",
+      "size": 5234139343,
+      "lfs": {
+        "size": 5234139343,
+        "sha256": "ea13d32b6694b7cd21e0a7e8e2bbaef000ede1e4773afa9c6d24931bb7c0037b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-000163.safetensors",
+      "size": 4302383966,
+      "lfs": {
+        "size": 4302383966,
+        "sha256": "28ac9eb52435e3a13bbea7fadab7ab3c0a56564d1e2a23889a9c7a118312e76f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-000163.safetensors",
+      "size": 4302384375,
+      "lfs": {
+        "size": 4302384375,
+        "sha256": "9e6b2666a9e59ab42aaa75df153427ec64ddbc46b4390bf3358934f5847fd93e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-000163.safetensors",
+      "size": 4302349996,
+      "lfs": {
+        "size": 4302349996,
+        "sha256": "b3d096902613ec3b10ffaafec29dda3e372034759799228cf5cbd5fa1029ba5b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-000163.safetensors",
+      "size": 4302384154,
+      "lfs": {
+        "size": 4302384154,
+        "sha256": "707796680292f50d4598d74c44e9d05d70538b1a189210a277f1b3eb9f430cff",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-000163.safetensors",
+      "size": 4372073602,
+      "lfs": {
+        "size": 4372073602,
+        "sha256": "6f07142e6120480570593321ea58788a732ba60bca08b949a09744cfe56a343b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-000163.safetensors",
+      "size": 4306080097,
+      "lfs": {
+        "size": 4306080097,
+        "sha256": "09120c15c7dd86e5106c07b76403ceb8f2a12b1ff76a006ae03f139e35050788",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-000163.safetensors",
+      "size": 4302384356,
+      "lfs": {
+        "size": 4302384356,
+        "sha256": "954bbbd8b9fd8a52b650ec98f1bf13aaf8bd4ab8bda756dfa42838e0a15b4f2e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-000163.safetensors",
+      "size": 4302350190,
+      "lfs": {
+        "size": 4302350190,
+        "sha256": "dba1cd14a1bfb138b755d0b4e77a0c0749f200ba97e6dfed05ad64168316fc4c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-000163.safetensors",
+      "size": 4302383960,
+      "lfs": {
+        "size": 4302383960,
+        "sha256": "30b6076c0a4017a2d04415c2eb4f887cf3d2655f27695f65c5c1e33dc9100a43",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-000163.safetensors",
+      "size": 4302384375,
+      "lfs": {
+        "size": 4302384375,
+        "sha256": "9edf58ea8a3945a41487236e9d2bbf7310a3def4ee4fee2fe39506d07b084aae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-000163.safetensors",
+      "size": 1321583941,
+      "lfs": {
+        "size": 1321583941,
+        "sha256": "26631810677d579fffd8b3463c693c41240c26ab34d99a8e6d7d098d3fca9e5a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-000163.safetensors",
+      "size": 4302317244,
+      "lfs": {
+        "size": 4302317244,
+        "sha256": "03832f7acb6e137d7b934476c1ef7816375a7f48cb5a16bab02d4b902bee3611",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-000163.safetensors",
+      "size": 4302384328,
+      "lfs": {
+        "size": 4302384328,
+        "sha256": "7ab170397bbeaea4529101c66a27270c2c05aca51e745f5705bcaf2f46d96d27",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-000163.safetensors",
+      "size": 4302350218,
+      "lfs": {
+        "size": 4302350218,
+        "sha256": "aa2845b4ee3e9560a6c696da5b52c0ffb2de012d2c8e8446c1ee12782d38eeb4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-000163.safetensors",
+      "size": 4302383932,
+      "lfs": {
+        "size": 4302383932,
+        "sha256": "9af0e93032c4e6394a87ad528108e419cea9cfadedbb84ae642414d73c48b44c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-000163.safetensors",
+      "size": 4302384377,
+      "lfs": {
+        "size": 4302384377,
+        "sha256": "4a7ce949cba48a4d563e2069027974aa120c2e803ad26784e656a9c435157744",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-000163.safetensors",
+      "size": 4302350026,
+      "lfs": {
+        "size": 4302350026,
+        "sha256": "c9c90fcb360e70e1a900167cdb3b59fab05772001285a27d42954ce79668b82e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-000163.safetensors",
+      "size": 4302384124,
+      "lfs": {
+        "size": 4302384124,
+        "sha256": "d8396278b837fabe7be6567ce8a542c172f476c2914f6310ceaa6b4b026adc95",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-000163.safetensors",
+      "size": 4302384377,
+      "lfs": {
+        "size": 4302384377,
+        "sha256": "9d5fe7bb7864e0a6f43bfd9d20318c230682a64d5d808bbf2038e8e079f3935b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-000163.safetensors",
+      "size": 4302350413,
+      "lfs": {
+        "size": 4302350413,
+        "sha256": "1311c098708cb4c17be4f895e7cad7a182187a3187d9d47e31130b375fcc53ba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-000163.safetensors",
+      "size": 4302384900,
+      "lfs": {
+        "size": 4302384900,
+        "sha256": "ad413f843d0164399b454350afb3e5350044c8ea0ac6f104716130473cef1704",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-000163.safetensors",
+      "size": 4302350808,
+      "lfs": {
+        "size": 4302350808,
+        "sha256": "0d724b0ca236be7ff0b87396f96c7e388b75b197a76a5626b391c98584877942",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-000163.safetensors",
+      "size": 4302384504,
+      "lfs": {
+        "size": 4302384504,
+        "sha256": "c26c6411ddb24c351c44d40cfa0d6068e01bf84f0781866750f62a0f88d31590",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-000163.safetensors",
+      "size": 4302384961,
+      "lfs": {
+        "size": 4302384961,
+        "sha256": "488d1bbada2a1e1b9ef7e3ef784010c6f85526154f94bc6538f3dcb8295de281",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-000163.safetensors",
+      "size": 4302350620,
+      "lfs": {
+        "size": 4302350620,
+        "sha256": "fc5bfa827ee2049758d902e7cd09419543189967677db3badc00850ea878915d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-000163.safetensors",
+      "size": 4302384692,
+      "lfs": {
+        "size": 4302384692,
+        "sha256": "a83f04d625b1fc99e1702f9349533168d5a047165295e119e2cd65b8d5fd997b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "c43450d26b89a0c7315353f1a827ebfd95302fa759a9635c9b18c3f0a28262a5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-000163.safetensors",
+      "size": 4302350448,
+      "lfs": {
+        "size": 4302350448,
+        "sha256": "a44b49703565325eaffdf9ddcaaec3c5f04ecd194202099d9789a2be4e3b7e0a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-000163.safetensors",
+      "size": 4302384884,
+      "lfs": {
+        "size": 4302384884,
+        "sha256": "fc126eeb8fb63b110cd188fded5e831744377dc13d97a92ed4a0e15cacb87f61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-000163.safetensors",
+      "size": 4302350824,
+      "lfs": {
+        "size": 4302350824,
+        "sha256": "a1ccb0dbfb676520adab09f5df5da3614e88b41e83eb14dd9f3313c0ebf6dd60",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-000163.safetensors",
+      "size": 4302384488,
+      "lfs": {
+        "size": 4302384488,
+        "sha256": "872126d5eb8a8f813285333c6fc273cdfd386a316e8f57ff44ec3f8980aaeb05",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "b2e7634ab19690b001ea64d703d9d9b47a17383061bc0207efa1fe535d30b7ab",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-000163.safetensors",
+      "size": 1747417474,
+      "lfs": {
+        "size": 1747417474,
+        "sha256": "cb0d16e22efdced2835e1533bd3dfe744a9288f09314b3a4343757029ba09b3f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-000163.safetensors",
+      "size": 4302317817,
+      "lfs": {
+        "size": 4302317817,
+        "sha256": "7fe95ee0034eb87bf89f076a615d6f957cd98e3792c679df868fbe3222035536",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-000163.safetensors",
+      "size": 4302384914,
+      "lfs": {
+        "size": 4302384914,
+        "sha256": "2bab031499064e24175d16b3ac512a3209e26892c4b37272454e1fa67590a39a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-000163.safetensors",
+      "size": 4302350794,
+      "lfs": {
+        "size": 4302350794,
+        "sha256": "8a15814d414932445a1ef47e07c1e8efa5902b5f3feaf8d727f5d938e5f239b9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-000163.safetensors",
+      "size": 4302384518,
+      "lfs": {
+        "size": 4302384518,
+        "sha256": "a50101a8f67db2e4492cd06125d2baf23ef592bfea373f8d3a3b1ea78e83c7ff",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00039-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "3a7df107a32415a23512308b7a59ce85ace4fa4db9c32cd052b4e9d76636e3d6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00040-of-000163.safetensors",
+      "size": 4302350602,
+      "lfs": {
+        "size": 4302350602,
+        "sha256": "1b93d364eb53bb0fdb62ff71ae7b4f26ca43167cb5bcef4060403c43c6c3c39c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00041-of-000163.safetensors",
+      "size": 4302384710,
+      "lfs": {
+        "size": 4302384710,
+        "sha256": "a422308075bb216f784e78033e2145cc464b2199f9fdef5672ab99df41f61421",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00042-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "2ea9b10d2431105e75f24c24f23567e5eb2b00cc3d07830a16a5d4c5add24049",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-000163.safetensors",
+      "size": 4302350432,
+      "lfs": {
+        "size": 4302350432,
+        "sha256": "cfa61419d286633130c4f8008532d8077d58db8b4f4dfe4f1321cc9cc546d0dd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-000163.safetensors",
+      "size": 4302384900,
+      "lfs": {
+        "size": 4302384900,
+        "sha256": "8aa39a28a9ecb1411566b0067f80a11f83289b3eb6cb95ed53fe181d35804c83",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-000163.safetensors",
+      "size": 4302350808,
+      "lfs": {
+        "size": 4302350808,
+        "sha256": "98300e0465af4ac0df2919f56df8c177635f297fef8d7c197689b37994d18d53",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-000163.safetensors",
+      "size": 4302384504,
+      "lfs": {
+        "size": 4302384504,
+        "sha256": "c25653ef080ee42b5ccda3aa3f2614c4a5e7f0735dd4c95a776e0d10ea64600a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-000163.safetensors",
+      "size": 4302384961,
+      "lfs": {
+        "size": 4302384961,
+        "sha256": "82a289994ce1ccf29c7d594b0108deb65e0b32d99d441fb81ebe9e8052224ca3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-000163.safetensors",
+      "size": 4302350620,
+      "lfs": {
+        "size": 4302350620,
+        "sha256": "c47ec6e854c08da8fb71217c670552e26b4ab4d5cb6483f6e77f53ee5ff808f7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00049-of-000163.safetensors",
+      "size": 4302384692,
+      "lfs": {
+        "size": 4302384692,
+        "sha256": "91f0f5a0080add20c83fd9886e2d1126d0772bd7fa77f35091ad852c9544e170",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00050-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "193569631494eb08360e0821fbcb6aa3be795d5d9054dd646bd1ad63f9955b51",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00051-of-000163.safetensors",
+      "size": 4302350448,
+      "lfs": {
+        "size": 4302350448,
+        "sha256": "ce79ceb34d75007e5071d5e85fac2ba83133572b3983a29a0be6ffdf63f1957b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00052-of-000163.safetensors",
+      "size": 4302384884,
+      "lfs": {
+        "size": 4302384884,
+        "sha256": "b1beb4bbc8f8cc408a6d48902ad9a5296313b392ed258970d34885653c3482e3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00053-of-000163.safetensors",
+      "size": 4302350824,
+      "lfs": {
+        "size": 4302350824,
+        "sha256": "459a9a329cb5192648bbbd71a2a37f8405415b793601b186734a1e1701d44a48",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00054-of-000163.safetensors",
+      "size": 4302384488,
+      "lfs": {
+        "size": 4302384488,
+        "sha256": "67ad8fce3e729277d5314567ba6558af93ebd7b01d128448c137c6cdb0dff0ca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00055-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "162f76bc7b1f242d78fa6e71a9ecfe24245ff01fbee5c46fb755e94461d4c690",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00056-of-000163.safetensors",
+      "size": 1747417474,
+      "lfs": {
+        "size": 1747417474,
+        "sha256": "30999a505aba865725b985cb988d54ec71dae9b9d7bc9dcab7b9838559f901f3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00057-of-000163.safetensors",
+      "size": 4302317817,
+      "lfs": {
+        "size": 4302317817,
+        "sha256": "cd308dd39750d2a81cea62d835a671e29858874b6af1cbfa8867749d71576eb4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00058-of-000163.safetensors",
+      "size": 4302384914,
+      "lfs": {
+        "size": 4302384914,
+        "sha256": "4f24b500b20446795b7142f586dbb9186aa356a44fdd83d4635133e05e80d959",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00059-of-000163.safetensors",
+      "size": 4302350794,
+      "lfs": {
+        "size": 4302350794,
+        "sha256": "21da9a70ed0569b6c0a70a0dca2aaab393a41a00d565d0819100f5e94806e5e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00060-of-000163.safetensors",
+      "size": 4302384518,
+      "lfs": {
+        "size": 4302384518,
+        "sha256": "23590dc8bdcc8f88bcd368c9a83a8dd05e4066a3d79e21972e7641b2417e4d6f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00061-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "d4777974f8c6fe5a18fed299701f5dc9ae781563de6708cb3f67018097c60042",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00062-of-000163.safetensors",
+      "size": 4302350602,
+      "lfs": {
+        "size": 4302350602,
+        "sha256": "9cdf20b77bed904eabd3daf4f633d9b8630ac717478976cc2f17cc2d533a1780",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00063-of-000163.safetensors",
+      "size": 4302384710,
+      "lfs": {
+        "size": 4302384710,
+        "sha256": "f4defeca50956358d7c4051e0415d13525ae85e6786c483a0b97e40dae002b88",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00064-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "71581e63c6d8cc7e4ba934a316cbe93221d0eb2ee9a7c2c60871583c5bf04f04",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00065-of-000163.safetensors",
+      "size": 4302350432,
+      "lfs": {
+        "size": 4302350432,
+        "sha256": "48eb5afa53949f08891ce9bd79a18cbbbddcd0b1220a1da19f3c8b27e4e44a84",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00066-of-000163.safetensors",
+      "size": 4302384900,
+      "lfs": {
+        "size": 4302384900,
+        "sha256": "8e7c0390720ead0230ee25dfce72049fc13ccccb2ebefecd935074428051f232",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00067-of-000163.safetensors",
+      "size": 4302350808,
+      "lfs": {
+        "size": 4302350808,
+        "sha256": "cfb309b0f7da695ea5878f07fef9eb8a410f10d12d484a9d1b6510906845cce1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00068-of-000163.safetensors",
+      "size": 4302384504,
+      "lfs": {
+        "size": 4302384504,
+        "sha256": "3f2726db09875700b5a70693c7656a9c3d14b1afa0272971650d364d30011d29",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00069-of-000163.safetensors",
+      "size": 4302384961,
+      "lfs": {
+        "size": 4302384961,
+        "sha256": "da8e5cd22993eb69dccf381e28c8668fb2b265ca6fea8eec71294ee25f28dd39",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00070-of-000163.safetensors",
+      "size": 4302350620,
+      "lfs": {
+        "size": 4302350620,
+        "sha256": "294453b03ea8502bb4acbb6361b615c0677baaaf0a1aa3e59196817015fa9370",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00071-of-000163.safetensors",
+      "size": 4302384692,
+      "lfs": {
+        "size": 4302384692,
+        "sha256": "5e9d52c1f83ece0b05c05cd2eaf86e204c15ab9f4a8dfd4e974bef3792e34665",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00072-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "c5c898a1a1cce7611e3c43fbb5eda378e557aad001c65c3d2428615ac57fbfca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00073-of-000163.safetensors",
+      "size": 4302350448,
+      "lfs": {
+        "size": 4302350448,
+        "sha256": "6e72b1bc8e44b861a2bf82b08a3289412eef4ab9805a89a8b297f2b266888c30",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00074-of-000163.safetensors",
+      "size": 4302384884,
+      "lfs": {
+        "size": 4302384884,
+        "sha256": "bd51b3d5407714e5c641c8b69f5ea8839d3511dba8c05f7e78f33bfdfe09083f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00075-of-000163.safetensors",
+      "size": 4302350824,
+      "lfs": {
+        "size": 4302350824,
+        "sha256": "a32f7da9a3669fa0ab74b7a6c080c2d659ba73be7d305d13234afbf8f2cd13fa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00076-of-000163.safetensors",
+      "size": 4302384488,
+      "lfs": {
+        "size": 4302384488,
+        "sha256": "742592e20083293c6c67a46eccac2e75472c61a55cc6eebb3473fab02fcfae2a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00077-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "8475fc6f119eafb710843205b9e3ec1dc8412d9cddd60157a82079c7ebe3529c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00078-of-000163.safetensors",
+      "size": 1747417474,
+      "lfs": {
+        "size": 1747417474,
+        "sha256": "4c3b903aaecbf0ce249392024873b8685c6d86d6063551ace0a22c88921e58bd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00079-of-000163.safetensors",
+      "size": 4302317817,
+      "lfs": {
+        "size": 4302317817,
+        "sha256": "dde65b11b9c799e4ba09ec1ee0a2be51c3f043f79590ef76e0218a661aa4278b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00080-of-000163.safetensors",
+      "size": 4302384914,
+      "lfs": {
+        "size": 4302384914,
+        "sha256": "abc89d5c7e27a6bab6b50de6d4d6878dff79e3036e7d7917bd69405d8a11e0e9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00081-of-000163.safetensors",
+      "size": 4302350794,
+      "lfs": {
+        "size": 4302350794,
+        "sha256": "fb368ed72be9ae461dcb0d7526a3f1111ec13ae9dda60f512dc7e3d257338138",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00082-of-000163.safetensors",
+      "size": 4302384518,
+      "lfs": {
+        "size": 4302384518,
+        "sha256": "b5a83a573236c1dd7e9a01d2b2c7cfa563b65c37b4a17efa1179fa460a266658",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00083-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "55603ce9382462ab849b50efa7182db8f5cb8beb5d41243b5c54311f064bfab7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00084-of-000163.safetensors",
+      "size": 4302350602,
+      "lfs": {
+        "size": 4302350602,
+        "sha256": "902508527e14a0e790e54fabef7faa19b05338ecbf88325db294a0ad932f5870",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00085-of-000163.safetensors",
+      "size": 4302384710,
+      "lfs": {
+        "size": 4302384710,
+        "sha256": "8f9acb39211d2b2ef2e2e768d5bc22187fef4d5f578b483d196e233f58efc6ae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00086-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "187d179b8aebdfbbb76c85b792b615bb3dc42b0b7e31f2406c7a2fd6a8f6e0c3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00087-of-000163.safetensors",
+      "size": 4302350432,
+      "lfs": {
+        "size": 4302350432,
+        "sha256": "2c5e047e9793108b0230c52176455fbba509994a85cb50f0e3982d1c0d97d407",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00088-of-000163.safetensors",
+      "size": 4302384900,
+      "lfs": {
+        "size": 4302384900,
+        "sha256": "f58b32322049636cb7dc8d7988c8d2b71f5616fde8d8ce57cf6b885e7aab7657",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00089-of-000163.safetensors",
+      "size": 4302350808,
+      "lfs": {
+        "size": 4302350808,
+        "sha256": "05b8dc1969122dfd951f321518bd8f44e38db5d0c2ce43d85b678e60e687b3f9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00090-of-000163.safetensors",
+      "size": 4302384504,
+      "lfs": {
+        "size": 4302384504,
+        "sha256": "bd95cc34e765c6f493f13f7de3258cd5bf24443cf24a724a890b7f1f5a573189",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00091-of-000163.safetensors",
+      "size": 4302384961,
+      "lfs": {
+        "size": 4302384961,
+        "sha256": "ef3371c56c7b77b8e0fa64a714bafd6b7453f91f16286f5596e1645de0410014",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00092-of-000163.safetensors",
+      "size": 4302350620,
+      "lfs": {
+        "size": 4302350620,
+        "sha256": "ca124526f32e611e89331969c084cfebf89d3c638af169942a8466d764966063",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00093-of-000163.safetensors",
+      "size": 4302384692,
+      "lfs": {
+        "size": 4302384692,
+        "sha256": "c33018a7dbb757d5570f25d024abf7866cc50957845ade10edd1748f67c01396",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00094-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "a4dde1c253ea27ef06156ad85130240b29c599638d20a2f5c781a293e18d9931",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00095-of-000163.safetensors",
+      "size": 4302350448,
+      "lfs": {
+        "size": 4302350448,
+        "sha256": "8c04589dfdec6d16982ce85e5b2ddb2d8214cc3d456dd9db562c057865b7940e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00096-of-000163.safetensors",
+      "size": 4302384884,
+      "lfs": {
+        "size": 4302384884,
+        "sha256": "0297f871d864a8039f3e506693f164cc0ca8aa0c6b4ff9d9fa29443a0ddc2d69",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00097-of-000163.safetensors",
+      "size": 4302350824,
+      "lfs": {
+        "size": 4302350824,
+        "sha256": "9ed6f8a1f542fc14d61c130fa0a1f8539015a9938f86f232c770e2dc93b3f2f8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00098-of-000163.safetensors",
+      "size": 4302384488,
+      "lfs": {
+        "size": 4302384488,
+        "sha256": "d4970cd96d1b672ec7009e72b80e7fb8f95e16b0c690f51a1704c73cc5f4a11d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00099-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "8b789d775b3fac1f1b837f536247be236c033b607d6eededd71baa7ea2fe418f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00100-of-000163.safetensors",
+      "size": 1747417474,
+      "lfs": {
+        "size": 1747417474,
+        "sha256": "4b953af0d587670d6d2b281d6b1dd0819e2bbe3b18f5eff0d84f237f65d2e31b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00101-of-000163.safetensors",
+      "size": 4302317817,
+      "lfs": {
+        "size": 4302317817,
+        "sha256": "a4db37a59d5f718824fd79829e9fb411e1fc61f0592e8455ca0e6a9d59385bec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00102-of-000163.safetensors",
+      "size": 4302384914,
+      "lfs": {
+        "size": 4302384914,
+        "sha256": "5f5a6c22fcc0c72f04f7023606162361496ff4766a8c4103d5d7f99883be4f2f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00103-of-000163.safetensors",
+      "size": 4302350794,
+      "lfs": {
+        "size": 4302350794,
+        "sha256": "3014ad76c14f6274518d8be29a7c5811f91162c4934f3124bd250e23f7a837e1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00104-of-000163.safetensors",
+      "size": 4302384518,
+      "lfs": {
+        "size": 4302384518,
+        "sha256": "b181f5fe9e675e5645d6bbbf3ac024e8d6760320b1296571e4bebbe0c031aee8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00105-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "c6af3d686026ae9cae286645f1b2f4bc5db9c81157c6773bd91c37055e33c091",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00106-of-000163.safetensors",
+      "size": 4302350602,
+      "lfs": {
+        "size": 4302350602,
+        "sha256": "90ffd63a506c1de141c044dcb9eeeb6b418b26b90d9a4c1f1e3542fd180a491e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00107-of-000163.safetensors",
+      "size": 4302384710,
+      "lfs": {
+        "size": 4302384710,
+        "sha256": "6b527976d75286a805e2442143b811ecaed1082876609ef5a90c25bf4877b096",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00108-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "37352a009d9f55838031247bc7be997c4b2abb80fc7e8540e97e85a7388bce52",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00109-of-000163.safetensors",
+      "size": 4302350432,
+      "lfs": {
+        "size": 4302350432,
+        "sha256": "79cd22c41cc782df88a62eca77cb1f4e0412580ad2094339e83974575fbfac7e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00110-of-000163.safetensors",
+      "size": 4302384900,
+      "lfs": {
+        "size": 4302384900,
+        "sha256": "8d18d8b6ec1596eeb8a44dffc9ea8cb5834cc626e39346eba0fe349c5963ae28",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00111-of-000163.safetensors",
+      "size": 4302350808,
+      "lfs": {
+        "size": 4302350808,
+        "sha256": "f5b06c3f9826d6658a6c7021092856fd6bad3067b0a98eedd38d3adb702e7e73",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00112-of-000163.safetensors",
+      "size": 4302384504,
+      "lfs": {
+        "size": 4302384504,
+        "sha256": "4d76f725d53fa426b9d0206c8cd231f9f7efe8528f202b1d1299383cc6fc7f5f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00113-of-000163.safetensors",
+      "size": 4302384961,
+      "lfs": {
+        "size": 4302384961,
+        "sha256": "52531a10ec23e562283747077acc42326dc079ba1fd5aab35f6956857afa540c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00114-of-000163.safetensors",
+      "size": 4302350620,
+      "lfs": {
+        "size": 4302350620,
+        "sha256": "28f1d8263661d582f1c2b76f4403819e5b9f8fac3681cdd158e0d36586c3af90",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00115-of-000163.safetensors",
+      "size": 4302384692,
+      "lfs": {
+        "size": 4302384692,
+        "sha256": "18880d3d79df283c5015e47b2503d82ae80cb1eb2eba2847f1a3a81a21156d94",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00116-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "36dea344fb2170145283a240308aeb747a3652ce2f856beb68443173dc56715b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00117-of-000163.safetensors",
+      "size": 4302350448,
+      "lfs": {
+        "size": 4302350448,
+        "sha256": "702070be50799230701ef64994fcd398f36cba5f9f521c44b76752de436bf63c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00118-of-000163.safetensors",
+      "size": 4302384884,
+      "lfs": {
+        "size": 4302384884,
+        "sha256": "8da0c2671b52fea206c03fcb107abe825e788e8f8a5eb1a60c07e05ff8f768ae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00119-of-000163.safetensors",
+      "size": 4302350824,
+      "lfs": {
+        "size": 4302350824,
+        "sha256": "ced6448bf7e6f6a78a0137fe8254fa1f343932a55bcc52b943c256bbba0b5c4b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00120-of-000163.safetensors",
+      "size": 4302384488,
+      "lfs": {
+        "size": 4302384488,
+        "sha256": "8846c33dcfecd0c2dd50ae3d96f7d93db23e8182f92980e9966c6599bd529e4d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00121-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "113fe90a0147bc12680b787a6bc31122217df7fb5b3433210c9cefa25584276b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00122-of-000163.safetensors",
+      "size": 1747417474,
+      "lfs": {
+        "size": 1747417474,
+        "sha256": "345aba4ad535d07ca7aba912cd41183530325d01b59dfcf870bbcc1887926048",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00123-of-000163.safetensors",
+      "size": 4302317817,
+      "lfs": {
+        "size": 4302317817,
+        "sha256": "6dc66e9de80c5a4d7b196671f0c0f115da55b76b4d7c8ef8c574f6376ba2b3ce",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00124-of-000163.safetensors",
+      "size": 4302384914,
+      "lfs": {
+        "size": 4302384914,
+        "sha256": "46004f95ead3581513e578c17e26b49bbe4d5be0b57ad8438f78d375c4a0ba61",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00125-of-000163.safetensors",
+      "size": 4302350794,
+      "lfs": {
+        "size": 4302350794,
+        "sha256": "831705c29c0e7848ea6f8abcd6fcdf9823b2ab91975a287bf13883d001cce2a3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00126-of-000163.safetensors",
+      "size": 4302384518,
+      "lfs": {
+        "size": 4302384518,
+        "sha256": "7cb2588411f7457e717892b170a3427c4d783c31839ccaa1aa3f3e093ac026cd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00127-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "a41684945c8be6812920ac4e0c961e712b9d9359d0a5c6958b1a5f59eafbf055",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00128-of-000163.safetensors",
+      "size": 4302350602,
+      "lfs": {
+        "size": 4302350602,
+        "sha256": "2f4271e82c4f341dd8eea749fd43076d2fb53320bc2387c0c73d9355455275ad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00129-of-000163.safetensors",
+      "size": 4302384710,
+      "lfs": {
+        "size": 4302384710,
+        "sha256": "aa5e9df41ff0053160d688b7f52b008d8e4fdc6d0f54ef5c0f817778377d7bad",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00130-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "8f1a6ce7a96ec1c4e8a9786bd888edd1d606e594fbb48349844ae442d8a58ff8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00131-of-000163.safetensors",
+      "size": 4302350432,
+      "lfs": {
+        "size": 4302350432,
+        "sha256": "a61e01cde48444192daed6cfbb2407e4f0c93b3b97e3803cc26851203d64a315",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00132-of-000163.safetensors",
+      "size": 4302384900,
+      "lfs": {
+        "size": 4302384900,
+        "sha256": "7ebcb3006503f14d57ceda0518b3a916ae5e6a8920fb6f3d58cae39abc995d62",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00133-of-000163.safetensors",
+      "size": 4302350808,
+      "lfs": {
+        "size": 4302350808,
+        "sha256": "0406e376a602e226b024fd947d1d7bf47e2d47862de6c8358624b10e2a0e9d11",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00134-of-000163.safetensors",
+      "size": 4302384504,
+      "lfs": {
+        "size": 4302384504,
+        "sha256": "cc08715e690639e28e21c61123085cce16af635655a49193de45e12c100e4190",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00135-of-000163.safetensors",
+      "size": 4302384961,
+      "lfs": {
+        "size": 4302384961,
+        "sha256": "d49b9044d9e1af0e1e3c537c6e7454fc9cdc5a153086cdfc89413c08d091efec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00136-of-000163.safetensors",
+      "size": 4302350620,
+      "lfs": {
+        "size": 4302350620,
+        "sha256": "e0b793503bf9cd24f994aa22b7c1c38f95e46f6037e5700398f677f7e63c4e33",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00137-of-000163.safetensors",
+      "size": 4302384692,
+      "lfs": {
+        "size": 4302384692,
+        "sha256": "b8bcd2c6c0758d9304c7170423395eab81894532ce96e89786221090e067c7fd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00138-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "503f9b1fd38bbdac2de4a5ebb09f30d6a61c1ec76cbd8fa0e0c47b094f4d905b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00139-of-000163.safetensors",
+      "size": 4302350448,
+      "lfs": {
+        "size": 4302350448,
+        "sha256": "5985079864c5152bc6b507a7d00b42c01dce5767ee327238ef6f72679dc31d9c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00140-of-000163.safetensors",
+      "size": 4302384884,
+      "lfs": {
+        "size": 4302384884,
+        "sha256": "4125eccc78a46d7b3f5189c4f951681c2282c1cf853c1f98d26bd6904d86fea4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00141-of-000163.safetensors",
+      "size": 3142388798,
+      "lfs": {
+        "size": 3142388798,
+        "sha256": "a321bd5dd725473caf9faffc5555e9a9db5f0fef5f22eff3268a21a0f1c41081",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00142-of-000163.safetensors",
+      "size": 4302317817,
+      "lfs": {
+        "size": 4302317817,
+        "sha256": "e9eb494b6d6a5bb64456b9e960f8e55b3af70fe4f70a0d2b4787c21cf7673a3a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00143-of-000163.safetensors",
+      "size": 4302384914,
+      "lfs": {
+        "size": 4302384914,
+        "sha256": "45acb53859b2c2e3d9a6de6190d1478f1f6ea9480eacc74b12ee2cd33eb8edfa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00144-of-000163.safetensors",
+      "size": 4302350794,
+      "lfs": {
+        "size": 4302350794,
+        "sha256": "32f02ab6c44d7a437ce52da918335a2d8182d0e196515d85560aaf452f95942c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00145-of-000163.safetensors",
+      "size": 4302384518,
+      "lfs": {
+        "size": 4302384518,
+        "sha256": "f8067156d7d661aba8ea0843909e201621d46dde1ac787e84dec289d6b5c1d48",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00146-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "2193e1ccdd5f2925d46ca460f7a67f49007f805385d71eee869089a2bf8bd37f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00147-of-000163.safetensors",
+      "size": 4302350602,
+      "lfs": {
+        "size": 4302350602,
+        "sha256": "ee0f0343881900574085daae7cf6eecc4ece2c4120972615f8fcecde2b62e7db",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00148-of-000163.safetensors",
+      "size": 4302384710,
+      "lfs": {
+        "size": 4302384710,
+        "sha256": "cb7974abb0af67c5cf1e9ddbb50ab972ac6dd8e1f6e3a9e81c117480ea483425",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00149-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "3f1ef05d754723dc59ec6de324d495ddb60e38673a11acbcd93cfc5858118189",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00150-of-000163.safetensors",
+      "size": 4302350432,
+      "lfs": {
+        "size": 4302350432,
+        "sha256": "da413f536eeb3ed64cd2692da1a80c29149c42c18c3e1399e6bb4fb80d878f92",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00151-of-000163.safetensors",
+      "size": 4302384900,
+      "lfs": {
+        "size": 4302384900,
+        "sha256": "792045057bbc6d04d5f80d9c3287aaccb89b86cb5137d3abe76fa36d18f9629e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00152-of-000163.safetensors",
+      "size": 4302350808,
+      "lfs": {
+        "size": 4302350808,
+        "sha256": "106cb429c513fcd64d9b2629d72629345043a74f8f091f208911ec0c11c290c6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00153-of-000163.safetensors",
+      "size": 4302384504,
+      "lfs": {
+        "size": 4302384504,
+        "sha256": "7b9e56b86c58d36e9dcc173015be63df3eb71ab2c0b7c3b801d0cf3b3a2a03c9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00154-of-000163.safetensors",
+      "size": 4302384961,
+      "lfs": {
+        "size": 4302384961,
+        "sha256": "c0c29dc96decde82eb4eaa1abba09e20047c686fe2379a48fe04d2b7d0a13b98",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00155-of-000163.safetensors",
+      "size": 4302350620,
+      "lfs": {
+        "size": 4302350620,
+        "sha256": "e0f1ba9d8c22bb45cfc72920f107742464acdb4dbb2849a4e6ef79760dd06bd3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00156-of-000163.safetensors",
+      "size": 4302384692,
+      "lfs": {
+        "size": 4302384692,
+        "sha256": "564db0f499384c161d2d312cd02b0c922f4729fe3b564e3ef50e2cfb7f908067",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00157-of-000163.safetensors",
+      "size": 4302384963,
+      "lfs": {
+        "size": 4302384963,
+        "sha256": "64a221a7b53071ec0b03017fc3642d0e8dd1fc4271827edc31989b50d3aa1487",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00158-of-000163.safetensors",
+      "size": 4302350448,
+      "lfs": {
+        "size": 4302350448,
+        "sha256": "1780d453c93021628ca8c7c919019dc9cd517a02a85ffc82f1d736f9b4f586c5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00159-of-000163.safetensors",
+      "size": 4302384884,
+      "lfs": {
+        "size": 4302384884,
+        "sha256": "f84afdeb093ab3c86282121e61e02558e80aa726e32462182c689fad274f760f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00160-of-000163.safetensors",
+      "size": 5230637362,
+      "lfs": {
+        "size": 5230637362,
+        "sha256": "b64141986e800495f6bfb642c678a08cc0b7a59bae5aa600878485de0b5a1350",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00161-of-000163.safetensors",
+      "size": 4302384321,
+      "lfs": {
+        "size": 4302384321,
+        "sha256": "c25c05fc1595de1b5564bbdbbbd5315d4b14747bc4e78b2da920a62cd1520c0a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00162-of-000163.safetensors",
+      "size": 4302384948,
+      "lfs": {
+        "size": 4302384948,
+        "sha256": "16c50f73e4ed2e72bad2bda7ef33c40969c92e2c3b7b5de83932705e785fa460",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00163-of-000163.safetensors",
+      "size": 6584784447,
+      "lfs": {
+        "size": 6584784447,
+        "sha256": "cbcc825f5dab8c1c3f97cda9e298a0662a05d6f1f06ea0a5eed3bc9f99c477c0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 8898324,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_deepseek.py",
+      "size": 75741,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7847602,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 3594,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlibrary_name: transformers\n---\n# DeepSeek-R1\n<!-- markdownlint-disable first-line-h1 -->\n<!-- markdownlint-disable html -->\n<!-- markdownlint-disable no-duplicate-header -->\n\n<div align=\"center\">\n  <img src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/logo.svg?raw=true\" width=\"60%\" alt=\"DeepSeek-V3\" />\n</div>\n<hr>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://www.deepseek.com/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Homepage\" src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/badge.svg?raw=true\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://chat.deepseek.com/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/\ud83e\udd16%20Chat-DeepSeek%20R1-536af5?color=536af5&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://huggingface.co/deepseek-ai\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Hugging Face\" src=\"https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-DeepSeek%20AI-ffc107?color=ffc107&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://discord.gg/Tc7c45Zzu5\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Discord\" src=\"https://img.shields.io/badge/Discord-DeepSeek%20AI-7289da?logo=discord&logoColor=white&color=7289da\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/qr.jpeg?raw=true\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Wechat\" src=\"https://img.shields.io/badge/WeChat-DeepSeek%20AI-brightgreen?logo=wechat&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://twitter.com/deepseek_ai\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Twitter Follow\" src=\"https://img.shields.io/badge/Twitter-deepseek_ai-white?logo=x&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-R1/blob/main/LICENSE\" style=\"margin: 2px;\">\n    <img alt=\"License\" src=\"https://img.shields.io/badge/License-MIT-f5de53?&color=f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n\n<p align=\"center\">\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf\"><b>Paper Link</b>\ud83d\udc41\ufe0f</a>\n</p>\n\n\n## 1. Introduction\n\nWe introduce our first-generation reasoning models, DeepSeek-R1-Zero and DeepSeek-R1. \nDeepSeek-R1-Zero, a model trained via large-scale reinforcement learning (RL) without supervised fine-tuning (SFT) as a preliminary step, demonstrated remarkable performance on reasoning.\nWith RL, DeepSeek-R1-Zero naturally emerged with numerous powerful and interesting reasoning behaviors.\nHowever, DeepSeek-R1-Zero encounters challenges such as endless repetition, poor readability, and language mixing. To address these issues and further enhance reasoning performance,\nwe introduce DeepSeek-R1, which incorporates cold-start data before RL.\nDeepSeek-R1 achieves performance comparable to OpenAI-o1 across math, code, and reasoning tasks. \nTo support the research community, we have open-sourced DeepSeek-R1-Zero, DeepSeek-R1, and six dense models distilled from DeepSeek-R1 based on Llama and Qwen. DeepSeek-R1-Distill-Qwen-32B outperforms OpenAI-o1-mini across various benchmarks, achieving new state-of-the-art results for dense models.\n\n**NOTE: Before running DeepSeek-R1 series models locally, we kindly recommend reviewing the [Usage Recommendation](#usage-recommendations) section.**\n\n<p align=\"center\">\n  <img width=\"80%\" src=\"figures/benchmark.jpg\">\n</p>\n\n## 2. Model Summary\n\n---\n\n**Post-Training: Large-Scale Reinforcement Learning on the Base Model**\n\n-  We directly apply reinforcement learning (RL) to the base model without relying on supervised fine-tuning (SFT) as a preliminary step. This approach allows the model to explore chain-of-thought (CoT) for solving complex problems, resulting in the development of DeepSeek-R1-Zero. DeepSeek-R1-Zero demonstrates capabilities such as self-verification, reflection, and generating long CoTs, marking a significant milestone for the research community. Notably, it is the first open research to validate that reasoning capabilities of LLMs can be incentivized purely through RL, without the need for SFT. This breakthrough paves the way for future advancements in this area.\n\n-   We introduce our pipeline to develop DeepSeek-R1. The pipeline incorporates two RL stages aimed at discovering improved reasoning patterns and aligning with human preferences, as well as two SFT stages that serve as the seed for the model's reasoning and non-reasoning capabilities.\n    We believe the pipeline will benefit the industry by creating better models. \n\n---\n\n**Distillation: Smaller Models Can Be Powerful Too**\n\n-  We demonstrate that the reasoning patterns of larger models can be distilled into smaller models, resulting in better performance compared to the reasoning patterns discovered through RL on small models. The open source DeepSeek-R1, as well as its API, will benefit the research community to distill better smaller models in the future. \n- Using the reasoning data generated by DeepSeek-R1, we fine-tuned several dense models that are widely used in the research community. The evaluation results demonstrate that the distilled smaller dense models perform exceptionally well on benchmarks. We open-source distilled 1.5B, 7B, 8B, 14B, 32B, and 70B checkpoints based on Qwen2.5 and Llama3 series to the community.\n\n## 3. Model Downloads\n\n### DeepSeek-R1 Models\n\n<div align=\"center\">\n\n| **Model** | **#Total Params** | **#Activated Params** | **Context Length** | **Download** |\n| :------------: | :------------: | :------------: | :------------: | :------------: |\n| DeepSeek-R1-Zero | 671B | 37B | 128K   | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1-Zero)   |\n| DeepSeek-R1   | 671B | 37B |  128K   | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1)   |\n\n</div>\n\nDeepSeek-R1-Zero & DeepSeek-R1 are trained based on DeepSeek-V3-Base. \nFor more details regarding the model architecture, please refer to [DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-V3) repository.\n\n### DeepSeek-R1-Distill Models\n\n<div align=\"center\">\n\n| **Model** | **Base Model** | **Download** |\n| :------------: | :------------: | :------------: |\n| DeepSeek-R1-Distill-Qwen-1.5B  | [Qwen2.5-Math-1.5B](https://huggingface.co/Qwen/Qwen2.5-Math-1.5B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B)   |\n| DeepSeek-R1-Distill-Qwen-7B  | [Qwen2.5-Math-7B](https://huggingface.co/Qwen/Qwen2.5-Math-7B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B)   |\n| DeepSeek-R1-Distill-Llama-8B  | [Llama-3.1-8B](https://huggingface.co/meta-llama/Llama-3.1-8B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B)   |\n| DeepSeek-R1-Distill-Qwen-14B   | [Qwen2.5-14B](https://huggingface.co/Qwen/Qwen2.5-14B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B)   |\n|DeepSeek-R1-Distill-Qwen-32B  | [Qwen2.5-32B](https://huggingface.co/Qwen/Qwen2.5-32B) | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B)   |\n| DeepSeek-R1-Distill-Llama-70B  | [Llama-3.3-70B-Instruct](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B)   |\n\n</div>\n\nDeepSeek-R1-Distill models are fine-tuned based on open-source models, using samples generated by DeepSeek-R1.\nWe slightly change their configs and tokenizers. Please use our setting to run these models.\n\n## 4. Evaluation Results\n\n### DeepSeek-R1-Evaluation\n For all our models, the maximum generation length is set to 32,768 tokens. For benchmarks requiring sampling, we use a temperature of $0.6$, a top-p value of $0.95$, and generate 64 responses per query to estimate pass@1.\n<div align=\"center\">\n\n\n| Category | Benchmark (Metric) | Claude-3.5-Sonnet-1022 | GPT-4o 0513 | DeepSeek V3 | OpenAI o1-mini | OpenAI o1-1217 | DeepSeek R1 |\n|----------|-------------------|----------------------|------------|--------------|----------------|------------|--------------|\n| | Architecture | - | - | MoE | - | - | MoE |\n| | # Activated Params | - | - | 37B | - | - | 37B |\n| | # Total Params | - | - | 671B | - | - | 671B |\n| English | MMLU (Pass@1) | 88.3 | 87.2 | 88.5 | 85.2 | **91.8** | 90.8 |\n| | MMLU-Redux (EM) | 88.9 | 88.0 | 89.1 | 86.7 | - | **92.9** |\n| | MMLU-Pro (EM) | 78.0 | 72.6 | 75.9 | 80.3 | - | **84.0** |\n| | DROP (3-shot F1) | 88.3 | 83.7 | 91.6 | 83.9 | 90.2 | **92.2** |\n| | IF-Eval (Prompt Strict) | **86.5** | 84.3 | 86.1 | 84.8 | - | 83.3 |\n| | GPQA-Diamond (Pass@1) | 65.0 | 49.9 | 59.1 | 60.0 | **75.7** | 71.5 |\n| | SimpleQA (Correct) | 28.4 | 38.2 | 24.9 | 7.0 | **47.0** | 30.1 |\n| | FRAMES (Acc.) | 72.5 | 80.5 | 73.3 | 76.9 | - | **82.5** |\n| | AlpacaEval2.0 (LC-winrate) | 52.0 | 51.1 | 70.0 | 57.8 | - | **87.6** |\n| | ArenaHard (GPT-4-1106) | 85.2 | 80.4 | 85.5 | 92.0 | - | **92.3** |\n| Code | LiveCodeBench (Pass@1-COT) | 33.8 | 34.2 | - | 53.8 | 63.4 | **65.9** |\n| | Codeforces (Percentile) | 20.3 | 23.6 | 58.7 | 93.4 | **96.6** | 96.3 |\n| | Codeforces (Rating) | 717 | 759 | 1134 | 1820 | **2061** | 2029 |\n| | SWE Verified (Resolved) | **50.8** | 38.8 | 42.0 | 41.6 | 48.9 | 49.2 |\n| | Aider-Polyglot (Acc.) | 45.3 | 16.0 | 49.6 | 32.9 | **61.7** | 53.3 |\n| Math | AIME 2024 (Pass@1) | 16.0 | 9.3 | 39.2 | 63.6 | 79.2 | **79.8** |\n| | MATH-500 (Pass@1) | 78.3 | 74.6 | 90.2 | 90.0 | 96.4 | **97.3** |\n| | CNMO 2024 (Pass@1) | 13.1 | 10.8 | 43.2 | 67.6 | - | **78.8** |\n| Chinese | CLUEWSC (EM) | 85.4 | 87.9 | 90.9 | 89.9 | - | **92.8** |\n| | C-Eval (EM) | 76.7 | 76.0 | 86.5 | 68.9 | - | **91.8** |\n| | C-SimpleQA (Correct) | 55.4 | 58.7 | **68.0** | 40.3 | - | 63.7 |\n\n</div>\n\n\n### Distilled Model Evaluation\n\n\n<div align=\"center\">\n\n| Model                                    | AIME 2024 pass@1 | AIME 2024 cons@64 | MATH-500 pass@1 | GPQA Diamond pass@1 | LiveCodeBench pass@1 | CodeForces rating |\n|------------------------------------------|------------------|-------------------|-----------------|----------------------|----------------------|-------------------|\n| GPT-4o-0513                          | 9.3              | 13.4              | 74.6            | 49.9                 | 32.9                 | 759               |\n| Claude-3.5-Sonnet-1022             | 16.0             | 26.7                 | 78.3            | 65.0                 | 38.9                 | 717               |\n| o1-mini                              | 63.6             | 80.0              | 90.0            | 60.0                 | 53.8                 | **1820**          |\n| QwQ-32B-Preview                              | 44.0             | 60.0                 | 90.6            | 54.5               | 41.9                 | 1316              |\n| DeepSeek-R1-Distill-Qwen-1.5B       | 28.9             | 52.7              | 83.9            | 33.8                 | 16.9                 | 954               |\n| DeepSeek-R1-Distill-Qwen-7B          | 55.5             | 83.3              | 92.8            | 49.1                 | 37.6                 | 1189              |\n| DeepSeek-R1-Distill-Qwen-14B         | 69.7             | 80.0              | 93.9            | 59.1                 | 53.1                 | 1481              |\n| DeepSeek-R1-Distill-Qwen-32B        | **72.6**         | 83.3              | 94.3            | 62.1                 | 57.2                 | 1691              |\n| DeepSeek-R1-Distill-Llama-8B         | 50.4             | 80.0              | 89.1            | 49.0                 | 39.6                 | 1205              |\n| DeepSeek-R1-Distill-Llama-70B        | 70.0             | **86.7**          | **94.5**        | **65.2**             | **57.5**             | 1633              |\n\n</div>\n\n\n## 5. Chat Website & API Platform\nYou can chat with DeepSeek-R1 on DeepSeek's official website: [chat.deepseek.com](https://chat.deepseek.com), and switch on the button \"DeepThink\"\n\nWe also provide OpenAI-Compatible API at DeepSeek Platform: [platform.deepseek.com](https://platform.deepseek.com/)\n\n## 6. How to Run Locally\n\n### DeepSeek-R1 Models\n\nPlease visit [DeepSeek-V3](https://github.com/deepseek-ai/DeepSeek-V3) repo for more information about running DeepSeek-R1 locally.\n\n**NOTE: Hugging Face's Transformers has not been directly supported yet.**\n\n### DeepSeek-R1-Distill Models\n\nDeepSeek-R1-Distill models can be utilized in the same manner as Qwen or Llama models.\n\nFor instance, you can easily start a service using [vLLM](https://github.com/vllm-project/vllm):\n\n```shell\nvllm serve deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --tensor-parallel-size 2 --max-model-len 32768 --enforce-eager\n```\n\nYou can also easily start a service using [SGLang](https://github.com/sgl-project/sglang)\n\n```bash\npython3 -m sglang.launch_server --model deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --trust-remote-code --tp 2\n```\n\n### Usage Recommendations\n\n**We recommend adhering to the following configurations when utilizing the DeepSeek-R1 series models, including benchmarking, to achieve the expected performance:**\n\n1. Set the temperature within the range of 0.5-0.7 (0.6 is recommended) to prevent endless repetitions or incoherent outputs.\n2. **Avoid adding a system prompt; all instructions should be contained within the user prompt.**\n3. For mathematical problems, it is advisable to include a directive in your prompt such as: \"Please reason step by step, and put your final answer within \\boxed{}.\"\n4. When evaluating model performance, it is recommended to conduct multiple tests and average the results.\n\nAdditionally, we have observed that the DeepSeek-R1 series models tend to bypass thinking pattern (i.e., outputting \"\\<think\\>\\n\\n\\</think\\>\") when responding to certain queries, which can adversely affect the model's performance.\n**To ensure that the model engages in thorough reasoning, we recommend enforcing the model to initiate its response with \"\\<think\\>\\n\" at the beginning of every output.**\n\n## 7. License\nThis code repository and the model weights are licensed under the [MIT License](https://github.com/deepseek-ai/DeepSeek-R1/blob/main/LICENSE).\nDeepSeek-R1 series support commercial use, allow for any modifications and derivative works, including, but not limited to, distillation for training other LLMs. Please note that:\n- DeepSeek-R1-Distill-Qwen-1.5B, DeepSeek-R1-Distill-Qwen-7B, DeepSeek-R1-Distill-Qwen-14B and DeepSeek-R1-Distill-Qwen-32B are derived from [Qwen-2.5 series](https://github.com/QwenLM/Qwen2.5), which are originally licensed under [Apache 2.0 License](https://huggingface.co/Qwen/Qwen2.5-1.5B/blob/main/LICENSE), and now finetuned with 800k samples curated with DeepSeek-R1.\n- DeepSeek-R1-Distill-Llama-8B is derived from Llama3.1-8B-Base and is originally licensed under [llama3.1 license](https://huggingface.co/meta-llama/Llama-3.1-8B/blob/main/LICENSE).\n- DeepSeek-R1-Distill-Llama-70B is derived from Llama3.3-70B-Instruct and is originally licensed under [llama3.3 license](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct/blob/main/LICENSE).\n\n## 8. Citation\n```\n@misc{deepseekai2025deepseekr1incentivizingreasoningcapability,\n      title={DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning}, \n      author={DeepSeek-AI},\n      year={2025},\n      eprint={2501.12948},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2501.12948}, \n}\n\n```\n\n## 9. Contact\nIf you have any questions, please raise an issue or contact us at [service@deepseek.com](service@deepseek.com).\n",
+  "cardDataParsed": {
+    "license": "mit",
+    "library_name": "transformers",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

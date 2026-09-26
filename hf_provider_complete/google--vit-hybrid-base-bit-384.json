@@ -1,0 +1,119 @@
+{
+  "modelId": "google/vit-hybrid-base-bit-384",
+  "author": "google",
+  "sha": "e8cc9d5fe904240b3b0035837daeabff06202bf2",
+  "lastModified": "2023-09-11 20:45:52+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "safetensors",
+    "vit-hybrid",
+    "image-classification",
+    "vision",
+    "dataset:imagenet-1k",
+    "arxiv:2010.11929",
+    "arxiv:2006.03677",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-classification",
+  "library_name": "transformers",
+  "likes": 6,
+  "downloads": 468,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "imagenet-1k"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "image-classification"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "ViTHybridForImageClassification"
+    ],
+    "model_type": "vit-hybrid"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1477,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5212,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 71930,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 395850880,
+      "lfs": {
+        "size": 395850880,
+        "sha256": "0dc3dcb8990acc23def4b732654e19b4cb23af44ab776ca3c6038ec0971b2531",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 430,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 395926301,
+      "lfs": {
+        "size": 395926301,
+        "sha256": "fe7e8f82e4a2e2ab2497700daaf341054052ecf7a779b2c8dfcd07b43a83ac30",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\n- image-classification\ndatasets:\n- imagenet-1k\n---\n\n# Vision Transformer (base-sized model) - Hybrid\n\nThe hybrid Vision Transformer (ViT) model was proposed in [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) by Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, Neil Houlsby. It's the first paper that successfully trains a Transformer encoder on ImageNet, attaining very good results compared to familiar convolutional architectures. ViT hybrid is a slight variant of the [plain Vision Transformer](vit), by leveraging a convolutional backbone (specifically, [BiT](bit)) whose features are used as initial \"tokens\" for the Transformer.\n\nDisclaimer: The team releasing ViT did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\n*While the Transformer architecture has become the de-facto standard for natural language processing tasks, its applications to computer vision remain limited. In vision, attention is either applied in conjunction with convolutional networks, or used to replace certain components of convolutional networks while keeping their overall structure in place. We show that this reliance on CNNs is not necessary and a pure transformer applied directly to sequences of image patches can perform very well on image classification tasks. When pre-trained on large amounts of data and transferred to multiple mid-sized or small image recognition benchmarks (ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains excellent results compared to state-of-the-art convolutional networks while requiring substantially fewer computational resources to train.*\n\n## Intended uses & limitations\n\nYou can use the raw model for image classification. See the [model hub](https://huggingface.co/models?search=google/vit) to look for\nfine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model to classify an image of the COCO 2017 dataset into one of the 1,000 ImageNet classes:\n\n```python\nfrom transformers import ViTHybridImageProcessor, ViTHybridForImageClassification\nfrom PIL import Image\nimport requests\n\nurl = 'http://images.cocodataset.org/val2017/000000039769.jpg'\nimage = Image.open(requests.get(url, stream=True).raw)\n\nfeature_extractor = ViTHybridImageProcessor.from_pretrained('google/vit-hybrid-base-bit-384')\nmodel = ViTHybridForImageClassification.from_pretrained('google/vit-hybrid-base-bit-384')\n\ninputs = feature_extractor(images=image, return_tensors=\"pt\")\noutputs = model(**inputs)\nlogits = outputs.logits\n# model predicts one of the 1000 ImageNet classes\npredicted_class_idx = logits.argmax(-1).item()\nprint(\"Predicted class:\", model.config.id2label[predicted_class_idx])\n>>> tabby, tabby cat\n```\n\nFor more code examples, we refer to the [documentation](https://huggingface.co/transformers/model_doc/vit.html#).\n\n## Training data\n\nThe ViT-Hybrid model was pretrained on [ImageNet-21k](http://www.image-net.org/), a dataset consisting of 14 million images and 21k classes, and fine-tuned on [ImageNet](http://www.image-net.org/challenges/LSVRC/2012/), a dataset consisting of 1 million images and 1k classes. \n\n## Training procedure\n\n### Preprocessing\n\nThe exact details of preprocessing of images during training/validation can be found [here](https://github.com/google-research/vision_transformer/blob/master/vit_jax/input_pipeline.py). \n\nImages are resized/rescaled to the same resolution (224x224) and normalized across the RGB channels with mean (0.5, 0.5, 0.5) and standard deviation (0.5, 0.5, 0.5).\n\n### Pretraining\n\nThe model was trained on TPUv3 hardware (8 cores). All model variants are trained with a batch size of 4096 and learning rate warmup of 10k steps. For ImageNet, the authors found it beneficial to additionally apply gradient clipping at global norm 1. Training resolution is 224.\n\n## Evaluation results\n\nFor evaluation results on several image classification benchmarks, we refer to tables 2 and 5 of the original paper. Note that for fine-tuning, the best results are obtained with a higher resolution (384x384). Of course, increasing the model size will result in better performance.\n\n### BibTeX entry and citation info\n\n```bibtex\n@misc{wu2020visual,\n      title={Visual Transformers: Token-based Image Representation and Processing for Computer Vision}, \n      author={Bichen Wu and Chenfeng Xu and Xiaoliang Dai and Alvin Wan and Peizhao Zhang and Zhicheng Yan and Masayoshi Tomizuka and Joseph Gonzalez and Kurt Keutzer and Peter Vajda},\n      year={2020},\n      eprint={2006.03677},\n      archivePrefix={arXiv},\n      primaryClass={cs.CV}\n}\n```\n\n```bibtex\n@inproceedings{deng2009imagenet,\n  title={Imagenet: A large-scale hierarchical image database},\n  author={Deng, Jia and Dong, Wei and Socher, Richard and Li, Li-Jia and Li, Kai and Fei-Fei, Li},\n  booktitle={2009 IEEE conference on computer vision and pattern recognition},\n  pages={248--255},\n  year={2009},\n  organization={Ieee}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision",
+      "image-classification"
+    ],
+    "datasets": [
+      "imagenet-1k"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "image-classification",
+    "processor": null
+  }
+}

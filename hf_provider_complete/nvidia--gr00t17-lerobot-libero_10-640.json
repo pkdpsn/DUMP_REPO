@@ -1,0 +1,120 @@
+{
+  "modelId": "nvidia/gr00t17-lerobot-libero_10-640",
+  "author": "nvidia",
+  "sha": "5ee08ab09fac5c5ef2388a14c882ea825ac861db",
+  "lastModified": "2026-07-06 17:01:10+00:00",
+  "tags": [
+    "lerobot",
+    "safetensors",
+    "robotics",
+    "groot",
+    "dataset:IPEC-COMMUNITY/libero_10_no_noops_1.0.0_lerobot",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "robotics",
+  "library_name": "lerobot",
+  "likes": 3,
+  "downloads": 591,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": "IPEC-COMMUNITY/libero_10_no_noops_1.0.0_lerobot",
+    "eval_results": null,
+    "language": null,
+    "library_name": "lerobot",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": "groot",
+    "pipeline_tag": "robotics",
+    "tags": [
+      "robotics",
+      "lerobot",
+      "groot"
+    ]
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5230,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2433,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 12576215296,
+      "lfs": {
+        "size": 12576215296,
+        "sha256": "8a7f3c0fb13cc84f89bbc7af1a675431ddd7b16ce47bebb12b4298f6b2827a94",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "policy_postprocessor.json",
+      "size": 608,
+      "lfs": null
+    },
+    {
+      "rfilename": "policy_postprocessor_step_0_groot_action_unpack_unnormalize_v2.safetensors",
+      "size": 4224,
+      "lfs": {
+        "size": 4224,
+        "sha256": "5eeb4ebb0b15d5e304f8ec9df788593c88d6f210c4d44366660645d66716f1e5",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "policy_preprocessor.json",
+      "size": 4171,
+      "lfs": null
+    },
+    {
+      "rfilename": "policy_preprocessor_step_2_groot_n1_7_pack_inputs_v1.safetensors",
+      "size": 4224,
+      "lfs": {
+        "size": 4224,
+        "sha256": "5eeb4ebb0b15d5e304f8ec9df788593c88d6f210c4d44366660645d66716f1e5",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "train_config.json",
+      "size": 6178,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\ndatasets: IPEC-COMMUNITY/libero_10_no_noops_1.0.0_lerobot\nlibrary_name: lerobot\nlicense: apache-2.0\nmodel_name: groot\npipeline_tag: robotics\ntags:\n- robotics\n- lerobot\n- groot\n---\n\n# Model Card for groot\n\n<!-- Provide a quick summary of what the model is/does. -->\n\n\n[GR00T N1.7](https://github.com/NVIDIA/Isaac-GR00T) is an open, cross-embodiment foundation model from NVIDIA for generalized humanoid robot reasoning and skills. It uses a Cosmos-Reason2/Qwen3-VL backbone and a flow-matching action transformer to predict actions conditioned on vision, language, and proprioception.\n\n\n\n<p align=\"center\">\n  <img src=\"https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/lerobot-groot-paper1%20(1).png\" alt=\"groot architecture\" width=\"85%\"/>\n</p>\n\n\n<!-- A short demo is worth more than any description! Record a GIF/video of the policy\nrunning on your robot, upload it to this repo, and embed it here:\n<p align=\"center\">\n  <img src=\"https://huggingface.co/<hf_user>/<policy_repo_id>/resolve/main/demo.gif\" width=\"60%\"/>\n</p>\n-->\n\nThis policy has been trained and pushed to the Hub using [LeRobot](https://github.com/huggingface/lerobot).\n\nLearn how to train and run it in the [LeRobot groot guide](https://huggingface.co/docs/lerobot/main/en/groot), or browse the [full documentation](https://huggingface.co/docs/lerobot/index).\n\n\n---\n\n## Model Details\n\n- **License:** apache-2.0\n\n\n## Inputs & Outputs\n\nThe policy consumes these observation features and produces these action features.\n\n**Inputs**\n\n| Feature | Type | Shape |\n| --- | --- | --- |\n| `observation.images.wrist_image` | VISUAL | `(256, 256, 3)` |\n| `observation.images.image` | VISUAL | `(256, 256, 3)` |\n| `observation.state` | STATE | `(8,)` |\n\n**Outputs**\n\n| Feature | Type | Shape |\n| --- | --- | --- |\n| `action` | ACTION | `(7,)` |\n\n\n\n## Training Configuration\n\n| Setting | Value |\n| --- | --- |\n| Training steps | 20000 |\n| Batch size | 320 |\n| Optimizer | adamw |\n| Learning rate | 0.0001 |\n| Seed | 42 |\n| LeRobot version | 0.6.1 |\n\n---\n\n## How to Get Started with the Model\n\nNew to LeRobot? These guides cover the full workflow:\n\n- **[Install LeRobot](https://huggingface.co/docs/lerobot/main/en/installation)** \u2014 set up the `lerobot` package.\n- **[Hardware setup](https://huggingface.co/docs/lerobot/main/en/hardware_guide)** \u2014 assemble, wire, and calibrate your robot and cameras.\n- **[Record data & train a policy](https://huggingface.co/docs/lerobot/en/il_robots)** \u2014 the end-to-end imitation-learning walkthrough.\n- **[CLI cheat-sheet](https://huggingface.co/docs/lerobot/main/en/cheat-sheet)** \u2014 quick reference for the `lerobot-*` commands.\n\nThe short version to run and train this policy:\n\n### Run the policy on your robot\n\n```bash\nlerobot-rollout \\\n  --strategy.type=base \\\n  --robot.type=<your_robot_type> \\\n  --robot.port=<your_robot_port> \\\n  --robot.cameras=\"{ <camera_1>: {type: opencv, index_or_path: <index_or_path>, width: 640, height: 480, fps: 30}, <camera_2>: {type: opencv, index_or_path: <index_or_path>, width: 640, height: 480, fps: 30}}\" \\\n  --policy.path=nvidia/gr00t17-lerobot-libero_10-640 \\\n  --task=\"<your_task_description>\" \\\n  --duration=60\n```\n\nReplace the remaining `<...>` placeholders with your own values: `--robot.port` and the camera names/indices are specific to your machine, and the camera names must match the observation keys this policy was trained on.\n\nWhen `--strategy.type=base` is used the script doesn't record the episodes. Skipping duration will make the policy run indefinitely. For more information look at [rollout documentation](https://huggingface.co/docs/lerobot/main/en/inference).\n\n### Train your own policy\n\n```bash\nlerobot-train \\\n  --dataset.repo_id=${HF_USER}/<dataset> \\\n  --policy.type=groot \\\n  --output_dir=outputs/train/<policy_repo_id> \\\n  --job_name=lerobot_training \\\n  --policy.device=cuda \\\n  --policy.repo_id=${HF_USER}/<policy_repo_id> \\\n  --wandb.enable=true\n```\n\n_Writes checkpoints to `outputs/train/<policy_repo_id>/checkpoints/`._\n\n---\n\n## Evaluation\n\n<!-- Report real-robot results here: run the policy several times per task and count the\nsuccesses. Delete the \"No evaluation results\" line and fill in this table instead:\n\n| Task | Trials | Successes | Success rate |\n| ---- | ------ | --------- | ------------ |\n| pick the lego brick | 10 | 8 | 80% |\n\nAlso worth noting: anything that affects difficulty (new object positions, lighting,\ndistractors, a different robot of the same type, ...).\n-->\n\n_No evaluation results have been provided for this policy yet._\n\n---\n\n## Citation\n\nIf you use this policy, please cite the method linked in the description above, along with LeRobot:\n\n```bibtex\n@misc{cadene2024lerobot,\n    author = {Cadene, Remi and Alibert, Simon and Soare, Alexander and Gallouedec, Quentin and Zouitine, Adil and Palma, Steven and Kooijmans, Pepijn and Aractingi, Michel and Shukor, Mustafa and Aubakirova, Dana and Russi, Martino and Capuano, Francesco and Pascal, Caroline and Choghari, Jade and Moss, Jess and Wolf, Thomas},\n    title = {LeRobot: State-of-the-art Machine Learning for Real-World Robotics in Pytorch},\n    howpublished = \"\\url{https://github.com/huggingface/lerobot}\",\n    year = {2024}\n}\n```",
+  "cardDataParsed": {
+    "datasets": "IPEC-COMMUNITY/libero_10_no_noops_1.0.0_lerobot",
+    "library_name": "lerobot",
+    "license": "apache-2.0",
+    "model_name": "groot",
+    "pipeline_tag": "robotics",
+    "tags": [
+      "robotics",
+      "lerobot",
+      "groot"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null
+  },
+  "transformersInfo": null
+}

@@ -1,0 +1,126 @@
+{
+  "modelId": "nvidia/Riva-Translate-4B-Instruct",
+  "author": "nvidia",
+  "sha": "d3250d058eae48f33a3c2e4ba136b6d4048100e2",
+  "lastModified": "2026-07-27 18:04:24+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "mistral",
+    "text-generation",
+    "conversational",
+    "base_model:nvidia/Mistral-NeMo-12B-Base",
+    "base_model:finetune:nvidia/Mistral-NeMo-12B-Base",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 20,
+  "downloads": 416,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "nvidia/Mistral-NeMo-12B-Base"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license-agreement",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "MistralForCausalLM"
+    ],
+    "model_type": "mistral",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{%- set language_pairs = {\"en-zh-cn\": {\"source\": \"English\", \"target\": \"Simplified Chinese\"}, \"en-zh\": {\"source\": \"English\", \"target\": \"Simplified Chinese\"}, \"en-zh-tw\": {\"source\": \"English\", \"target\": \"Traditional Chinese\"}, \"en-ar\": {\"source\": \"English\", \"target\": \"Arabic\"}, \"en-de\": {\"source\": \"English\", \"target\": \"German\"}, \"en-es-es\": {\"source\": \"English\", \"target\": \"European Spanish\"}, \"en-es-us\": {\"source\": \"English\", \"target\": \"Latin American Spanish\"}, \"en-fr\": {\"source\": \"English\", \"target\": \"French\"}, \"en-ja\": {\"source\": \"English\", \"target\": \"Japanese\"}, \"en-ko\": {\"source\": \"English\", \"target\": \"Korean\"}, \"en-ru\": {\"source\": \"English\", \"target\": \"Russian\"}, \"en-pt-br\": {\"source\": \"English\", \"target\": \"Brazilian Portuguese\"}} -%}\n{%- set system_message = '' -%}\n{%- set source_lang = '' -%}\n{%- set target_lang = '' -%}\n{%- if messages[0]['role'] == 'system' -%}\n  {%- set lang_pair = messages[0]['content'] | trim -%}\n  {%- set messages = messages[1:] -%}\n  {%- if lang_pair in language_pairs -%}\n    {%- set source_lang = language_pairs[lang_pair]['source'] -%}\n    {%- set target_lang = language_pairs[lang_pair]['target'] -%}\n    {%- set system_message = 'You are an expert at translating text from ' + source_lang + ' to ' + target_lang + '.' -%}\n  {%- else -%}\n    {%- set system_message = 'You are a translation expert.' -%}\n  {%- endif -%}\n{%- endif -%}\n{{- '<s>System\\n' + system_message + '</s>\\n' -}}\n{%- for message in messages -%}\n  {%- if (message['role'] in ['user']) != (loop.index0 % 2 == 0) -%}\n    {{- raise_exception('Conversation roles must alternate between user and assistant') -}}\n  {%- elif message['role'] == 'user' -%}\n    {%- set user_content = (target_lang and 'What is the ' + target_lang + ' translation of the sentence: ' + message['content'] | trim or message['content'] | trim) -%}\n    {{- '<s>User\\n' + user_content + '</s>\\n' -}}\n  {%- elif message['role'] == 'assistant' -%}\n    {{- '<s>Assistant\\n' + message['content'] | trim + '</s>\\n' -}}\n  {%- endif -%}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n  {{ '<s>Assistant\\n' }}\n{%- endif -%}",
+      "eos_token": "</s>",
+      "unk_token": "<unk>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1604,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5174,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 637,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 111,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4973636752,
+      "lfs": {
+        "size": 4973636752,
+        "sha256": "d4f33646e0e26f9b0416619e581f6bb996745cd34b503673ecb78d9a731c743f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 3385808608,
+      "lfs": {
+        "size": 3385808608,
+        "sha256": "4008fe431fad65edaaeb0c429279642c58eef86fbefe99f199baf6dfca7296f6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 25377,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 414,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17078292,
+      "lfs": {
+        "size": 17078292,
+        "sha256": "b0240ce510f08e6c2041724e9043e33be9d251d1e4a4d94eb68cd47b954b61d2",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 179359,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

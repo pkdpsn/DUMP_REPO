@@ -1,0 +1,167 @@
+{
+  "modelId": "mistralai/Mistral-7B-v0.3",
+  "author": "mistralai",
+  "sha": "caa1feb0e54d415e2df31207e5f4e273e33509b1",
+  "lastModified": "2025-07-24 16:42:40+00:00",
+  "tags": [
+    "vllm",
+    "safetensors",
+    "mistral",
+    "mistral-common",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "vllm",
+  "likes": 594,
+  "downloads": 189133,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "vllm",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "mistral-common"
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/fr/terms/\">Privacy Policy</a>."
+  },
+  "config": {
+    "architectures": [
+      "MistralForCausalLM"
+    ],
+    "model_type": "mistral",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": null,
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3580,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 601,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated.safetensors",
+      "size": 14496078512,
+      "lfs": {
+        "size": 14496078512,
+        "sha256": "2ebad29835bed626c419fdcc69e268b01c79bacbca8c8bc5e1124378a89d5275",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 116,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 4949453792,
+      "lfs": {
+        "size": 4949453792,
+        "sha256": "2d7de8eb9bd554cccc999649fd5a3a28a44d09042879d6c1cedd13f59c86f7a8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 4999819336,
+      "lfs": {
+        "size": 4999819336,
+        "sha256": "79a5f871a0fbb7919f263d78caff0d4d3b7a1d444552db3011ada70f48fd5ee4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 4546807800,
+      "lfs": {
+        "size": 4546807800,
+        "sha256": "ba7ae59358f726f5f5bc5264fd8a3aec907f42e6009d7b22454007d18723616a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 23950,
+      "lfs": null
+    },
+    {
+      "rfilename": "params.json",
+      "size": 202,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 414,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1961548,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 587404,
+      "lfs": {
+        "size": 587404,
+        "sha256": "37f00374dea48658ee8f5d0f21895b9bc55cb0103939607c8185bfd1c6ca1f89",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer.model.v3",
+      "size": 587404,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 136697,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: vllm\nlicense: apache-2.0\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/fr/terms/\">Privacy Policy</a>.\ntags:\n- mistral-common\n---\n\n# Model Card for Mistral-7B-v0.3\n\nThe Mistral-7B-v0.3 Large Language Model (LLM) is a Mistral-7B-v0.2 with extended vocabulary.\n\nMistral-7B-v0.3 has the following changes compared to [Mistral-7B-v0.2](https://huggingface.co/mistralai/Mistral-7B-v0.2/edit/main/README.md)\n- Extended vocabulary to 32768\n\n## Installation\n\nIt is recommended to use `mistralai/Mistral-7B-v0.3` with [mistral-inference](https://github.com/mistralai/mistral-inference). For HF transformers code snippets, please keep scrolling.\n\n```\npip install mistral_inference\n```\n\n## Download\n\n```py\nfrom huggingface_hub import snapshot_download\nfrom pathlib import Path\n\nmistral_models_path = Path.home().joinpath('mistral_models', '7B-v0.3')\nmistral_models_path.mkdir(parents=True, exist_ok=True)\n\nsnapshot_download(repo_id=\"mistralai/Mistral-7B-v0.3\", allow_patterns=[\"params.json\", \"consolidated.safetensors\", \"tokenizer.model.v3\"], local_dir=mistral_models_path)\n```\n\n### Demo\n\nAfter installing `mistral_inference`, a `mistral-demo` CLI command should be available in your environment.\n\n```\nmistral-demo $HOME/mistral_models/7B-v0.3\n```\n\nShould give something along the following lines:\n\n```\nThis is a test of the emergency broadcast system. This is only a test.\n\nIf this were a real emergency, you would be told what to do.\n\nThis is a test\n=====================\nThis is another test of the new blogging software. I\u2019m not sure if I\u2019m going to keep it or not. I\u2019m not sure if I\u2019m going to keep\n=====================\nThis is a third test, mistral AI is very good at testing. \ud83d\ude42\n\nThis is a third test, mistral AI is very good at testing. \ud83d\ude42\n\nThis\n=====================\n```\n\n## Generate with `transformers`\n\nIf you want to use Hugging Face `transformers` to generate text, you can do something like this.\n\n```py\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_id = \"mistralai/Mistral-7B-v0.3\"\ntokenizer = AutoTokenizer.from_pretrained(model_id)\n\nmodel = AutoModelForCausalLM.from_pretrained(model_id)\ninputs = tokenizer(\"Hello my name is\", return_tensors=\"pt\")\n\noutputs = model.generate(**inputs, max_new_tokens=20)\nprint(tokenizer.decode(outputs[0], skip_special_tokens=True))\n```\n\n## Limitations\n\nThe Mistral 7B Instruct model is a quick demonstration that the base model can be easily fine-tuned to achieve compelling performance. \nIt does not have any moderation mechanisms. We're looking forward to engaging with the community on ways to\nmake the model finely respect guardrails, allowing for deployment in environments requiring moderated outputs.\n\n## The Mistral AI Team\n\nAlbert Jiang, Alexandre Sablayrolles, Alexis Tacnet, Antoine Roux, Arthur Mensch, Audrey Herblin-Stoop, Baptiste Bout, Baudouin de Monicault, Blanche Savary, Bam4d, Caroline Feldman, Devendra Singh Chaplot, Diego de las Casas, Eleonore Arcelin, Emma Bou Hanna, Etienne Metzger, Gianna Lengyel, Guillaume Bour, Guillaume Lample, Harizo Rajaona, Jean-Malo Delignon, Jia Li, Justus Murke, Louis Martin, Louis Ternon, Lucile Saulnier, L\u00e9lio Renard Lavaud, Margaret Jennings, Marie Pellat, Marie Torelli, Marie-Anne Lachaux, Nicolas Schuhl, Patrick von Platen, Pierre Stock, Sandeep Subramanian, Sophia Yang, Szymon Antoniak, Teven Le Scao, Thibaut Lavril, Timoth\u00e9e Lacroix, Th\u00e9ophile Gervet, Thomas Wang, Valera Nemychnikova, William El Sayed, William Marshall",
+  "cardDataParsed": {
+    "library_name": "vllm",
+    "license": "apache-2.0",
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/fr/terms/\">Privacy Policy</a>.",
+    "tags": [
+      "mistral-common"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

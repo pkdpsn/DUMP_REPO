@@ -1,0 +1,124 @@
+{
+  "modelId": "microsoft/xprophetnet-large-wiki100-cased",
+  "author": "microsoft",
+  "sha": "40b36de4c5dee6b5696c7e43c026b81cc60efa2a",
+  "lastModified": "2023-01-24 16:58:42+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "xlm-prophetnet",
+    "text2text-generation",
+    "multilingual",
+    "arxiv:2001.04063",
+    "arxiv:2004.01401",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 2,
+  "downloads": 677,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": "multilingual",
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "XLMProphetNetForConditionalGeneration"
+    ],
+    "model_type": "xlm-prophetnet",
+    "tokenizer_config": {
+      "bos_token": "[SEP]",
+      "eos_token": "[SEP]",
+      "unk_token": "[UNK]",
+      "sep_token": "[SEP]",
+      "pad_token": "[PAD]",
+      "mask_token": "[MASK]"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2164,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1246,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 168,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config_for_summarization.json",
+      "size": 266,
+      "lfs": null
+    },
+    {
+      "rfilename": "prophetnet.tokenizer",
+      "size": 5069051,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 2464535191,
+      "lfs": {
+        "size": 2464535191,
+        "sha256": "d3be8e10ab88470e4a2da72e62a32f522fdda56540dda3b5108268403ec34429",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 134,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 159,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: multilingual\n---\n\n## xprophetnet-large-wiki100-cased\nCross-lingual version [ProphetNet](https://arxiv.org/abs/2001.04063), pretrained on [wiki100 xGLUE dataset](https://arxiv.org/abs/2004.01401).  \nProphetNet is a new pre-trained language model for sequence-to-sequence learning with a novel self-supervised objective called future n-gram prediction.  \nProphetNet is able to predict more future tokens with a n-stream decoder. The original implementation is Fairseq version at [github repo](https://github.com/microsoft/ProphetNet).   \n\nxProphetNet is also served as the baseline model for xGLUE cross-lingual natural language generation tasks.  \nFor xGLUE corss-lingual NLG tasks, xProphetNet is finetuned with English data, but inference with both English and other zero-shot language data. \n\n### Usage\n\nThis pre-trained model can be fine-tuned on *sequence-to-sequence* tasks. The model could *e.g.* be trained on English headline generation as follows:\n\n```python \nfrom transformers import XLMProphetNetForConditionalGeneration, XLMProphetNetTokenizer\n\nmodel = XLMProphetNetForConditionalGeneration.from_pretrained(\"microsoft/xprophetnet-large-wiki100-cased\")\ntokenizer = XLMProphetNetTokenizer.from_pretrained(\"microsoft/xprophetnet-large-wiki100-cased\")\n\ninput_str = \"the us state department said wednesday it had received no formal word from bolivia that it was expelling the us ambassador there but said the charges made against him are `` baseless .\"\ntarget_str = \"us rejects charges against its ambassador in bolivia\"\n\ninput_ids = tokenizer(input_str, return_tensors=\"pt\").input_ids\nlabels = tokenizer(target_str, return_tensors=\"pt\").input_ids\n\nloss = model(input_ids, labels=labels).loss\n```\n\nNote that since this model is a multi-lingual model it can be fine-tuned on all kinds of other languages.\n\n### Citation\n```bibtex\n@article{yan2020prophetnet,\n  title={Prophetnet: Predicting future n-gram for sequence-to-sequence pre-training},\n  author={Yan, Yu and Qi, Weizhen and Gong, Yeyun and Liu, Dayiheng and Duan, Nan and Chen, Jiusheng and Zhang, Ruofei and Zhou, Ming},\n  journal={arXiv preprint arXiv:2001.04063},\n  year={2020}\n}\n```\n",
+  "cardDataParsed": {
+    "language": "multilingual",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": null
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "modelId": "nvidia/Cosmos-Reason1-7B",
+  "author": "nvidia",
+  "sha": "375e24000b24baed78f4618d3dd779e47cd96323",
+  "lastModified": "2025-12-10 00:08:29+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_5_vl",
+    "image-text-to-text",
+    "nvidia",
+    "cosmos",
+    "conversational",
+    "en",
+    "dataset:nvidia/Cosmos-Reason1-SFT-Dataset",
+    "dataset:nvidia/Cosmos-Reason1-RL-Dataset",
+    "dataset:nvidia/Cosmos-Reason1-Benchmark",
+    "arxiv:2503.15558",
+    "base_model:Qwen/Qwen2.5-VL-7B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-VL-7B-Instruct",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 244,
+  "downloads": 37977,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-VL-7B-Instruct"
+    ],
+    "datasets": [
+      "nvidia/Cosmos-Reason1-SFT-Dataset",
+      "nvidia/Cosmos-Reason1-RL-Dataset",
+      "nvidia/Cosmos-Reason1-Benchmark"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "nvidia",
+      "cosmos"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2_5_VLForConditionalGeneration"
+    ],
+    "model_type": "qwen2_5_vl",
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 25685,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1050,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1374,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 217,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4968243304,
+      "lfs": {
+        "size": 4968243304,
+        "sha256": "c28404126221997ae8eb70a23b919c96174d42e35ae1d537e0c95093d50b359a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4991495816,
+      "lfs": {
+        "size": 4991495816,
+        "sha256": "f281081864c10992d3e03874c79d526c84407e049d713747f19eb9c79cd16db3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4932751040,
+      "lfs": {
+        "size": 4932751040,
+        "sha256": "3bb3a62a8d0e83c6283388ddea99395b221f908f9181b8edd0f7f91d02260ebe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1691924384,
+      "lfs": {
+        "size": 1691924384,
+        "sha256": "91bacbe1ad798e16daa05023b4e4bec70b53c8cd7d757db86c5bc76c4e0bbf15",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 57618,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 350,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7031645,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5702,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license\ndatasets:\n- nvidia/Cosmos-Reason1-SFT-Dataset\n- nvidia/Cosmos-Reason1-RL-Dataset\n- nvidia/Cosmos-Reason1-Benchmark\nlibrary_name: transformers\nlanguage:\n- en\nbase_model:\n- Qwen/Qwen2.5-VL-7B-Instruct\ntags:\n- nvidia\n- cosmos\npipeline_tag: image-text-to-text\n---\n\n# **Cosmos-Reason1: Physical AI Common Sense and Embodied Reasoning Models**\n\n[**Cosmos**](https://huggingface.co/collections/nvidia/cosmos-reason1-67c9e926206426008f1da1b7) | [**Code**](https://github.com/nvidia-cosmos/cosmos-reason1) | [**Paper**](https://arxiv.org/abs/2503.15558) | [**Paper Website**](https://research.nvidia.com/labs/dir/cosmos-reason1)\n\n# Model Overview\n\n## Description:\n\nNVIDIA Cosmos Reason \u2013 an open, customizable, 7B-parameter reasoning vision language model (VLM) for physical AI and robotics - enables robots and vision AI agents to reason like humans, using prior knowledge, physics understanding and common sense to understand and act in the real world. This model understands space, time, and fundamental physics, and can serve as a planning model to reason what steps an embodied agent might take next.\n\nCosmos Reason excels at navigating the long tail of diverse scenarios of the physical world with spatial-temporal understanding. Cosmos Reason is post-trained with physical common sense and embodied reasoning data with supervised fine-tuning and reinforcement learning. It uses chain-of-thought reasoning capabilities to understand world dynamics without human annotations.\n\nGiven a video/image and a text prompt, the model first converts the video/image into tokens using a vision encoder and a special translator called a projector. These video tokens are combined with the text prompt and fed into the core model, which uses a mix of LLM modules and techniques. This enables the model to think step-by-step and provide detailed, logical responses.\n\nCosmos Reason can be used for robotics and physical AI applications including:\n- Data curation and annotation \u2014 Enable developers to automate high-quality curation and annotation of massive, diverse training datasets.\n- Robot planning and reasoning \u2014 Act as the brain for deliberate, methodical decision-making in a robot vision language action (VLA) model. Now robots such as humanoids and autonomous vehicles can interpret environments and given complex commands, break them down into tasks and execute them using common sense, even in unfamiliar environments.\n- Video analytics AI agents \u2014 Extract valuable insights and perform root-cause analysis on massive volumes of video data. These agents can be used to analyze and understand recorded or live video streams across city and industrial operations.\n\nThe model is ready for commercial use.\n\n**Model Developer**: NVIDIA\n\n## Model Versions\n\nThe Cosmos-Reason1 includes the following model:\n\n- [Cosmos-Reason1-7B](https://huggingface.co/nvidia/Cosmos-Reason1-7B): Given a text prompt and an input video, think and generate the answer with respect to the input text prompt and video.\n\n### License:\n\nThis model is released under the  [NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license). Additional Information: [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md).\n\nFor a custom license, please contact [cosmos-license@nvidia.com](mailto:cosmos-license@nvidia.com).\n\nUnder the NVIDIA Open Model License, NVIDIA confirms:\n\n* Models are commercially usable.\n* You are free to create and distribute Derivative Models.\n* NVIDIA does not claim ownership to any outputs generated using the Models or Derivative Models.\n\n**Important Note**: If You bypass, disable, reduce the efficacy of, or circumvent any technical limitation, safety guardrail or associated safety guardrail hyperparameter, encryption, security, digital rights management, or authentication mechanism (collectively \u201cGuardrail\u201d) contained in the Model without a substantially similar Guardrail appropriate for your use case, your rights under this Agreement [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license) will automatically terminate.\n\n### Deployment Geography:\n\nGlobal\n\n### Use Case:\n\nPhysical AI: Space, time, fundamental physics understanding and embodied reasoning, encompassing robotics, and autonomous vehicles (AV).\n\n### Release Date:\n\n* Github: [05/17/2025](https://github.com/nvidia-cosmos/cosmos-reason1)\n* Huggingface:\n  * [08/01/2025](https://huggingface.co/nvidia/Cosmos-Reason1-7B/commit/0caf724f837efea5e25bf6d5818dcdeec0a36604). Shipped a few improvements which include captions with temporal timestamp, Set of Mark prompting.\n  * [06/10/2025](https://huggingface.co/nvidia/Cosmos-Reason1-7B/commit/2464fff43c5c0bfb1916ac8c009feda4aed81be9). Enhanced critic capability for physical plausibility.\n  * [05/17/2025](https://huggingface.co/nvidia/Cosmos-Reason1-7B/commit/098a5bb62a1f4fc05e5c4ac89aae8005e301aa18). Initial release.\n\n## Model Architecture:\n\nArchitecture Type: A Multi-modal LLM consists of a Vision Transformer (ViT) for vision encoder and a Dense Transformer model for LLM.\nNetwork Architecture: Qwen2.5-VL-7B-Instruct.\n\nCosmos-Reason-7B is post-trained based on [Qwen2.5-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct) and follows the same model architecture.\n\n\n**Number of model parameters:**\n\nCosmos-Reason1-7B:<br>\n  * Vision Transformer (ViT): 675.76M (675,759,104)\n  * Language Model (LLM): 7.07B (7,070,619,136)\n  * Other components (output projection layer): 545.00M (544,997,376)\n\n\n## Input\n\n  **Input Type(s)**: Text+Video/Image\n\n   **Input Format(s)**:\n   * Text: String\n   * Video: mp4\n   * Image: jpg\n\n  **Input Parameters**:\n  * Text: One-dimensional (1D)\n  * Video: Three-dimensional (3D)\n  * Image: Two-dimensional (2D)\n  \n  **Other Properties Related to Input**:\n  * Use `FPS=4` for input video to match the training setup.\n  * Append `Answer the question in the following format: <think>\\nyour reasoning\\n</think>\\n\\n<answer>\\nyour answer\\n</answer>.` in the system prompt to encourage long chain-of-thought reasoning response.\n\n## Output\n\n **Output Type(s)**: Text\n\n **Output Format**: String\n\n **Output Parameters**: Text: One-dimensional (1D)\n\n **Other Properties Related to Output**:\n * Recommend using 4096 or more output max tokens to avoid truncation of long chain-of-thought response.\n\n * Our AI model recognizes timestamps added at the bottom of each frame for accurate temporal localization.\n\n * Our AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions. <br>\n\n\n## Software Integration\n\n**Runtime Engine(s):**\n\n* [vLLM](https://github.com/vllm-project/vllm)\n\n**Supported Hardware Microarchitecture Compatibility:**\n\n* NVIDIA Blackwell\n* NVIDIA Hopper\n\n**Note**: We have only tested doing inference with BF16 precision.\n\n**Operating System(s):**\n\n* Linux (We have not tested on other operating systems.)\n\n\n# Usage\n\nSee [Cosmos-Reason1](https://github.com/nvidia-cosmos/cosmos-reason1) for details.\n* Post Training: [Cosmos-Reason1](https://github.com/nvidia-cosmos/cosmos-reason1) provides examples of supervised fine-tuning and reinforcement learning on embodied reasoning datasets.\n\n## Training and Evaluation Sections:\n### 05/17/2025\nPlease see our [technical paper](https://arxiv.org/pdf/2503.15558) for detailed evaluations on physical common sense and embodied reasoning. Part of the evaluation datasets are released under [Cosmos-Reason1-Benchmark](https://huggingface.co/datasets/nvidia/Cosmos-Reason1-Benchmark). The embodied reasoning datasets and benchmarks focus on the following areas: robotics (RoboVQA, BridgeDataV2, Agibot, RobFail), ego-centric human demonstration (HoloAssist), and Autonomous Vehicle (AV) driving video data. The AV dataset is collected and annotated by NVIDIA.\n\nAll datasets go through the data annotation process described in the technical paper to prepare training and evaluation data and annotations.\n\n### 08/01/2025\nWe enhance the model capability with the augmented training data. PLM-Video-Human and Nexar are used to enable dense temporal captioning. Describe Anything is added to enhance a set of mark (SoM) prompting. We enrich data in intelligent transportation systems (ITS) and warehouse applications. Lastly, Visual Critics dataset contains a collection of AI generated videos from Cosmos-Predict2 and Wan2.1 with human annotations to describe the physical correctness in AI videos.\n\n\n## Training Datasets:\n\n**Data Collection Method**:\n* RoboVQA:  Hybrid:  Automatic/Sensors\n* BridgeDataV2: Automatic/Sensors\n* AgiBot: Automatic/Sensors\n* RoboFail: Automatic/Sensors\n* HoloAssist: Human\n* AV: Automatic/Sensors\n* PLM-Video-Human: Human\n* Nexar: Automatic/Sensors\n* Describe Anything: Human\n* ITS / Warehouse: Human, Automatic\n* Visual Critics: Automatic\n\n**Labeling Method**:\n* RoboVQA:  Hybrid:  Human,Automated\n* BridgeDataV2: Hybrid:  Human,Automated\n* AgiBot: Hybrid:  Human,Automated\n* RoboFail: Hybrid:  Human,Automated\n* HoloAssist: Hybrid:  Human,Automated\n* AV: Hybrid:  Human,Automated\n* PLM-Video-Human: Human,Automated\n* Nexar: Human\n* Describe Anything: Human,Automated\n* ITS / Warehouse: Human, Automated\n* Visual Critics: Human,Automated\n\n\n# Evaluation Datasets:\n\n**Data Collection Method**:\n* RoboVQA:  Hybrid:  Automatic/Sensors\n* BridgeDataV2: Automatic/Sensors\n* AgiBot: Automatic/Sensors\n* RoboFail: Automatic/Sensors\n* HoloAssist: Human\n* AV: Automatic/Sensors\n\n\n**Labeling Method**:\n* RoboVQA:  Hybrid:  Human,Automated\n* BridgeDataV2: Hybrid:  Human,Automated\n* AgiBot: Hybrid:  Human,Automated\n* RoboFail: Hybrid:  Human,Automated\n* HoloAssist: Hybrid:  Human,Automated\n* AV: Hybrid:  Human,Automated\n\n\n**Metrics**:\nWe report the model accuracy on the embodied reasoning benchmark introduced in [Cosmos-Reason1](https://arxiv.org/abs/2503.15558). The results differ from those presented in Table 9 due to additional training aimed at supporting a broader range of Physical AI tasks beyond the benchmark.\n|                   | [RoboVQA](https://robovqa.github.io/)        | AV       | [BridgeDataV2](https://rail-berkeley.github.io/bridgedata/)| [Agibot](https://github.com/OpenDriveLab/AgiBot-World)| [HoloAssist](https://holoassist.github.io/)       | [RoboFail](https://robot-reflect.github.io/)                               | Average |\n|--------------------|---------------------------------------------|----------|------------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|\n| **Accuracy**        | 87.3                                        | 70.8    | 63.7                                                 | 48.9                                          | 62.7                                           | 57.2                                            |  65.1                                          |\n\n## Dataset Format\nModality: Video (mp4) and Text\n\n## Dataset Quantification\n### 05/17/2025\nWe release the embodied reasoning data and benchmarks. Each data sample is a pair of video and text. The text annotations include understanding and reasoning annotations described in the Cosmos-Reason1 paper. Each video may have multiple text annotations. The quantity of the video and text pairs is described in the table below.\n**The AV data is currently unavailable and will be uploaded soon!**\n\n|                   | [RoboVQA](https://robovqa.github.io/)        | AV       | [BridgeDataV2](https://rail-berkeley.github.io/bridgedata/)| [Agibot](https://github.com/OpenDriveLab/AgiBot-World)| [HoloAssist](https://holoassist.github.io/)       | [RoboFail](https://robot-reflect.github.io/)                               | Total Storage Size |\n|--------------------|---------------------------------------------|----------|------------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|--------------------|\n| **SFT Data**        | 1.14m                                        | 24.7k    | 258k                                                 | 38.9k                                          | 273k                                           | N/A                                            | **300.6GB**         |\n| **RL Data**         | 252                                          | 200      | 240                                                  | 200                                            | 200                                            | N/A                                            | **2.6GB**           |\n| **Benchmark Data**  | 110                                          | 100      | 100                                                  | 100                                            | 100                                            | 100                                            | **1.5GB**           |\n\nWe release text annotations for all embodied reasoning datasets and videos for RoboVQA and AV datasets. For other datasets, users may download the source videos from the original data source and find corresponding video sources via the video names. The held-out RoboFail benchmark is released for measuring the generalization capability.\n\n### 08/01/2025\n|                   | [PLM-Video-Human](https://huggingface.co/datasets/facebook/PLM-Video-Human) | Nexar       | [Describe Anything](https://huggingface.co/datasets/nvidia/describe-anything-dataset)| [ITS / Warehouse]       | Visual Critics                             | Total Storage Size |\n|------------------ |-----------------------------------------------------------------------------|-------------|--------------------------------------------------------------------------------------|-------------------------|--------------------------------------------|--------------------|\n| **SFT Data**      | 39k                                                                         | 240k        | 178k                                                                                 | 24k                     | 24k                                        | **2.6TB**          |\n\n\n\n## Inference:\n**Test Hardware:** H100, A100, GB200 <br>\n> [!NOTE]\n> We suggest using `fps=4` for the input video and `max_tokens=4096` to avoid truncated response.\n```python\nfrom transformers import AutoProcessor\nfrom vllm import LLM, SamplingParams\nfrom qwen_vl_utils import process_vision_info\n\n# You can also replace the MODEL_PATH by a safetensors folder path mentioned above\nMODEL_PATH = \"nvidia/Cosmos-Reason1-7B\"\n\nllm = LLM(\n    model=MODEL_PATH,\n    limit_mm_per_prompt={\"image\": 10, \"video\": 10},\n)\n\nsampling_params = SamplingParams(\n    temperature=0.6,\n    top_p=0.95,\n    repetition_penalty=1.05,\n    max_tokens=4096,\n)\n\nvideo_messages = [\n    {\"role\": \"system\", \"content\": \"You are a helpful assistant. Answer the question in the following format: <think>\\nyour reasoning\\n</think>\\n\\n<answer>\\nyour answer\\n</answer>.\"},\n    {\"role\": \"user\", \"content\": [\n            {\"type\": \"text\", \"text\": (\n                    \"Is it safe to turn right?\"\n                )\n            },\n            {\n                \"type\": \"video\", \n                \"video\": \"file:///path/to/your/video.mp4\",\n                \"fps\": 4,\n            }\n        ]\n    },\n]\n\n# Here we use video messages as a demonstration\nmessages = video_messages\n\nprocessor = AutoProcessor.from_pretrained(MODEL_PATH)\nprompt = processor.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True,\n)\nimage_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)\n\nmm_data = {}\nif image_inputs is not None:\n    mm_data[\"image\"] = image_inputs\nif video_inputs is not None:\n    mm_data[\"video\"] = video_inputs\n\nllm_inputs = {\n    \"prompt\": prompt,\n    \"multi_modal_data\": mm_data,\n\n    # FPS will be returned in video_kwargs\n    \"mm_processor_kwargs\": video_kwargs,\n}\n\noutputs = llm.generate([llm_inputs], sampling_params=sampling_params)\ngenerated_text = outputs[0].outputs[0].text\n\nprint(generated_text)\n```\n\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nUsers are responsible for model inputs and outputs. Users are responsible for ensuring safe integration of this model, including implementing guardrails as well as other safety mechanisms, prior to deployment.\n\nFor more detailed information on ethical considerations for this model, please see the subcards of Explainability, Bias, Safety & Security, and Privacy below. \n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n### Plus Plus (++) Promise\n\nWe value you, the datasets, the diversity they represent, and what we have been entrusted with. This model and its associated data have been:\n\n* Verified to comply with current applicable disclosure laws, regulations, and industry standards.\n* Verified to comply with applicable privacy labeling requirements.\n* Annotated to describe the collector/source (NVIDIA or a third-party).\n* Characterized for technical limitations.\n* Reviewed to ensure proper disclosure is accessible to, maintained for, and in compliance with NVIDIA data subjects and their requests.\n* Reviewed before release.\n* Tagged for known restrictions and potential safety implications.\n\n### Bias\n\n| Field                                                                                                                                                            | Response |\n| :--------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- |\n| Participation considerations from adversely impacted groups [protected classes](https://www.senate.ca.gov/content/protected-classes) in model design and testing: | None     |\n| Measures taken to mitigate against unwanted bias:                                                                                                                | The training video sources contain multiple physical embodiments and environments including human, car, single arm robot, bimanual robot in indoor and outdoor environments. By training on numerous and various physical interactions and curated datasets, we strive to provide a model that does not possess biases towards certain embodiments or environments.   |\n\n### Explainability\n\n| Field                                                     | Response                                                                                                             |\n| :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |\n| Intended Application & Domain:                            | Physical AI Reasoning                                                                                                |\n| Model Type:                                               | Transformer                                                                                                          |\n| Intended Users:                                           | Physical AI developers                                                                                               |\n| Output:                                                   | Text                                                                                                                 |\n| Describe how the model works:                             | Given a video/image and a text prompt, the model first converts the video/image into tokens using a vision encoder and a special translator called a projector. These video tokens are combined with the text prompt and fed into the core model, which uses a mix of LLM modules and techniques. This enables the model to think step-by-step and provide detailed, logical responses.                                                         |\n| Technical Limitations:                                    | The model may not follow the video or text input accurately in challenging cases, where the input video shows complex scene composition and temporal dynamics. Examples of challenging scenes include: fast camera movements, overlapping human-object interactions, low lighting with high motion blur, and multiple people performing different actions simultaneously.  |\n| Verified to have met prescribed NVIDIA quality standards: | Yes                                                                                                                  |\n| Performance Metrics:                                      | Quantitative and Qualitative Evaluation. Cosmos-Reason1 proposes the embodied reasoning benchmark and physical common sense benchmark to evaluate accuracy with visual question answering.                                                                              |\n| Potential Known Risks:                                    | The model's output can generate all forms of texts, including what may be considered toxic, offensive, or indecent.  |\n| Licensing:                                                | [NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license). Additional Information: [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md).   |\n\n### Privacy\n\n| Field                                                               | Response       |\n| :------------------------------------------------------------------ | :------------- |\n| Generatable or reverse engineerable personal information?           | None Known     |\n| Protected class data used to create this model?                     | None Known     |\n| Was consent obtained for any personal data used?                    | None Known     |\n| How often is dataset reviewed?                                      | Before Release |\n| Is there provenance for all datasets used in training?              | Yes            |\n| Does data labeling (annotation, metadata) comply with privacy laws? | Yes            |\n| Applicable Privacy Policy | [NVIDIA Privacy Policy](https://www.nvidia.com/en-us/about-nvidia/privacy-policy)            |\n\n\n### Safety\n\n| Field                                           | Response                                                                                                                                                                                                                                                                                                                             |\n| :---------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| Model Application(s):                           | Physical AI common sense understanding and embodied reasoning                                                                                                                                                                                                                                                                                                                     |\n| Describe the life critical impact (if present). | None Known                                                                                                                                                                                                                                                                                                                           |\n| Use Case Restrictions:                          | [NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license). Additional Information: [Apache License 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md).                                                                                                                                                                                                                   |\n| Model and dataset restrictions:                 | The Principle of least privilege (PoLP) is applied limiting access for dataset generation and model development.  Restrictions enforce dataset access during training, and dataset license constraints adhered to. Model checkpoints are made available on Hugging Face, and may become available on cloud providers' model catalog. |",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license",
+    "datasets": [
+      "nvidia/Cosmos-Reason1-SFT-Dataset",
+      "nvidia/Cosmos-Reason1-RL-Dataset",
+      "nvidia/Cosmos-Reason1-Benchmark"
+    ],
+    "library_name": "transformers",
+    "language": [
+      "en"
+    ],
+    "base_model": [
+      "Qwen/Qwen2.5-VL-7B-Instruct"
+    ],
+    "tags": [
+      "nvidia",
+      "cosmos"
+    ],
+    "pipeline_tag": "image-text-to-text",
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

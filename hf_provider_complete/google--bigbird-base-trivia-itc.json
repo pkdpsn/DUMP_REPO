@@ -1,0 +1,184 @@
+{
+  "modelId": "google/bigbird-base-trivia-itc",
+  "author": "google",
+  "sha": "b653c106e2cae13eea0d8d08b5c73101eb923fc3",
+  "lastModified": "2024-02-29 09:47:59+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "jax",
+    "big_bird",
+    "question-answering",
+    "en",
+    "dataset:trivia_qa",
+    "arxiv:2007.14062",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "question-answering",
+  "library_name": "transformers",
+  "likes": 8,
+  "downloads": 369,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "trivia_qa"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "BigBirdForQuestionAnswering"
+    ],
+    "model_type": "big_bird",
+    "tokenizer_config": {
+      "bos_token": {
+        "content": "</s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "eos_token": {
+        "content": "<s>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "unk_token": {
+        "content": "<unk>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "pad_token": {
+        "content": "<pad>",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "sep_token": {
+        "content": "[SEP]",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "mask_token": {
+        "content": "[MASK]",
+        "single_word": false,
+        "lstrip": true,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      },
+      "cls_token": {
+        "content": "[CLS]",
+        "single_word": false,
+        "lstrip": false,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 690,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2016,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 789,
+      "lfs": null
+    },
+    {
+      "rfilename": "flax_model.msgpack",
+      "size": 526465237,
+      "lfs": {
+        "size": 526465237,
+        "sha256": "c4884e977468831a82b82cdf92df2e3079704a396d77c1e7bae3cd7ad9763e0e",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 526574331,
+      "lfs": {
+        "size": 526574331,
+        "sha256": "59a0cc3603cf40f6d8601ecab26e966bc9e6a4e48924271de3359974e261fe45",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 775,
+      "lfs": null
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 845731,
+      "lfs": {
+        "size": 845731,
+        "sha256": "fdc81e1fc9d42e0c08b86d5b280d05d7c5e9747c4231c648f2b56b8e1d893c82",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 969,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\nlicense: apache-2.0\ndatasets:\n- trivia_qa\n---\n\n# BigBird base trivia-itc\n\nThis model is a fine-tune checkpoint of `bigbird-roberta-base`, fine-tuned on `trivia_qa` with `BigBirdForQuestionAnsweringHead` on its top.\n\nCheck out [this](https://colab.research.google.com/drive/1DVOm1VHjW0eKCayFq1N2GpY6GR9M4tJP?usp=sharing) to see how well `google/bigbird-base-trivia-itc` performs on question answering.\n\n## How to use\n\nHere is how to use this model to get the features of a given text in PyTorch:\n\n```python\nfrom transformers import BigBirdForQuestionAnswering\n\n# by default its in `block_sparse` mode with num_random_blocks=3, block_size=64\nmodel = BigBirdForQuestionAnswering.from_pretrained(\"google/bigbird-base-trivia-itc\")\n\n# you can change `attention_type` to full attention like this:\nmodel = BigBirdForQuestionAnswering.from_pretrained(\"google/bigbird-base-trivia-itc\", attention_type=\"original_full\")\n\n# you can change `block_size` & `num_random_blocks` like this:\nmodel = BigBirdForQuestionAnswering.from_pretrained(\"google/bigbird-base-trivia-itc\", block_size=16, num_random_blocks=2)\n\nquestion = \"Replace me by any text you'd like.\"\ncontext = \"Put some context for answering\"\nencoded_input = tokenizer(question, context, return_tensors='pt')\noutput = model(**encoded_input)\n```\n\n# Fine-tuning config & hyper-parameters\n\n- No. of global token = 128\n- Window length = 192\n- No. of random token = 192\n- Max. sequence length = 4096\n- No. of heads = 12\n- No. of hidden layers = 12\n- Hidden layer size = 768\n- Batch size = 32\n- Loss = cross-entropy noisy spans\n\n## BibTeX entry and citation info\n\n```tex\n@misc{zaheer2021big,\n      title={Big Bird: Transformers for Longer Sequences}, \n      author={Manzil Zaheer and Guru Guruganesh and Avinava Dubey and Joshua Ainslie and Chris Alberti and Santiago Ontanon and Philip Pham and Anirudh Ravula and Qifan Wang and Li Yang and Amr Ahmed},\n      year={2021},\n      eprint={2007.14062},\n      archivePrefix={arXiv},\n      primaryClass={cs.LG}\n}\n```\n",
+  "cardDataParsed": {
+    "language": "en",
+    "license": "apache-2.0",
+    "datasets": [
+      "trivia_qa"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForQuestionAnswering",
+    "custom_class": null,
+    "pipeline_tag": "question-answering",
+    "processor": "AutoTokenizer"
+  }
+}

@@ -1,0 +1,437 @@
+{
+  "modelId": "microsoft/NextCoder-32B",
+  "author": "microsoft",
+  "sha": "c0b3d9f7361a20010864dafa23cd0324628fcc12",
+  "lastModified": "2025-06-12 10:50:02+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "code",
+    "chat",
+    "microsoft",
+    "nextcoder",
+    "selekt",
+    "conversational",
+    "en",
+    "dataset:microsoft/NextCoderDataset",
+    "dataset:microsoft/NextCoderDataset-Conversational",
+    "dataset:bigcode/commitpackft",
+    "dataset:bigcode/starcoderdata",
+    "base_model:Qwen/Qwen2.5-Coder-32B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-Coder-32B-Instruct",
+    "license:mit",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 71,
+  "downloads": 688,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-Coder-32B-Instruct"
+    ],
+    "datasets": [
+      "microsoft/NextCoderDataset",
+      "microsoft/NextCoderDataset-Conversational",
+      "bigcode/commitpackft",
+      "bigcode/starcoderdata"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "code",
+      "chat",
+      "microsoft",
+      "nextcoder",
+      "selekt"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5523,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 684,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 121,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00029.safetensors",
+      "size": 4498420872,
+      "lfs": {
+        "size": 4498420872,
+        "sha256": "1e60f3b741dc6776f889478351e76c92728e957f1669b6bb047dafe856760a95",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00029.safetensors",
+      "size": 4718804768,
+      "lfs": {
+        "size": 4718804768,
+        "sha256": "d6b7b9a826735dce82924579ea9a738182c8733f595b973797e3bbcc6495fe31",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00029.safetensors",
+      "size": 4467075880,
+      "lfs": {
+        "size": 4467075880,
+        "sha256": "c2d7f1c9cbaeae1e177817c31edfe958b4a19dbe42a5250bda12e215407688ce",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00029.safetensors",
+      "size": 4467075880,
+      "lfs": {
+        "size": 4467075880,
+        "sha256": "002a803b6e05815f0be8324d8208d6fc1608629896a0b634e7c3116e1ad29d7b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00029.safetensors",
+      "size": 4718804760,
+      "lfs": {
+        "size": 4718804760,
+        "sha256": "28040c82bf59321d34c4c0159e150e283eff712773691547ec377327589f3ddc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "9afd4b1d7df6cb59473089573475b28154590440b9b2f80f3858452c76f76d03",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "60fdeb3da289259d4b3fd1faa037d4a8506ef0cef05de2c30db15b0f0c2ef62d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00029.safetensors",
+      "size": 4718804800,
+      "lfs": {
+        "size": 4718804800,
+        "sha256": "2531b4f7bd57021a769b6afd1c2304b9cfc56bc6abb8e8f98788658ef58edab5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "3e6fd42c453c13212932e2dc692d9dc89ad31a03eb12436968b3e79395f12191",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "e7992d53125fc20fff1250620a68d856581e93833c297ee19c59f54cd60d88a8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00029.safetensors",
+      "size": 4718804800,
+      "lfs": {
+        "size": 4718804800,
+        "sha256": "8c10956381d3989d4975883a5f654c537fff4c7b384398581b3909eecedac080",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "3ebe3d54170c65d0fd7731beeeb750bc6edc509e58e757f483cd31a3297dbcf9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "b2174c7710d55c753bb9e744bd16835d8c8cc6546935b1366a1f5d6d697c2ce2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00029.safetensors",
+      "size": 4718804800,
+      "lfs": {
+        "size": 4718804800,
+        "sha256": "d29ecd7156d7c9391501d26fae3867acb0d0ae225048118987145f0849d90ae2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "7dc5bb1ecbe262b5604dd0661e3f5b000b667d3f14ec253b529b01fa63790e6d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "73b0481a47ca096a598ae20cfa83721c4f68f3ea96464fd52b826fcf80430896",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00029.safetensors",
+      "size": 4718804800,
+      "lfs": {
+        "size": 4718804800,
+        "sha256": "dc0afd2d5e59d7661a2226d9a44bed2ceb154235ab4e0c3607b6020964887f88",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "49fcbc4da789642f675f44c5214960bfe1df5059549a06affdf8b11ad570a909",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "6c63b77185130cf0391544b60b1fff14da00cc3a0639102766ad001b364ea848",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00029.safetensors",
+      "size": 4718804800,
+      "lfs": {
+        "size": 4718804800,
+        "sha256": "b4bef30ec039abdf046d0bd7079811d279094bfc00704662a9894041fd1d5b88",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "36422ac3c48bfa6a1f5b24319a11e59f2ad35f4dfe10c72d2dccd2368e271232",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "82c634e1aac70d9f3f5d828ae39303cfd2b3bf76e63c9f36c2b6b242ee239246",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00029.safetensors",
+      "size": 4718804800,
+      "lfs": {
+        "size": 4718804800,
+        "sha256": "1c2e13a1090a32b300c5b9f521e41b13cde0c2f85fc96089c80b014a26dd142f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "c52bbbe24553ec73ef7beb58cf1127eb9abbcbab2ddda5143a015b9f8989a1d2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "ed2897a43a30f9c7c4bd2efd7ea8eec1298efcc3c7335a679c977a73a151d2c6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00029.safetensors",
+      "size": 4718804800,
+      "lfs": {
+        "size": 4718804800,
+        "sha256": "7d8de85446a9bf643c089e34bc5e9b93cab34208600deff4031893cb5bc94b0a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "619772d8a23089cb600b4dba11aaab32bf76dd70903dcb99b914403c013f247d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00029.safetensors",
+      "size": 4467075904,
+      "lfs": {
+        "size": 4467075904,
+        "sha256": "25eec097428de08ea36f5a74eadf0e9537f752884b0a22c26ee3e6f28b95d112",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00029.safetensors",
+      "size": 3680563768,
+      "lfs": {
+        "size": 3680563768,
+        "sha256": "ce8beb25cc144c89b4b022aa93172cb7afccab58b15da269508da8c97e9a9674",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 63249,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11421896,
+      "lfs": {
+        "size": 11421896,
+        "sha256": "9c5ae00e602b8860cbd784ba82a8aa14e8feecec692e7076590d014d7b7fdafa",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 7305,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlanguage:\n- en\nbase_model:\n- Qwen/Qwen2.5-Coder-32B-Instruct\npipeline_tag: text-generation\nlibrary_name: transformers\ntags:\n- code\n- chat\n- microsoft\n- nextcoder\n- selekt\ndatasets:\n- microsoft/NextCoderDataset\n- microsoft/NextCoderDataset-Conversational\n- bigcode/commitpackft\n- bigcode/starcoderdata\n---\n\n\n# NextCoder-32B\n<p align=\"center\">\n        <a href=\"https://github.com/microsoft/NextCoder\">GitHub</a>&nbsp&nbsp | &nbsp&nbsp <a href=\"https://www.microsoft.com/en-us/research/publication/nextcoder-robust-adaptation-of-code-lms-to-diverse-code-edits/\">Paper</a> \n</p>\n\n> NextCoder: Robust Adaptation of Code LMs to Diverse Code Edits (ICML'2025)\n\n## Introduction\n\nNextCoder is the latest series of Code-Editing large language models developed using the Qwen2.5-Coder Instruct variants as base and trained with novel Selective Knowledge Transfer finetuning methodology as introduced in the paper. NextCoder family model comes in 3 different sizes 7, 14, 32 billion parameters, to meet the needs of different developers.\nFollowing are the key improvements:\n- Significantly improvements in **code editing**, NextCoder-32B has performing on par with GPT-4o on complex benchmarks like Aider-Polyglot with performance increment of 44% from their base model.\n- No loss of generalizibility, due to our new finetuning method **SeleKT**\n- **Long-context Support** up to 32K tokens.\n\n**This repo contains the NextCoder-32B model**, which has the following features:\n- Type: Causal Language Models\n- Training Stage: Post-training with SeleKT\n- Architecture: transformers with RoPE, SwiGLU, RMSNorm, and Attention QKV bias\n- Number of Parameters: 32.5B\n- Number of Paramaters (Non-Embedding): 31.0B\n- Number of Layers: 64\n- Number of Attention Heads (GQA): 40 for Q and 8 for KV\n  \nFor more details, please refer to our [blog](), [GitHub](https://github.com/microsoft/NextCoder), [Paper](https://www.microsoft.com/en-us/research/publication/nextcoder-robust-adaptation-of-code-lms-to-diverse-code-edits/).\n\n## Requirements\n\nThe code of NextCoder is based on Qwen2.5 base models which has been in the latest Hugging face `transformers` and we advise you to use the latest version of `transformers`.\n\nWith `transformers<4.37.0`, you will encounter the following error:\n```\nKeyError: 'qwen2'\n```\n\n## Quickstart\n\nHere provides a code snippet with `apply_chat_template` to show you how to load the tokenizer and model and how to generate contents.\n\n```python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_name = \"microsoft/NextCoder-32B\"\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    torch_dtype=\"auto\",\n    device_map=\"auto\",\n)\ntokenizer = AutoTokenizer.from_pretrained(model_name)\n\nprompt = \"\"\"\nFix the following function that divides two numbers to handle all the edge cases:\n\ndef divide(a, b)\n  returm a/b\n\"\"\"\nmessages = [\n    {\"role\": \"user\", \"content\": prompt}\n]\ntext = tokenizer.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True\n)\nmodel_inputs = tokenizer([text], return_tensors=\"pt\").to(model.device)\n\ngenerated_ids = model.generate(\n    **model_inputs,\n    max_new_tokens=1024\n)\ngenerated_ids = [\n    output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)\n]\n\nresponse = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]\n```\n## Evaluation and Performance\n\n| Models | HUMANEVALFIX | CANITEDIT | AIDER | POLYGLOT |\n|--------|---------------|-----------|-------|----------|\n| QwenCoder-2.5-3B | 73.2 | 37.1 | 36.8 | - |\n| QwenCoder-2.5-3B-LoRA | 64.6 | 36.2 | 35.8 | - |\n| QwenCoder-2.5-3B-SFT | 76.2 | 32.4 | 30.1 | - |\n| **NextCoder-3B** | 75.6 | 42.4 | 37.6 | - |\n| QwenCoder-2.5-7B | 73.8 | 48.1 | 59.4 | - |\n| QwenCoder-2.5-7B-LoRA | 70.7 | 44.3 | 40.6 | - |\n| QwenCoder-2.5-7B-SFT | 70.1 | 36.7 | 48.9 | - |\n| **NextCoder-7B** | 81.1 | 50.5 | 65.7 | - |\n| QwenCoder-2.5-14B | 87.8 | 58.1 | 66.9 | 9.3 |\n| QwenCoder-2.5-14B-LoRA | 78.0 | 50.9 | 66.2 | 5.3 |\n| QwenCoder-2.5-14B-SFT | 79.9 | 42.4 | 36.8 | 3.1 |\n| **NextCoder-14B** | 89.8 | 60.2 | 72.2 | 12.2 |\n| QwenCoder-2.5-32B | **90.2** | 61.0 | 72.9 | 16.4 |\n| QwenCoder-2.5-32B-LoRA | 82.3 | 52.4 | 60.2 | 6.7 |\n| QwenCoder-2.5-32B-SFT | 81.7 | 49.5 | 66.9 | 8.4 |\n| **NextCoder-32B** | 88.9 | **62.4** | **74.7** | **23.6** |\n\n*Comparison of base QwenCoder-2.5 models of different sizes and their SELEKT-enhanced versions across three code editing benchmarks.*\n\n**Detailed evaluation results are reported in this [\ud83d\udcd1 paper](https://www.microsoft.com/en-us/research/publication/nextcoder-robust-adaptation-of-code-lms-to-diverse-code-edits/).**\n\n## Responsible AI Use\nThe base models (from the QwenCoder-2.5 family) are suspectible to malicious prompts and may generate or execute harmful code. Our finetuning does not enhance or impede such behaviors. The users should use the models and their outputs responsibly and with caution. Model outputs should be subjected to additional analysis, including manual inspection, and sandboxing before execution.\n\n## Citation\n\n```bibtex\n@inproceedings{aggarwal2025nextcoder,\nauthor = {Aggarwal, Tushar and Singh, Swayam and Awasthi, Abhijeet and Kanade, Aditya and Natarajan, Nagarajan},\ntitle = {NextCoder: Robust Adaptation of Code LMs to Diverse Code Edits},\nbooktitle = {International Conference on Machine Learning},\nyear = {2025},\nurl = {https://www.microsoft.com/en-us/research/publication/nextcoder-robust-adaptation-of-code-lms-to-diverse-code-edits/},\n}\n```",
+  "cardDataParsed": {
+    "license": "mit",
+    "language": [
+      "en"
+    ],
+    "base_model": [
+      "Qwen/Qwen2.5-Coder-32B-Instruct"
+    ],
+    "pipeline_tag": "text-generation",
+    "library_name": "transformers",
+    "tags": [
+      "code",
+      "chat",
+      "microsoft",
+      "nextcoder",
+      "selekt"
+    ],
+    "datasets": [
+      "microsoft/NextCoderDataset",
+      "microsoft/NextCoderDataset-Conversational",
+      "bigcode/commitpackft",
+      "bigcode/starcoderdata"
+    ],
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

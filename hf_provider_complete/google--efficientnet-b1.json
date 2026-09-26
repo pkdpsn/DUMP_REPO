@@ -1,0 +1,136 @@
+{
+  "modelId": "google/efficientnet-b1",
+  "author": "google",
+  "sha": "92124c4cfc1097e83e74fe6ed79e85bd0201c6a2",
+  "lastModified": "2023-02-17 10:05:45+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "efficientnet",
+    "image-classification",
+    "vision",
+    "dataset:imagenet-1k",
+    "arxiv:1905.11946",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-classification",
+  "library_name": "transformers",
+  "likes": 1,
+  "downloads": 1701,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "imagenet-1k"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision",
+      "image-classification"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/tiger.jpg",
+        "example_title": "Tiger"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/teapot.jpg",
+        "example_title": "Teapot"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/palace.jpg",
+        "example_title": "Palace"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "EfficientNetForImageClassification"
+    ],
+    "model_type": "efficientnet"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1477,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2697,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 70183,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 495,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 31597373,
+      "lfs": {
+        "size": 31597373,
+        "sha256": "d9133346b26bcac8fd22b3ca575c346b2280a6a41f2cffc99821899a57eed63f",
+        "pointer_size": 133
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- vision\n- image-classification\ndatasets:\n- imagenet-1k\nwidget:\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/tiger.jpg\n  example_title: Tiger\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/teapot.jpg\n  example_title: Teapot\n- src: https://huggingface.co/datasets/mishig/sample_images/resolve/main/palace.jpg\n  example_title: Palace\n---\n\n# EfficientNet (b1 model) \n\nEfficientNet model trained on ImageNet-1k at resolution 240x240. It was introduced in the paper [EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks\n](https://arxiv.org/abs/1905.11946) by Mingxing Tan and Quoc V. Le, and first released in [this repository](https://github.com/keras-team/keras). \n\nDisclaimer: The team releasing EfficientNet did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nEfficientNet is a mobile friendly pure convolutional model (ConvNet) that proposes a new scaling method that uniformly scales all dimensions of depth/width/resolution using a simple yet highly effective compound coefficient.\n\n![model image](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/efficientnet_architecture.png)\n\n## Intended uses & limitations\n\nYou can use the raw model for image classification. See the [model hub](https://huggingface.co/models?search=efficientnet) to look for\nfine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model to classify an image of the COCO 2017 dataset into one of the 1,000 ImageNet classes:\n\n```python\nimport torch\nfrom datasets import load_dataset\nfrom transformers import EfficientNetImageProcessor, EfficientNetForImageClassification\n\ndataset = load_dataset(\"huggingface/cats-image\")\nimage = dataset[\"test\"][\"image\"][0]\n\npreprocessor = EfficientNetImageProcessor.from_pretrained(\"google/efficientnet-b1\")\nmodel = EfficientNetForImageClassification.from_pretrained(\"google/efficientnet-b1\")\n\ninputs = preprocessor(image, return_tensors=\"pt\")\n\nwith torch.no_grad():\n    logits = model(**inputs).logits\n\n# model predicts one of the 1000 ImageNet classes\npredicted_label = logits.argmax(-1).item()\nprint(model.config.id2label[predicted_label]),\n```\n\nFor more code examples, we refer to the [documentation](https://huggingface.co/docs/transformers/master/en/model_doc/efficientnet).\n\n### BibTeX entry and citation info\n\n```bibtex\n@article{Tan2019EfficientNetRM,\n  title={EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks},\n  author={Mingxing Tan and Quoc V. Le},\n  journal={ArXiv},\n  year={2019},\n  volume={abs/1905.11946}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "vision",
+      "image-classification"
+    ],
+    "datasets": [
+      "imagenet-1k"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/tiger.jpg",
+        "example_title": "Tiger"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/teapot.jpg",
+        "example_title": "Teapot"
+      },
+      {
+        "src": "https://huggingface.co/datasets/mishig/sample_images/resolve/main/palace.jpg",
+        "example_title": "Palace"
+      }
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "image-classification",
+    "processor": "AutoImageProcessor"
+  }
+}

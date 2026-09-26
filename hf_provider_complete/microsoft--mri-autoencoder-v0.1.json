@@ -1,0 +1,139 @@
+{
+  "modelId": "microsoft/mri-autoencoder-v0.1",
+  "author": "microsoft",
+  "sha": "b4b3a763958612f7a5e42c1313dc44c1ae94dcea",
+  "lastModified": "2024-04-08 07:32:22+00:00",
+  "tags": [
+    "diffusers",
+    "safetensors",
+    "MRI",
+    "medical-imaging",
+    "VAE",
+    "autoencoder",
+    "en",
+    "license:mit",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "diffusers",
+  "likes": 18,
+  "downloads": 56,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "diffusers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "MRI",
+      "medical-imaging",
+      "VAE",
+      "autoencoder"
+    ]
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE.md",
+      "size": 1072,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2660,
+      "lfs": null
+    },
+    {
+      "rfilename": "autoencoders_demo.ipynb",
+      "size": 1618612,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 540,
+      "lfs": null
+    },
+    {
+      "rfilename": "data_preprocessing_recipe.py",
+      "size": 7674,
+      "lfs": null
+    },
+    {
+      "rfilename": "data_utils.py",
+      "size": 1104,
+      "lfs": null
+    },
+    {
+      "rfilename": "diffusion_pytorch_model.safetensors",
+      "size": 221317280,
+      "lfs": {
+        "size": 221317280,
+        "sha256": "4b07cfaad692d5e60669b5bfe0432de71eb11ad6925bf9e0bd333b69d15c5e62",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "environment.yml",
+      "size": 433,
+      "lfs": null
+    },
+    {
+      "rfilename": "example_data/mri_complex_images.npz",
+      "size": 2022432,
+      "lfs": {
+        "size": 2022432,
+        "sha256": "69a6b217303b2147957ac2f1dbcee976b5ed509621acd94ca55110a1c8f02e5c",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "inference.py",
+      "size": 1466,
+      "lfs": null
+    },
+    {
+      "rfilename": "metrics.py",
+      "size": 1068,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlanguage:\n- en\nlibrary_name: diffusers\ntags:\n- MRI\n- medical-imaging\n- VAE\n- autoencoder\n---\n# MRI Autoencoder v0.1\n\n## Model\nMRI autoencoder is a Variational Autoencoder (VAE) trained on the fast MRI multi-coil brain and knee datasets. The model is trained from scratch and uses the same architecture as the Stable Diffusion SDXL VAE model.\n\nLatent Diffusion Models (LDMs) have been extremely popular in synthesizing images and videos. However, they remain relatively under-explored in the field of medical imaging. One possible reason is the lack of domain specific autoencoders that can encode and decode higher dimensional medical imaging data to their lower dimensional latent representation. MRI images, for example, are different than general domain images in that they are complex valued with magnitude and phase information. To this end, we are publishing an autoencoder that can be used to encode and decode complex valued MRI images to and from their latent representation.\n\n## Use\n\n```\n    from diffusers.models import AutoencoderKL\n    autoencoder = AutoencoderKL.from_pretrained(\"microsoft/mri-autoencoder-v0.1\")\n```\n\nFor more details please refer to the provided autoencoders_demo notebook. For details on how the fastmri data was preprocessed, please refer to data_preprocessing_recipe.py.\n\n## Intended Use\n\nThe model is intended to be used solely for future research in medical imaging. Stakeholders would benefit by treating this model as a building block towards exploring latent space generative models applied to complex valued MRI images.\n\n## Out-of-Scope Use\n\nAny deployed use case of the model, commercial or otherwise, is out of scope. The model weights and code are not intended for clinical use.\n\n## Evaluation\n\nThe PSNR and SSIM scores on randomly chosen 8000 slices from the fastMRI multicoil validation dataset are as follows:\n\n| Autoencoder | Median PSNR | Mean PSNR | PSNR 95% CI | Median SSIM | Mean SSIM | SSIM 95% CI |\n| ----------- | ----------- | --------- | ----------- | ----------- | --------- | ----------- |\n| MRI-AUTOENCODER-v0.1 | 34.31 | 33.98 | (28.55. 37.79) | 0.91 | 0.88 | (0.54, 0.97) |\n| SDXL-VAE | 31.45 | 31.51 | (27.85, 35.63) | 0.89 | 0.86 | (0.58, 0.94) |\n\n## Data\n\nThis model was trained, with permission, using the NYU fastMRI Dataset (https://fastmri.med.nyu.edu/), which is a deidentified imaging dataset provided by NYU Langone comprised of raw k-space data in several sub-dataset groups.\n\n## Limitations\n\nA model trained on this dataset might likely overfit and not generalize well to new data. This model has not been evaluated for clinical use or across a range of scanner types.",
+  "cardDataParsed": {
+    "license": "mit",
+    "language": [
+      "en"
+    ],
+    "library_name": "diffusers",
+    "tags": [
+      "MRI",
+      "medical-imaging",
+      "VAE",
+      "autoencoder"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

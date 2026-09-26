@@ -1,0 +1,123 @@
+{
+  "modelId": "google/tabfm-1.0.0-pytorch",
+  "author": "google",
+  "sha": "77cb9cc1b4fd3a9c77fbb9552c218200bb4dab83",
+  "lastModified": "2026-07-04 06:08:26+00:00",
+  "tags": [
+    "tabfm",
+    "safetensors",
+    "tabular",
+    "tabular-regression",
+    "zero-shot",
+    "in-context-learning",
+    "pytorch",
+    "foundation-model",
+    "tabular-classification",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "tabular-classification",
+  "library_name": "tabfm",
+  "likes": 487,
+  "downloads": 32632,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "tabfm",
+    "license": "other",
+    "license_name": "tabfm-non-commercial-v1.0",
+    "license_link": "https://huggingface.co/google/tabfm-1.0.0-pytorch/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "tabular-classification",
+    "tags": [
+      "tabular",
+      "tabular-regression",
+      "zero-shot",
+      "in-context-learning",
+      "pytorch",
+      "foundation-model"
+    ]
+  },
+  "config": {
+    "model_type": "tabfm"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 7188,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5820,
+      "lfs": null
+    },
+    {
+      "rfilename": "classification/config.json",
+      "size": 324,
+      "lfs": null
+    },
+    {
+      "rfilename": "classification/model.safetensors",
+      "size": 6557888408,
+      "lfs": {
+        "size": 6557888408,
+        "sha256": "928cb350becdc77cdb7a9e8c36deda88917bfd14a3091894a2dc516db58a2085",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "config.json",
+      "size": 97,
+      "lfs": null
+    },
+    {
+      "rfilename": "regression/config.json",
+      "size": 325,
+      "lfs": null
+    },
+    {
+      "rfilename": "regression/model.safetensors",
+      "size": 6591243724,
+      "lfs": {
+        "size": 6591243724,
+        "sha256": "bd5a615b0322a8f04a895038de6df6fbd71430eca750e1d792f31048654674a9",
+        "pointer_size": 135
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: tabfm-non-commercial-v1.0\nlicense_link: https://huggingface.co/google/tabfm-1.0.0-pytorch/blob/main/LICENSE\nlibrary_name: tabfm\npipeline_tag: tabular-classification\ntags:\n- tabular\n- tabular-regression\n- zero-shot\n- in-context-learning\n- pytorch\n- foundation-model\n---\n\n# TabFM 1.0.0 (PyTorch)\n\nTabFM is a zero-shot tabular foundation model from Google Research. It supports\nclassification and regression on structured/tabular data with mixed numerical and\ncategorical columns, requiring no fine-tuning or hyperparameter search - training\nexamples are passed as context and predictions are made in a single forward pass.\n\nThis repository contains the **PyTorch** weights. For the JAX/Flax weights see\n[google/tabfm-1.0.0-jax](https://huggingface.co/google/tabfm-1.0.0-jax).\n\n## Getting Started\n\n```bash\npip install tabfm[pytorch]\n```\n\n**Classification:**\n\n```python\nfrom tabfm import TabFMClassifier, tabfm_v1_0_0_pytorch as tabfm_v1_0_0\n\nmodel = tabfm_v1_0_0.load(model_type=\"classification\")\nclf = TabFMClassifier(model=model)\nclf.fit(X_train, y_train)\nprobs = clf.predict_proba(X_test)\n```\n\n**Regression:**\n\n```python\nfrom tabfm import TabFMRegressor, tabfm_v1_0_0_pytorch as tabfm_v1_0_0\n\nmodel = tabfm_v1_0_0.load(model_type=\"regression\")\nreg = TabFMRegressor(model=model)\nreg.fit(X_train, y_train)\npreds = reg.predict(X_test)\n```\n\nYou can also load directly using the HuggingFace Hub API:\n\n```python\nfrom tabfm.src.pytorch.tabfm_v1_0_0 import TabFM_HF\n\nclf_model = TabFM_HF.from_pretrained(\"google/tabfm-1.0.0-pytorch\", subfolder=\"classification\")\nreg_model = TabFM_HF.from_pretrained(\"google/tabfm-1.0.0-pytorch\", subfolder=\"regression\")\n```\n\n### Available Checkpoints\n\n| Subfolder | Task | `is_classifier` |\n|-----------|------|-----------------|\n| `classification/` | Classification (up to 10 classes) | `True` |\n| `regression/` | Regression | `False` |\n\n## Developers and Affiliations\n\nDeveloped by the [Google Research](https://research.google) team.\n\n## Intended Use\n\n- Tabular data with numerical and/or categorical columns\n- Binary and multiclass classification (up to 10 classes)\n- Regression on continuous targets\n- Zero-shot inference: no dataset-specific training or hyperparameter tuning\n- Works with DataFrames (pandas) or numpy arrays\n\n## Not Intended For\n\n- Images, audio, video, or raw text\n- More than 10 output classes (hard model limit)\n- Tasks requiring task-specific fine-tuning\n- Non-tabular structured data (graphs, sequences)\n- Commercial use (see License below)\n\n## Model Architecture\n\nTabFM uses alternating row and column attention to capture both feature interactions\nand row-level patterns:\n\n1. **Column attention** (Set Transformer): embeds each cell using Fourier features and\n   a per-group linear projection, then aggregates across rows via induced self-attention\n2. **Row compression**: CLS tokens summarise each row into a dense vector via row-level\n   attention with Rotary Position Embedding (RoPE)\n3. **ICL Transformer**: a 24-block causal transformer operates over the compressed row\n   vectors, treating training rows as context and outputting predictions for test rows\n\nKey hyperparameters:\n\n| Parameter | Value |\n|-----------|-------|\n| Embedding dim | 256 |\n| Column attention blocks | 3 (4 heads, 256 induced points) |\n| Row attention blocks | 3 (8 heads, 8 CLS tokens) |\n| ICL transformer blocks | 24 (8 heads) |\n| Feed-forward factor | 4 |\n| Max classes | 10 |\n| Activation | SwiGLU |\n| Fourier features | 32 frequencies |\n\n## Training Data and Priors\n\nTabFM was trained on hundreds of millions of **synthetic** datasets generated\ndynamically using structural causal models (SCMs). Synthetic data was chosen due to\nthe scarcity of diverse, high-quality open-source tabular datasets and to avoid\nprivacy/licensing concerns with real-world industrial data. The SCM prior encodes\ninductive biases about causal structure and feature relationships typical in tabular\ntasks.\n\n## Performance\n\nTabFM was evaluated on [TabArena](https://tabarena.ai) across 51 datasets\n(38 classification, 13 regression). In zero-shot mode - a single forward pass with no\nhyperparameter search - TabFM outperforms heavily-tuned supervised baselines including\ngradient-boosted trees. The `TabFMClassifier.ensemble()` preset (feature crosses,\nSVD features, NNLS blending) yields further improvements.\n\nSee the [Google Research blog post](https://research.google/blog/introducing-tabfm-a-zero-shot-foundation-model-for-tabular-data/) for full benchmark details.\n\n## Ethical Considerations\n\nTabFM was trained entirely on synthetic data. Performance on specific real-world\ndomains, minority groups, or edge distributions is not fully characterised. Users\nshould evaluate the model on held-out data representative of their use case before\ndeploying in high-stakes settings.\n\n## Limitations\n\n- **Max 10 classes** for classification (hard architectural limit)\n- Memory usage scales with the number of training rows (all rows are passed as context)\n- Optimised for tables up to 500 features; behaviour on very wide tables may degrade\n- Performance is not guaranteed to match task-specific, fine-tuned models on all datasets\n- Not an officially supported Google product\n\n## License\n\nThe model weights in this repository are released under the\n**TabFM Non-Commercial License v1.0** - see [LICENSE](https://huggingface.co/google/tabfm-1.0.0-pytorch/blob/main/LICENSE). The source code is\nApache 2.0 licensed via [google-research/tabfm](https://github.com/google-research/tabfm).\n\n## Version\n\n1.0.0\n\n## Citation\n\n```bibtex\n@article{tabfm2026,\n  title  = {TabFM: A Zero-Shot Foundation Model for Tabular Data},\n  author = {Google Research},\n  year   = {2026},\n  url    = {https://research.google/blog/introducing-tabfm-a-zero-shot-foundation-model-for-tabular-data/}\n}\n```\n\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "tabfm-non-commercial-v1.0",
+    "license_link": "https://huggingface.co/google/tabfm-1.0.0-pytorch/blob/main/LICENSE",
+    "library_name": "tabfm",
+    "pipeline_tag": "tabular-classification",
+    "tags": [
+      "tabular",
+      "tabular-regression",
+      "zero-shot",
+      "in-context-learning",
+      "pytorch",
+      "foundation-model"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": null
+}

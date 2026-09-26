@@ -1,0 +1,204 @@
+{
+  "modelId": "microsoft/GUI-Actor-7B-Qwen2.5-VL",
+  "author": "microsoft",
+  "sha": "b6296a5555f4becb5fba10ab60bd99de07466487",
+  "lastModified": "2025-08-09 00:39:35+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_5_vl",
+    "image-text-to-text",
+    "conversational",
+    "arxiv:2506.03143",
+    "base_model:Qwen/Qwen2.5-VL-7B-Instruct",
+    "base_model:finetune:Qwen/Qwen2.5-VL-7B-Instruct",
+    "license:mit",
+    "eval-results",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 25,
+  "downloads": 401,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-VL-7B-Instruct"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "Qwen2_5_VLForConditionalGenerationWithPointer"
+    ],
+    "model_type": "qwen2_5_vl",
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}",
+      "eos_token": "<|diff_marker|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7188,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 750,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1049,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1616,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 248,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4965419112,
+      "lfs": {
+        "size": 4965419112,
+        "sha256": "204c7b9a00a86b52ced244acddf8b0f0aa939432bfa43f8eb8357d97eb0bbe2b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4991495816,
+      "lfs": {
+        "size": 4991495816,
+        "sha256": "0e41def44f1332baa4d1d4b0fb0bc958501b6b8376946627ceb105cacdef8b28",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4932751040,
+      "lfs": {
+        "size": 4932751040,
+        "sha256": "3d6c1bb8abc9384a856b3f9c43c0f2c09bf4fbe44a79c1a3649a8b58fd09bcbd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1894694504,
+      "lfs": {
+        "size": 1894694504,
+        "sha256": "a6fbae70e79993a371ad0400ddd6f801424b93fe76f93df5f93e4389f15d41c8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 58907,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 570,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 965,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422856,
+      "lfs": {
+        "size": 11422856,
+        "sha256": "c8721840eaf5e00bdaca36c7e64e77ad97a413389028ffc659b542c8d5d763b8",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 6545,
+      "lfs": null
+    },
+    {
+      "rfilename": "trainer_state.json",
+      "size": 244681,
+      "lfs": null
+    },
+    {
+      "rfilename": "training_args.bin",
+      "size": 8504,
+      "lfs": {
+        "size": 8504,
+        "sha256": "de6cfb26621bcfd1c495189a25bed7f143d7ce31b4316613a433e9773dabb4f3",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nbase_model:\n- Qwen/Qwen2.5-VL-7B-Instruct\nlicense: mit\nlibrary_name: transformers\npipeline_tag: image-text-to-text\n---\n\n# GUI-Actor-7B with Qwen2.5-VL-7B as backbone VLM\n\nThis model was introduced in the paper [**GUI-Actor: Coordinate-Free Visual Grounding for GUI Agents**](https://huggingface.co/papers/2506.03143).\nIt is developed based on [Qwen2.5-VL-7B-Instruct ](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct), augmented by an attention-based action head and finetuned to perform GUI grounding using the dataset [here](https://huggingface.co/datasets/cckevinn/GUI-Actor-Data).\n\nFor more details on model design and evaluation, please check: [\ud83c\udfe0 Project Page](https://microsoft.github.io/GUI-Actor/) | [\ud83d\udcbb Github Repo](https://github.com/microsoft/GUI-Actor) | [\ud83d\udcd1 Paper](https://www.arxiv.org/pdf/2506.03143).\n\n| Model Name                                  | Hugging Face Link                         |\n|--------------------------------------------|--------------------------------------------|\n| **GUI-Actor-7B-Qwen2-VL**                   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-7B-Qwen2-VL)         |\n| **GUI-Actor-2B-Qwen2-VL**                   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-2B-Qwen2-VL)         |\n| **GUI-Actor-7B-Qwen2.5-VL**                 | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-7B-Qwen2.5-VL)       |\n| **GUI-Actor-3B-Qwen2.5-VL**                 | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-3B-Qwen2.5-VL)       |\n| **GUI-Actor-7B-Qwen2.5-VL-LiteTrain**                 | [\ud83e\udd17 Hugging Face](https://huggingface.co/qianhuiwu/GUI-Actor-7B-Qwen2.5-VL-LiteTrain)       |\n| **GUI-Actor-3B-Qwen2.5-VL-LiteTrain**                 | [\ud83e\udd17 Hugging Face](https://huggingface.co/qianhuiwu/GUI-Actor-3B-Qwen2.5-VL-LiteTrain)       |\n| **GUI-Actor-Verifier-2B**                   | [\ud83e\udd17 Hugging Face](https://huggingface.co/microsoft/GUI-Actor-Verifier-2B)        |\n\n## \ud83d\udcca Performance Comparison on GUI Grounding Benchmarks\nTable 1. Main results on ScreenSpot-Pro, ScreenSpot, and ScreenSpot-v2 with **Qwen2-VL** as the backbone. \u2020 indicates scores obtained from our own evaluation of the official models on Huggingface.\n| Method           | Backbone VLM | ScreenSpot-Pro | ScreenSpot | ScreenSpot-v2 |\n|------------------|--------------|----------------|------------|----------------|\n| **_72B models:_**\n| AGUVIS-72B       | Qwen2-VL     | -              | 89.2       | -              |\n| UGround-V1-72B   | Qwen2-VL     | 34.5           | **89.4**   | -              |\n| UI-TARS-72B      | Qwen2-VL     | **38.1**       | 88.4       | **90.3**       |\n| **_7B models:_**\n| OS-Atlas-7B      | Qwen2-VL     | 18.9           | 82.5       | 84.1           |\n| AGUVIS-7B        | Qwen2-VL     | 22.9           | 84.4       | 86.0\u2020          |\n| UGround-V1-7B    | Qwen2-VL     | 31.1           | 86.3       | 87.6\u2020          |\n| UI-TARS-7B       | Qwen2-VL     | 35.7           | **89.5**   | **91.6**       |\n| GUI-Actor-7B     | Qwen2-VL     | **40.7**       | 88.3       | 89.5           |\n| GUI-Actor-7B + Verifier     | Qwen2-VL    | 44.2       | 89.7       | 90.9           |\n| **_2B models:_**\n| UGround-V1-2B    | Qwen2-VL     | 26.6           | 77.1       | -              |\n| UI-TARS-2B       | Qwen2-VL     | 27.7           | 82.3       | 84.7           |\n| GUI-Actor-2B     | Qwen2-VL     | **36.7**       | **86.5**   | **88.6**       |\n| GUI-Actor-2B + Verifier     | Qwen2-VL    | 41.8       | 86.9       | 89.3           |\n\nTable 2. Main results on the ScreenSpot-Pro and ScreenSpot-v2 with **Qwen2.5-VL** as the backbone.\n| Method         | Backbone VLM | ScreenSpot-Pro | ScreenSpot-v2 |\n|----------------|---------------|----------------|----------------|\n| **_7B models:_**\n| Qwen2.5-VL-7B  | Qwen2.5-VL    | 27.6           | 88.8           |\n| Jedi-7B        | Qwen2.5-VL    | 39.5           | 91.7           |\n| GUI-Actor-7B   | Qwen2.5-VL    | **44.6**       | **92.1**       |\n| GUI-Actor-7B + Verifier   | Qwen2.5-VL    | 47.7       | 92.5       |\n| **_3B models:_**\n| Qwen2.5-VL-3B  | Qwen2.5-VL    | 25.9           | 80.9           |\n| Jedi-3B        | Qwen2.5-VL    | 36.1           | 88.6           |\n| GUI-Actor-3B   | Qwen2.5-VL    | **42.2**       | **91.0**       |\n| GUI-Actor-3B + Verifier   | Qwen2.5-VL    | 45.9       | 92.4       |\n\n## \ud83d\ude80 Usage\n```python\nimport torch\n\nfrom qwen_vl_utils import process_vision_info\nfrom datasets import load_dataset\nfrom transformers import AutoProcessor\nfrom gui_actor.constants import chat_template\nfrom gui_actor.modeling_qwen25vl import Qwen2_5_VLForConditionalGenerationWithPointer\nfrom gui_actor.inference import inference\n\n\n# load model\nmodel_name_or_path = \"microsoft/GUI-Actor-7B-Qwen2.5-VL\"\ndata_processor = AutoProcessor.from_pretrained(model_name_or_path)\ntokenizer = data_processor.tokenizer\nmodel = Qwen2_5_VLForConditionalGenerationWithPointer.from_pretrained(\n    model_name_or_path,\n    torch_dtype=torch.bfloat16,\n    device_map=\"cuda:0\",\n    attn_implementation=\"flash_attention_2\"\n).eval()\n\n# prepare example\ndataset = load_dataset(\"rootsautomation/ScreenSpot\")[\"test\"]\nexample = dataset[0]\nprint(f\"Intruction: {example['instruction']}\")\nprint(f\"ground-truth action region (x1, y1, x2, y2): {[round(i, 2) for i in example['bbox']]}\")\n\nconversation = [\n    {\n        \"role\": \"system\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"text\": \"You are a GUI agent. Given a screenshot of the current GUI and a human instruction, your task is to locate the screen element that corresponds to the instruction. You should output a PyAutoGUI action that performs a click on the correct position. To indicate the click location, we will use some special tokens, which is used to refer to a visual patch later. For example, you can output: pyautogui.click(<your_special_token_here>).\",\n            }\n        ]\n    },\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": example[\"image\"], # PIL.Image.Image or str to path\n                # \"image_url\": \"https://xxxxx.png\" or \"https://xxxxx.jpg\" or \"file://xxxxx.png\" or \"data:image/png;base64,xxxxxxxx\", will be split by \"base64,\"\n            },\n            {\n                \"type\": \"text\",\n                \"text\": example[\"instruction\"]\n            },\n        ],\n    },\n]\n\n# inference\npred = inference(conversation, model, tokenizer, data_processor, use_placeholder=True, topk=3)\npx, py = pred[\"topk_points\"][0]\nprint(f\"Predicted click point: [{round(px, 4)}, {round(py, 4)}]\")\n\n# >> Model Response\n# Intruction: close this window\n# ground-truth action region (x1, y1, x2, y2): [0.9479, 0.1444, 0.9938, 0.2074]\n# Predicted click point: [0.9709, 0.1548]\n```\n\n## \ud83d\udcdd Citation\n```\n@article{wu2025gui,\n  title={GUI-Actor: Coordinate-Free Visual Grounding for GUI Agents},\n  author={Wu, Qianhui and Cheng, Kanzhi and Yang, Rui and Zhang, Chaoyun and Yang, Jianwei and Jiang, Huiqiang and Mu, Jian and Peng, Baolin and Qiao, Bo and Tan, Reuben and others},\n  journal={arXiv preprint arXiv:2506.03143},\n  year={2025}\n}\n```",
+  "cardDataParsed": {
+    "base_model": [
+      "Qwen/Qwen2.5-VL-7B-Instruct"
+    ],
+    "license": "mit",
+    "library_name": "transformers",
+    "pipeline_tag": "image-text-to-text",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "Qwen2_5_VLForConditionalGenerationWithPointer",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": "AutoProcessor"
+  }
+}

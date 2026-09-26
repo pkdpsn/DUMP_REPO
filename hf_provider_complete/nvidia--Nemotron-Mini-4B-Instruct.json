@@ -1,0 +1,160 @@
+{
+  "modelId": "nvidia/Nemotron-Mini-4B-Instruct",
+  "author": "nvidia",
+  "sha": "791833e92ebddb0bc2c1007f6d2b6764f886a2ae",
+  "lastModified": "2025-02-14 19:03:33+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "nemo",
+    "nemotron",
+    "text-generation",
+    "nvidia",
+    "llama-3",
+    "conversational",
+    "en",
+    "arxiv:2402.16819",
+    "arxiv:2407.14679",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 187,
+  "downloads": 86469,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "NemotronForCausalLM"
+    ],
+    "model_type": "nemotron",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{{'<extra_id_0>System'}}{% for message in messages %}{% if message['role'] == 'system' %}{{'\n' + message['content'].strip()}}{% if tools or contexts %}{{'\n'}}{% endif %}{% endif %}{% endfor %}{% if tools %}{% for tool in tools %}{{ '\n<tool> ' + tool|tojson + ' </tool>' }}{% endfor %}{% endif %}{% if contexts %}{% if tools %}{{'\n'}}{% endif %}{% for context in contexts %}{{ '\n<context> ' + context.strip() + ' </context>' }}{% endfor %}{% endif %}{{'\n\n'}}{% for message in messages %}{% if message['role'] == 'user' %}{{ '<extra_id_1>User\n' + message['content'].strip() + '\n' }}{% elif message['role'] == 'assistant' %}{{ '<extra_id_1>Assistant\n' + message['content'].strip() + '\n' }}{% elif message['role'] == 'tool' %}{{ '<extra_id_1>Tool\n' + message['content'].strip() + '\n' }}{% endif %}{% endfor %}{%- if add_generation_prompt %}{{'<extra_id_1>Assistant\n'}}{%- endif %}",
+      "eos_token": "</s>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1642,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6197,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 646,
+      "lfs": null
+    },
+    {
+      "rfilename": "nemo/nemotron-mini-4b-instruct.nemo",
+      "size": 8386488320,
+      "lfs": {
+        "size": 8386488320,
+        "sha256": "70be3d47b3c1eb1a239c077367a7c5088f165311b0fdbc9732ebff08ccfe2b65",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "nvidia-community-model-license-aug2024.pdf",
+      "size": 145733,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 8381129342,
+      "lfs": {
+        "size": 8381129342,
+        "sha256": "e851a12d65d56e90ed99659e7439f2b5fc080db478500ee3390f809131426854",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 48,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 18143149,
+      "lfs": {
+        "size": 18143149,
+        "sha256": "83d0648daa0467fb02ddef7ff25460321dab2fbb20c280ae0bc1ea8052f7df90",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4545602,
+      "lfs": {
+        "size": 4545602,
+        "sha256": "6dfd8b970f437002fc445214304969fe59e64d4f48500bd0b77ba55340f2d811",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 180494,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf\nlibrary_name: transformers\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- llama-3\n- pytorch\n---\n# Nemotron-Mini-4B-Instruct\n\n## Model Overview\n\nNemotron-Mini-4B-Instruct is a model for generating responses for roleplaying, retrieval augmented generation, and function calling.  It is a small language model (SLM) optimized through distillation, pruning and quantization for speed and on-device deployment. It is a fine-tuned version of [nvidia/Minitron-4B-Base](https://huggingface.co/nvidia/Minitron-4B-Base), which was pruned and distilled from [Nemotron-4 15B](https://arxiv.org/abs/2402.16819) using [our LLM compression technique](https://arxiv.org/abs/2407.14679). This instruct model is optimized for roleplay, RAG QA, and function calling in English. It supports a context length of 4,096 tokens. This model is ready for commercial use.\n\nTry this model on [build.nvidia.com](https://build.nvidia.com/nvidia/nemotron-mini-4b-instruct).\n\nFor more details about how this model is used for [NVIDIA ACE](https://developer.nvidia.com/ace), please refer to [this blog post](https://developer.nvidia.com/blog/deploy-the-first-on-device-small-language-model-for-improved-game-character-roleplay/) and [this demo video](https://www.youtube.com/watch?v=d5z7oIXhVqg), which showcases how the model can be integrated into a video game. You can download the model checkpoint for NVIDIA AI Inference Manager (AIM) SDK from [here](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/ucs-ms/resources/nemotron-mini-4b-instruct).\n\n**Model Developer:** NVIDIA \n\n**Model Dates:** Nemotron-Mini-4B-Instruct was trained between February 2024 and Aug 2024.\n\n## License\n\n[NVIDIA Community Model License](https://huggingface.co/nvidia/Nemotron-Mini-4B-Instruct/blob/main/nvidia-community-model-license-aug2024.pdf)\n\n## Model Architecture\n\nNemotron-Mini-4B-Instruct uses a model embedding size of 3072, 32 attention heads, and an MLP intermediate dimension of 9216. It also uses Grouped-Query Attention (GQA) and Rotary Position Embeddings (RoPE). \n\n**Architecture Type:** Transformer Decoder (auto-regressive language model) \n\n**Network Architecture:** Nemotron-4 \n\n\n## Prompt Format:\n\nWe recommend using the following prompt template, which was used to fine-tune the model. The model may not perform optimally without it.\n\n**Single Turn**\n\n```\n<extra_id_0>System\n{system prompt}\n\n<extra_id_1>User\n{prompt}\n<extra_id_1>Assistant\\n\n```\n\n**Tool use**\n\n```\n<extra_id_0>System\n{system prompt}\n\n<tool> ... </tool>\n<context> ... </context>\n\n<extra_id_1>User\n{prompt}\n<extra_id_1>Assistant\n<toolcall> ... </toolcall>\n<extra_id_1>Tool\n{tool response}\n<extra_id_1>Assistant\\n\n```\n\n\n## Usage\n\n```\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\n\n# Load the tokenizer and model\ntokenizer  = AutoTokenizer.from_pretrained(\"nvidia/Nemotron-Mini-4B-Instruct\")\nmodel = AutoModelForCausalLM.from_pretrained(\"nvidia/Nemotron-Mini-4B-Instruct\")\n\n# Use the prompt template\nmessages = [\n    {\n        \"role\": \"system\",\n        \"content\": \"You are a friendly chatbot who always responds in the style of a pirate\",\n    },\n    {\"role\": \"user\", \"content\": \"How many helicopters can a human eat in one sitting?\"},\n ]\ntokenized_chat = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors=\"pt\")\n\noutputs = model.generate(tokenized_chat, max_new_tokens=128) \nprint(tokenizer.decode(outputs[0]))\n```\n\nYou can also use `pipeline` but you need to create a tokenizer object and assign it to the pipeline manually.\n\n```\nfrom transformers import AutoTokenizer\nfrom transformers import pipeline\n\ntokenizer  = AutoTokenizer.from_pretrained(\"nvidia/Nemotron-Mini-4B-Instruct\")\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"Who are you?\"},\n]\npipe = pipeline(\"text-generation\", model=\"nvidia/Nemotron-Mini-4B-Instruct\")\npipe.tokenizer = tokenizer  # You need to assign tokenizer manually\npipe(messages)\n```\n\n## AI Safety Efforts\n\nThe Nemotron-Mini-4B-Instruct model underwent AI safety evaluation including adversarial testing via three distinct methods: \n- [Garak](https://github.com/leondz/garak), is an automated LLM vulnerability scanner that probes for common weaknesses, including prompt injection and data leakage. \n- [AEGIS](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-1.0), is a content safety evaluation dataset and LLM based content safety classifier model, that adheres to a broad taxonomy of 13 categories of critical risks in human-LLM interactions.\n- Human Content Red Teaming leveraging human interaction and evaluation of the models' responses.\n\n\n## Limitations\n\nThe model was trained on data that contains toxic language and societal biases originally crawled from the internet. Therefore, the model may amplify those biases and return toxic responses especially when prompted with toxic prompts. The model may generate answers that may be inaccurate, omit key information, or include irrelevant or redundant text producing socially unacceptable or undesirable text, even if the prompt itself does not include anything explicitly offensive. This issue could be exacerbated without the use of the recommended prompt template. This issue could be exacerbated without the use of the recommended prompt template.\n\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.  For more detailed information on ethical considerations for this model, please see the [Model Card++](https://build.nvidia.com/nvidia/nemotron-mini-4b-instruct/modelcard). Please report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf",
+    "library_name": "transformers",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

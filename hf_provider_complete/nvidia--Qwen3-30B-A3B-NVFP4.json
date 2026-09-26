@@ -1,0 +1,271 @@
+{
+  "modelId": "nvidia/Qwen3-30B-A3B-NVFP4",
+  "author": "nvidia",
+  "sha": "2538ded2a4edb247b4d2b4a8ba24e44bd4c017c3",
+  "lastModified": "2025-09-10 17:25:24+00:00",
+  "tags": [
+    "Model Optimizer",
+    "safetensors",
+    "qwen3_moe",
+    "nvidia",
+    "ModelOpt",
+    "Qwen3",
+    "quantized",
+    "FP4",
+    "fp4",
+    "text-generation",
+    "conversational",
+    "base_model:Qwen/Qwen3-30B-A3B",
+    "base_model:quantized:Qwen/Qwen3-30B-A3B",
+    "license:apache-2.0",
+    "8-bit",
+    "modelopt",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "Model Optimizer",
+  "likes": 38,
+  "downloads": 27492,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-30B-A3B"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "Model Optimizer",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "ModelOpt",
+      "Qwen3",
+      "quantized",
+      "FP4",
+      "fp4"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3MoeForCausalLM"
+    ],
+    "model_type": "qwen3_moe",
+    "num_experts": 128,
+    "num_experts_per_tok": 8,
+    "quantization_config": {
+      "config_groups": {
+        "group_0": {
+          "weights": {
+            "num_bits": 4
+          },
+          "targets": [
+            "Linear"
+          ]
+        }
+      },
+      "ignore": [
+        "model.layers.0.mlp.gate",
+        "model.layers.1.mlp.gate",
+        "model.layers.10.mlp.gate",
+        "model.layers.11.mlp.gate",
+        "model.layers.12.mlp.gate",
+        "model.layers.13.mlp.gate",
+        "model.layers.14.mlp.gate",
+        "model.layers.15.mlp.gate",
+        "model.layers.16.mlp.gate",
+        "model.layers.17.mlp.gate",
+        "model.layers.18.mlp.gate",
+        "model.layers.19.mlp.gate",
+        "model.layers.2.mlp.gate",
+        "model.layers.20.mlp.gate",
+        "model.layers.21.mlp.gate",
+        "model.layers.22.mlp.gate",
+        "model.layers.23.mlp.gate",
+        "model.layers.24.mlp.gate",
+        "model.layers.25.mlp.gate",
+        "model.layers.26.mlp.gate",
+        "model.layers.27.mlp.gate",
+        "model.layers.28.mlp.gate",
+        "model.layers.29.mlp.gate",
+        "model.layers.3.mlp.gate",
+        "model.layers.30.mlp.gate",
+        "model.layers.31.mlp.gate",
+        "model.layers.32.mlp.gate",
+        "model.layers.33.mlp.gate",
+        "model.layers.34.mlp.gate",
+        "model.layers.35.mlp.gate",
+        "model.layers.36.mlp.gate",
+        "model.layers.37.mlp.gate",
+        "model.layers.38.mlp.gate",
+        "model.layers.39.mlp.gate",
+        "model.layers.4.mlp.gate",
+        "model.layers.40.mlp.gate",
+        "model.layers.41.mlp.gate",
+        "model.layers.42.mlp.gate",
+        "model.layers.43.mlp.gate",
+        "model.layers.44.mlp.gate",
+        "model.layers.45.mlp.gate",
+        "model.layers.46.mlp.gate",
+        "model.layers.47.mlp.gate",
+        "model.layers.5.mlp.gate",
+        "model.layers.6.mlp.gate",
+        "model.layers.7.mlp.gate",
+        "model.layers.8.mlp.gate",
+        "model.layers.9.mlp.gate",
+        "lm_head"
+      ],
+      "quant_method": "modelopt"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1569,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11574,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6081,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 4168,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3893,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 214,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 2194,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 5002180600,
+      "lfs": {
+        "size": 5002180600,
+        "sha256": "15bb083c92a763a643972134681a65e0953122df749fb0d236ca905e78e709bd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 5002610584,
+      "lfs": {
+        "size": 5002610584,
+        "sha256": "ab6edfed51af3b8c6ca57fc0020290f9da253e9eb2170d7ef051517a845c6b82",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 5001923016,
+      "lfs": {
+        "size": 5001923016,
+        "sha256": "57417b5d0bd8b092024608fa98ae8af722c05fe2abb3640a25326a9c231ad939",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 3089614888,
+      "lfs": {
+        "size": 3089614888,
+        "sha256": "06c1a1a674d5cd7ccba0a1cd4c56921b573a8c874e36ef02549913daf3efa501",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 7100711,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 388,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5407,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\npipeline_tag: text-generation\nbase_model:\n- Qwen/Qwen3-30B-A3B\nlicense: apache-2.0\nlibrary_name: Model Optimizer\ntags:\n- nvidia\n- ModelOpt\n- Qwen3\n- quantized\n- FP4\n- fp4\n---\n\n# Model Overview\n\n## Description:\nThe NVIDIA Qwen3-30B-A3B FP4 model is the quantized version of Alibaba's Qwen3-30B-A3B model, which is an auto-regressive language model that uses an optimized transformer architecture. For more information, please check [here](https://huggingface.co/Qwen/Qwen3-30B-A3B). The NVIDIA Qwen3-30B-A3B FP4 model is quantized with [TensorRT Model Optimizer](https://github.com/NVIDIA/TensorRT-Model-Optimizer).\n\nThis model is ready for commercial/non-commercial use.  <br>\n\n## Third-Party Community Consideration\nThis model is not owned or developed by NVIDIA. This model has been developed and built to a third-party\u2019s requirements for this application and use case; see link to Non-NVIDIA [(Qwen3-30B-A3B) Model Card](https://huggingface.co/Qwen/Qwen3-30B-A3B).\n\n### License/Terms of Use:\n[Apache license 2.0](https://huggingface.co/datasets/choosealicense/licenses/blob/main/markdown/apache-2.0.md)\n\n### Deployment Geography:\nGlobal <br>\n\n### Use Case: <br>\nDevelopers looking to take off the shelf pre-quantized models for deployment in AI Agent systems, chatbots, RAG systems, and other AI-powered applications. <br>\n\n### Release Date:  <br>\nHuggingface 08/22/2025 via https://huggingface.co/nvidia/Qwen3-30B-A3B-FP4 <br> \n\n## Model Architecture:\n**Architecture Type:** Transformers  <br>\n**Network Architecture:** Qwen3-30B-A3B <br>\n\n## Input:\n**Input Type(s):** Text <br>\n**Input Format(s):** String <br>\n**Input Parameters:** 1D (One-Dimensional): Sequences <br>\n**Other Properties Related to Input:** Context length up to 131K <br>\n\n## Output:\n**Output Type(s):** Text <br>\n**Output Format:** String <br>\n**Output Parameters:** 1D (One-Dimensional): Sequences <br>\n**Other Properties Related to Output:** N/A <br>\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated systems. By leveraging NVIDIA\u2019s hardware (e.g. GPU cores) and software frameworks (e.g., CUDA libraries), the model achieves faster training and inference times compared to CPU-only solutions. <br>  \n\n## Software Integration:\n**Supported Runtime Engine(s):** <br>\n* TensorRT-LLM <br>\n\n**Supported Hardware Microarchitecture Compatibility:** <br>\n* NVIDIA Blackwell <br>\n\n**Preferred Operating System(s):** <br>\n* Linux <br>\n\n## Model Version(s):\nThe model is quantized with nvidia-modelopt **v0.31.0**  <br>\n\n## Training, Testing, and Evaluation Datasets:\n\n\n\n## Calibration Dataset: \n** Link: [cnn_dailymail](https://huggingface.co/datasets/abisee/cnn_dailymail) <br>\n** Data collection method: Automated. <br>\n** Labeling method: Automated. <br>\n\n\n## Training Datasets:\n** Data Collection Method by Dataset: Undisclosed <br>\n** Labeling Method by Dataset: Undisclosed<br>\n** Properties: Undisclosed\n\n## Testing Dataset:\n** Data Collection Method by Dataset: Undisclosed <br>\n** Labeling Method by Dataset: Undisclosed <br>\n** Properties: Undisclosed <br>\n\n## Evaluation Dataset: \n* Datasets: MMLU Pro, GPQA Diamond, HLE, LiveCodeBench, SciCode, HumanEval, AIME 2024, MATH-500 <br>\n** Data collection method: Hybrid: Automated, Human <br>\n** Labeling method: Hybrid: Human, Automated <br>\n\n\n\n## Inference:\n**Engine:** TensorRT-LLM <br>\n**Test Hardware:** B200 <br>\n\n## Post Training Quantization\nThis model was obtained by quantizing the weights and activations of Qwen3-30B-A3B to FP4 data type, ready for inference with TensorRT-LLM. Only the weights and activations of the linear operators within transformer blocks are quantized. This optimization reduces the number of bits per parameter from 16 to 4, reducing the disk size and GPU memory requirements by approximately 3.3x.\n\n## Usage\n\n### Deploy with TensorRT-LLM\n\nTo deploy the quantized checkpoint with [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) LLM API, follow the sample codes below:\n\n* LLM API sample usage:\n```\nfrom tensorrt_llm import LLM, SamplingParams\n\n\ndef main():\n\n    prompts = [\n        \"Hello, my name is\",\n        \"The president of the United States is\",\n        \"The capital of France is\",\n        \"The future of AI is\",\n    ]\n    sampling_params = SamplingParams(temperature=0.8, top_p=0.95)\n\n    llm = LLM(model=\"nvidia/Qwen3-30B-A3B-FP4\")\n\n    outputs = llm.generate(prompts, sampling_params)\n\n    # Print the outputs.\n    for output in outputs:\n        prompt = output.prompt\n        generated_text = output.outputs[0].text\n        print(f\"Prompt: {prompt!r}, Generated text: {generated_text!r}\")\n\n\n# The entry point of the program needs to be protected for spawning processes.\nif __name__ == '__main__':\n    main()\n\n```\n\n### Evaluation\nThe accuracy benchmark results are presented in the table below:\n<table>\n  <tr>\n   <td><strong>Precision</strong>\n   </td>\n   <td><strong>MMLU Pro</strong>\n   </td>\n   <td><strong>GPQA Diamond</strong>\n   </td>\n   <td><strong>HLE</strong>\n   </td>\n   <td><strong>LiveCodeBench</strong>\n   </td>\n   <td><strong>SCICODE</strong>\n   </td>\n   <td><strong>MATH-500</strong>\n   </td>\n   <td><strong>AIME 2024</strong>\n   </td>\n  </tr>\n  <tr>\n   <td>BF16 (AA Ref)\n   </td>\n   <td>0.78\n   </td>\n   <td>0.62\n   </td>\n   <td>0.07\n   </td>\n   <td>0.51\n   </td>\n   <td>0.28\n   </td>\n   <td>0.96\n   </td>\n   <td>0.75\n   </td>\n  </tr>\n  <tr>\n   <td>FP4\n   </td>\n   <td>0.77\n   </td>\n   <td>0.61\n   </td>\n   <td>0.05\n   </td>\n   <td>0.65\n   </td>\n   <td>0.32\n   </td>\n   <td>0.96\n   </td>\n   <td>0.80\n   </td>\n  </tr>\n  <tr>\n</table>\n\n\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns here.",
+  "cardDataParsed": {
+    "pipeline_tag": "text-generation",
+    "base_model": [
+      "Qwen/Qwen3-30B-A3B"
+    ],
+    "license": "apache-2.0",
+    "library_name": "Model Optimizer",
+    "tags": [
+      "nvidia",
+      "ModelOpt",
+      "Qwen3",
+      "quantized",
+      "FP4",
+      "fp4"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": null
+}

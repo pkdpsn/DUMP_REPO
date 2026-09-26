@@ -1,0 +1,109 @@
+{
+  "modelId": "nvidia/parakeet_realtime_eou_120m-v1",
+  "author": "nvidia",
+  "sha": "a7e2b4629593dce0ec19f600e00e9904353fda2d",
+  "lastModified": "2025-12-03 22:28:49+00:00",
+  "tags": [
+    "nemo",
+    "speech-recognition",
+    "FastConformer",
+    "end-of-utterance",
+    "voice agent",
+    "en",
+    "arxiv:2305.05084",
+    "arxiv:2312.17279",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "nemo",
+  "likes": 153,
+  "downloads": 611,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "nemo",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": [
+      "wer"
+    ],
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "speech-recognition",
+      "FastConformer",
+      "end-of-utterance",
+      "voice agent"
+    ]
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1642,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 8514,
+      "lfs": null
+    },
+    {
+      "rfilename": "figure-streaming.png",
+      "size": 58717,
+      "lfs": null
+    },
+    {
+      "rfilename": "parakeet_realtime_eou_120m-v1.nemo",
+      "size": 460062720,
+      "lfs": {
+        "size": 460062720,
+        "sha256": "6603a22a53b7c1a4bac4736cb24628fb568a7102ba931a28c799e2e72f109893",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "voice-agent.png",
+      "size": 159571,
+      "lfs": {
+        "size": 159571,
+        "sha256": "91ba46c05bf6a211b340a361e1f0c853210b008975743942796c08203c1a16f3",
+        "pointer_size": 131
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\nlanguage:\n- en\nmetrics:\n- wer\nlibrary_name: nemo\ntags:\n- speech-recognition\n- FastConformer\n- end-of-utterance\n- voice agent\n---\n\n<style>\nimg {\n display: inline;\n}\n</style>\n\n[![Model architecture](https://img.shields.io/badge/Model_Arch-FastConformer--RNNT-lightgrey#model-badge)](#model-architecture)\n| [![Model size](https://img.shields.io/badge/Params-120M-lightgrey#model-badge)](#model-architecture)\n<!-- | [![Language](https://img.shields.io/badge/Language-multilingual-lightgrey#model-badge)](#datasets) -->\n\n\n# Model Overview\n\n\n### Description:\nParakeet-Realtime-EOU-120m-v1 is a streaming speech recognition model that also performs end-of-utterance (EOU) detection. It achieves low latency (80ms~160 ms) and signals EOU by emitting an `<EOU>` token at the end of each utterance. The model supports only English and does not output punctuation or capitalization.\n\n<div align=\"center\">\n    <img src=\"./figure-streaming.png\" width=\"450\" />\n</div>\n\n\nThis model is designed for use in voice AI agent pipelines (e.g., [NeMo Voice Agent](https://github.com/NVIDIA-NeMo/NeMo/tree/main/examples/voice_agent)):\n<div align=\"center\">\n    <img src=\"./voice-agent.png\" width=\"750\" />\n</div>\n\n\nThis model is ready for commercial/non-commercial use. <br>\n\n### License/Terms of Use\n\n[NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/) <br> \n\n## Discover more from NVIDIA:\nFor documentation, deployment guides, enterprise-ready APIs, and the latest open models\u2014including Nemotron and other cutting-edge speech, translation, and generative AI\u2014visit the NVIDIA Developer Portal at [developer.nvidia.com](https://developer.nvidia.com/).\nJoin the community to access tools, support, and resources to accelerate your development with NVIDIA\u2019s NeMo, Riva, NIM, and foundation models.<br>\n\n### Explore more from NVIDIA:  <br>\nWhat is [Nemotron](https://www.nvidia.com/en-us/ai-data-science/foundation-models/nemotron/)?<br>\nNVIDIA Developer [Nemotron](https://developer.nvidia.com/nemotron)<br>\n[NVIDIA Riva Speech](https://developer.nvidia.com/riva?sortBy=developer_learning_library%2Fsort%2Ffeatured_in.riva%3Adesc%2Ctitle%3Aasc#demos)<br>\n[NeMo Documentation](https://docs.nvidia.com/nemo-framework/user-guide/latest/nemotoolkit/asr/models.html)<br>\n\n## Model Architecture:\n**Architecture Type:** FastConformer-RNNT [1] <br>\n\n**Network Architecture:** cache-aware streaming FastConformer [2] with 17 encoder layers (attention context = [70,1]) and RNNT decoder. <br>\n\n**Number of model parameters:** 120M <br>\n\n\n### Input: <br>\n**Input Type(s):** Audio <br>\n**Input Format:** Audio waveform <br>\n**Input Parameters:** 1-Dimensional <br>\n**Other Properties Related to Input:** Single-channel audio in 16kHz sampling rate, at least 160ms duration is required. <br>\n\n### Output: <br>\n**Output Type(s):** Text with optional `<EOU>` token (e.g., \"what is your name\\<EOU\\>\") <br>\n**Output Format:** String <br>\n**Output Parameters:** 1-Dimensional <br>\n**Other Properties Related to Output:** The output text might be empty if input audio doesn't contain any speech. <br>\n\n## References(s):\n[1] [Fast Conformer With Linearly Scalable Attention For Efficient Speech Recognition](https://arxiv.org/abs/2305.05084)  <br> \n[2] [Stateful Conformer with Cache-based Inference for Streaming Automatic Speech Recognition](https://arxiv.org/abs/2312.17279) <br>\n[3] [NVIDIA NeMo Toolkit](https://github.com/NVIDIA-NeMo/NeMo)\n\n## How to use this model\n\n### Streaming usage with NeMo Voice Agent\n\nThis model is primarily designed for use in voice AI agents under streaming settings.\nPlease refer to [NeMo Voice Agent](https://github.com/NVIDIA-NeMo/NeMo/tree/main/examples/voice_agent) for examples on how to setup up a voice agent with 80ms ASR latency. \n\nTo use this model in NeMo Voice Agent, set this in the server config [yaml](https://github.com/NVIDIA-NeMo/NeMo/blob/main/examples/voice_agent/server/server_configs/default.yaml):\n```yaml\nstt:\n  type: nemo\n  model: \"nvidia/parakeet_realtime_eou_120m-v1\"\n```\n\n\n### Offline usage\n\nYou will need to install [NVIDIA NeMo](https://github.com/NVIDIA/NeMo) [3]. We recommend you install it after you've installed latest PyTorch version.\n```bash\npip install -U nemo_toolkit['asr']\n``` \n\nThe model can then be used in the offline setting showned below.\n\n\n#### Automatically instantiate the model\n\n```python\nimport nemo.collections.asr as nemo_asr\nasr_model = nemo_asr.models.ASRModel.from_pretrained(model_name=\"nvidia/parakeet_realtime_eou_120m-v1\")\n```\n\n#### Transcribing using Python\nFirst, let's get a sample\n```bash\nwget https://dldata-public.s3.us-east-2.amazonaws.com/2086-149220-0033.wav\n```\nThen simply do:\n```python\noutput = asr_model.transcribe(['2086-149220-0033.wav'])\nprint(output[0].text)\n```\n\n\n## Software Integration:\n**Runtime Engine(s):** \n* NeMo 2.5.3+ <br>\n\n**Supported Hardware Microarchitecture Compatibility:** <br>\n* NVIDIA Ampere <br>\n* NVIDIA Blackwell <br>\n* NVIDIA Hopper  <br>\n* NVIDIA Volta  <br>\n\n**Preferred/Supported Operating System(s):**\n* Linux <br>\n\n\n\n## Model Version(s):\n* parakeet_realtime_eou_120m-v1 <br>\n\n\n## Training, Testing, and Evaluation Datasets: \n### Training Dataset:\n\n- AMI\n- DialogStudio (subset from task-oriented domain with commercial license) \n- Granary\n- Google Speech Commands\n- LibriTTS\n- 10,000 hours from human-transcribed NeMo ASR Set 3.0, including:\n  - LibriSpeech (960 hours)\n  - Fisher Corpus\n  - National Speech Corpus Part 1\n  - VCTK\n  - Europarl-ASR\n  - Multilingual LibriSpeech\n  - Mozilla Common Voice (v7.0)\n\n** Data Collection Method <br>\n* [Hybrid: Human, Synthetic] - Most audios are human recorded, but some are generated by TTS models with commercial license <br>\n\n** Labeling Method <br>\n* [Hybrid: Human, Synthetic] - Some transcripts are automatically generated by automatic speech recognition (ASR) models, while others are manually labeled. <br>\n\n\n\n### Evaluation Dataset:\n\n- HuggingFace ASR Leaderboard\n    - AMI\n    - Earnings22\n    - Gigaspeech\n    - LS-test-clean\n    - LS-test-other\n    - SPGI\n    - Tedlium\n    - Voxpopuli\n- DialogStudio (subset from task-oriented domain with commercial license)\n\n\n** Data Collection Method <br>\n* [Hybrid: Human, Synthetic] - Most audios are human recorded, but some are generated by TTS models with commercial license <br>\n\n** Labeling Method <br>\n* [Hybrid: Human, Synthetic] - Some transcripts are generated by ASR models, while some are manually labeled <br>\n\n\n### Benchmark Score <br>\n\n#### Speech Recognition (Word Error Rate)\n\nWord error rate (WER) on [HuggingFace OpenASR leaderboard](https://huggingface.co/spaces/hf-audio/open_asr_leaderboard) measured in 160ms streaming setting. Text is normalized by [this normalizer](https://github.com/huggingface/open_asr_leaderboard/blob/main/normalizer/normalizer.py#L528) before caculating the metrics.\n\n| Metric         | Average | AMI   | Earnings22 | Gigaspeech | LS-test-clean | LS-test-other | SPGI | Tedlium | Voxpopuli |\n|----------------|---------|-------|------------|------------|---------------|----------------|------|---------|-----------|\n| WER (%)        | 9.30    | 15.62 | 15.76      | 13.31      | 3.61          | 7.79           | 3.79 | 5.48    | 9.07      |\n\n\n#### End-of-Utterance Detection (Latency)\n\nThe latency metrics are evaluated on TTS generated audios from DialogStudio, and a 3-second silence is appended to each sample. The actual performance on real-world scenarios will vary by acoustic environment, accents, etc.\n| Percentile | Latency |\n|---------|-----|\n| 50% | 160ms |\n| 90% | 280ms |\n| 95% | 320ms |\n\n\n\n\n\n## Inference:\n\n**Acceleration Engine:** CUDA<br>\n\n**Test Hardware:** <br>  \n* NVIDIA V100 <br>\n* NVIDIA A100 <br>\n* NVIDIA A6000 <br>\n\n\n\n## Ethical Considerations:\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br> \n\n\nPlease report model quality, risk, security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n\n\n\n\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "language": [
+      "en"
+    ],
+    "metrics": [
+      "wer"
+    ],
+    "library_name": "nemo",
+    "tags": [
+      "speech-recognition",
+      "FastConformer",
+      "end-of-utterance",
+      "voice agent"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

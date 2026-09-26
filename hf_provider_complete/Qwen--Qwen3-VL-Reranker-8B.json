@@ -1,0 +1,236 @@
+{
+  "modelId": "Qwen/Qwen3-VL-Reranker-8B",
+  "author": "Qwen",
+  "sha": "b212dc8c91a8164aef1ea2de9c1a867611e75c04",
+  "lastModified": "2026-04-16 08:55:43+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_vl",
+    "image-text-to-text",
+    "sentence-transformers",
+    "multimodal rerank",
+    "text rerank",
+    "text-ranking",
+    "arxiv:2601.04720",
+    "base_model:Qwen/Qwen3-VL-8B-Instruct",
+    "base_model:finetune:Qwen/Qwen3-VL-8B-Instruct",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-ranking",
+  "library_name": "transformers",
+  "likes": 170,
+  "downloads": 116387,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-VL-8B-Instruct"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-ranking",
+    "tags": [
+      "sentence-transformers",
+      "transformers",
+      "multimodal rerank",
+      "text rerank"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3VLForConditionalGeneration"
+    ],
+    "model_type": "qwen3_vl",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+    "additional_chat_templates": {
+      "reranker": "{%- set default_instruction = \"Given a search query, retrieve relevant candidates that answer the query.\" -%}\n{%- set ns = namespace(instruction=\"\", found_instruction=false) -%}\n{%- for message in messages -%}\n    {%- if message.role == \"system\" -%}\n        {%- if message.content is string -%}\n            {%- set ns.instruction = message.content -%}\n        {%- else -%}\n            {%- for content in message.content -%}\n                {%- if 'text' in content -%}\n                    {%- set ns.instruction = ns.instruction + content.text -%}\n                {%- endif -%}\n            {%- endfor -%}\n        {%- endif -%}\n        {%- set ns.found_instruction = true -%}\n    {%- endif -%}\n{%- endfor -%}\n{%- if not ns.found_instruction -%}\n    {%- set ns.instruction = default_instruction -%}\n{%- endif -%}\n{%- set image_count = namespace(value=0) -%}\n{%- set video_count = namespace(value=0) -%}\n{%- macro render_multimodal(message) -%}\n    {%- if message.content is string -%}\n        {{- message.content -}}\n    {%- else -%}\n        {%- for content in message.content -%}\n            {%- if content.type == 'image' or 'image' in content or 'image_url' in content -%}\n                {%- set image_count.value = image_count.value + 1 -%}\n                {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                <|vision_start|><|image_pad|><|vision_end|>\n            {%- elif content.type == 'video' or 'video' in content -%}\n                {%- set video_count.value = video_count.value + 1 -%}\n                {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                <|vision_start|><|video_pad|><|vision_end|>\n            {%- elif 'text' in content -%}\n                {{- content.text -}}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- endif -%}\n{%- endmacro -%}\n{{- '<|im_start|>system\\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\\n<|im_start|>user\\n<Instruct>: ' + ns.instruction + '<Query>:' -}}\n{%- for message in messages if message.role == \"query\" -%}\n    {{- render_multimodal(message) -}}\n{%- endfor -%}\n{{- '\\n<Document>:' -}}\n{%- for message in messages if message.role == \"document\" -%}\n    {{- render_multimodal(message) -}}\n{%- endfor -%}\n{{- '<|im_end|>\\n' -}}\n{%- if add_generation_prompt -%}\n    {{- '<|im_start|>assistant\\n' -}}\n{%- endif -%}"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "1_LogitScore/config.json",
+      "size": 57,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 13259,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "additional_chat_templates/reranker.jinja",
+      "size": 2443,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 5292,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1621,
+      "lfs": null
+    },
+    {
+      "rfilename": "config_sentence_transformers.json",
+      "size": 294,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 213,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4998056552,
+      "lfs": {
+        "size": 4998056552,
+        "sha256": "00db2779f4c81c18a551b05ee617a4012af2601ec47181c15629ae756ef367d6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4915962464,
+      "lfs": {
+        "size": 4915962464,
+        "sha256": "6ef4ccabf1f72c42eed016adca6d46528e66875171268e5ff603c1df2f97fa3d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4915962496,
+      "lfs": {
+        "size": 4915962496,
+        "sha256": "f036e887d2b27b56a3b22fe200bbdd7e0c8f075100f87bd2b6653fa8fca02973",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 2704357976,
+      "lfs": {
+        "size": 2704357976,
+        "sha256": "723d600bc3947051da769a35fb7bb62419d60d558bee7e9c9bb15919ccc79190",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 67795,
+      "lfs": null
+    },
+    {
+      "rfilename": "modules.json",
+      "size": 285,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 628,
+      "lfs": null
+    },
+    {
+      "rfilename": "scripts/qwen3_vl_reranker.py",
+      "size": 10873,
+      "lfs": null
+    },
+    {
+      "rfilename": "sentence_bert_config.json",
+      "size": 756,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5445,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 817,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlibrary_name: transformers\npipeline_tag: text-ranking\nbase_model:\n- Qwen/Qwen3-VL-8B-Instruct\ntags:\n- sentence-transformers\n- transformers\n- multimodal rerank\n- text rerank\n---\n# Qwen3-VL-Reranker-8B\n\n<p align=\"center\">\n    <img src=\"https://model-demo.oss-cn-hangzhou.aliyuncs.com/Qwen3-VL-Reranker.png\" width=\"400\"/>\n<p>\n\n## Highlights\n\nThe **Qwen3-VL-Embedding** and **Qwen3-VL-Reranker** model series are the latest additions to the Qwen family, built upon the recently open-sourced and powerful Qwen3-VL foundation model. Specifically designed for multimodal information retrieval and cross-modal understanding, this suite accepts diverse inputs including text, images, screenshots, and videos, as well as inputs containing a mixture of these modalities.\n\nWhile the Embedding model generates high-dimensional vectors for broad applications like retrieval and clustering, the Reranker model is engineered to refine these results, establishing a comprehensive pipeline for state-of-the-art multimodal search.\n\n- **Multimodal Versatility**: Both models seamlessly handle a wide range of inputs\u2014including text, images, screenshots, and video\u2014within a unified framework. They deliver state-of-the-art performance across diverse multimodal tasks such as image-text retrieval, video-text matching, visual question answering (VQA), and multimodal content clustering.\n\n- **Unified Representation Learning (Embedding)**: By leveraging the Qwen3-VL architecture, the Embedding model generates semantically rich vectors that capture both visual and textual information in a shared space. This facilitates efficient similarity computation and retrieval across different modalities.\n\n- **High-Precision Reranking (Reranker)**: We also introduce the Qwen3-VL-Reranker series to complement the embedding model. The reranker takes a (query, document) pair as input\u2014where both query and document may contain arbitrary single or mixed modalities\u2014and outputs a precise relevance score. In retrieval pipelines, the two models are typically used in tandem: the embedding model performs efficient initial recall, while the reranker refines results in a subsequent re-ranking stage. This two-stage approach significantly boosts retrieval accuracy.\n\n- **Exceptional Practicality**: Inheriting Qwen3-VL\u2019s multilingual capabilities, the series supports over 30 languages, making it ideal for global applications. It is highly practical for real-world scenarios, offering flexible vector dimensions, customizable instructions for specific use cases, and strong performance even with quantized embeddings. These capabilities enable developers to seamlessly integrate both models into existing pipelines, unlocking powerful cross-lingual and cross-modal understanding.\n\n**Qwen3-VL-Reranker-8B** has the following features:\n\n- Model Type: MultiModal Rerank\n- Supported Languages: 30+ Languages\n- Supported Input Modalities: Text, images, screenshots, videos, and arbitrary multimodal combinations (e.g., text + image, text + video)\n- Number of Parameters: 8B\n- Context Length: 32k\n\nFor more details, including benchmark evaluation, hardware requirements, and inference performance, please refer to our [technical report](https://arxiv.org/abs/2601.04720), [blog](https://qwenlm.github.io/blog/qwen3-embedding/), [GitHub](https://github.com/QwenLM/Qwen3-VL-Embedding).\n\n## Qwen3-VL-Embedding and Qwen3-VL-Reranker Model list\n\n| Model | Size | Model Layers | Sequence Length | Embedding Dimension | Quantization Support | MRL Support | Instruction Aware |\n|---|---|---|---|---|----------------------|---|---|\n| [Qwen3-VL-Embedding-2B](https://huggingface.co/Qwen/Qwen3-VL-Embedding-2B) | 2B | 28 | 32K | 2048 | Yes | Yes | Yes |\n| [Qwen3-VL-Embedding-8B](https://huggingface.co/Qwen/Qwen3-VL-Embedding-8B) | 8B | 36 | 32K | 4096 | Yes | Yes | Yes |\n| [Qwen3-VL-Reranker-2B](https://huggingface.co/Qwen/Qwen3-VL-Reranker-2B) | 2B | 28 | 32K | - | -  | - | Yes |\n| [Qwen3-VL-Reranker-8B](https://huggingface.co/Qwen/Qwen3-VL-Reranker-8B) | 8B | 36 | 32K | - | -  | - | Yes |\n\n> **Note**:\n> - `Quantization Support` indicates the supported quantization post process for the output embedding. \n> - `MRL Support` indicates whether the embedding model supports custom dimensions for the final embedding. \n> - `Instruction Aware` notes whether the embedding or reranking model supports customizing the input instruction according to different tasks.\n> Our evaluation indicates that, for most downstream tasks, using instructions (instruct) typically yields an improvement of 1% to 5% compared to not using them. Therefore, we recommend that developers create tailored instructions specific to their tasks and scenarios. In multilingual contexts, we also advise users to write their instructions in English, as most instructions utilized during the model training process were originally written in English.\n\n## Model Performance\n\nWe utilize retrieval task datasets from various subtasks of [MMEB-v2](https://huggingface.co/spaces/TIGER-Lab/MMEB-Leaderboard) and [MMTEB](https://huggingface.co/spaces/mteb/leaderboard) retrieval benchmarks. For visual document retrieval, we employ [JinaVDR](https://huggingface.co/collections/jinaai/jinavdr-visual-document-retrieval) and [ViDoRe v3](https://huggingface.co/blog/QuentinJG/introducing-vidore-v3) datasets. Our results demonstrate that all Qwen3-VL-Reranker models consistently outperform the base embedding model and baseline rerankers, with the 8B variant achieving the best performance across most tasks.\n\n| Model | Size | MMEB-v2(Retrieval) - Avg | MMEB-v2(Retrieval) - Image | MMEB-v2(Retrieval) - Video | MMEB-v2(Retrieval) - VisDoc | MMTEB(Retrieval) | JinaVDR | ViDoRe(v3) |\n|-------|------|--------------------------|----------------------------|----------------------------|------------------------------|------------------|---------|------------|\n| Qwen3-VL-Embedding-2B | 2B | 73.4 | 74.8 | 53.6 | 79.2 | 68.1 | 71.0 | 52.9 |\n| jina-reranker-m0      | 2B |  - | 68.2 | -    | 85.2 | -    | 82.2 | 57.8 |\n| Qwen3-VL-Reranker-2B | 2B | 75.1 | 73.8 | 52.1 | 83.4 | 70.0 | 80.9 | 60.8 |\n| Qwen3-VL-Reranker-8B | 8B | 79.2 | 80.7 | 55.8 | 86.3 | 74.9 | 83.6 | 66.7 |\n\n## Usage\n\n### Using Sentence Transformers\n\nInstall Sentence Transformers:\n```bash\npip install sentence_transformers\n```\n\n```python\nfrom sentence_transformers import CrossEncoder\n\nmodel = CrossEncoder(\"Qwen/Qwen3-VL-Reranker-8B\")\n\nquery = \"A woman playing with her dog on a beach at sunset.\"\ndocuments = [\n    \"A woman shares a joyful moment with her golden retriever on a sun-drenched beach at sunset, as the dog offers its paw in a heartwarming display of companionship and trust.\",\n    \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\",\n    {\n        \"text\": \"A woman shares a joyful moment with her golden retriever on a sun-drenched beach at sunset, as the dog offers its paw in a heartwarming display of companionship and trust.\",\n        \"image\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\",\n    },\n]\n\nprompt = \"Retrieve images or text relevant to the user's query.\"\npairs = [(query, doc) for doc in documents]\nscores = model.predict(pairs, prompt=prompt)\nprint(scores)\n# [1.3125, 0.25, 0.4375]\n\nrankings = model.rank(query, documents, prompt=prompt)\nprint(rankings)\n# [{'corpus_id': 0, 'score': 1.3125}, {'corpus_id': 2, 'score': 0.4375}, {'corpus_id': 1, 'score': 0.25}]\n```\n\nYou can map scores to 0...1 with a sigmoid activation:\n\n```python\nscores = model.predict(pairs, activation_fn=torch.nn.Sigmoid(), prompt=prompt)\nprint(scores)\n# [0.7891, 0.5625, 0.6094]\n```\n\nThe default prompt is `\"query\"` with instruction `\"Retrieve text relevant to the user's query.\"`. You can customize the instruction for your use case via the `prompt` parameter as shown above.\n\n### Using Transformers\n\n- **requirements**\n```text\ntransformers>=4.57.0\nqwen-vl-utils>=0.0.14\ntorch==2.8.0\n```\n\n```python\nfrom scripts.qwen3_vl_reranker import Qwen3VLReranker\n\n# Specify the model path\nmodel_name_or_path = \"Qwen/Qwen3-VL-Reranker-8B\"\n\n# Initialize the Qwen3VLEmbedder model\nmodel = Qwen3VLReranker(model_name_or_path=model_name_or_path)\n# We recommend enabling flash_attention_2 for better acceleration and memory saving,\n# model = Qwen3VLReranker(model_name_or_path=model_name_or_path, torch_dtype=torch.bfloat16, attn_implementation=\"flash_attention_2\")\n# Combine queries and documents into a single input list\n\ninputs = {\n    \"instruction\": \"Retrieval relevant image or text with user's query\",\n    \"query\": {\"text\": \"A woman playing with her dog on a beach at sunset.\"},\n    \"documents\": [\n        {\"text\": \"A woman shares a joyful moment with her golden retriever on a sun-drenched beach at sunset, as the dog offers its paw in a heartwarming display of companionship and trust.\"},\n        {\"image\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\"},\n        {\"text\": \"A woman shares a joyful moment with her golden retriever on a sun-drenched beach at sunset, as the dog offers its paw in a heartwarming display of companionship and trust.\", \"image\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\"}\n    ],\n    \"fps\": 1.0\n}\n\nscores = model.process(inputs)\nprint(scores)\n# [0.7838293313980103, 0.585621178150177, 0.6147719025611877]\n```\n\n### Using vLLM\n```python\nimport argparse\nimport os\nfrom pathlib import Path\nfrom typing import Dict, Any\nfrom vllm import LLM, EngineArgs\nfrom vllm.entrypoints.score_utils import ScoreMultiModalParam\n\n\nqueries = [\n    {\"text\": \"A woman playing with her dog on a beach at sunset.\"}\n]\n\ndocuments = [\n    {\"text\": \"A woman shares a joyful moment with her golden retriever on a sun-drenched beach at sunset, as the dog offers its paw in a heartwarming display of companionship and trust.\"},\n    {\"image\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\"},\n    {\"text\": \"A woman shares a joyful moment with her golden retriever on a sun-drenched beach at sunset, as the dog offers its paw in a heartwarming display of companionship and trust.\", \n     \"image\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg\"}\n]\n\n\ndef format_document_to_score_param(doc_dict: Dict[str, Any]) -> ScoreMultiModalParam:\n    content = []\n    \n    text = doc_dict.get('text')\n    image = doc_dict.get('image')\n    \n    if text:\n        content.append({\n            \"type\": \"text\",\n            \"text\": text\n        })\n    \n    if image:\n        image_url = image\n        if isinstance(image, str) and not image.startswith(('http', 'https', 'oss')):\n            abs_image_path = os.path.abspath(image)\n            image_url = 'file://' + abs_image_path\n        \n        content.append({\n            \"type\": \"image_url\",\n            \"image_url\": {\n                \"url\": image_url\n            }\n        })\n    \n    if not content:\n        content.append({\n            \"type\": \"text\",\n            \"text\": \"\"\n        })\n    \n    return {\"content\": content}\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=\"Offline Reranker with vLLM\")\n    parser.add_argument(\"--model-path\", type=str, default=\"models/Qwen3-VL-Reranker-8B\", help=\"Path to the reranker model\")\n    parser.add_argument(\"--dtype\", type=str, default=\"bfloat16\", help=\"Data type (e.g., bfloat16)\")\n    parser.add_argument(\"--template-path\", type=str, default=\"vllm/examples/pooling/score/template/qwen3_vl_reranker.jinja\", \n                        help=\"Path to chat template file\")\n    args = parser.parse_args()\n    \n    print(f\"Loading model from {args.model_path}...\")\n    \n    engine_args = EngineArgs(\n        model=args.model_path,\n        runner=\"pooling\",\n        dtype=args.dtype,\n        trust_remote_code=True,\n        hf_overrides={\n            \"architectures\": [\"Qwen3VLForSequenceClassification\"],\n            \"classifier_from_token\": [\"no\", \"yes\"],\n            \"is_original_qwen3_reranker\": True,\n        },\n    )\n    \n    llm = LLM(**vars(engine_args))\n    \n    template_path = Path(args.template_path)\n    chat_template = template_path.read_text() if template_path.exists() else None\n    \n    for query_dict in queries:\n        query_text = query_dict.get('text', '')\n        print(f\"\\nQuery: {query_text}\")\n        \n        scores = []\n        for doc_dict in documents:\n            doc_param = format_document_to_score_param(doc_dict)\n            outputs = llm.score(query_text, doc_param, chat_template=chat_template)\n            score = outputs[0].outputs.score\n            scores.append(score)\n        \n        print(scores)\n\n\nif __name__ == \"__main__\":\n    main()\n\n```\nFor more usage examples, please visit our [GitHub repository](https://github.com/QwenLM/Qwen3-VL-Embedding).\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{qwen3vlembedding,\n  title={Qwen3-VL-Embedding and Qwen3-VL-Reranker: A Unified Framework for State-of-the-Art Multimodal Retrieval and Ranking},\n  author={Li, Mingxin and Zhang, Yanzhao and Long, Dingkun and Chen Keqin and Song, Sibo and Bai, Shuai and Yang, Zhibo and Xie, Pengjun and Yang, An and Liu, Dayiheng and Zhou, Jingren and Lin, Junyang},\n  journal={arXiv preprint arXiv:2601.04720},\n  year={2026}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "library_name": "transformers",
+    "pipeline_tag": "text-ranking",
+    "base_model": [
+      "Qwen/Qwen3-VL-8B-Instruct"
+    ],
+    "tags": [
+      "sentence-transformers",
+      "transformers",
+      "multimodal rerank",
+      "text rerank"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

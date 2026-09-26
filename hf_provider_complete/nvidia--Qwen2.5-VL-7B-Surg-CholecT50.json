@@ -1,0 +1,264 @@
+{
+  "modelId": "nvidia/Qwen2.5-VL-7B-Surg-CholecT50",
+  "author": "nvidia",
+  "sha": "c1a01db98c72f4fca5ec671405325c4c841dcafd",
+  "lastModified": "2026-01-12 21:48:17+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_5_vl",
+    "image-text-to-text",
+    "multimodal-llm",
+    "surgical",
+    "healthcare",
+    "conversational",
+    "en",
+    "dataset:CAMMA-public/cholect50",
+    "arxiv:2204.05235",
+    "license:other",
+    "model-index",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 11,
+  "downloads": 967,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "Qwen/Qwen2.5-VL-7B",
+    "datasets": [
+      "CAMMA-public/cholect50"
+    ],
+    "eval_results": [
+      {
+        "task_type": "image-text-to-text",
+        "dataset_type": "cholect50",
+        "dataset_name": "CholecT50",
+        "metric_type": "f1",
+        "metric_value": 0.81,
+        "task_name": "Surgical Triplet Recognition",
+        "dataset_config": null,
+        "dataset_split": null,
+        "dataset_revision": null,
+        "dataset_args": null,
+        "metric_name": "F1 Instrument",
+        "metric_config": null,
+        "metric_args": null,
+        "verified": false,
+        "verify_token": null,
+        "source_name": null,
+        "source_url": null
+      },
+      {
+        "task_type": "image-text-to-text",
+        "dataset_type": "cholect50",
+        "dataset_name": "CholecT50",
+        "metric_type": "f1",
+        "metric_value": 0.64,
+        "task_name": "Surgical Triplet Recognition",
+        "dataset_config": null,
+        "dataset_split": null,
+        "dataset_revision": null,
+        "dataset_args": null,
+        "metric_name": "F1 Verb",
+        "metric_config": null,
+        "metric_args": null,
+        "verified": false,
+        "verify_token": null,
+        "source_name": null,
+        "source_url": null
+      },
+      {
+        "task_type": "image-text-to-text",
+        "dataset_type": "cholect50",
+        "dataset_name": "CholecT50",
+        "metric_type": "f1",
+        "metric_value": 0.6,
+        "task_name": "Surgical Triplet Recognition",
+        "dataset_config": null,
+        "dataset_split": null,
+        "dataset_revision": null,
+        "dataset_args": null,
+        "metric_name": "F1 Target",
+        "metric_config": null,
+        "metric_args": null,
+        "verified": false,
+        "verify_token": null,
+        "source_name": null,
+        "source_url": null
+      }
+    ],
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nsclv1",
+    "license_link": "https://huggingface.co/nvidia/Qwen2.5-VL-7B-Surg-CholecT50/resolve/main/License.docx",
+    "metrics": null,
+    "model_name": "Qwen2.5-VL-7B-Surg-CholecT50",
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "multimodal-llm",
+      "surgical",
+      "healthcare"
+    ],
+    "base_model_relation": "finetune"
+  },
+  "config": {
+    "architectures": [
+      "Qwen2_5_VLForConditionalGeneration"
+    ],
+    "model_type": "qwen2_5_vl",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "License.docx",
+      "size": 20549,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6846,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 605,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1491,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 260,
+      "lfs": null
+    },
+    {
+      "rfilename": "latest",
+      "size": 15,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4968243304,
+      "lfs": {
+        "size": 4968243304,
+        "sha256": "75d67e4c3d43c971af5728e753651cfb82341e0cf0ed6d3962fc03e09d1d261e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4991495816,
+      "lfs": {
+        "size": 4991495816,
+        "sha256": "53cabc4221cba74ca4f8eb7da5a6c9499d33fe0406823f13490877f9a086ef39",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4932751040,
+      "lfs": {
+        "size": 4932751040,
+        "sha256": "6810262fef078bbcb6e1d848f47af2e7b6f50b516211931a2e51476096080b18",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1691924384,
+      "lfs": {
+        "size": 1691924384,
+        "sha256": "02999fb52a44be5ed7d4ee618812533e34cc43da3a5c19d1eb1ec51fdd917f8f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 57619,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 350,
+      "lfs": null
+    },
+    {
+      "rfilename": "scheduler.pt",
+      "size": 1064,
+      "lfs": {
+        "size": 1064,
+        "sha256": "0e281920d8fe3a16d739dc17f3d53d877587363e713d4c1deaa5c5f05de9f25e",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 7281,
+      "lfs": null
+    },
+    {
+      "rfilename": "trainer_state.json",
+      "size": 1333693,
+      "lfs": null
+    },
+    {
+      "rfilename": "training_args.bin",
+      "size": 7480,
+      "lfs": {
+        "size": 7480,
+        "sha256": "eab4d6d6d686a530d1e18aaa2282106d86a7ab818f9c01aa8cd7e8ccff4f2706",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 3383407,
+      "lfs": null
+    },
+    {
+      "rfilename": "zero_to_fp32.py",
+      "size": 29219,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

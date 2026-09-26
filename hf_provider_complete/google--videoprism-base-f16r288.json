@@ -1,0 +1,85 @@
+{
+  "modelId": "google/videoprism-base-f16r288",
+  "author": "google",
+  "sha": "be719a406d563b66f0ac969e7c94bab8e997c81a",
+  "lastModified": "2025-07-29 20:33:19+00:00",
+  "tags": [
+    "videoprism",
+    "video-classification",
+    "video-embedding",
+    "arxiv:2402.13217",
+    "arxiv:2205.01917",
+    "arxiv:2103.15691",
+    "arxiv:2007.14937",
+    "arxiv:2106.02636",
+    "arxiv:2204.00679",
+    "arxiv:2307.06942",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "video-classification",
+  "library_name": "videoprism",
+  "likes": 109,
+  "downloads": 2348,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "videoprism",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "video-classification",
+      "video-embedding"
+    ]
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 10721,
+      "lfs": null
+    },
+    {
+      "rfilename": "flax_base_f16r288_repeated.npz",
+      "size": 457475296,
+      "lfs": {
+        "size": 457475296,
+        "sha256": "61fa62eedbe4f8d4ba76a99a8b79abd0137426a4931c48204ab70446b6411f29",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlibrary_name: videoprism\ntags:\n- video-classification\n- video-embedding\n---\n\n# VideoPrism Model Card\n\n**Paper**: https://huggingface.co/papers/2402.13217\n\n**arXiv**: https://arxiv.org/pdf/2402.13217\n\n**GitHub**: https://github.com/google-deepmind/videoprism\n\n**Blog**: https://research.google/blog/videoprism-a-foundational-visual-encoder-for-video-understanding/\n\nVideoPrism is a foundational video encoder that enables state-of-the-art performance on a large variety of video understanding tasks. It takes video frames as input and outputs compact embeddings of the frames, which one can conveniently feed into classifiers, LLMs, retrieval models, etc. When tested on 33 public video understanding benchmarks over four task categories, a single frozen VideoPrism checkpoint outperforms previous best-performing foundation models on 31 of them, with no fine-tuning on target task datasets.\n\n## Model details\n\nWe release the following model variants:\n\n| Model Name | Configuration Name | Model Type | Backbone | #Params | File Size | Checkpoint |\n| -------- | -------- | ------- | :-------: | :-------: | :-------: | :-------: |\n| VideoPrism-B | `videoprism_public_v1_base`  | Video encoder | ViT-B | 114M | 458MB | [link](https://huggingface.co/google/videoprism-base-f16r288) |\n| VideoPrism-L | `videoprism_public_v1_large` | Video encoder | ViT-L | 354M | 1.42GB | [link](https://huggingface.co/google/videoprism-large-f8r288) |\n| VideoPrism-LvT-B | `videoprism_lvt_public_v1_base`  | Video-text encoders | ViT-B | 248M | 991MB | [link](https://huggingface.co/google/videoprism-lvt-base-f16r288) |\n| VideoPrism-LvT-L | `videoprism_lvt_public_v1_large` | Video-text encoders | ViT-L | 580M | 2.30GB | [link](https://huggingface.co/google/videoprism-lvt-large-f8r288) |\n\n\n### Model description\n\nVideoPrism-B/L are the composition of a Vision Transformer image encoder and four temporal-attention Transformer layers. The image encoder and text encoder are initialized from [CoCa](https://arxiv.org/abs/2205.01917), which is trained on WebLI following the CoCa recipes. VideoPrism is based on the [ViViT](https://arxiv.org/abs/2103.15691) factorized video encoder architecture.\n\n### Inputs and outputs\nThe models take videos with shape (num_frames, 288, 288, 3) as inputs and outputs embeddings with shape (num_frames * 16 * 16, feature_channels) which could be reshaped into (num_frames, 16, 16, feature_channels) for spatiotemporal representations. During model training, num_frames is set to 16 and 8 for VideoPrism-B and VideoPrism-L, respectively. Both models are expected to work with arbitrary num_frames by interpolating the temporal positional embeddings.\n\nIn video-text models, both video and text encoders produce global embeddings with shape `(feature_channels)`, whose similarities could be measured by cosine distances. We use the `c4_en` [SentencePiece](https://github.com/google/sentencepiece) model for text tokenization. During inference, embedding calculation for either modality can be skipped by providing `None` as the input.\n\n## Uses\nVideoPrism has a wide range of applications across various video understanding scenarios. The following lists some primary use cases and yet is not comprehensive. The purpose of this list is to provide contextual information the model creators considered as part of model training and development.\n*    **Video classification**: By feeding the video embeddings to a lightweight classifier, we can tackle video action recognition, a fundamental task in video understanding, under various scenarios.\n*    **Temporal and spatiotemporal localization**: We can also use the model to localize actions of interest spatially across time by equipping it with a bounding box proposal.\n*    **Video retrieval and open-set classification**: By pairing up the video embeddings with a text encoder in the CLIP fashion, we can do text-video retrieval and open-set video classification.\n\n\n## Ethical considerations and risks\nThe model inherits the safety benefits and safety risks associated with the image encoder CoCa and the training datasets described above. We recommend that the model should not be used for downstream applications without prior assessment and mitigation of downstream application-specific security and fairness concerns.\n*    Data bias: Large datasets scraped from the internet can contain inherent biases, leading to skewed model performance and potentially discriminatory outputs. The presence of \"noisy parallel text\" like ASR transcripts introduces potential inaccuracies and biases from the speech-to-text process.\n*    Content moderation: The sheer volume of data (36M video-caption pairs and 582M video clips) raises concerns about the presence of objectionable or inappropriate content within the training data, which could lead to harmful model outputs.\n*    Ethical use: As with any powerful video understanding model, there are risks of misuse, such as in surveillance or the propagation of misinformation.\n*    Limitations: The reliance on potentially noisy text data can limit the models understanding of the true video content. Further research is needed to refine the models ability to understand long form videos, geometric information in videos, and non-semantic cues.\n\n\n## How to get started with the model\nTo get started with our models, please see the code and examples in our [GitHub Repository](https://github.com/google-deepmind/videoprism). \n\n### Feedback and Questions\n\nWe welcome all questions and feedback! If you find a bug, have a feature request, or want to ask a question, please don't hesitate to **open an issue** on our GitHub repository.\n\nWe're excited to see what you build with VideoPrism! \ud83d\ude80\n\n\n## Training details\n\n### Training data\n\nVideoPrism is pre-trained on a wide range of videos (36M video-caption pairs and 582M video clips), including the datasets below. Note that the number of clips are subject to change due to wipeout according to policy.\n\n| Pretraining datasets | Public | Domain | Caption source | Caption quality | # of videos | # of clips |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| Anonymous-Corpus #1 | \u274c | Web video | Manual labelled | High | 36.1M | 36.1M |\n| [WTS-70M](https://arxiv.org/pdf/2007.14937) | \u2705 | YouTube video | Metadata | Low | 55.1M | 55.1M |\n| [YT-Temporal-180M](https://arxiv.org/pdf/2106.02636) | \u2705 | YouTube video | ASR | Low | 2.3M | 87.8M |\n| [VideoCC](https://arxiv.org/pdf/2204.00679) | \u274c | YouTube video | Image captions for mining | Low | 133.5M | 191.1M |\n| [InternVid](https://arxiv.org/pdf/2307.06942) | \u2705 | YouTube video | Generated by VLM/LLM | Medium | 2.8M | 7.0M |\n| Anonymous-Corpus #2 | \u274c | YouTube video | ASR | Low | 44.6M | 170.3M |\n| Anonymous-Corpus #3 | \u274c | YouTube video | Generated by VLM/LLM | Medium | 36.7M | 71.5M |\n\n## Evaluation\n\nIn the tables below, \"Public\" denotes models we released in this repository. \"Paper\" and \"Prior SOTA\" denote our models and previous best-performing models reported in the paper, respectively. Our public models perform slightly worse than the paper models due to different pre-training image-text data we used subject to data policy.\n\n\n### Results on video-focused tasks with frozen backbones\n\n| Dataset | K400 | MiT | SSv2 | D48 | Charades | ActivityNet | AVA | AVA-K |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **VideoPrism-B (public)** | 82.9 | 39.7 | 62.2 | 64.3 | 43.5 | 36.5 | 28.3 | 30.8 |\n| **VideoPrism-L (public)** | 85.0 | 43.3 | 64.6 | 67.6 | 53.2 | 37.0 | 32.4 | 34.5 |\n| VideoPrism-B (paper) | 84.2 | 40.8 | 63.6 | 67.4 | 40.4 | 36.6 | 30.6 | 31.8 |\n| VideoPrism-g (paper) | 87.2 | 45.5 | 68.5 | 71.3 | 62.3 | 37.8 | 36.2 | 37.3 |\n| Prior SOTA (B) | 77.1 | 34.0 | 58.2 | 55.6 | 33.3 | 35.8 | 21.1 | 25.9 |\n| Prior SOTA (L+) | 82.8 | 40.3 | 67.4 | 69.6 | 39.9 | 36.7 | 24.4 | 26.2 |\n\n### Zero-shot video-text retrieval\n\n| Models | MSRVTT-1K (v2t)  | MSRVTT-1K (t2v) | VATEX (v2t) | VATEX (t2v) | ActivityNet (v2t) | ActivityNet (t2v) |\n| -------- | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |\n| **VideoPrism-LvT-B (public)** | 49.8 | 50.1 | 73.1 | 56.2 | 47.9 | 48.8 |\n| **VideoPrism-LvT-L (public)** | 50.6 | 50.1 | 75.0 | 57.2 | 49.1 | 51.3 |\n| VideoPrism-LvT-B (paper) | 50.2 | 51.4 | 76.2 | 57.7 | 47.9 | 49.6 |\n| VideoPrism-LvT-g (paper) | 51.7 | 52.7 | 77.1 | 62.5 | 50.3 | 52.7 |\n| Prior SOTA (B) | - | 34.0 | - | - | - | 30.6 |\n| Prior SOTA (L+) | 45.4 | 43.9 | 73.6 | 53.2 | 40.7 | 42.8 |\n\n### Zero-shot video classification\n\n| Models | K400 | SSv2 (Temporal) | SSv2 (Events) | NExT-QA (Hard) | Charades | Charades (STA) |\n| -------- | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |\n| **VideoPrism-LvT-B (public)** | 69.2 | 14.6 | 11.3 | 31.1 | 26.9 | 48.6 |\n| **VideoPrism-LvT-L (public)** | 72.4 | 18.0 | 12.4 | 32.1 | 32.4 | 50.2 |\n| VideoPrism-LvT-B (paper) | 71.3 | 16.1 | 11.9 | 31.3 | 29.2 | 50.0 |\n| VideoPrism-LvT-g (paper) | 74.6 | 18.6 | 15.7 | 32.7 | 32.4 | 50.4 |\n| Prior SOTA (B) | - | 9.8 | 6.4 | 27.6 | 21.1 | - |\n| Prior SOTA (L+) | 72.0 | 15.2 | 11.4 | 25.2 | 25.8 | 47.2 |\n\n\n## Implementation information\n\n### Model architecture\n\nVision model is a [ViViT](https://arxiv.org/abs/2103.15691) factorized video encoder architecture, initialized from the Vision Transformer image encoder ([CoCa](https://arxiv.org/abs/2205.01917)) followed by four temporal-attention Transformer layers.\n\n### Hardware\n\nVideoPrism was trained using [Tensor Processing Unit\n(TPU)](https://cloud.google.com/tpu/docs/intro-to-tpu) hardware.\n\n#### Software\n\nJAX, Flax\n\n## Citation\n\nVideoPrism:\n```\n@inproceedings{zhao2024videoprism,\n  title = {{VideoPrism}: A Foundational Visual Encoder for Video Understanding},\n  author = {Long Zhao and Nitesh B. Gundavarapu and Liangzhe Yuan and Hao Zhou and Shen Yan and Jennifer J. Sun and Luke Friedman and Rui Qian and Tobias Weyand and Yue Zhao and Rachel Hornung and Florian Schroff and Ming-Hsuan Yang and David A. Ross and Huisheng Wang and Hartwig Adam and Mikhail Sirotenko and Ting Liu and Boqing Gong},\n  booktitle = {International Conference on Machine Learning (ICML)},\n  year = {2024}\n}\n```\n\nVideoGLUE benchmarks:\n```\n@article{yuan2024videoglue,\n  title = {{VideoGLUE}: Video General Understanding Evaluation of Foundation Models},\n  author = {Liangzhe Yuan and Nitesh Bharadwaj Gundavarapu and Long Zhao and Hao Zhou and Yin Cui and Lu Jiang and Xuan Yang and Menglin Jia and Tobias Weyand and Luke Friedman and Mikhail Sirotenko and Huisheng Wang and Florian Schroff and Hartwig Adam and Ming-Hsuan Yang and Ting Liu and Boqing Gong},\n  journal = {Transactions on Machine Learning Research (TMLR)},\n  year = {2024}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "library_name": "videoprism",
+    "tags": [
+      "video-classification",
+      "video-embedding"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

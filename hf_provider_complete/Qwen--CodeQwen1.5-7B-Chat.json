@@ -1,0 +1,172 @@
+{
+  "modelId": "Qwen/CodeQwen1.5-7B-Chat",
+  "author": "Qwen",
+  "sha": "7b0cc3380fe815e6f08fe2f80c03e05a8b1883d8",
+  "lastModified": "2024-04-30 07:18:34+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "chat",
+    "conversational",
+    "en",
+    "arxiv:2309.16609",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 353,
+  "downloads": 8940,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "other",
+    "license_name": "tongyi-qianwen",
+    "license_link": "https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": "<|endoftext|>",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<fim_pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false,
+      "chat_template": "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}{% endif %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 6896,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3458,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 701,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 212,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 3893570024,
+      "lfs": {
+        "size": 3893570024,
+        "sha256": "6b2ad54dc70d94849c10d97b6d2faa80e9c94b21d3b7f67343ffa7b79809d88f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 3948168512,
+      "lfs": {
+        "size": 3948168512,
+        "sha256": "73f8754925f74490551c5e58d30001ce40676a79e7383e10b7aef428aaa2a43f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 3948168536,
+      "lfs": {
+        "size": 3948168536,
+        "sha256": "2a8d2d338c48a1ffbcf4cb0f89c32181a15d1226595bfbdb203d8f63e72c1820",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 2710706344,
+      "lfs": {
+        "size": 2710706344,
+        "sha256": "55924fc0e5f5423444119f577e2f69969ade9b319621bf09e744256c20771737",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 31696,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4462887,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 1423961,
+      "lfs": {
+        "size": 1423961,
+        "sha256": "656b66a920a54bc45e8e06dc587691ab3c0b2930b9ae56d5fa31e72db2f3bff3",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 972,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: tongyi-qianwen\nlicense_link: https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat/blob/main/LICENSE\nlanguage:\n- en\npipeline_tag: text-generation\ntags:\n- chat\n---\n\n# CodeQwen1.5-7B-Chat\n\n\n## Introduction\n\nCodeQwen1.5 is the Code-Specific version of Qwen1.5. It is a transformer-based decoder-only language model pretrained on a large amount of data of codes. \n\n* Strong code generation capabilities and competitve performance across a series of benchmarks;\n* Supporting long context understanding and generation with the context length of 64K tokens;\n* Supporting 92 coding languages\n* Excellent performance in text-to-SQL, bug fix, etc.\n\n\nFor more details, please refer to our [blog post](https://qwenlm.github.io/blog/codeqwen1.5/) and [GitHub repo](https://github.com/QwenLM/Qwen1.5).\n\n## Model Details\nCodeQwen1.5 is based on Qwen1.5, a language model series including decoder language models of different model sizes. It is trained on 3 trillion tokens of data of codes, and it includes group query attention (GQA) for efficient inference.\n\n\n## Requirements\nThe code of Qwen1.5 has been in the latest Hugging face transformers and we advise you to install `transformers>=4.37.0`, or you might encounter the following error:\n```\nKeyError: 'qwen2'.\n```\n\n## Quickstart\n\nHere provides a code snippet with `apply_chat_template` to show you how to load the tokenizer and model and how to generate contents.\n\n```python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\ndevice = \"cuda\" # the device to load the model onto\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    \"Qwen/CodeQwen1.5-7B-Chat\",\n    torch_dtype=\"auto\",\n    device_map=\"auto\"\n)\ntokenizer = AutoTokenizer.from_pretrained(\"Qwen/CodeQwen1.5-7B-Chat\")\n\nprompt = \"Write a quicksort algorithm in python.\"\nmessages = [\n    {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\n    {\"role\": \"user\", \"content\": prompt}\n]\ntext = tokenizer.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True\n)\nmodel_inputs = tokenizer([text], return_tensors=\"pt\").to(device)\n\ngenerated_ids = model.generate(\n    model_inputs.input_ids,\n    max_new_tokens=512\n)\ngenerated_ids = [\n    output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)\n]\n\nresponse = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]\n```\n\n\n\n## Tips\n\n* If you encounter code switching or other bad cases, we advise you to use our provided hyper-parameters in `generation_config.json`.\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{qwen,\n  title={Qwen Technical Report},\n  author={Jinze Bai and Shuai Bai and Yunfei Chu and Zeyu Cui and Kai Dang and Xiaodong Deng and Yang Fan and Wenbin Ge and Yu Han and Fei Huang and Binyuan Hui and Luo Ji and Mei Li and Junyang Lin and Runji Lin and Dayiheng Liu and Gao Liu and Chengqiang Lu and Keming Lu and Jianxin Ma and Rui Men and Xingzhang Ren and Xuancheng Ren and Chuanqi Tan and Sinan Tan and Jianhong Tu and Peng Wang and Shijie Wang and Wei Wang and Shengguang Wu and Benfeng Xu and Jin Xu and An Yang and Hao Yang and Jian Yang and Shusheng Yang and Yang Yao and Bowen Yu and Hongyi Yuan and Zheng Yuan and Jianwei Zhang and Xingxuan Zhang and Yichang Zhang and Zhenru Zhang and Chang Zhou and Jingren Zhou and Xiaohuan Zhou and Tianhang Zhu},\n  journal={arXiv preprint arXiv:2309.16609},\n  year={2023}\n}\n```\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "tongyi-qianwen",
+    "license_link": "https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

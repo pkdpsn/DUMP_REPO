@@ -1,0 +1,121 @@
+{
+  "modelId": "mistralai/Pixtral-12B-Base-2409",
+  "author": "mistralai",
+  "sha": "be6c64aa72fd74f021925615de2e70f1443e0753",
+  "lastModified": "2025-07-28 17:20:44+00:00",
+  "tags": [
+    "mistral-common",
+    "en",
+    "fr",
+    "de",
+    "es",
+    "it",
+    "pt",
+    "ru",
+    "zh",
+    "ja",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": null,
+  "likes": 108,
+  "downloads": 34,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "it",
+      "pt",
+      "ru",
+      "zh",
+      "ja"
+    ],
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "mistral-common"
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "inference": false
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1567,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6263,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated.safetensors",
+      "size": 25365548952,
+      "lfs": {
+        "size": 25365548952,
+        "sha256": "07bddad7ea582bae38a705f33000c734f87cabcd18f3ca32f949197d0ead5598",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "params.json",
+      "size": 552,
+      "lfs": null
+    },
+    {
+      "rfilename": "tekken.json",
+      "size": 19280967,
+      "lfs": {
+        "size": 19280967,
+        "sha256": "386b1f98fba69b38c3de512a4eb602dc69a95dae0e54e6ce048ea3e29a2627a8",
+        "pointer_size": 133
+      }
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\n- fr\n- de\n- es\n- it\n- pt\n- ru\n- zh\n- ja\nlicense: apache-2.0\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.\ntags:\n- mistral-common\ninference: false\n---\n\n# Pixtral-12B-Base-2409\n\nThe Pixtral-12B-Base-2409 is the pretrained base model of [Pixtral-12B-2409](https://huggingface.co/mistralai/Pixtral-12B-2409) \nconsisting of 12B parameters plus a 400M parameter vision encoder.\n\nFor more details about this model please refer to our release [blog post](https://mistral.ai/news/pixtral-12b/).\n\nFeel free to try it [here](https://chat.mistral.ai/chat)\n\n## Key features\n- Natively multimodal, trained with interleaved image and text data\n- 12B parameter Multimodal Decoder + 400M parameter Vision Encoder\n- Supports variable image sizes\n- Leading performance in its weight class on multimodal tasks\n- Maintains state-of-the-art performance on text-only benchmarks\n- Sequence length: 128k\n- License: Apache 2.0\n\n## Usage Examples\n\n### vLLM (recommended)\n\nWe recommend using Pixtral with the [vLLM library](https://github.com/vllm-project/vllm)\nto implement production-ready inference pipelines with Pixtral.\n\n**_Installation_**\n\nMake sure you install `vLLM >= v0.6.2`:\n\n```\npip install --upgrade vllm\n```\n\nAlso make sure you have `mistral_common >= 1.4.4` installed:\n\n```\npip install --upgrade mistral_common\n```\n\nYou can also make use of a ready-to-go [docker image](https://hub.docker.com/layers/vllm/vllm-openai/latest/images/sha256-de9032a92ffea7b5c007dad80b38fd44aac11eddc31c435f8e52f3b7404bbf39?context=explore).\n\n**_Example_**\n\n```py\nfrom vllm import LLM\nfrom vllm.sampling_params import SamplingParams\nfrom vllm.inputs.data import TokensPrompt\nimport requests\nfrom PIL import Image\nfrom io import BytesIO\nfrom vllm.multimodal import MultiModalDataBuiltins\n\nfrom mistral_common.protocol.instruct.messages import TextChunk, ImageURLChunk\n\nmodel_name = \"mistralai/Pixtral-12B-Base-2409\"\nsampling_params = SamplingParams(max_tokens=8192)\n\nllm = LLM(model=model_name, tokenizer_mode=\"mistral\")\n\nurl = \"https://huggingface.co/datasets/patrickvonplaten/random_img/resolve/main/yosemite.png\"\nresponse = requests.get(url)\nimage = Image.open(BytesIO(response.content))\n\nprompt = \"The image shows a\"\n\nuser_content = [ImageURLChunk(image_url=url), TextChunk(text=prompt)]\n\ntokenizer = llm.llm_engine.tokenizer.tokenizer.mistral.instruct_tokenizer\ntokens, _ = tokenizer.encode_user_content(user_content, False)\n\nprompt = TokensPrompt(\n    prompt_token_ids=tokens, multi_modal_data=MultiModalDataBuiltins(image=[image])\n)\noutputs = llm.generate(prompt, sampling_params=sampling_params)\n\nprint(outputs[0].outputs[0].text)\n# ' view of a river flowing through the landscape, with prominent rock formations visible on either side of the river. The scene is captured using the UWA 14-24mm zoom lens, which provides a wide-angle perspective,\n# allowing for a comprehensive view of the surroundings. The photo is credited to Greg Dowdy.\n```\n\n### Mistral-inference\n\nWe recommend using [mistral-inference](https://github.com/mistralai/mistral-inference) to quickly try out / \"vibe-check\" Pixtral.\n\n\n**_Install_**\n\nMake sure to have `mistral_inference >= 1.4.1` installed.\n\n```\npip install mistral_inference --upgrade\n```\n\n**_Download_**\n\n```py\nfrom huggingface_hub import snapshot_download\nfrom pathlib import Path\n\nmistral_models_path = Path.home().joinpath('mistral_models', 'Pixtral')\nmistral_models_path.mkdir(parents=True, exist_ok=True)\n\nsnapshot_download(repo_id=\"mistralai/Pixtral-12B-Base-2409\", allow_patterns=[\"params.json\", \"consolidated.safetensors\", \"tekken.json\"], local_dir=mistral_models_path)\n```\n\n**_Python_**\n\nYou can also run the model in a Python shell as follows.\n\n```py\nfrom mistral_inference.transformer import Transformer\nfrom mistral_inference.generate import generate\n\nfrom mistral_common.tokens.tokenizers.mistral import MistralTokenizer\nfrom mistral_common.protocol.instruct.messages import TextChunk, ImageURLChunk\n\nmistral_models_path = \"/mnt/vast/shared/william/pixtral_pretrain_release\"\ntokenizer = MistralTokenizer.from_file(f\"{mistral_models_path}/tekken.json\")\nmodel = Transformer.from_folder(mistral_models_path)\n\nurl = \"https://huggingface.co/datasets/patrickvonplaten/random_img/resolve/main/yosemite.png\"\nprompt = \"The above image presents a\"\n\nuser_content = [ImageURLChunk(image_url=url), TextChunk(text=prompt)]\n\ntokens, images = tokenizer.instruct_tokenizer.encode_user_content(user_content, False)\n\nout_tokens, _ = generate(\n    [tokens],\n    model,\n    images=[images],\n    max_tokens=256,\n    temperature=0.35,\n    eos_id=tokenizer.instruct_tokenizer.tokenizer.eos_id,\n)\nresult = tokenizer.decode(out_tokens[0])\n\nprint(\"Prompt:\", prompt)\nprint(\"Completion:\", result)\n```\n\n## Limitations\n\nThe Pixtral model does not have any moderation mechanisms. We're looking forward to engaging with the community on ways to\nmake the model finely respect guardrails, allowing for deployment in environments requiring moderated outputs.\n\n## The Mistral AI Team\n\nAlbert Jiang, Alexandre Sablayrolles, Alexis Tacnet, Alok Kothari, Antoine Roux, Arthur Mensch, Audrey Herblin-Stoop, Augustin Garreau, Austin Birky, Bam4d, Baptiste Bout, Baudouin de Monicault, Blanche Savary, Carole Rambaud, Caroline Feldman, Devendra Singh Chaplot, Diego de las Casas, Diogo Costa, Eleonore Arcelin, Emma Bou Hanna, Etienne Metzger, Gaspard Blanchet, Gianna Lengyel, Guillaume Bour, Guillaume Lample, Harizo Rajaona, Henri Roussez, Hichem Sattouf, Ian Mack, Jean-Malo Delignon, Jessica Chudnovsky, Justus Murke, Kartik Khandelwal, Lawrence Stewart, Louis Martin, Louis Ternon, Lucile Saulnier, L\u00e9lio Renard Lavaud, Margaret Jennings, Marie Pellat, Marie Torelli, Marie-Anne Lachaux, Marjorie Janiewicz, Micka\u00ebl Seznec, Nicolas Schuhl, Niklas Muhs, Olivier de Garrigues, Patrick von Platen, Paul Jacob, Pauline Buche, Pavan Kumar Reddy, Perry Savas, Pierre Stock, Romain Sauvestre, Sagar Vaze, Sandeep Subramanian, Saurabh Garg, Sophia Yang, Szymon Antoniak, Teven Le Scao, Thibault Schueller, Thibaut Lavril, Thomas Wang, Th\u00e9ophile Gervet, Timoth\u00e9e Lacroix, Valera Nemychnikova, Wendy Shang, William El Sayed, William Marshall",
+  "cardDataParsed": {
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "it",
+      "pt",
+      "ru",
+      "zh",
+      "ja"
+    ],
+    "license": "apache-2.0",
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "tags": [
+      "mistral-common"
+    ],
+    "inference": false,
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

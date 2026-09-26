@@ -1,0 +1,142 @@
+{
+  "modelId": "microsoft/prophetnet-large-uncased",
+  "author": "microsoft",
+  "sha": "c5b84da76e7f132c85b5b361e508145eaf2c24cd",
+  "lastModified": "2023-04-27 09:41:22+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "rust",
+    "safetensors",
+    "prophetnet",
+    "text2text-generation",
+    "en",
+    "arxiv:2001.04063",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 6,
+  "downloads": 91632,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "ProphetNetForConditionalGeneration"
+    ],
+    "model_type": "prophetnet",
+    "tokenizer_config": {
+      "unk_token": "[UNK]",
+      "sep_token": "[SEP]",
+      "pad_token": "[PAD]",
+      "mask_token": "[MASK]"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 399,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 1676,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1397,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 293,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config_for_summarization.json",
+      "size": 293,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 1565355108,
+      "lfs": {
+        "size": 1565355108,
+        "sha256": "060fb9eca2c5add494e34698322757f5067002c82ffea89caa5cdbcc9a2476e1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "prophetnet.tokenizer",
+      "size": 231506,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1565504151,
+      "lfs": {
+        "size": 1565504151,
+        "sha256": "cedef47113e2d8b06409b81df84b67143f2cc9e4b2b334aee6ae1e74e1f1728a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "rust_model.ot",
+      "size": 1940478054,
+      "lfs": {
+        "size": 1940478054,
+        "sha256": "fd416c555453c430a02e16128b67c816cbbc5330128e6812dea76fa490ce5963",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 90,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 141,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\n---\n\n## prophetnet-large-uncased\nPretrained weights for [ProphetNet](https://arxiv.org/abs/2001.04063).  \nProphetNet is a new pre-trained language model for sequence-to-sequence learning with a novel self-supervised objective called future n-gram prediction.  \nProphetNet is able to predict more future tokens with a n-stream decoder. The original implementation is Fairseq version at [github repo](https://github.com/microsoft/ProphetNet).   \n\n### Usage\n\nThis pre-trained model can be fine-tuned on *sequence-to-sequence* tasks. The model could *e.g.* be trained on headline generation as follows:\n\n```python \nfrom transformers import ProphetNetForConditionalGeneration, ProphetNetTokenizer\n\nmodel = ProphetNetForConditionalGeneration.from_pretrained(\"microsoft/prophetnet-large-uncased\")\ntokenizer = ProphetNetTokenizer.from_pretrained(\"microsoft/prophetnet-large-uncased\")\n\ninput_str = \"the us state department said wednesday it had received no formal word from bolivia that it was expelling the us ambassador there but said the charges made against him are `` baseless .\"\ntarget_str = \"us rejects charges against its ambassador in bolivia\"\n\ninput_ids = tokenizer(input_str, return_tensors=\"pt\").input_ids\nlabels = tokenizer(target_str, return_tensors=\"pt\").input_ids\n\nloss = model(input_ids, labels=labels).loss\n```\n\n### Citation\n```bibtex\n@article{yan2020prophetnet,\n  title={Prophetnet: Predicting future n-gram for sequence-to-sequence pre-training},\n  author={Yan, Yu and Qi, Weizhen and Gong, Yeyun and Liu, Dayiheng and Duan, Nan and Chen, Jiusheng and Zhang, Ruofei and Zhou, Ming},\n  journal={arXiv preprint arXiv:2001.04063},\n  year={2020}\n}\n```\n",
+  "cardDataParsed": {
+    "language": "en",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

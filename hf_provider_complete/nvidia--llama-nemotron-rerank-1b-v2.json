@@ -1,0 +1,173 @@
+{
+  "modelId": "nvidia/llama-nemotron-rerank-1b-v2",
+  "author": "nvidia",
+  "sha": "828765652b05bd439c9789d2a6d093db1caa1443",
+  "lastModified": "2026-08-26 18:10:29+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "safetensors",
+    "llama_bidirec",
+    "text-classification",
+    "text",
+    "reranker",
+    "cross-encoder",
+    "retrieval",
+    "semantic-search",
+    "text-ranking",
+    "custom_code",
+    "multilingual",
+    "license:other",
+    "text-embeddings-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-ranking",
+  "library_name": "transformers",
+  "likes": 64,
+  "downloads": 903199,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-ranking",
+    "tags": [
+      "text",
+      "reranker",
+      "cross-encoder",
+      "retrieval",
+      "semantic-search"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "LlamaBidirectionalForSequenceClassification"
+    ],
+    "auto_map": {
+      "AutoConfig": "llama_bidirectional_model.LlamaBidirectionalConfig",
+      "AutoModelForSequenceClassification": "llama_bidirectional_model.LlamaBidirectionalForSequenceClassification"
+    },
+    "model_type": "llama_bidirec",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "eos_token": "<|end_of_text|>",
+      "pad_token": "<|end_of_text|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "CONTRIBUTING.md",
+      "size": 2511,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 2794,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 20508,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1311,
+      "lfs": null
+    },
+    {
+      "rfilename": "llama_bidirectional_model.py",
+      "size": 14409,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 2471649792,
+      "lfs": {
+        "size": 2471649792,
+        "sha256": "7d60ff24db62fe6a639c4c6f4aeac3a3b32ed20939ab72a0be4b019c2219e5e0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 2471653050,
+      "lfs": {
+        "size": 2471653050,
+        "sha256": "cbe7ebaf3499ad20d5f51753d57a30f229ff47edd5e5556732b3629a8a41c37b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 449,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 9085657,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 50532,
+      "lfs": null
+    },
+    {
+      "rfilename": "trainer_state.json",
+      "size": 727,
+      "lfs": null
+    },
+    {
+      "rfilename": "zero_to_fp32.py",
+      "size": 25314,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: openmdw-1.1\nlicense_link: https://openmdw.ai/license/1-1/\ntags:\n- text\n- reranker\n- cross-encoder\n- retrieval\n- semantic-search\npipeline_tag: text-ranking\nlanguage:\n- multilingual\nlibrary_name: transformers\n---\n\n## **Model Overview**\n\n### **Description**\n\nThe Llama Nemotron Reranking 1B model is optimized for providing a logit score that represents how relevant a document(s) is to a given query. The model was fine-tuned for **multilingual, cross-lingual** text question-answering retrieval, with support for **long documents (up to 8192 tokens)**.  This model was evaluated on 26 languages: English, Arabic, Bengali, Chinese, Czech, Danish, Dutch, Finnish, French, German, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Norwegian, Persian, Polish, Portuguese, Russian, Spanish, Swedish, Thai, and Turkish.\n\n\nThis model is a component in a text retrieval system to improve the overall accuracy. A text retrieval system often uses an embedding model (dense) or lexical search (sparse) index to return relevant text passages given the input. A reranking model can be used to rerank the potential candidate into a final order. The reranking model has the question-passage pairs as an input and therefore, can process cross attention between the words. It\u2019s not feasible to apply a Ranking model on all documents in the knowledge base, therefore, ranking models are often deployed in combination with embedding models.\n\n\nThis model is ready for commercial use.\n\n\nThe Llama Nemotron Reranking 1B model is a part of the NeMo Retriever collection of NIM, which provide state-of-the-art, commercially-ready models and microservices, optimized for the lowest latency and highest throughput. It features a production-ready information retrieval pipeline with enterprise support. The models that form the core of this solution have been trained using responsibly selected, auditable data sources. With multiple pre-trained models available as starting points, developers can also readily customize them for their domain-specific use cases, such as information technology, human resource help assistants, and research & development research assistants.\n\nWe are excited to announce the open sourcing of this commercial embedding model. For users interested in deploying this model in production environments, it is also available via the model API in NVIDIA Inference Microservices (NIM) at [llama-nemotron-rerank-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-rerankqa-1b-v2).\n\n### **License/Terms of use**\n\nUse of this model is governed by the [OpenMDW License Agreement, version 1.1 (OpenMDW-1.1)](https://openmdw.ai/license/1-1/). Additional Information: [Llama 3.2 Community Model License Agreement](https://www.llama.com/llama3_2/license/); Built with Llama.\n\nThis project will download and install additional third-party open source software projects. Review the license terms of these open source projects before use.\n\n### **Intended use**\n\nThe Llama Nemotron Reranking 1B model is most suitable for users who want to improve their multilingual retrieval tasks by reranking a set of candidates for a given question.\n\n### **Model Architecture**\n\n**Architecture Type:** Transformer <br>\n**Network Architecture:** Fine-tuned ranker model from the `meta-llama/Llama-3.2-1B` model.\n\nThe Llama Nemotron Reranking 1B model is a transformer cross-encoder fine-tuned with contrastive learning. We employ bi-directional attention when fine-tuning for higher accuracy. The last embedding output by the decoder model is used with a mean pooling strategy, and a binary classification head is fine-tuned for the ranking task.\n\nRanking models for text ranking are typically trained as a cross-encoder for sentence classification. This involves predicting the relevancy of a sentence pair (for example, question and chunked passages). The CrossEntropy loss is used to maximize the likelihood of passages containing information to answer the question and minimize the likelihood for (negative) passages that do not contain information to answer the question.\n\nWe trained the model on public datasets described in the Dataset and Training section.\n\n### **Input**\n\n**Input Type:** Pair of Texts <br>\n**Input Format:** List of text pairs <br>\n**Input Parameters:** 1D <br>\n**Other Properties Related to Input:** The model was trained on question and answering over text documents from multiple languages. It was evaluated to work successfully with up to a sequence length of 8192 tokens. Longer texts are recommended to be either chunked or truncated.\n\n### **Output**\n\n**Output Type:** Floats <br>\n**Output Format:** List of floats <br>\n**Output Parameters:** 1D <br>\n**Other Properties Related to Output:** Each value corresponds to a raw logit. Users can choose to apply a Sigmoid activation function to the logits to convert them into probabilities during model usage.\n\n### **Installation**\n\nThe model requires transformers version 4.44 or above.\n\n```bash\npip install transformers>=4.44\n```\n\n### **Usage**\n```python\nimport torch\nfrom transformers import AutoTokenizer, AutoModelForSequenceClassification\n\nmodel_name_or_path = \"nvidia/llama-nemotron-rerank-1b-v2\"\n\ndevice = \"cuda:0\"\nmax_length = 512\n\nqueries = [\n    \"how much protein should a female eat?\",\n]\ndocuments = [\n    \"As a general guideline, the CDC's average requirement of protein for women ages 19 to 70 is 46 grams per day. But, as you can see from this chart, you'll need to increase that if you're expecting or training for a marathon. Check out the chart below to see how much protein you should be eating each day.\",\n    \"Definition of summit for English Language Learners. : 1  the highest point of a mountain : the top of a mountain. : 2  the highest level. : 3  a meeting or series of meetings between the leaders of two or more governments.\",\n    \"Calorie intake should not fall below 1,200 a day in women or 1,500 a day in men, except under the supervision of a health professional.\"\n]\n\n# Create pairs from queries and documents\npairs = [[q, d] for q in queries for d in documents]\n\ndef prompt_template(q, p):\n    \"\"\"Format query and passage with a prompt template.\"\"\"\n    return f\"question:{q} \\n \\n passage:{p}\"\n\n\ntokenizer = AutoTokenizer.from_pretrained(\n    model_name_or_path,\n    trust_remote_code=True,\n    padding_side=\"left\"\n)\nif tokenizer.pad_token is None:\n    tokenizer.pad_token = tokenizer.eos_token\n\nmodel_kwargs = {\n    \"trust_remote_code\": True,\n    \"torch_dtype\": torch.bfloat16,\n}\n\nprint(f\"Loading model from {model_name_or_path}...\")\nmodel = AutoModelForSequenceClassification.from_pretrained(\n    model_name_or_path,\n    **model_kwargs\n).eval()\n\nif model.config.pad_token_id is None:\n    model.config.pad_token_id = tokenizer.eos_token_id\n\nmodel = model.to(device)\n\n\n# Apply prompt template and tokenize as single sequence\ntexts = [prompt_template(query, doc) for query, doc in pairs]\nbatch_dict = tokenizer(\n    texts,\n    padding=True,\n    truncation=True,\n    return_tensors=\"pt\",\n    max_length=max_length,\n)\n\n# Move to device\nbatch_dict = {k: v.to(device) for k, v in batch_dict.items()}\n\nwith torch.inference_mode():\n    logits = model(**batch_dict).logits\n    scores = logits.view(-1).cpu().tolist()\n\nfor i, (pair, score) in enumerate(zip(pairs, scores)):\n    query, doc = pair\n    print(f\"  Query: {query}\")\n    print(f\"  Document: {doc[:100]}{'...' if len(doc) > 100 else ''}\")\n    print(f\"  Score: {score:.4f}\")\n\n#   Query: how much protein should a female eat?\n#   Document: As a general guideline, the CDC's average requirement of protein for women ages 19 to 70 is 46 grams...\n#   Score: 20.6250\n#   Query: how much protein should a female eat?\n#   Document: Definition of summit for English Language Learners. : 1  the highest point of a mountain : the top o...\n#   Score: -23.1250\n#   Query: how much protein should a female eat?\n#   Document: Calorie intake should not fall below 1,200 a day in women or 1,500 a day in men, except under the su...\n#   Score: -0.2617\n```\n\n#### vLLM Usage\n\n1. Ensure you are using `vllm>=0.14.0`.\n2. A score template **must** be provided via `--chat-template` to correctly format\n   query-document pairs. Without it, the `question:... passage:...` prompt format\n   is not applied and results will be incorrect.\n\nCreate the score template file and start the server:\n```bash\npython3 -c \"\nt = (\n    'question:{{ (messages | selectattr(\\\"role\\\", \\\"eq\\\", \\\"query\\\") | first).content }}'\n    ' \\n \\n '\n    'passage:{{ (messages | selectattr(\\\"role\\\", \\\"eq\\\", \\\"document\\\") | first).content }}'\n)\nopen('nemotron-rerank.jinja', 'w').write(t)\n\"\n\nvllm serve nvidia/llama-nemotron-rerank-1b-v2 \\\n    --trust-remote-code \\\n    --chat-template nemotron-rerank.jinja\n```\n\nIf you already have a local copy of the model, you can also pass the local\npath instead of the HF repo ID.\n\nOptional flags:\n\n- `--dtype <float32|bfloat16|float16>` to force precision (the default is `auto`, which resolves from model config; this model defaults to BF16).\n- `--data-parallel-size <num_gpus_to_use>` for multi-GPU serving.\n- `--port 8000` to set the server port.\n\nOnline serving example (`/rerank` API):\n\n```python\nimport requests\n\nquery = \"What is machine learning?\"\ndocuments = [\n    \"Machine learning is a branch of AI that learns patterns from data.\",\n    \"Python is a programming language commonly used for data science.\",\n    \"Neural networks are one family of machine learning models.\",\n    \"Bananas are a good source of potassium.\",\n]\n\nresponse = requests.post(\n    \"http://localhost:8000/rerank\",\n    json={\n        \"model\": \"nvidia/llama-nemotron-rerank-1b-v2\",\n        \"query\": query,\n        \"documents\": documents,\n        \"top_n\": 3,\n    },\n    timeout=30,\n)\nresponse.raise_for_status()\nfor item in response.json()[\"results\"]:\n    print(item[\"index\"], item[\"relevance_score\"])\n```\n\nOffline inference example (Python API, no server required):\n\n```python\nfrom vllm import LLM\n\nSCORE_TEMPLATE = (\n    \"question:{{ (messages | selectattr(\\\"role\\\", \\\"eq\\\", \\\"query\\\") | first).content }}\"\n    \" \\n \\n \"\n    \"passage:{{ (messages | selectattr(\\\"role\\\", \\\"eq\\\", \\\"document\\\") | first).content }}\"\n)\n\nllm = LLM(\n    model=\"nvidia/llama-nemotron-rerank-1b-v2\",\n    runner=\"pooling\",\n    trust_remote_code=True,\n)\n\nquery = \"What is machine learning?\"\ndocuments = [\n    \"Machine learning is a branch of AI that learns patterns from data.\",\n    \"Python is a programming language commonly used for data science.\",\n    \"Neural networks are one family of machine learning models.\",\n    \"Bananas are a good source of potassium.\",\n]\n\noutputs = llm.score(query, documents, chat_template=SCORE_TEMPLATE)\nfor document, output in zip(documents, outputs):\n    print(document[:80], output.outputs.score)\n```\n\n### **Software Integration**\n\n**Runtime:** Llama Nemotron Reranking 1B NIM <br>\n**Supported Hardware Microarchitecture Compatibility**: NVIDIA Ampere, NVIDIA Hopper, NVIDIA Lovelace <br>\n**Supported Operating System(s):** Linux\n\n### **Model Version(s)**\n\nLlama Nemotron Reranking 1B <br>\nShort Name: llama-nemotron-rerank-1b-v2\n\n## **Training Dataset & Evaluation**\n\n### **Training Dataset**\n\nThe development of large-scale public open-QA datasets has enabled tremendous progress in powerful embedding models. However, one popular dataset named [MSMARCO](https://microsoft.github.io/msmarco/) restricts \u200ccommercial licensing, limiting the use of these models in commercial settings. To address this, NVIDIA created its own training dataset blend based on public QA datasets, which each have a license for commercial applications.\n\n**Data Collection Method by dataset**: Automated, Unknown <br>\n\n**Labeling Method by dataset:** Automated, Unknown <br>\n\n**Properties:** This model was trained on 800k samples from public datasets.\n\n### **Evaluation Results**\n\nWe evaluate the pipelines on a set of evaluation benchmarks. We applied the ranking model to the candidates retrieved from a retrieval embedding model.\n\nOverall, the pipeline llama-nemotron-embed-1b-v2 + llama-nemotron-rerank-1b-v2 provides high BEIR+TechQA accuracy with multilingual and crosslingual support. The llama-nemotron-embed-1b-v2 ranking model is 3.5x smaller than the nv-rerankqa-mistral-4b-v3 model.\n\nWe evaluated the NVIDIA Retrieval QA Embedding Model in comparison to literature open & commercial retriever models on academic benchmarks for question-answering \\- [NQ](https://huggingface.co/datasets/BeIR/nq), [HotpotQA](https://huggingface.co/datasets/hotpot_qa) and [FiQA (Finance Q\\&A)](https://huggingface.co/datasets/BeIR/fiqa) from BeIR benchmark and TechQA dataset. In this benchmark, the metric used was Recall@5. As described, we need to apply the ranking model on the output of an embedding model.\n\n| Open & Commercial Reranker Models | Average Recall@5 on NQ, HotpotQA, FiQA, TechQA dataset |\n| ----- | ----- |\n| llama-nemotron-embed-1b-v2 + llama-nemotron-rerank-1b-v2 | 73.64% |\n| llama-nemotron-embed-1b-v2 | 68.60% |\n| nv-embedqa-e5-v5 \\+ nv-rerankQA-mistral-4b-v3 | 75.45% |\n| nv-embedqa-e5-v5 | 62.07% |\n| nv-embedqa-e5-v4 | 57.65% |\n| e5-large\\_unsupervised | 48.03% |\n| BM25 | 44.67% |\n\nWe evaluated the model\u2019s multilingual capabilities on the [MIRACL](https://github.com/project-miracl/miracl) academic benchmark \\- a multilingual retrieval dataset, across 15 languages, and on an additional 11 languages that were translated from the English and Spanish versions of MIRACL. The reported scores are based on a custom subsampled version by selecting hard negatives for each query to reduce the corpus size.\n\n| Open & Commercial Retrieval Models | Average Recall@5 on MIRACL multilingual datasets |\n| :---- | :---- |\n| llama-nemotron-embed-1b-v2 + llama-nemotron-rerank-1b-v2 | 65.80% |\n| llama-nemotron-embed-1b-v2 | 60.75% |\n| nv-embedqa-mistral-7b-v2 | 50.42% |\n| BM25 | 26.51% |\n\nWe evaluated the cross-lingual capabilities on the academic benchmark [MLQA](https://github.com/facebookresearch/MLQA/) based on 7 languages (Arabic, Chinese, English, German, Hindi, Spanish, Vietnamese). We consider only evaluation datasets when the query and documents are in different languages. We calculate the average Recall@5 across the 42 different language pairs.\n\n| Open & Commercial Retrieval Models | Average Recall@5 on MLQA dataset with different languages |\n| :---- | :---- |\n| llama-nemotron-embed-1b-v2 + llama-nemotron-rerank-1b-v2 | 86.83% |\n| llama-nemotron-embed-1b-v2 | 79.86% |\n| nv-embedqa-mistral-7b-v2 | 68.38% |\n| BM25 | 13.01% |\n\nWe evaluated the support of long documents on the academic benchmark [Multilingual Long-Document Retrieval (MLDR)](https://huggingface.co/datasets/Shitao/MLDR) built on Wikipedia and mC4, covering 12 typologically diverse languages . The English version has a median length of 2399 tokens and 90th percentile of 7483 tokens using the llama 3.2 tokenizer.\n\n| Open & Commercial Retrieval Models | Average Recall@5 on MLDR |\n| :---- | :---- |\n| llama-nemotron-embed-1b-v2 + llama-nemotron-rerank-1b-v2 | 70.69% |\n| llama-nemotron-embed-1b-v2 | 59.55% |\n| nv-embedqa-mistral-7b-v2 | 43.24% |\n| BM25 | 71.39% |\n\n**Data Collection Method by dataset**:\nUnknown\n\n**Labeling Method by dataset:**\nUnknown\n\n**Properties**\nThe evaluation datasets are based on three [MTEB/BEIR](https://github.com/beir-cellar/beir) TextQA datasets, the TechQA dataset, MIRACL, MLDR and MLQA multilingual retrieval datasets, which are all public datasets. The sizes range between 10,000s up to 5M depending on the dataset.\n\n**Inference**\n**Engine:** TensorRT <br>\n**Test Hardware:**  H100 PCIe/SXM, A100 PCIe/SXM, L40s, L4, and A10G\n\n## **Ethical Considerations**\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their supporting model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse.\n\nFor more detailed information on ethical considerations for this model, please see the Explainability, Bias, Safety, and Privacy sections.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n## Get Help\n\n### Enterprise Support\nGet access to knowledge base articles and support cases or  submit a ticket at the [NVIDIA AI Enterprise Support Services page.](https://www.nvidia.com/en-us/data-center/products/ai-enterprise-suite/support/).\n\n### NVIDIA NIM Documentation\nVisit the [NeMo Retriever docs page](https://docs.nvidia.com/nemo/retriever/index.html) for release documentation, deployment guides and more.\n\n## Bias\n\n| Field | Response |\n| ----- | ----- |\n| Participation considerations from adversely impacted groups [protected classes](https://www.senate.ca.gov/content/protected-classes) in model design and testing | None |\n| Measures taken to mitigate against unwanted bias | None |\n\n\n## Explainability\n\n| Field | Response |\n| ----- | ----- |\n| Intended Application & Domain: | Passage ranking for question and answer retrieval |\n| Model Type: | Transformer encoder |\n| Intended User: | Generative AI creators working with conversational AI models - users who want to build a multilingual question and answer application over a large text corpus, leveraging the latest dense retrieval technologies. |\n| Output: | Array of float numbers (Dense Vector Representation for the input text) |\n| Describe how the model works: | Model transforms the tokenized input text into a dense vector representation. |\n| Performance Metrics: | Accuracy, Throughput, and Latency |\n| Potential Known Risks: | This model does not always guarantee to retrieve the correct passage(s) for a given query. |\n| Licensing & Terms of Use: | Use of this model is governed by the [OpenMDW License Agreement, version 1.1 (OpenMDW-1.1)](https://openmdw.ai/license/1-1/). Additional Information: [Llama 3.2 Community Model License Agreement](https://www.llama.com/llama3_2/license/). Built with Llama. |\n| Technical Limitations | The model\u2019s max sequence length is 8192. Therefore, the longer text inputs should be truncated.   |\n| Name the adversely impacted groups this has been tested to deliver comparable outcomes regardless of: | N/A |\n| Verified to have met prescribed NVIDIA quality standards: | Yes |\n\n## Privacy\n\nField | Response\n:---- | :----\nGeneratable or reverse engineerable personal data? | No\nPersonal data used to create this model? | Yes\nWas consent obtained for any personal data used? | Unknown (Externally-Sourced Data)\nHow often is dataset reviewed? | Before release and as needed in response to dataset, model, or policy changes.\nIs a mechanism in place to honor data subject right of access or deletion of personal data? | Unknown (Externally-Sourced Data)\nIf personal data was collected for the development of the model, was it collected directly by NVIDIA? | No\nIf personal data was collected for the development of the model by NVIDIA, do you maintain or have access to disclosures made to data subjects? | Not Applicable\nIf personal data was collected for the development of this AI model, was it minimized to only what was required? | Yes\nWas data from user interactions with the AI model (e.g. user input and prompts) used to train the model? | No\nIs there provenance for all datasets used in training? | Yes\nDoes data labeling (annotation, metadata) comply with privacy laws? | Yes\nIs data compliant with data subject requests for data correction or removal, if such a request was made? | No, not possible with externally sourced data.\nApplicable Privacy Policy | [NVIDIA Privacy Policy](https://www.nvidia.com/en-us/about-nvidia/privacy-policy/)\n\n\n## Safety\n\n| Field | Response |\n| ----- | ----- |\n| Model Application(s): | Text Reranking for Retrieval |\n| Describe the physical safety impact (if present). | Not Applicable |\n| Use Case Restrictions: | Use of this model is governed by the [OpenMDW License Agreement, version 1.1 (OpenMDW-1.1)](https://openmdw.ai/license/1-1/). Additional Information: [Llama 3.2 Community Model License Agreement](https://www.llama.com/llama3_2/license/); Built with Llama.  |\n| Model and dataset restrictions: | The Principle of least privilege (PoLP) is applied limiting access for dataset generation and model development. Restrictions enforce dataset access during training, and dataset license constraints adhered to. |\n",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "openmdw-1.1",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "tags": [
+      "text",
+      "reranker",
+      "cross-encoder",
+      "retrieval",
+      "semantic-search"
+    ],
+    "pipeline_tag": "text-ranking",
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "transformers",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSequenceClassification",
+    "custom_class": "llama_bidirectional_model.LlamaBidirectionalForSequenceClassification",
+    "pipeline_tag": "text-classification",
+    "processor": null
+  }
+}

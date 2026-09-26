@@ -1,0 +1,172 @@
+{
+  "modelId": "microsoft/wavecoder-ultra-6.7b",
+  "author": "microsoft",
+  "sha": "57049dba4025d92e99e786081076df44dacc44a1",
+  "lastModified": "2024-05-06 13:25:54+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "llama",
+    "text-generation",
+    "code",
+    "conversational",
+    "en",
+    "dataset:humaneval",
+    "arxiv:2312.14187",
+    "license:mit",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 81,
+  "downloads": 433,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "humaneval"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": "https://huggingface.co/microsoft/wavecoder-ultra-6.7b/blob/main/LICENSE",
+    "metrics": [
+      "code_eval"
+    ],
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "code"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "LlamaForCausalLM"
+    ],
+    "model_type": "llama",
+    "tokenizer_config": {
+      "bos_token": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+      "chat_template": "{{bos_token}}{{'You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.\n\n'}}\n{%- for message in messages %}\n    {%- if message['role'] == 'system' %}\n        {{ raise_exception('System messages are not allowed in this template.') }}\n    {%- else %}\n        {%- if message['role'] == 'user' %}\n{{'@@ Instruction\n' + message['content'] + '\n\n'}}\n        {%- else %}\n{{'@@ Response\n' + message['content'] + eos_token + '\n\n'}}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{{'@@ Response\n'}}",
+      "eos_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+      "pad_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": true
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 1141,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE_DeepseekCoder",
+      "size": 13750,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4140,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 718,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 119,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model-00001-of-00003.bin",
+      "size": 9878359705,
+      "lfs": {
+        "size": 9878359705,
+        "sha256": "c46469d8401601aebc71b896fea95898b857703c33b48409fd9c69b60ce40cde",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00002-of-00003.bin",
+      "size": 9894794253,
+      "lfs": {
+        "size": 9894794253,
+        "sha256": "6d8e0e8c4d59b06781e060356e40eff6e97e62b5cdb9b49f79d896fe91fdb29d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model-00003-of-00003.bin",
+      "size": 7181363244,
+      "lfs": {
+        "size": 7181363244,
+        "sha256": "e33ab52a1ef0018f6161562e96f3a6939201abac98baf8c551679056bb299744",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "pytorch_model.bin.index.json",
+      "size": 23950,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 620,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1369291,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5019,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlicense_link: https://huggingface.co/microsoft/wavecoder-ultra-6.7b/blob/main/LICENSE\nlanguage:\n- en\nlibrary_name: transformers\ndatasets:\n- humaneval\npipeline_tag: text-generation\ntags:\n- code\nmetrics:\n- code_eval\n---\n\n<h1 align=\"center\">\n\ud83c\udf0a WaveCoder: Widespread And Versatile Enhanced Code LLM\n</h1>\n\n<p align=\"center\">\n  <a href=\"https://arxiv.org/abs/2312.14187\"><b>[\ud83d\udcdc Paper]</b></a> \u2022\n  <!-- <a href=\"\"><b>[\ud83e\udd17 HF Models]</b></a> \u2022 -->\n  <a href=\"https://github.com/microsoft/WaveCoder\"><b>[\ud83d\udc31 GitHub]</b></a>\n  <br>\n  <a href=\"https://twitter.com/TeamCodeLLM_AI\"><b>[\ud83d\udc26 Twitter]</b></a> \u2022\n  <a href=\"https://www.reddit.com/r/LocalLLaMA/comments/19a1scy/wavecoderultra67b_claims_to_be_the_2nd_best_model/\"><b>[\ud83d\udcac Reddit]</b></a> \u2022\n  <a href=\"https://www.analyticsvidhya.com/blog/2024/01/microsofts-wavecoder-and-codeocean-revolutionize-instruction-tuning/\">[\ud83c\udf40 Unofficial Blog]</a>\n  <!-- <a href=\"#-quick-start\">Quick Start</a> \u2022 -->\n  <!-- <a href=\"#%EF%B8%8F-citation\">Citation</a> -->\n</p>\n\n<p align=\"center\">\nRepo for \"<a href=\"https://arxiv.org/abs/2312.14187\" target=\"_blank\">WaveCoder: Widespread And Versatile Enhanced Instruction Tuning with Refined Data Generation</a>\" \n</p>\n\n## \ud83d\udd25 News\n\n- [2024/04/10] \ud83d\udd25\ud83d\udd25\ud83d\udd25 WaveCoder repo, models released at [\ud83e\udd17 HuggingFace](https://huggingface.co/microsoft/wavecoder-ultra-6.7b)!\n- [2023/12/26] WaveCoder paper released.\n\n## \ud83d\udca1 Introduction\n\nWaveCoder \ud83c\udf0a is a series of large language models (LLMs) for the coding domain, designed to solve relevant problems in the field of code through instruction-following learning. Its training dataset was generated from a subset of code-search-net data using a generator-discriminator framework based on LLMs that we proposed, covering four general code-related tasks: code generation, code summary, code translation, and code repair.\n\n| Model                                                                            | HumanEval | MBPP(500) | HumanEval<br>Fix(Avg.) | HumanEval<br>Explain(Avg.) |\n| -------------------------------------------------------------------------------- | --------- | --------- | ---------------------- | -------------------------- |\n| GPT-4                                                                            | 85.4      | -         | 47.8                   | 52.1                       |\n| [\ud83c\udf0a WaveCoder-DS-6.7B](https://huggingface.co/microsoft/wavecoder-ds-6.7b)       | 65.8      | 63.0      | 49.5                   | 40.8                       |\n| [\ud83c\udf0a WaveCoder-Pro-6.7B](https://huggingface.co/microsoft/wavecoder-pro-6.7b)     | 74.4      | 63.4      | 52.1                   | 43.0                       |\n| [\ud83c\udf0a WaveCoder-Ultra-6.7B](https://huggingface.co/microsoft/wavecoder-ultra-6.7b) | 79.9      | 64.6      | 52.3                   | 45.7                       |\n\n## \ud83e\ude81 Evaluation\n\nPlease refer to WaveCoder's [GitHub repo](https://github.com/microsoft/WaveCoder) for inference, evaluation, and training code.\n\n```python\n# Load model directly\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\ntokenizer = AutoTokenizer.from_pretrained(\"microsoft/wavecoder-ultra-6.7b\")\nmodel = AutoModelForCausalLM.from_pretrained(\"microsoft/wavecoder-ultra-6.7b\")\n```\n\n## \ud83d\udcd6 License\n\nThis code repository is licensed under the MIT License. The use of DeepSeek Coder models is subject to the its [License](https://github.com/deepseek-ai/DeepSeek-Coder/blob/main/LICENSE-MODEL).\n\n## \u2615\ufe0f Citation\n\nIf you find this repository helpful, please consider citing our paper:\n\n```\n@article{yu2023wavecoder,\n  title={Wavecoder: Widespread and versatile enhanced instruction tuning with refined data generation},\n  author={Yu, Zhaojian and Zhang, Xin and Shang, Ning and Huang, Yangyu and Xu, Can and Zhao, Yishujie and Hu, Wenxiang and Yin, Qiufeng},\n  journal={arXiv preprint arXiv:2312.14187},\n  year={2023}\n}\n```\n\n## Note\n\nWaveCoder models are trained on the synthetic data generated by OpenAI models. Please pay attention to OpenAI's [terms of use](https://openai.com/policies/terms-of-use) when using the models and the datasets.\n",
+  "cardDataParsed": {
+    "license": "mit",
+    "license_link": "https://huggingface.co/microsoft/wavecoder-ultra-6.7b/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "datasets": [
+      "humaneval"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "code"
+    ],
+    "metrics": [
+      "code_eval"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "license_name": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

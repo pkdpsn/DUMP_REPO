@@ -1,0 +1,125 @@
+{
+  "modelId": "Qwen/Qwen2-7B-Instruct-MLX",
+  "author": "Qwen",
+  "sha": "4a487f1aa9fc3addeffd4e6a4b3946e1e82dcaaa",
+  "lastModified": "2024-09-18 05:48:09+00:00",
+  "tags": [
+    "safetensors",
+    "qwen2",
+    "chat",
+    "text-generation",
+    "conversational",
+    "en",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": null,
+  "likes": 8,
+  "downloads": 197,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n' }}{% endif %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2537,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 786,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 4284346187,
+      "lfs": {
+        "size": 4284346187,
+        "sha256": "5efaec125457f5280a9b8c3c6f1cf54a177fe958b3adffa8ca344ce5088a77ec",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 51711,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7028043,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1299,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlanguage:\n- en\npipeline_tag: text-generation\ntags:\n- chat\n---\n\n# Qwen2-7B-Instruct-MLX\n\n## Introduction\n\nQwen2 is the new series of Qwen large language models. For Qwen2, we release a number of base language models and instruction-tuned language models ranging from 0.5 to 72 billion parameters, including a Mixture-of-Experts model. This repo contains the instruction-tuned 0.5B Qwen2 model.\n\nCompared with the state-of-the-art opensource language models, including the previous released Qwen1.5, Qwen2 has generally surpassed most opensource models and demonstrated competitiveness against proprietary models across a series of benchmarks targeting for language understanding, language generation, multilingual capability, coding, mathematics, reasoning, etc.\n\nFor more details, please refer to our [blog](https://qwenlm.github.io/blog/qwen2/) and [GitHub](https://github.com/QwenLM/Qwen2). This is the MLX quantized model of Qwen2-7B-Instruct.\n<br>\n\n## Model Details\nQwen2 is a language model series including decoder language models of different model sizes. For each size, we release the base language model and the aligned chat model. It is based on the Transformer architecture with SwiGLU activation, attention QKV bias, group query attention, etc. Additionally, we have an improved tokenizer adaptive to multiple natural languages and codes.\n\n## Training details\nWe pretrained the models with a large amount of data, and we post-trained the models with both supervised finetuning and direct preference optimization.\n\n\n## Requirements\n\nRun the following commands to install the required MLX packages.\n\n```\npip install mlx-lm mlx -U\n```\n\n\n## Quickstart\n\nHere provides a code snippet with `apply_chat_template` to show you how to load the tokenizer and model and how to generate contents.\n\n```python\nfrom mlx_lm import load, generate\n\nmodel, tokenizer = load('Qwen/Qwen2-7B-Instruct-MLX', tokenizer_config={\"eos_token\": \"<|im_end|>\"})\n\nprompt = \"Give me a short introduction to large language model.\"\nmessages = [\n    {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\n    {\"role\": \"user\", \"content\": prompt}\n]\ntext = tokenizer.apply_chat_template(\n    messages,\n    tokenize=False,\n    add_generation_prompt=True\n)\n\nresponse = generate(model, tokenizer, prompt=text, verbose=True, top_p=0.8, temp=0.7, repetition_penalty=1.05, max_tokens=512)\n```\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{qwen2,\n  title={Qwen2 Technical Report},\n  year={2024}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": null
+}

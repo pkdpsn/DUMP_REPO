@@ -1,0 +1,121 @@
+{
+  "modelId": "google/ddpm-church-256",
+  "author": "google",
+  "sha": "5a1118b5a35e744d59a4215a8c72a4d7619b9e04",
+  "lastModified": "2022-11-08 13:41:58+00:00",
+  "tags": [
+    "diffusers",
+    "pytorch",
+    "unconditional-image-generation",
+    "arxiv:2006.11239",
+    "license:apache-2.0",
+    "diffusers:DDPMPipeline",
+    "region:us"
+  ],
+  "pipeline_tag": "unconditional-image-generation",
+  "library_name": "diffusers",
+  "likes": 12,
+  "downloads": 547,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "pytorch",
+      "diffusers",
+      "unconditional-image-generation"
+    ]
+  },
+  "config": {
+    "diffusers": {
+      "_class_name": "DDPMPipeline"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1173,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2978,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 790,
+      "lfs": null
+    },
+    {
+      "rfilename": "diffusion_pytorch_model.bin",
+      "size": 454853117,
+      "lfs": {
+        "size": 454853117,
+        "sha256": "3111c176c9848d8d9b91d6fb8e2aa2945c220845aced8f47efb44f9deadd412c",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "images/generated_image_0.png",
+      "size": 92257,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/generated_image_1.png",
+      "size": 115524,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/generated_image_2.png",
+      "size": 73575,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/generated_image_3.png",
+      "size": 122489,
+      "lfs": null
+    },
+    {
+      "rfilename": "model_index.json",
+      "size": 167,
+      "lfs": null
+    },
+    {
+      "rfilename": "scheduler_config.json",
+      "size": 256,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\ntags:\n- pytorch\n- diffusers\n- unconditional-image-generation\n---\n\n# Denoising Diffusion Probabilistic Models (DDPM)\n\n**Paper**: [Denoising Diffusion Probabilistic Models](https://arxiv.org/abs/2006.11239)\n\n**Authors**: Jonathan Ho, Ajay Jain, Pieter Abbeel\n\n**Abstract**:\n\n*We present high quality image synthesis results using diffusion probabilistic models, a class of latent variable models inspired by considerations from nonequilibrium thermodynamics. Our best results are obtained by training on a weighted variational bound designed according to a novel connection between diffusion probabilistic models and denoising score matching with Langevin dynamics, and our models naturally admit a progressive lossy decompression scheme that can be interpreted as a generalization of autoregressive decoding. On the unconditional CIFAR10 dataset, we obtain an Inception score of 9.46 and a state-of-the-art FID score of 3.17. On 256x256 LSUN, we obtain sample quality similar to ProgressiveGAN.*\n\n## Inference\n\n**DDPM** models can use *discrete noise schedulers* such as:\n\n- [scheduling_ddpm](https://github.com/huggingface/diffusers/blob/main/src/diffusers/schedulers/scheduling_ddpm.py)\n- [scheduling_ddim](https://github.com/huggingface/diffusers/blob/main/src/diffusers/schedulers/scheduling_ddim.py)\n- [scheduling_pndm](https://github.com/huggingface/diffusers/blob/main/src/diffusers/schedulers/scheduling_pndm.py)\n\nfor inference. Note that while the *ddpm* scheduler yields the highest quality, it also takes the longest.\nFor a good trade-off between quality and inference speed you might want to consider the *ddim* or *pndm* schedulers instead.\n\nSee the following code:\n\n```python\n# !pip install diffusers\nfrom diffusers import DDPMPipeline, DDIMPipeline, PNDMPipeline\n\nmodel_id = \"google/ddpm-church-256\"\n\n# load model and scheduler\nddpm = DDPMPipeline.from_pretrained(model_id)  # you can replace DDPMPipeline with DDIMPipeline or PNDMPipeline for faster inference\n\n# run pipeline in inference (sample random noise and denoise)\nimage = ddpm().images[0]\n\n\n# save image\nimage.save(\"ddpm_generated_image.png\")\n```\n\nFor more in-detail information, please have a look at the [official inference example](https://colab.research.google.com/github/huggingface/notebooks/blob/main/diffusers/diffusers_intro.ipynb)\n\n## Training\n\nIf you want to train your own model, please have a look at the [official training example](https://colab.research.google.com/github/huggingface/notebooks/blob/main/diffusers/training_example.ipynb)\n\n## Samples\n1. ![sample_1](https://huggingface.co/google/ddpm-church-256/resolve/main/images/generated_image_0.png)\n2. ![sample_2](https://huggingface.co/google/ddpm-church-256/resolve/main/images/generated_image_1.png)\n3. ![sample_3](https://huggingface.co/google/ddpm-church-256/resolve/main/images/generated_image_2.png)\n4. ![sample_4](https://huggingface.co/google/ddpm-church-256/resolve/main/images/generated_image_3.png)",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "tags": [
+      "pytorch",
+      "diffusers",
+      "unconditional-image-generation"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

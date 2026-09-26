@@ -1,0 +1,150 @@
+{
+  "modelId": "microsoft/unispeech-sat-base-100h-libri-ft",
+  "author": "microsoft",
+  "sha": "b294556d8d77cc539f9d08bef0ddbb0f60985328",
+  "lastModified": "2021-11-04 15:26:40+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "unispeech-sat",
+    "automatic-speech-recognition",
+    "audio",
+    "en",
+    "dataset:librispeech_asr",
+    "arxiv:2110.05752",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "automatic-speech-recognition",
+  "library_name": "transformers",
+  "likes": 4,
+  "downloads": 13954,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "librispeech_asr"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "audio",
+      "automatic-speech-recognition"
+    ],
+    "widget": [
+      {
+        "example_title": "Librispeech sample 1",
+        "src": "https://cdn-media.huggingface.co/speech_samples/sample1.flac"
+      },
+      {
+        "example_title": "Librispeech sample 2",
+        "src": "https://cdn-media.huggingface.co/speech_samples/sample2.flac"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "UniSpeechSatForCTC"
+    ],
+    "model_type": "unispeech-sat",
+    "tokenizer_config": {
+      "unk_token": "<unk>",
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3859,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1554,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 215,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 377674604,
+      "lfs": {
+        "size": 377674604,
+        "sha256": "f03b2cfcabd84c022aa50616eb62993513a6f4e5a1742477c97b5296b9c054aa",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 85,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 512,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 291,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\ndatasets:\n- librispeech_asr\ntags:\n- audio\n- automatic-speech-recognition\nlicense: apache-2.0\nwidget:\n- example_title: Librispeech sample 1\n  src: https://cdn-media.huggingface.co/speech_samples/sample1.flac\n- example_title: Librispeech sample 2\n  src: https://cdn-media.huggingface.co/speech_samples/sample2.flac\n---\n\n# UniSpeech-SAT-Base-Finetuned-100h-Libri\n\n[Microsoft's UniSpeech](https://www.microsoft.com/en-us/research/publication/unispeech-unified-speech-representation-learning-with-labeled-and-unlabeled-data/)\n\nA [unispeech-sat-base model]( ) that was fine-tuned on 100h hours of Librispeech on 16kHz sampled speech audio. When using the model\nmake sure that your speech input is also sampled at 16Khz.\n\nThe model was fine-tuned on:\n\n- 100 hours of [LibriSpeech](https://huggingface.co/datasets/librispeech_asr)\n\n[Paper: UNISPEECH-SAT: UNIVERSAL SPEECH REPRESENTATION LEARNING WITH SPEAKER\nAWARE PRE-TRAINING](https://arxiv.org/abs/2110.05752)\n\nAuthors: Sanyuan Chen, Yu Wu, Chengyi Wang, Zhengyang Chen, Zhuo Chen, Shujie Liu, Jian Wu, Yao Qian, Furu Wei, Jinyu Li, Xiangzhan Yu\n\n**Abstract**\n*Self-supervised learning (SSL) is a long-standing goal for speech processing, since it utilizes large-scale unlabeled data and avoids extensive human labeling. Recent years witness great successes in applying self-supervised learning in speech recognition, while limited exploration was attempted in applying SSL for modeling speaker characteristics. In this paper, we aim to improve the existing SSL framework for speaker representation learning. Two methods are introduced for enhancing the unsupervised speaker information extraction. First, we apply the multi-task learning to the current SSL framework, where we integrate the utterance-wise contrastive loss with the SSL objective function. Second, for better speaker discrimination, we propose an utterance mixing strategy for data augmentation, where additional overlapped utterances are created unsupervisely and incorporate during training. We integrate the proposed methods into the HuBERT framework. Experiment results on SUPERB benchmark show that the proposed system achieves state-of-the-art performance in universal representation learning, especially for speaker identification oriented tasks. An ablation study is performed verifying the efficacy of each proposed method. Finally, we scale up training dataset to 94 thousand hours public audio data and achieve further performance improvement in all SUPERB tasks..*\n\nThe original model can be found under https://github.com/microsoft/UniSpeech/tree/main/UniSpeech-SAT.\n\n# Usage\n\nTo transcribe audio files the model can be used as a standalone acoustic model as follows:\n\n```python\n from transformers import Wav2Vec2Processor, UniSpeechSatForCTC\n from datasets import load_dataset\n import torch\n \n # load model and tokenizer\n processor = Wav2Vec2Processor.from_pretrained(\"microsoft/unispeech-sat-base-100h-libri-ft\")\n model = UniSpeechSatForCTC.from_pretrained(\"microsoft/unispeech-sat-base-100h-libri-ft\")\n     \n # load dummy dataset\n ds = load_dataset(\"patrickvonplaten/librispeech_asr_dummy\", \"clean\", split=\"validation\")\n \n # tokenize\n input_values = processor(ds[0][\"audio\"][\"array\"], return_tensors=\"pt\", padding=\"longest\").input_values  # Batch size 1\n \n # retrieve logits\n logits = model(input_values).logits\n \n # take argmax and decode\n predicted_ids = torch.argmax(logits, dim=-1)\n transcription = processor.batch_decode(predicted_ids)\n ```\n \n # Contribution\n\nThe model was contributed by [cywang](https://huggingface.co/cywang) and [patrickvonplaten](https://huggingface.co/patrickvonplaten).\n\n# License\n\nThe official license can be found [here](https://github.com/microsoft/UniSpeech/blob/main/LICENSE)\n\n![design](https://raw.githubusercontent.com/patrickvonplaten/scientific_images/master/UniSpeechSAT.png)",
+  "cardDataParsed": {
+    "language": "en",
+    "datasets": [
+      "librispeech_asr"
+    ],
+    "tags": [
+      "audio",
+      "automatic-speech-recognition"
+    ],
+    "license": "apache-2.0",
+    "widget": [
+      {
+        "example_title": "Librispeech sample 1",
+        "src": "https://cdn-media.huggingface.co/speech_samples/sample1.flac"
+      },
+      {
+        "example_title": "Librispeech sample 2",
+        "src": "https://cdn-media.huggingface.co/speech_samples/sample2.flac"
+      }
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCTC",
+    "custom_class": null,
+    "pipeline_tag": "automatic-speech-recognition",
+    "processor": "AutoProcessor"
+  }
+}

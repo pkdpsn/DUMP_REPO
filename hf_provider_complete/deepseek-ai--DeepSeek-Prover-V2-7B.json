@@ -1,0 +1,124 @@
+{
+  "modelId": "deepseek-ai/DeepSeek-Prover-V2-7B",
+  "author": "deepseek-ai",
+  "sha": "a8d9e14432b2e8dd9df2a4d4e70f1ba9bc8d9b7b",
+  "lastModified": "2025-04-30 14:50:36+00:00",
+  "tags": [
+    "safetensors",
+    "llama",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": null,
+  "likes": 151,
+  "downloads": 79697,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {
+    "architectures": [
+      "LlamaForCausalLM"
+    ],
+    "model_type": "llama",
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": {
+        "__type": "AddedToken",
+        "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "unk_token": null,
+      "chat_template": "{% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{% set ns = namespace(is_first=false, is_tool=false, is_output_first=true, system_prompt='', is_first_sp=true, is_last_user=false) %}{%- for message in messages %}{%- if message['role'] == 'system' %}{%- if ns.is_first_sp %}{% set ns.system_prompt = ns.system_prompt + message['content'] %}{% set ns.is_first_sp = false %}{%- else %}{% set ns.system_prompt = ns.system_prompt + '\n\n' + message['content'] %}{%- endif %}{%- endif %}{%- endfor %}{{ bos_token }}{{ ns.system_prompt }}{%- for message in messages %}{%- if message['role'] == 'user' %}{%- set ns.is_tool = false -%}{%- set ns.is_first = false -%}{%- set ns.is_last_user = true -%}{{'<\uff5cUser\uff5c>' + message['content'] + '<\uff5cAssistant\uff5c>'}}{%- endif %}{%- if message['role'] == 'assistant' and message['tool_calls'] is defined and message['tool_calls'] is not none %}{%- set ns.is_last_user = false -%}{%- if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>'}}{%- endif %}{%- set ns.is_first = false %}{%- set ns.is_tool = false -%}{%- set ns.is_output_first = true %}{%- for tool in message['tool_calls'] %}{%- if not ns.is_first %}{%- if message['content'] is none %}{{'<\uff5ctool\u2581calls\u2581begin\uff5c><\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\n' + '```json' + '\n' + tool['function']['arguments'] + '\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{%- else %}{{message['content'] + '<\uff5ctool\u2581calls\u2581begin\uff5c><\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\n' + '```json' + '\n' + tool['function']['arguments'] + '\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{%- endif %}{%- set ns.is_first = true -%}{%- else %}{{'\n' + '<\uff5ctool\u2581call\u2581begin\uff5c>' + tool['type'] + '<\uff5ctool\u2581sep\uff5c>' + tool['function']['name'] + '\n' + '```json' + '\n' + tool['function']['arguments'] + '\n' + '```' + '<\uff5ctool\u2581call\u2581end\uff5c>'}}{%- endif %}{%- endfor %}{{'<\uff5ctool\u2581calls\u2581end\uff5c><\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- endif %}{%- if message['role'] == 'assistant' and (message['tool_calls'] is not defined or message['tool_calls'] is none)%}{%- set ns.is_last_user = false -%}{%- if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>' + message['content'] + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- set ns.is_tool = false -%}{%- else %}{% set content = message['content'] %}{{content + '<\uff5cend\u2581of\u2581sentence\uff5c>'}}{%- endif %}{%- endif %}{%- if message['role'] == 'tool' %}{%- set ns.is_last_user = false -%}{%- set ns.is_tool = true -%}{%- if ns.is_output_first %}{{'<\uff5ctool\u2581outputs\u2581begin\uff5c><\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}{%- set ns.is_output_first = false %}{%- else %}{{'\n<\uff5ctool\u2581output\u2581begin\uff5c>' + message['content'] + '<\uff5ctool\u2581output\u2581end\uff5c>'}}{%- endif %}{%- endif %}{%- endfor -%}{% if ns.is_tool %}{{'<\uff5ctool\u2581outputs\u2581end\uff5c>'}}{% endif %}{% if add_generation_prompt and not ns.is_last_user and not ns.is_tool %}{{'<\uff5cAssistant\uff5c>'}}{% endif %}"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 1064,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 9957,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 833,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-000002.safetensors",
+      "size": 8596557586,
+      "lfs": {
+        "size": 8596557586,
+        "sha256": "f7eebe5f578ccfa90eea70b00c164adff6df2bdec511b9939c101234c3e3ae65",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-000002.safetensors",
+      "size": 5224205544,
+      "lfs": {
+        "size": 5224205544,
+        "sha256": "7dd518c7ca44e82a7bda20f1959bd131b89f721c70fb3bc2e9ac0b53ad2c4ce9",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 22736,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4610628,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 3883,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n<!-- markdownlint-disable first-line-h1 -->\n<!-- markdownlint-disable html -->\n<!-- markdownlint-disable no-duplicate-header -->\n\n<div align=\"center\">\n  <img src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/logo.svg?raw=true\" width=\"60%\" alt=\"DeepSeek-V3\" />\n</div>\n<hr>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://www.deepseek.com/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Homepage\" src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/badge.svg?raw=true\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://chat.deepseek.com/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/\ud83e\udd16%20Chat-DeepSeek%20V3-536af5?color=536af5&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://huggingface.co/deepseek-ai\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Hugging Face\" src=\"https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-DeepSeek%20AI-ffc107?color=ffc107&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://discord.gg/Tc7c45Zzu5\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Discord\" src=\"https://img.shields.io/badge/Discord-DeepSeek%20AI-7289da?logo=discord&logoColor=white&color=7289da\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/qr.jpeg?raw=true\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Wechat\" src=\"https://img.shields.io/badge/WeChat-DeepSeek%20AI-brightgreen?logo=wechat&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://twitter.com/deepseek_ai\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Twitter Follow\" src=\"https://img.shields.io/badge/Twitter-deepseek_ai-white?logo=x&logoColor=white\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-CODE\" style=\"margin: 2px;\">\n    <img alt=\"Code License\" src=\"https://img.shields.io/badge/Code_License-MIT-f5de53?&color=f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-MODEL\" style=\"margin: 2px;\">\n    <img alt=\"Model License\" src=\"https://img.shields.io/badge/Model_License-Model_Agreement-f5de53?&color=f5de53\" style=\"display: inline-block; vertical-align: middle;\"/>\n  </a>\n</div>\n\n## 1. Introduction\n\nWe introduce DeepSeek-Prover-V2, an open-source large language model designed for formal theorem proving in Lean 4, with initialization data collected through a recursive theorem proving pipeline powered by DeepSeek-V3. The cold-start training procedure begins by prompting DeepSeek-V3 to decompose complex problems into a series of subgoals. The proofs of resolved subgoals are synthesized into a chain-of-thought process, combined with DeepSeek-V3's step-by-step reasoning, to create an initial cold start for reinforcement learning. This process enables us to integrate both informal and formal mathematical reasoning into a unified model.\n\n<p align=\"center\">\n  <img width=\"100%\" src=\"https://github.com/deepseek-ai/DeepSeek-Prover-V2/blob/main/figures/performance.png?raw=true\">\n</p>\n\n## 2. Model Summary\n\n---\n\n**Synthesize Cold-Start Reasoning Data through Recursive Proof Search**\n\n- To construct the cold-start dataset, we develop a simple yet effective pipeline for recursive theorem proving, utilizing DeepSeek-V3 as a unified tool for both subgoal decomposition and formalization. We prompt DeepSeek-V3 to decompose theorems into high-level proof sketches while simultaneously formalizing these proof steps in Lean 4, resulting in a sequence of subgoals.\n\n- We use a smaller 7B model to handle the proof search for each subgoal, thereby reducing the associated computational burden. Once the decomposed steps of a challenging problem are resolved, we pair the complete step-by-step formal proof with the corresponding chain-of-thought from DeepSeek-V3 to create cold-start reasoning data.\n\n---\n\n**Reinforcement Learning with Synthetic Cold-Start Data**\n\n- We curate a subset of challenging problems that remain unsolved by the 7B prover model in an end-to-end manner, but for which all decomposed subgoals have been successfully resolved. By composing the proofs of all subgoals, we construct a complete formal proof for the original problem. This proof is then appended to DeepSeek-V3's chain-of-thought, which outlines the corresponding lemma decomposition, thereby producing a cohesive synthesis of informal reasoning and subsequent formalization.\n\n- After fine-tuning the prover model on the synthetic cold-start data, we perform a reinforcement learning stage to further enhance its ability to bridge informal reasoning with formal proof construction. Following the standard training objective for reasoning models, we use binary correct-or-incorrect feedback as the primary form of reward supervision.\n- The resulting model, DeepSeek-Prover-V2-671B, achieves state-of-the-art performance in neural theorem proving, reaching $88.9$% pass ratio on the MiniF2F-test and solving 49 out of 658 problems from PutnamBench. The proofs generated by DeepSeek-Prover-V2 for the miniF2F dataset are available for download as a [ZIP archive](https://github.com/deepseek-ai/DeepSeek-Prover-V2/blob/master/minif2f-solutions.zip).\n\n---\n\n## 3. ProverBench: Formalization of AIME and Textbook Problems\n\nwe introduce ProverBench, a benchmark dataset comprising 325 problems. Of these, 15 are formalized from number theory and algebra questions featured in the recent AIME competitions (AIME 24 and 25), offering authentic high-school competition-level challenges. The remaining 310 problems are drawn from curated textbook examples and educational tutorials, contributing a diverse and pedagogically grounded collection of formalized mathematical problems. This benchmark is designed to enable more comprehensive evaluation across both high-school competition problems and undergraduate-level mathematics.\n\n<div align=\"center\">\n\n| Area                | Count |\n| :---------------------: | :-------: |\n| AIME 24&25          | 15    |\n| Number Theory       | 40    |\n| Elementary Algebra  | 30    |\n| Linear Algebra      | 50    |\n| Abstract Algebra    | 40    |\n| Calculus            | 90    |\n| Real Analysis       | 30    |\n| Complex Analysis    | 10    |\n| Functional Analysis | 10    |\n| Probability         | 10    |\n| Total               | 325   |\n\n</div>\n\n## 4. Model & Dataset Downloads\n\nWe release DeepSeek-Prover-V2 in two model sizes: 7B and 671B parameters. DeepSeek-Prover-V2-671B is trained on top of DeepSeek-V3-Base. DeepSeek-Prover-V2-7B is built upon DeepSeek-Prover-V1.5-Base and features an extended context length of up to 32K tokens.\n\n<div align=\"center\">\n\n|            **Model**            |                          **Download**                         |\n| :-----------------------------: | :----------------------------------------------------------: |\n|   DeepSeek-Prover-V2-7B   | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-7B) |\n|   DeepSeek-Prover-V2-671B   | [\ud83e\udd17 HuggingFace](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-671B) |\n\n</div>\n\n<div align=\"center\">\n\n|            **Dataset**            |                          **Download**                         |\n| :-----------------------------: | :----------------------------------------------------------: |\n|   DeepSeek-ProverBench   | [\ud83e\udd17 HuggingFace](https://huggingface.co/datasets/deepseek-ai/DeepSeek-ProverBench) |\n\n</div>\n\n## 5. Quick Start\n\nYou can directly use [Huggingface's Transformers](https://github.com/huggingface/transformers) for model inference. DeepSeek-Prover-V2-671B shares the same architecture as DeepSeek-V3. For detailed information and supported features, please refer to [the DeepSeek-V3 documentation on Hugging Face](https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/deepseek_v3.md).\n\nThe following is a basic example of generating a proof for a problem from the miniF2F dataset:\n````python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\nimport torch\ntorch.manual_seed(30)\n\nmodel_id = \"DeepSeek-Prover-V2-7B\"  # or DeepSeek-Prover-V2-671B\ntokenizer = AutoTokenizer.from_pretrained(model_id)\n\nformal_statement = \"\"\"\nimport Mathlib\nimport Aesop\n\nset_option maxHeartbeats 0\n\nopen BigOperators Real Nat Topology Rat\n\n/-- What is the positive difference between $120\\%$ of 30 and $130\\%$ of 20? Show that it is 10.-/\ntheorem mathd_algebra_10 : abs ((120 : \u211d) / 100 * 30 - 130 / 100 * 20) = 10 := by\n  sorry\n\"\"\".strip()\n\nprompt = \"\"\"\nComplete the following Lean 4 code:\n\n```lean4\n{}\n```\n\nBefore producing the Lean 4 code to formally prove the given theorem, provide a detailed proof plan outlining the main proof steps and strategies.\nThe plan should highlight key ideas, intermediate lemmas, and proof structures that will guide the construction of the final formal proof.\n\"\"\".strip()\n\nchat = [\n  {\"role\": \"user\", \"content\": prompt.format(formal_statement)},\n]\n\nmodel = AutoModelForCausalLM.from_pretrained(model_id, device_map=\"auto\", torch_dtype=torch.bfloat16, trust_remote_code=True)\ninputs = tokenizer.apply_chat_template(chat, tokenize=True, add_generation_prompt=True, return_tensors=\"pt\").to(model.device)\n\nimport time\nstart = time.time()\noutputs = model.generate(inputs, max_new_tokens=8192)\nprint(tokenizer.batch_decode(outputs))\nprint(time.time() - start)\n````\n\n## 6. License\nThe use of DeepSeek-Prover-V2 models is subject to [the Model License](LICENSE-MODEL).\n\n## 7. Contact\n\nIf you have any questions, please raise an issue or contact us at [service@deepseek.com](mailto:service@deepseek.com).\n",
+  "cardDataParsed": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

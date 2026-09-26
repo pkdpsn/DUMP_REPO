@@ -1,0 +1,72 @@
+{
+  "modelId": "google/timesfm-1.0-200m-pytorch",
+  "author": "google",
+  "sha": "0581e2c56cb06feb51cfd98fc2b4005b74f7187b",
+  "lastModified": "2024-08-29 23:52:11+00:00",
+  "tags": [
+    "timesfm",
+    "time-series-forecasting",
+    "arxiv:2310.10688",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": "time-series-forecasting",
+  "library_name": "timesfm",
+  "likes": 34,
+  "downloads": 4867,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "timesfm",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "time-series-forecasting",
+    "tags": null
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5575,
+      "lfs": null
+    },
+    {
+      "rfilename": "torch_model.ckpt",
+      "size": 814370168,
+      "lfs": {
+        "size": 814370168,
+        "sha256": "e6f83ebb8f448b66ad49d61b2f73aea0f68ffb20a83f1695c30badb1a5792eeb",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlibrary_name: timesfm\npipeline_tag: time-series-forecasting\n---\n# TimesFM\n\nTimesFM (Time Series Foundation Model) is a pretrained time-series foundation model developed by Google Research for time-series forecasting.\n\n**Resources and Technical Documentation**:\n\n* Paper: [A decoder-only foundation model for time-series forecasting](https://arxiv.org/abs/2310.10688), to appear in ICML 2024.\n* [Google Research blog](https://research.google/blog/a-decoder-only-foundation-model-for-time-series-forecasting/)\n* [GitHub repo](https://github.com/google-research/timesfm)\n\n**Authors**: Google Research\n\nThis is not an officially supported Google product.\n\n## Checkpoint timesfm-1.0-200m\n\n`timesfm-1.0-200m` is the first open model checkpoint:\n\n- It performs univariate time series forecasting for context lengths up to 512 time points and any horizon lengths, with an optional frequency indicator.\n- It focuses on point forecasts and does not support probabilistic forecasts. We experimentally offer quantile heads but they have not been calibrated after pretraining.\n- It requires the context to be contiguous (i.e. no \"holes\"), and the context and the horizon to be of the same frequency.\n\n## Benchmarks\n\nPlease refer to our result tables on the [extended benchmarks](https://github.com/google-research/timesfm/blob/master/experiments/extended_benchmarks/tfm_results.png) and the [long horizon benchmarks](https://github.com/google-research/timesfm/blob/master/experiments/long_horizon_benchmarks/tfm_long_horizon.png).\n\nPlease look into the README files in the respective benchmark directories within `experiments/` for instructions for running TimesFM on the respective benchmarks.\n\n## Installation\n\nThis HuggingFace repo hosts TimesFm checkpoints. Please visit our [GitHub repo](https://github.com/google-research/timesfm) and follow the instructions there to install the `timesfm` library for model inference.\n\nIn particular, the dependency `lingvo` does not support ARM architectures and the inference code is not working for machines with Apple silicon. We are aware of this issue and are working on a solution. Stay tuned.\n\n## Usage \n\n### Initialize the model and load a checkpoint.\nThen the base class can be loaded as,\n\n```python\ntcm = TimesFMConfig(<correct parameters>)\ntfm_torch = PatchedTimeSeriesDecoder(tcm)\ntfm_torch.load_state_dict(torch.load(PATH))\n```\n\nNote that the four parameters are fixed to load the 200m model\n\n```python\ninput_patch_len=32,\noutput_patch_len=128,\nnum_layers=20,\nmodel_dims=1280,\n```\n\n1. The context_len here can be set as the max context length **of the model**. You can provide a shorter series to the `tfm.forecast()` function and the model will handle it. Currently, the model handles a max context length of 512, which can be increased in later releases. The input time series can have **any context length**. Padding / truncation will be handled by the inference code if needed.\n2. The horizon length can be set to anything. We recommend setting it to the largest horizon length you would need in the forecasting tasks for your application. We generally recommend horizon length <= context length but it is not a requirement in the function call.\n### Perform inference\nWe provide APIs to forecast from either array inputs or `pandas` dataframe. Both forecast methods expect (1) the input time series contexts, (2) along with their frequencies. Please look at the documentation of the functions `tfm.forecast()` and `tfm.forecast_on_df()` for detailed instructions.\nIn particular, regarding the frequency, TimesFM expects a categorical indicator valued in {0, 1, 2}:\n- **0** (default): high frequency, long horizon time series. We recommend using this for time series up to daily granularity.\n- **1**: medium frequency time series. We recommend using this for weekly and monthly data.\n- **2**: low frequency, short horizon time series. We recommend using this for anything beyond monthly, e.g. quarterly or yearly.\nThis categorical value should be directly provided with the array inputs. For dataframe inputs, we convert the conventional letter coding of frequencies to our expected categories, that\n- **0**: T, MIN, H, D, B, U\n- **1**: W, M\n- **2**: Q, Y\nNotice you do **NOT** have to strictly follow our recommendation here. Although this is our setup during model training and we expect it to offer the best forecast result, you can also view the frequency input as a free parameter and modify it per your specific use case.\nExamples:\nArray inputs, with the frequencies set to low, medium, and high respectively.\n```python\nimport numpy as np\nforecast_input = [\n    np.sin(np.linspace(0, 20, 100))\n    np.sin(np.linspace(0, 20, 200)),\n    np.sin(np.linspace(0, 20, 400)),\n]\nfrequency_input = [0, 1, 2]\npoint_forecast, experimental_quantile_forecast = tfm.forecast(\n    forecast_input,\n    freq=frequency_input,\n)\n```\n`pandas` dataframe, with the frequency set to \"M\" monthly.\n\n```python\nimport pandas as pd\n# e.g. input_df is\n#       unique_id  ds          y\n# 0     T1         1975-12-31  697458.0\n# 1     T1         1976-01-31  1187650.0\n# 2     T1         1976-02-29  1069690.0\n# 3     T1         1976-03-31  1078430.0\n# 4     T1         1976-04-30  1059910.0\n# ...   ...        ...         ...\n# 8175  T99        1986-01-31  602.0\n# 8176  T99        1986-02-28  684.0\n# 8177  T99        1986-03-31  818.0\n# 8178  T99        1986-04-30  836.0\n# 8179  T99        1986-05-31  878.0\nforecast_df = tfm.forecast_on_df(\n    inputs=input_df,\n    freq=\"M\",  # monthly\n    value_name=\"y\",\n    num_jobs=-1,\n)\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "library_name": "timesfm",
+    "pipeline_tag": "time-series-forecasting",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

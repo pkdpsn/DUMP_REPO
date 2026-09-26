@@ -1,0 +1,162 @@
+{
+  "modelId": "mistralai/Mamba-Codestral-7B-v0.1",
+  "author": "mistralai",
+  "sha": "4f086c08c1e0f07bdc50ca25125dbbf7475d21da",
+  "lastModified": "2025-07-24 16:47:01+00:00",
+  "tags": [
+    "vllm",
+    "safetensors",
+    "mistral-common",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "vllm",
+  "likes": 617,
+  "downloads": 13577,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "vllm",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "mistral-common"
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>."
+  },
+  "config": {
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": null,
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3550,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1011,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated.safetensors",
+      "size": 14570874432,
+      "lfs": {
+        "size": 14570874432,
+        "sha256": "8fe988b5ba989d1e4bddd4b68a6a18672eadd2c00c88f5352b2734a4bb964710",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 137,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 4873450856,
+      "lfs": {
+        "size": 4873450856,
+        "sha256": "fceef8df9e1e182bda9a0c71f46473ddc3914cedda85e07d324aeb2121de5e80",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 4976244624,
+      "lfs": {
+        "size": 4976244624,
+        "sha256": "42232512449b2a496f447e2c1b7a491f725bbf3f3761b5e889955dfcd933a569",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 4721175056,
+      "lfs": {
+        "size": 4721175056,
+        "sha256": "e5d655663c24ecd409cfe96275e557457be38fa5ad82afbdf70b99230f3368c2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 45172,
+      "lfs": null
+    },
+    {
+      "rfilename": "params.json",
+      "size": 234,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 414,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1961706,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 587583,
+      "lfs": {
+        "size": 587583,
+        "sha256": "59f95e28944c062244741268596badc900df86c7f5ded05088d2da22a7379e06",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer.model.v3",
+      "size": 587583,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 136786,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: vllm\nlicense: apache-2.0\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.\ntags:\n- mistral-common\n---\n\n# Model Card for Mamba-Codestral-7B-v0.1\n\nCodestral Mamba is an open code model based on the Mamba2 architecture. It performs on par with state-of-the-art Transformer-based code models. \\\nYou can read more in the [official blog post](https://mistral.ai/news/codestral-mamba/).\n\n\n## Installation\n\nIt is recommended to use `mistralai/Mamba-Codestral-7B-v0.1` with [mistral-inference](https://github.com/mistralai/mistral-inference) \n\n\n```\npip install mistral_inference>=1 mamba-ssm causal-conv1d\n```\n\nor directly with the original [`mamba`](https://github.com/state-spaces/mamba) package:\n\n```\npip install mamba_ssm causal-conv1d\n```\n\n## Download\n\n```py\nfrom huggingface_hub import snapshot_download\nfrom pathlib import Path\n\nmistral_models_path = Path.home().joinpath('mistral_models', 'Mamba-Codestral-7B-v0.1')\nmistral_models_path.mkdir(parents=True, exist_ok=True)\n\nsnapshot_download(repo_id=\"mistralai/Mamba-Codestral-7B-v0.1\", allow_patterns=[\"params.json\", \"consolidated.safetensors\", \"tokenizer.model.v3\"], local_dir=mistral_models_path)\n```\n\n### Chat\n\nAfter installing `mistral_inference`, a `mistral-demo` CLI command should be available in your environment.\n\n```\nmistral-chat $HOME/mistral_models/Mamba-Codestral-7B-v0.1 --instruct  --max_tokens 256\n```\n\n## Evaluation\nWe evaluate Codestral Mamba, Codestral and open-weight models of similar size on industry-standard benchmarks.\n| Benchmarks | HumanEval | MBPP | Spider | CruxE | HumanEval C++ | HumanEvalJava |HumanEvalJS |HumanEval Bash |\n| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n| CodeGemma 1.1 7B | 61.0% | 67.7% | 46.3% | 50.4% | 49.1% | 41.8% | 52.2% | 9.4% |\n| CodeLlama 7B | 31.1% | 48.2% | 29.3% | 50.1% | 31.7% | 29.7% | 31.7% | 11.4% |\n| DeepSeek v1.5 7B | 65.9% | **70.8%** | **61.2%** | 55.5% | 59.0% | **62.7%** | 60.9% | **33.5%** |\n| **Codestral Mamba (7B)** | **75.0%** | 68.5% | 58.8% | **57.8%** | **59.8%** | 57.0% | **61.5%** | 31.1% |\n|\n| **Codestral (22B)** | **81.1%%** | **78.2%%** | **63.5%%** | 51.3% | **65.2%** | **63.3%** | -  | **42.4%** |\n| CodeLlama 34B | 43.3% | 75.1% | 50.8% | 55.2% | 51.6% | 57.0% | 59.0% | 29.7% |\n\n## The Mistral AI Team\n\nAlbert Jiang, Alexandre Sablayrolles, Alexis Tacnet, Alok Kothari, Antoine Roux, Arthur Mensch, Audrey Herblin-Stoop, Augustin Garreau, Austin Birky, Bam4d, Baptiste Bout, Baudouin de Monicault, Blanche Savary, Carole Rambaud, Caroline Feldman, Devendra Singh Chaplot, Diego de las Casas, Eleonore Arcelin, Emma Bou Hanna, Etienne Metzger, Gaspard Blanchet, Gianna Lengyel, Guillaume Bour, Guillaume Lample, Harizo Rajaona, Henri Roussez, Hichem Sattouf, Ian Mack, Jean-Malo Delignon, Jessica Chudnovsky, Justus Murke, Kartik Khandelwal, Lawrence Stewart, Louis Martin, Louis Ternon, Lucile Saulnier, L\u00e9lio Renard Lavaud, Margaret Jennings, Marie Pellat, Marie Torelli, Marie-Anne Lachaux, Marjorie Janiewicz, Micka\u00ebl Seznec, Nicolas Schuhl, Niklas Muhs, Olivier de Garrigues, Patrick von Platen, Paul Jacob, Pauline Buche, Pavan Kumar Reddy, Perry Savas, Pierre Stock, Romain Sauvestre, Sagar Vaze, Sandeep Subramanian, Saurabh Garg, Sophia Yang, Szymon Antoniak, Teven Le Scao, Thibault Schueller, Thibaut Lavril, Thomas Wang, Th\u00e9ophile Gervet, Timoth\u00e9e Lacroix, Valera Nemychnikova, Wendy Shang, William El Sayed, William Marshall",
+  "cardDataParsed": {
+    "library_name": "vllm",
+    "license": "apache-2.0",
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "tags": [
+      "mistral-common"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

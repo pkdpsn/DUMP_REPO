@@ -1,0 +1,309 @@
+{
+  "modelId": "nvidia/Nemotron-Content-Safety-Reasoning-4B",
+  "author": "nvidia",
+  "sha": "29da6ec41d9c710d937afcd41f65e241ab822792",
+  "lastModified": "2025-12-06 01:43:43+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "content safety",
+    "guardrail",
+    "LLM safety",
+    "topical moderation",
+    "dialogue moderation",
+    "custom policy",
+    "dialogue agents",
+    "text-generation",
+    "conversational",
+    "en",
+    "dataset:nvidia/Nemotron-Content-Safety-Reasoning-Dataset",
+    "arxiv:2505.20087",
+    "base_model:google/gemma-3-4b-it",
+    "base_model:finetune:google/gemma-3-4b-it",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 30,
+  "downloads": 1931,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "google/gemma-3-4b-it"
+    ],
+    "datasets": [
+      "nvidia/Nemotron-Content-Safety-Reasoning-Dataset"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": [
+      "f1"
+    ],
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "content safety",
+      "guardrail",
+      "LLM safety",
+      "topical moderation",
+      "dialogue moderation",
+      "custom policy",
+      "dialogue agents"
+    ]
+  },
+  "config": {
+    "chat_template_jinja": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1562,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 33482,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 35,
+      "lfs": {
+        "size": 35,
+        "sha256": "50b2f405ba56a26d4913fd772089992252d7f942123cc0a034d96424221ba946",
+        "pointer_size": 127
+      }
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1532,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2597,
+      "lfs": {
+        "size": 2597,
+        "sha256": "367790304da0b98e85db2b15e4f12d6ca6ec5c023e71e67c06dd5e0f4e679659",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 219,
+      "lfs": {
+        "size": 219,
+        "sha256": "407c8a366689314d43e99a7514ed820330fdb33f09580dba0a5db63a3d1368f1",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "latest",
+      "size": 15,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4961251752,
+      "lfs": {
+        "size": 4961251752,
+        "sha256": "7cd5ad06811055e66d0695de419e29c04b8da604c00562fef67371a4249d6211",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 4981531360,
+      "lfs": {
+        "size": 4981531360,
+        "sha256": "b4b96e0e28317ef28e30a8caac491f1b54a7219a507d3aeb59021711007ae56c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 90667,
+      "lfs": {
+        "size": 90667,
+        "sha256": "29acbe5436ee117e4bf057bd9ae27a34395bc14d02a8ea95b7688a3e0ac89397",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 824,
+      "lfs": {
+        "size": 824,
+        "sha256": "7c678efe7a9a7997ce406f260c333deaaa88d1aed61f0a9e958dab94a1737c86",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 70,
+      "lfs": {
+        "size": 70,
+        "sha256": "3ffd5f11778dc73e2b69b3c00535e4121e1badf7018136263cd17b5b34fbaa53",
+        "pointer_size": 127
+      }
+    },
+    {
+      "rfilename": "rng_state_0.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "49509410a42329f1b1c7865f0ca97b59b2fb1dc084fef71fcd29ab0425285687",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "rng_state_1.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "b243929e8c42fe38e83178e9d5b925bcab31d617fab04943db39a8a00e13c003",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "rng_state_2.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "cd67f0315b25e4beb2eebbfe0c7a59ea93172508d66c60ebf1820250ab03c205",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "rng_state_3.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "e0948ae32021f7b89db2e6df73859c69ec818aa5f37ca47bb3d9f5e1b570e451",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "rng_state_4.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "461730fc3cb8574dc37b2a06d880fe9e74f401f429264ccbe91c5367245cee45",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "rng_state_5.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "0abdad09e1f061bbaca64a0c0644ccf1118e24a9ef995753989338404a436769",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "rng_state_6.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "7947f7818d27dff15209e1631dea8e2e92aad8c3a33edb5a675388bf64b8e09a",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "rng_state_7.pth",
+      "size": 16389,
+      "lfs": {
+        "size": 16389,
+        "sha256": "5aa1584ace7eec94984cdc141117386bc2d171141c84c05706e83f1b798ad9d0",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "scheduler.pt",
+      "size": 1465,
+      "lfs": {
+        "size": 1465,
+        "sha256": "802ac4052656e375a56f8c8b02a67f422fbe995125f282613e7934f970892aa8",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 670,
+      "lfs": {
+        "size": 670,
+        "sha256": "45a857d8a2495d0be30a5d2d6de03278195eb028b6e0b8efc248bfa697d65f05",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 33384568,
+      "lfs": {
+        "size": 33384568,
+        "sha256": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4689074,
+      "lfs": {
+        "size": 4689074,
+        "sha256": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1155455,
+      "lfs": {
+        "size": 1155455,
+        "sha256": "79005bc07969253bf996e09ccd4d6e3792d4e630f6f50026b196d23682283467",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "trainer_state.json",
+      "size": 73773,
+      "lfs": {
+        "size": 73773,
+        "sha256": "b13ec2e4be40d04fc6b249f6c2712c1875459d8bc37c7bde57a208a7f19959e5",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "training_args.bin",
+      "size": 8529,
+      "lfs": {
+        "size": 8529,
+        "sha256": "540b2eb0d80d10acf7695fa28fec9ab2e1e59205901453ded7ddb978ac047785",
+        "pointer_size": 129
+      }
+    },
+    {
+      "rfilename": "zero_to_fp32.py",
+      "size": 33272,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": null
+  }
+}

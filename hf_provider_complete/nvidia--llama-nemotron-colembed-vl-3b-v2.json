@@ -1,0 +1,201 @@
+{
+  "modelId": "nvidia/llama-nemotron-colembed-vl-3b-v2",
+  "author": "nvidia",
+  "sha": "9907f8fdf1eae6802c5b9ee4287ef9009acfdae9",
+  "lastModified": "2026-05-20 18:23:14+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "llama_nemotron_vl",
+    "feature-extraction",
+    "text",
+    "image",
+    "vidore",
+    "rag",
+    "multimodal-embedding",
+    "multilingual-embedding",
+    "Text-to-Visual Document (T\u2192VD) retrieval",
+    "visual-document-retrieval",
+    "custom_code",
+    "multilingual",
+    "arxiv:2602.03992",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "visual-document-retrieval",
+  "library_name": "transformers",
+  "likes": 23,
+  "downloads": 5823,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "multilingual"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "customized-nscl-v1",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "visual-document-retrieval",
+    "tags": [
+      "text",
+      "image",
+      "vidore",
+      "rag",
+      "multimodal-embedding",
+      "multilingual-embedding",
+      "Text-to-Visual Document (T\u2192VD) retrieval",
+      "feature-extraction"
+    ],
+    "inference": false
+  },
+  "config": {
+    "architectures": [
+      "LlamaNemotronVLModel"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_llama_nemotron_vl.LlamaNemotronVLConfig",
+      "AutoModel": "modeling_llama_nemotron_vl.LlamaNemotronVLModel"
+    },
+    "model_type": "llama_nemotron_vl",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_string = strftime_now(\"%d %b %Y\") %}\n    {%- else %}\n        {%- set date_string = \"26 Jul 2024\" %}\n    {%- endif %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = none %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{%- if tools is not none %}\n    {{- \"Environment: ipython\\n\" }}\n{%- endif %}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{%- if tools is not none and not tools_in_user_message %}\n    {{- \"You have access to the following functions. To call a function, please respond with JSON for a function call.\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n{%- endif %}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{#- Custom tools are passed in a user message with some extra guidance #}\n{%- if tools_in_user_message and not tools is none %}\n    {#- Extract the first user message so we can plug it in here #}\n    {%- if messages | length != 0 %}\n        {%- set first_user_message = messages[0]['content']|trim %}\n        {%- set messages = messages[1:] %}\n    {%- else %}\n        {{- raise_exception(\"Cannot put tools in the first user message when there's no first user message!\") }}\n{%- endif %}\n    {{- '<|start_header_id|>user<|end_header_id|>\\n\\n' -}}\n    {{- \"Given the following functions, please respond with a JSON for a function call \" }}\n    {{- \"with its proper arguments that best answers the given prompt.\\n\\n\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n    {{- first_user_message + \"<|eot_id|>\"}}\n{%- endif %}\n\n{%- for message in messages %}\n    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n    {%- elif 'tool_calls' in message %}\n        {%- if not message.tool_calls|length == 1 %}\n            {{- raise_exception(\"This model only supports single tool-calls at once!\") }}\n        {%- endif %}\n        {%- set tool_call = message.tool_calls[0].function %}\n        {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n        {{- '{\"name\": \"' + tool_call.name + '\", ' }}\n        {{- '\"parameters\": ' }}\n        {{- tool_call.arguments | tojson }}\n        {{- \"}\" }}\n        {{- \"<|eot_id|>\" }}\n    {%- elif message.role == \"tool\" or message.role == \"ipython\" %}\n        {{- \"<|start_header_id|>ipython<|end_header_id|>\\n\\n\" }}\n        {%- if message.content is mapping or message.content is iterable %}\n            {{- message.content | tojson }}\n        {%- else %}\n            {{- message.content }}\n        {%- endif %}\n        {{- \"<|eot_id|>\" }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|eot_id|>",
+      "pad_token": "<|finetune_right_pad_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "CONTRIBUTING.md",
+      "size": 2158,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 15638,
+      "lfs": null
+    },
+    {
+      "rfilename": "NOTICE",
+      "size": 115,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 12824,
+      "lfs": null
+    },
+    {
+      "rfilename": "THIRD_PARTY_NOTICES.md",
+      "size": 36625,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 5902,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_llama_nemotron_vl.py",
+      "size": 4808,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 69,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4979244968,
+      "lfs": {
+        "size": 4979244968,
+        "sha256": "93f5e8c3c555dcda7d7b329d6cab9ca87055943e0084a958cf00aa0868a674eb",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 3831794688,
+      "lfs": {
+        "size": 3831794688,
+        "sha256": "dccbce6275a7a5192183b4f9f0a8d33a83fd8749d0c6fcfd527404c78a0ddb99",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 93197,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_llama_nemotron_vl.py",
+      "size": 28208,
+      "lfs": null
+    },
+    {
+      "rfilename": "mteb2_eval.py",
+      "size": 3372,
+      "lfs": null
+    },
+    {
+      "rfilename": "mteb_eval.py",
+      "size": 1523,
+      "lfs": null
+    },
+    {
+      "rfilename": "processing_llama_nemotron_vl.py",
+      "size": 15523,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 550,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 454,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17212133,
+      "lfs": {
+        "size": 17212133,
+        "sha256": "0fb8bdddbd4c4ffa55e51d5b0393611e3df49dd86a31189ef5dcb750cf3da399",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 56719,
+      "lfs": null
+    },
+    {
+      "rfilename": "vidore_eval.py",
+      "size": 8758,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_llama_nemotron_vl.LlamaNemotronVLModel",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

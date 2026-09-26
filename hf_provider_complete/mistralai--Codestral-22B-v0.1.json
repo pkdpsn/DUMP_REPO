@@ -1,0 +1,231 @@
+{
+  "modelId": "mistralai/Codestral-22B-v0.1",
+  "author": "mistralai",
+  "sha": "28b1c1a51dabe9d86ca8c41420ada1984632498f",
+  "lastModified": "2025-07-24 16:43:37+00:00",
+  "tags": [
+    "vllm",
+    "safetensors",
+    "mistral",
+    "code",
+    "mistral-common",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "vllm",
+  "likes": 1353,
+  "downloads": 19431,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "code"
+    ],
+    "library_name": "vllm",
+    "license": "other",
+    "license_name": "mnpl",
+    "license_link": "https://mistral.ai/licences/MNPL-0.1.md",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "code",
+      "mistral-common"
+    ],
+    "inference": false,
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>."
+  },
+  "config": {
+    "architectures": [
+      "MistralForCausalLM"
+    ],
+    "model_type": "mistral",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content'] %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n\n{{- bos_token }}\n{%- for message in loop_messages %}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{- raise_exception('After the optional system message, conversation roles must alternate user/assistant/user/assistant/...') }}\n    {%- endif %}\n    {%- if message['role'] == 'user' %}\n        {%- if loop.last and system_message is defined %}\n            {{- '[INST] ' + system_message + '\\n\\n' + message['content'] + '[/INST]' }}\n        {%- else %}\n            {{- '[INST] ' + message['content'] + '[/INST]' }}\n        {%- endif %}\n    {%- elif message['role'] == 'assistant' %}\n        {{- ' ' + message['content'] + eos_token}}\n    {%- else %}\n        {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}\n    {%- endif %}\n{%- endfor %}\n",
+      "eos_token": "</s>",
+      "pad_token": null,
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 7213,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 660,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated.safetensors",
+      "size": 44494620752,
+      "lfs": {
+        "size": 44494620752,
+        "sha256": "6675b83f2de8ab76c9c19e0b28508a2565598c141899b95671f039f89a945cf4",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 116,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00009.safetensors",
+      "size": 4882298776,
+      "lfs": {
+        "size": 4882298776,
+        "sha256": "6c911e66544527032c9e49f602ed0645f748045248eb8fb8ec9982866b899674",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00009.safetensors",
+      "size": 4983012160,
+      "lfs": {
+        "size": 4983012160,
+        "sha256": "cc1de07197a04eaeeaa6dcb7ed6604f729ed822e92273c25c112f85c366b5696",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00009.safetensors",
+      "size": 4957821336,
+      "lfs": {
+        "size": 4957821336,
+        "sha256": "90dc483e3b22d3d21a03edd588a8ffe5743b8dea33fc9f1ffc01eb1e529aedf8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00009.safetensors",
+      "size": 4882323744,
+      "lfs": {
+        "size": 4882323744,
+        "sha256": "76ee31da7cdd8fde0a257030ffdf7d3fb293935a62b8469f6dec1c1a19e14eee",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00009.safetensors",
+      "size": 4983012192,
+      "lfs": {
+        "size": 4983012192,
+        "sha256": "1d56824727ffaf568f7a1c7770fd5cb531df71ebe143567b1cb3968aca7f98cd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00009.safetensors",
+      "size": 4957821336,
+      "lfs": {
+        "size": 4957821336,
+        "sha256": "9f30bb3fdbcad8d1c00e0b421908bebc6cb5544669cd3c916ae592acb7263ae4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00009.safetensors",
+      "size": 4882323744,
+      "lfs": {
+        "size": 4882323744,
+        "sha256": "54eb704485dce4f8c7c245169d25f394ea08dec1562a1ab981715f294ef93314",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00009.safetensors",
+      "size": 4983012192,
+      "lfs": {
+        "size": 4983012192,
+        "sha256": "cfbe26e02d475904ecc92cbe54a614607156aabed3503867d8af5023673d6374",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00009.safetensors",
+      "size": 4982999056,
+      "lfs": {
+        "size": 4982999056,
+        "sha256": "c834720ddae75dc683e52284ffe27ea35f48eb2c5500c71025925fe0dd398a8c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 41782,
+      "lfs": null
+    },
+    {
+      "rfilename": "params.json",
+      "size": 202,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 414,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1962462,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 587591,
+      "lfs": {
+        "size": 587591,
+        "sha256": "9addc8bdce5988448ae81b729336f43a81262160ae8da760674badab9d4c7d33",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer.model.v3",
+      "size": 587591,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 138640,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: vllm\nlanguage:\n- code\nlicense: other\ntags:\n- code\n- mistral-common\ninference: false\nlicense_name: mnpl\nlicense_link: https://mistral.ai/licences/MNPL-0.1.md\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.\n---\n\n# Model Card for Codestral-22B-v0.1\n\n\n## Encode and Decode with `mistral_common`\n            \n```py\nfrom mistral_common.tokens.tokenizers.mistral import MistralTokenizer\nfrom mistral_common.protocol.instruct.messages import UserMessage\nfrom mistral_common.protocol.instruct.request import ChatCompletionRequest\n \nmistral_models_path = \"MISTRAL_MODELS_PATH\"\n \ntokenizer = MistralTokenizer.v3()\n \ncompletion_request = ChatCompletionRequest(messages=[UserMessage(content=\"Explain Machine Learning to me in a nutshell.\")])\n \ntokens = tokenizer.encode_chat_completion(completion_request).tokens\n```\n \n## Inference with `mistral_inference`\n \n ```py\nfrom mistral_inference.transformer import Transformer\nfrom mistral_inference.generate import generate\n \nmodel = Transformer.from_folder(mistral_models_path)\nout_tokens, _ = generate([tokens], model, max_tokens=64, temperature=0.0, eos_id=tokenizer.instruct_tokenizer.tokenizer.eos_id)\n\nresult = tokenizer.decode(out_tokens[0])\n\nprint(result)\n```\n\n## Inference with hugging face `transformers`\n \n```py\nfrom transformers import AutoModelForCausalLM\n \nmodel = AutoModelForCausalLM.from_pretrained(\"mistralai/Codestral-22B-v0.1\")\nmodel.to(\"cuda\")\n \ngenerated_ids = model.generate(tokens, max_new_tokens=1000, do_sample=True)\n\n# decode with mistral tokenizer\nresult = tokenizer.decode(generated_ids[0].tolist())\nprint(result)\n```\n\n> [!TIP]\n> PRs to correct the `transformers` tokenizer so that it gives 1-to-1 the same results as the `mistral_common` reference implementation are very welcome!\n            \n---\n\nCodestral-22B-v0.1 is trained on a diverse dataset of 80+ programming languages, including the most popular ones, such as Python, Java, C, C++, JavaScript, and Bash (more details in the [Blogpost](https://mistral.ai/news/codestral/)). The model can be queried:\n- As instruct, for instance to answer any questions about a code snippet (write documentation, explain, factorize) or to generate code following specific indications\n- As Fill in the Middle (FIM), to predict the middle tokens between a prefix and a suffix (very useful for software development add-ons like in VS Code)\n\n\n## Installation\n\nIt is recommended to use `mistralai/Codestral-22B-v0.1` with [mistral-inference](https://github.com/mistralai/mistral-inference).\n\n```\npip install mistral_inference\n```\n\n## Download\n\n```py\nfrom huggingface_hub import snapshot_download\nfrom pathlib import Path\n\nmistral_models_path = Path.home().joinpath('mistral_models', 'Codestral-22B-v0.1')\nmistral_models_path.mkdir(parents=True, exist_ok=True)\n\nsnapshot_download(repo_id=\"mistralai/Codestral-22B-v0.1\", allow_patterns=[\"params.json\", \"consolidated.safetensors\", \"tokenizer.model.v3\"], local_dir=mistral_models_path)\n```\n\n### Chat\n\nAfter installing `mistral_inference`, a `mistral-chat` CLI command should be available in your environment.\n\n```\nmistral-chat $HOME/mistral_models/Codestral-22B-v0.1 --instruct --max_tokens 256\n```\n\nWill generate an answer to \"Write me a function that computes fibonacci in Rust\" and should give something along the following lines:\n\n```\nSure, here's a simple implementation of a function that computes the Fibonacci sequence in Rust. This function takes an integer `n` as an argument and returns the `n`th Fibonacci number.\n\nfn fibonacci(n: u32) -> u32 {\n    match n {\n        0 => 0,\n        1 => 1,\n        _ => fibonacci(n - 1) + fibonacci(n - 2),\n    }\n}\n\nfn main() {\n    let n = 10;\n    println!(\"The {}th Fibonacci number is: {}\", n, fibonacci(n));\n}\n\nThis function uses recursion to calculate the Fibonacci number. However, it's not the most efficient solution because it performs a lot of redundant calculations. A more efficient solution would use a loop to iteratively calculate the Fibonacci numbers.\n```\n\n\n### Fill-in-the-middle (FIM)\n\nAfter installing `mistral_inference` and running `pip install --upgrade mistral_common` to make sure to have mistral_common>=1.2 installed:\n\n```py\nfrom mistral_inference.transformer import Transformer\nfrom mistral_inference.generate import generate\nfrom mistral_common.tokens.tokenizers.mistral import MistralTokenizer\nfrom mistral_common.tokens.instruct.request import FIMRequest\n\ntokenizer = MistralTokenizer.v3()\nmodel = Transformer.from_folder(\"~/codestral-22B-240529\")\n\nprefix = \"\"\"def add(\"\"\"\nsuffix = \"\"\"    return sum\"\"\"\n\nrequest = FIMRequest(prompt=prefix, suffix=suffix)\n\ntokens = tokenizer.encode_fim(request).tokens\n\nout_tokens, _ = generate([tokens], model, max_tokens=256, temperature=0.0, eos_id=tokenizer.instruct_tokenizer.tokenizer.eos_id)\nresult = tokenizer.decode(out_tokens[0])\n\nmiddle = result.split(suffix)[0].strip()\nprint(middle)\n```\n\nShould give something along the following lines:\n\n```\nnum1, num2):\n\n    # Add two numbers\n    sum = num1 + num2\n\n    # return the sum\n```\n\n## Usage with transformers library\n\nThis model is also compatible with `transformers` library, first run `pip install -U transformers` then use the snippet below to quickly get started:\n\n```python\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_id = \"mistralai/Codestral-22B-v0.1\"\ntokenizer = AutoTokenizer.from_pretrained(model_id)\n\nmodel = AutoModelForCausalLM.from_pretrained(model_id)\n\ntext = \"Hello my name is\"\ninputs = tokenizer(text, return_tensors=\"pt\")\n\noutputs = model.generate(**inputs, max_new_tokens=20)\nprint(tokenizer.decode(outputs[0], skip_special_tokens=True))\n```\n\nBy default, transformers will load the model in full precision. Therefore you might be interested to further reduce down the memory requirements to run the model through the optimizations we offer in HF ecosystem.\n\n## Limitations\n\nThe Codestral-22B-v0.1 does not have any moderation mechanisms. We're looking forward to engaging with the community on ways to\nmake the model finely respect guardrails, allowing for deployment in environments requiring moderated outputs.\n\n## License\n\nCodestral-22B-v0.1 is released under the `MNLP-0.1` license.\n\n## The Mistral AI Team\n\nAlbert Jiang, Alexandre Sablayrolles, Alexis Tacnet, Antoine Roux, Arthur Mensch, Audrey Herblin-Stoop, Baptiste Bout, Baudouin de Monicault, Blanche Savary, Bam4d, Caroline Feldman, Devendra Singh Chaplot, Diego de las Casas, Eleonore Arcelin, Emma Bou Hanna, Etienne Metzger, Gianna Lengyel, Guillaume Bour, Guillaume Lample, Harizo Rajaona, Henri Roussez, Jean-Malo Delignon, Jia Li, Justus Murke, Kartik Khandelwal, Lawrence Stewart, Louis Martin, Louis Ternon, Lucile Saulnier, L\u00e9lio Renard Lavaud, Margaret Jennings, Marie Pellat, Marie Torelli, Marie-Anne Lachaux, Marjorie Janiewicz, Mickael Seznec, Nicolas Schuhl, Patrick von Platen, Romain Sauvestre, Pierre Stock, Sandeep Subramanian, Saurabh Garg, Sophia Yang, Szymon Antoniak, Teven Le Scao, Thibaut Lavril, Thibault Schueller, Timoth\u00e9e Lacroix, Th\u00e9ophile Gervet, Thomas Wang, Valera Nemychnikova, Wendy Shang, William El Sayed, William Marshall",
+  "cardDataParsed": {
+    "library_name": "vllm",
+    "language": [
+      "code"
+    ],
+    "license": "other",
+    "tags": [
+      "code",
+      "mistral-common"
+    ],
+    "inference": false,
+    "license_name": "mnpl",
+    "license_link": "https://mistral.ai/licences/MNPL-0.1.md",
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

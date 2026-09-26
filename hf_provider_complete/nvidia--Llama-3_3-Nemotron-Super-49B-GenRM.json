@@ -1,0 +1,331 @@
+{
+  "modelId": "nvidia/Llama-3_3-Nemotron-Super-49B-GenRM",
+  "author": "nvidia",
+  "sha": "3160979309e0ed1e2c57d570c4bf0d4052014a5d",
+  "lastModified": "2025-06-26 18:07:35+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron-nas",
+    "text-generation",
+    "nvidia",
+    "llama3.3",
+    "conversational",
+    "custom_code",
+    "en",
+    "dataset:nvidia/HelpSteer3",
+    "arxiv:2505.11475",
+    "arxiv:2410.01257",
+    "arxiv:2310.05344",
+    "arxiv:2311.09528",
+    "arxiv:2406.08673",
+    "arxiv:2505.00949",
+    "arxiv:2410.16184",
+    "base_model:nvidia/Llama-3_3-Nemotron-Super-49B-v1",
+    "base_model:finetune:nvidia/Llama-3_3-Nemotron-Super-49B-v1",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 19,
+  "downloads": 669,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "nvidia/Llama-3_3-Nemotron-Super-49B-v1",
+    "datasets": [
+      "nvidia/HelpSteer3"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "nvidia",
+      "llama3.3"
+    ],
+    "inference": false,
+    "fine-tuning": false
+  },
+  "config": {
+    "architectures": [
+      "DeciLMForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_decilm.DeciLMConfig",
+      "AutoModelForCausalLM": "modeling_decilm.DeciLMForCausalLM"
+    },
+    "model_type": "nemotron-nas",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}\n{%- set system_message = 'detailed thinking on' %}\n{{- '<|start_header_id|>system<|end_header_id|>\n\n' }}\n{{- system_message }}\n{{- '<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n' }}\nYou are a skilled little expert at scoring responses. You should evaluate given responses based on the given judging criteria.\nGiven the context of the conversation (the last turn is the User\u2019s query) and one or two responses from the Assistant, you need to refer to the [Helpfulness Scoring Guidelines] to score each individual response.\nIf there are two responses, you need to also give a ranking score based on the [Ranking Scoring Guidelines].\nBefore scoring, please analyze step by step. Your scoring needs to be as strict as possible.\n\n[Helpfulness Scoring Guidelines]\n\nWhen evaluating Helpfulness, consider the following factors:\n\n- Correctness/Completeness: Is the response accurate and complete?\n- Coherence/Clarity: Is the response clear, coherent, and easy to understand?\n- Instruction following: Does the response follow the instructions and fulfill the user's request?\n- Relevance: Is the response relevant to the user's query/input?\n- Level of Detail and Creativity: Does the response provide enough detail without being too verbose? Does it show creativity but not hallucinations?\n\n**Score 5: Extremely Helpful**\n\n- The response is extremely helpful and completely aligned with the spirit of what the prompt was asking for.\n- It accurately acts on the user's request, without unnecessary information.\n- If a user request is not possible/in line with desired model behavior, a helpful response provides useful context and rationale.\n\n**Score 4: Mostly Helpful**\n\n- The response is mostly helpful and mainly aligned with what the user was looking for.\n- There is still some room for improvement, but the response is generally useful.\n\n**Score 3: Partially Helpful**\n\n- The response is partially helpful but misses the overall goal of the user's query/input in some way.\n- The response did not fully satisfy what the user was looking for.\n\n**Score 2: Borderline Unhelpful**\n\n- The response is borderline unhelpful and mostly does not capture what the user was looking for.\n- However, it is still usable and helpful in a small way.\n\n**Score 1: Not Helpful**\n\n- The response is not useful or helpful at all.\n- The response completely missed the essence of what the user wanted.\n\n[Ranking Scoring Guidelines]\n\nRanking score is used to rank the two responses based on their helpfulness. Even if you give the same individual helpfulness score for both responses, you need to differentiate them strictly.\nThe ranking score is a number between 1 and 6, where:\n1 = Response 1 is much better than Response 2\n2 = Response 1 is better than Response 2\n3 = Response 1 is slightly better than Response 2\n4 = Response 2 is slightly better than Response 1\n5 = Response 2 is better than Response 1\n6 = Response 2 is much better than Response 1\n\n{{- '\n\n#### Conversation Context ####\n' }}\n\n{%- for message in messages %}\n    {%- if message['role'] == 'user' %}\n        {{- 'User: ' + message['content']|trim + '\n' }}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if '</think>' in message['content'] %}\n            {%- set content = message['content'].split('</think>')[-1].lstrip() %}\n        {%- else %}\n            {%- set content = message['content'] %}\n        {%- endif %}\n        {{- 'Assistant: ' + content|trim + '\n'}}\n        {%- endif %}\n{%- endfor %}\n\n{{- '\n#### Responses to be Scored ####\n' }}\n{%- for message in messages %}\n    {%- if message['role'] == 'response_1' %}\n        {{- '[The Begin of Response 1]\n' + message['content']|trim + '\n[The End of Response 1]\n' }}\n    {%- elif message['role'] == 'response_2' %}\n        {{- '[The Begin of Response 2]\n' + message['content']|trim + '\n[The End of Response 2]\n' }}\n        {%- endif %}\n{%- endfor %}\n#### Output Format Requirements ####\nFirst give your analysis on each responses in the format of:\n[The Begin of Analysis on Response i]\nAnalysis on the i-th response\n[The End of Analysis on Response i]\n\nThen give the scores of each response in order, separate by comma in the boxed, adhering this format:\n[The Begin of Individual Scores]\n\\boxed{x, y} if there exists 2 responses\n[The End of Individual Scores]\n\nIf there are two responses, give the relative ranking score in the format of:\n[The Begin of Ranking Score]\n\\boxed{z} \n[The End of Ranking Score]\nYou don't need to give a ranking score if only one response is provided.<|eot_id|>\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}\n{%- endif %}",
+      "eos_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 14625,
+      "lfs": null
+    },
+    {
+      "rfilename": "__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 509,
+      "lfs": null
+    },
+    {
+      "rfilename": "block_config.py",
+      "size": 4347,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 37027,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_decilm.py",
+      "size": 2573,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 2501,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00011.safetensors",
+      "size": 9416513088,
+      "lfs": {
+        "size": 9416513088,
+        "sha256": "0d934e78b2bb512e6cc2acee9ff566d1d66bdfb113c023ab23d04f588f4c1fe2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00011.safetensors",
+      "size": 9856651944,
+      "lfs": {
+        "size": 9856651944,
+        "sha256": "9cb991a90c8eb03f871edf9f2ab0dc6c035433e932a2a73e9956b53138c75360",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00011.safetensors",
+      "size": 9529743768,
+      "lfs": {
+        "size": 9529743768,
+        "sha256": "be5d5337cf0bf2173495ee6c840b0bf7dee4e918c38d18ee9969d59b2b37992c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00011.safetensors",
+      "size": 9244250240,
+      "lfs": {
+        "size": 9244250240,
+        "sha256": "40caa109942fc770e6439937267db3d77f5b4497264e1e82eff83d2b131811ef",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00011.safetensors",
+      "size": 9965868760,
+      "lfs": {
+        "size": 9965868760,
+        "sha256": "760679767471a251faeaefa8de712bb60b0514316f0110a62d40fac8747afe3f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00011.safetensors",
+      "size": 9630258432,
+      "lfs": {
+        "size": 9630258432,
+        "sha256": "ddf315afbd0c8cfe8de52ef41201b38f3f3f60712f3310695e79bc0810562a2e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00011.safetensors",
+      "size": 9496240016,
+      "lfs": {
+        "size": 9496240016,
+        "sha256": "be80f1d573e9656cd485d112569a31ceb24dc699dbe304725a9e17eff9ad7a10",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00011.safetensors",
+      "size": 9932331744,
+      "lfs": {
+        "size": 9932331744,
+        "sha256": "a515fad0f8e47f54570699416cb621bce20fbea3529d11dbf6892adf779dce66",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00011.safetensors",
+      "size": 8275700200,
+      "lfs": {
+        "size": 8275700200,
+        "sha256": "23e39f7da92f7b17ddbaf445ab327ddee72c69ca8f6adb77c418e631292ffa3d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00011.safetensors",
+      "size": 9978401560,
+      "lfs": {
+        "size": 9978401560,
+        "sha256": "cab87514494768e3a4d7ee5fdc931e185549ab09b48c1151d1eccd9a4e091ad8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00011.safetensors",
+      "size": 4408397016,
+      "lfs": {
+        "size": 4408397016,
+        "sha256": "0619257a19000f519b383b18c388283d164490f0d29319263caf176e28c1e192",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 46789,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_decilm.py",
+      "size": 78535,
+      "lfs": null
+    },
+    {
+      "rfilename": "nemo_common.json",
+      "size": 2,
+      "lfs": null
+    },
+    {
+      "rfilename": "nemo_common.pt",
+      "size": 860,
+      "lfs": {
+        "size": 860,
+        "sha256": "e4e4090fa34d96307127606cccef3ae99aedae58279e8bdf1746d44d3bf7aa47",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "nemo_model_config.yaml",
+      "size": 5710,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 1390,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 880,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 296,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17209920,
+      "lfs": {
+        "size": 17209920,
+        "sha256": "6b9e4e7fb171f92fd137b777cc2714bf87d11576700a1dcd7a399e7bbe39537b",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 55263,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_name.txt",
+      "size": 42,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__activations.py",
+      "size": 8189,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__cache_utils.py",
+      "size": 64589,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__configuration_llama.py",
+      "size": 11066,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_attn_mask_utils.py",
+      "size": 21330,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_flash_attention_utils_backward_compat.py",
+      "size": 15751,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_outputs.py",
+      "size": 112579,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_rope_utils.py",
+      "size": 28067,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__pytorch_utils.py",
+      "size": 666,
+      "lfs": null
+    },
+    {
+      "rfilename": "variable_cache.py",
+      "size": 6206,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_decilm.DeciLMForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

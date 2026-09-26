@@ -1,0 +1,170 @@
+{
+  "modelId": "mistralai/Magistral-Small-2506_gguf",
+  "author": "mistralai",
+  "sha": "cf20f373b612260a5e0f3a703a34594b3a66b438",
+  "lastModified": "2025-07-24 16:54:23+00:00",
+  "tags": [
+    "llama.ccp",
+    "gguf",
+    "en",
+    "fr",
+    "de",
+    "es",
+    "pt",
+    "it",
+    "ja",
+    "ko",
+    "ru",
+    "zh",
+    "ar",
+    "fa",
+    "id",
+    "ms",
+    "ne",
+    "pl",
+    "ro",
+    "sr",
+    "sv",
+    "tr",
+    "uk",
+    "vi",
+    "hi",
+    "bn",
+    "base_model:mistralai/Magistral-Small-2506",
+    "base_model:quantized:mistralai/Magistral-Small-2506",
+    "license:apache-2.0",
+    "region:us",
+    "conversational"
+  ],
+  "pipeline_tag": null,
+  "library_name": "llama.ccp",
+  "likes": 71,
+  "downloads": 569,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "mistralai/Magistral-Small-2506"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "pt",
+      "it",
+      "ja",
+      "ko",
+      "ru",
+      "zh",
+      "ar",
+      "fa",
+      "id",
+      "ms",
+      "ne",
+      "pl",
+      "ro",
+      "sr",
+      "sv",
+      "tr",
+      "uk",
+      "vi",
+      "hi",
+      "bn"
+    ],
+    "library_name": "llama.ccp",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null,
+    "inference": false,
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>."
+  },
+  "config": {},
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1648,
+      "lfs": null
+    },
+    {
+      "rfilename": "Magistral-Small-2506.gguf",
+      "size": 47153519680,
+      "lfs": {
+        "size": 47153519680,
+        "sha256": "64922b03b69e02ae2eab9668761986c93b41ea65bdeaa36c951e22c9fd30779a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "Magistral-Small-2506_Q8_0.gguf",
+      "size": 25054780480,
+      "lfs": {
+        "size": 25054780480,
+        "sha256": "6c7e8eec28de36f086274875e08a06db6b45ae257f96f35cdcfd8f86f3fae9af",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5781,
+      "lfs": null
+    },
+    {
+      "rfilename": "SYSTEM_PROMPT.txt",
+      "size": 819,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\n- fr\n- de\n- es\n- pt\n- it\n- ja\n- ko\n- ru\n- zh\n- ar\n- fa\n- id\n- ms\n- ne\n- pl\n- ro\n- sr\n- sv\n- tr\n- uk\n- vi\n- hi\n- bn\nlicense: apache-2.0\nlibrary_name: llama.ccp\ninference: false\nbase_model:\n- mistralai/Magistral-Small-2506\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.\n---\n\n\n> [!Note]\n> At Mistral, we don't yet have too much experience with providing GGUF-quantized checkpoints\n> to the community, but want to help improving the ecosystem going forward.\n> If you encounter any problems with the provided checkpoints here, please open a discussion or pull request\n\n\n# Magistral-Small-2506 (gguf)\n\nBuilding upon Mistral Small 3.1 (2503), **with added reasoning capabilities**, undergoing SFT from Magistral Medium traces and RL on top, it's a small, efficient reasoning model with 24B parameters.\n\nMagistral-Small-2506_gguf is a GGUF (quantized) version of [Magistral-Small-2506](https://huggingface.co/mistralai/Magistral-Small-2506).\n\nLearn more about Magistral in our [blog post](https://mistral.ai/news/magistral).\n\n\n## Key Features:\n- **Reasoning**:  Capable of long chains of reasoning traces before providing an answer.\n- **lightweight**: with its compact size of just 24 billion parameters, Magistral is light enough to run on a single RTX 4090 or a Mac with 32GB RAM once quantized, making it an appropriate model for local deployment and on-device use.\n- **Apache 2.0 License**: Open license allowing usage and modification for both commercial and non-commercial purposes.\n- **Context Window**: We recommend setting the context window to **40k**. We converted the original weights to gguf with this requirement. Theoretically, an even larger 128k context window is supported but untested.\n- **Tokenizer**: Utilizes a Tekken tokenizer with a 131k vocabulary size.\n\n## Benchmarks Results\n\nPlease see the [original model card](https://huggingface.co/mistralai/Magistral-Small-2506#benchmark-results) for benchmarks results.\n\n## Usage\n\nWe recommend to use **Magistral-Small-2506_gguf** with [llama.ccp](https://github.com/ggml-org/llama.cpp). Follow the install or build instructions to get started.\n\n\n**`Magistral-Small-2506_gguf` does not support function calling.**\n\nIn the rest of this usage guide, we assume you have the `llama-cli` and `llama-server` binaries available.\n\n### Download the model\n\nDownload the weights from the huggingface hub using the `huggingface-cli`:\n\n```sh\npip install -U \"huggingface_hub[cli]\"\n\nhuggingface-cli download \\\n\"mistralai/Magistral-Small-2506_gguf\" \\\n--local-dir \"mistralai/Magistral-Small-2506_gguf/\"\n```\n\n### llama-cli\n\nYou can interact with the model using the `llama-cli`'s llama.ccp tool. Make sure to add `--jinja` to use our tokenizer.\nIt uses the default system prompt for Magistral. \n\nThe default system prompt is in English, but you can customize it if you want by passing the `-sys \"your_system_prompt\"` argument to `llama-cli`.\n\nBy default, the context size of llama.ccp is 4096, but you can increase it to 40,960. We also recommend to set the temperature to `0.7` and the top_p to `0.95`.\n\n```bash\nllama-cli --jinja \\\n-m mistralai/Magistral-Small-2506_gguf/Magistral-Small-2506_Q8_0.gguf \\\n--ctx-size 40960 \\\n--temp 0.7 \\\n--top_p 0.95\n# -sys \"your_system_prompt\" \\\n```\n\nNow you can pass to the model the [prompt examples](#prompt-examples) or your own prompts !\n\n### llama-server\n\nYou can also use the `llama-server` to run the model as a server. Make sure to add `--jinja` to use our tokenizer and increase the context size to 40,960.\n\nWe also recommend to set the temperature to `0.7` and the top_p to `0.95`.\n\n\n```bash\nllama-server --jinja \\\n-m mistralai/Magistral-Small-2506_gguf/Magistral-Small-2506_Q8_0.gguf \\\n--ctx-size 40960\n```\n\n\nNow you can interact with the model directly where it is served in the browser, via curl or by using the OpenAI client.\n\n```python\nfrom huggingface_hub import hf_hub_download\nimport openai\n\nclient = openai.OpenAI(\n    base_url=\"http://<your-url>:8080/v1\",\n    api_key=\"not-needed\",\n)\n\ndef load_system_prompt(repo_id: str, filename: str) -> str:\n    file_path = hf_hub_download(repo_id=repo_id, filename=filename)\n    with open(file_path, \"r\") as file:\n        system_prompt = file.read()\n    return system_prompt\n\nSYSTEM_PROMPT = load_system_prompt(\"mistralai/Magistral-Small-2506_gguf\", \"SYSTEM_PROMPT.txt\")\n\ncompletion = client.chat.completions.create(\n  model=\"Magistral-Small-2506_Q8_0.gguf\",\n  messages=[\n\t# The following line is not required if you use the default system prompt.\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\"role\": \"user\", \"content\": \"How many 'r' are in strawberry?\"}\n  ],\n  temperature=0.7,\n  top_p=0.95,\n  stream=True\n)\n\nprint(\"client: Start streaming chat completions...\")\nprinted_content = False\n\nfor chunk in completion:\n  content = None\n  if hasattr(chunk.choices[0].delta, \"content\"):\n    content = chunk.choices[0].delta.content\n\n  if content is not None:\n    if not printed_content:\n        printed_content = True\n        print(\"\\ncontent:\", end=\"\", flush=True)\n    # Extract and print the content\n    print(content, end=\"\", flush=True)\n```\n\nUse the [prompt examples](#prompt-examples) or your own prompts !\n\n## Prompt Examples\n\nHere is a list of questions to help you test the model.\n\n1. `How many \"r\" are in strawberry?`\n\t\n\tThe answer is `3`.\n\n2. `John is one of 4 children. The first sister is 4 years old. Next year, the second sister will be twice as old as the first sister. The third sister is two years older than the second sister. The third sister is half the age of her older brother. How old is John?`\n\n\tThe answer is `22`.\n\n3. `9.11 and 9.8, which is greater?`\n\t\n\tThe answer is `9.8`.\n",
+  "cardDataParsed": {
+    "language": [
+      "en",
+      "fr",
+      "de",
+      "es",
+      "pt",
+      "it",
+      "ja",
+      "ko",
+      "ru",
+      "zh",
+      "ar",
+      "fa",
+      "id",
+      "ms",
+      "ne",
+      "pl",
+      "ro",
+      "sr",
+      "sv",
+      "tr",
+      "uk",
+      "vi",
+      "hi",
+      "bn"
+    ],
+    "license": "apache-2.0",
+    "library_name": "llama.ccp",
+    "inference": false,
+    "base_model": [
+      "mistralai/Magistral-Small-2506"
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

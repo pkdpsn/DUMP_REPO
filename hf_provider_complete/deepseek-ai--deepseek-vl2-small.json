@@ -1,0 +1,148 @@
+{
+  "modelId": "deepseek-ai/deepseek-vl2-small",
+  "author": "deepseek-ai",
+  "sha": "6033e16432a1d771cf9fe4a6f894ff5e5e1459af",
+  "lastModified": "2024-12-18 08:17:59+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "deepseek_vl_v2",
+    "image-text-to-text",
+    "conversational",
+    "arxiv:2412.10302",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 181,
+  "downloads": 6144,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "deepseek",
+    "license_link": "https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-MODEL",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": null
+  },
+  "config": {
+    "model_type": "deepseek_vl_v2",
+    "tokenizer_config": {
+      "bos_token": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+      "chat_template": "{%- set found_item = false -%}\n{%- for message in messages -%}\n    {%- if message['role'] == 'system' -%}\n        {%- set found_item = true -%}\n    {%- endif -%}\n{%- endfor -%}\n{%- if not found_item -%}\n{{'You are an AI programming assistant, utilizing the Deepseek Coder model, developed by Deepseek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.\\n'}}\n{%- endif %}\n{%- for message in messages %}\n    {%- if message['role'] == 'system' %}\n{{ message['content'] }}\n    {%- else %}\n        {%- if message['role'] == 'user' %}\n{{'### Instruction:\\n' + message['content'] + '\\n'}}\n        {%- else %}\n{{'### Response:\\n' + message['content'] + '\\n<|EOT|>\\n'}}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{{'### Response:\\n'}}\n",
+      "eos_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+      "pad_token": "<\uff5c\u2581pad\u2581\uff5c>",
+      "unk_token": null,
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 5791,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2073,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-000004.safetensors",
+      "size": 8591541424,
+      "lfs": {
+        "size": 8591541424,
+        "sha256": "1bff387143793c7786707473eae522e4f0a24ae41d29d86532d0b5b9d3e5cab7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-000004.safetensors",
+      "size": 8590731304,
+      "lfs": {
+        "size": 8590731304,
+        "sha256": "7693542b1ba539e0f12db0c25210bdaf7aaeb298f1663be7142bd41316663842",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-000004.safetensors",
+      "size": 8591771352,
+      "lfs": {
+        "size": 8591771352,
+        "sha256": "c9a0eab9f1918617e991346617ca9222bc928218f418577384004b6dadd5ed25",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-000004.safetensors",
+      "size": 6523397144,
+      "lfs": {
+        "size": 6523397144,
+        "sha256": "20a550172ad5761a9a6bad8543968ea421f2963f33d5d4a2822cfeca1b6542fd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 553329,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 1226,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 799,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4610029,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 3467,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: deepseek\nlicense_link: https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-MODEL\npipeline_tag: image-text-to-text\nlibrary_name: transformers\n---\n\n## 1. Introduction\n\nIntroducing DeepSeek-VL2, an advanced series of large Mixture-of-Experts (MoE) Vision-Language Models that significantly improves upon its predecessor, DeepSeek-VL. DeepSeek-VL2 demonstrates superior capabilities across various tasks, including but not limited to visual question answering, optical character recognition,  document/table/chart understanding, and visual grounding. Our model series is composed of three variants: DeepSeek-VL2-Tiny, DeepSeek-VL2-Small and DeepSeek-VL2, with 1.0B, 2.8B and 4.5B activated parameters respectively.\nDeepSeek-VL2 achieves competitive or state-of-the-art performance with similar or fewer activated parameters compared to existing open-source dense and MoE-based models.\n\n\n[DeepSeek-VL2: Mixture-of-Experts Vision-Language Models for Advanced Multimodal Understanding](https://arxiv.org/abs/2412.10302)\n\n[**Github Repository**](https://github.com/deepseek-ai/DeepSeek-VL2)\n\n\nZhiyu Wu*, Xiaokang Chen*, Zizheng Pan*, Xingchao Liu*, Wen Liu**, Damai Dai, Huazuo Gao, Yiyang Ma, Chengyue Wu, Bingxuan Wang, Zhenda Xie, Yu Wu, Kai Hu, Jiawei Wang, Yaofeng Sun, Yukun Li, Yishi Piao, Kang Guan, Aixin Liu, Xin Xie, Yuxiang You, Kai Dong, Xingkai Yu, Haowei Zhang, Liang Zhao, Yisong Wang, Chong Ruan*** (* Equal Contribution, ** Project Lead, *** Corresponding author)\n\n![](https://github.com/deepseek-ai/DeepSeek-VL2/tree/main/images/vl2_teaser.jpeg)\n\n\n### 2. Model Summary\n\nDeepSeek-VL2-small is built on DeepSeekMoE-16B.\n\n\n## 3. Quick Start\n\n### Installation\n\nOn the basis of `Python >= 3.8` environment, install the necessary dependencies by running the following command:\n\n```shell\npip install -e .\n```\n\n### Notifications\n1. We suggest to use a temperature T <= 0.7 when sampling. We observe a larger temperature decreases the generation quality.\n2. To keep the number of tokens managable in the context window, we apply dynamic tiling strategy to <=2 images. When there are >=3 images, we directly pad the images to 384*384 as inputs without tiling.\n3. The main difference between DeepSeek-VL2-Tiny, DeepSeek-VL2-Small and DeepSeek-VL2 is the base LLM.\n\n### Simple Inference Example\n\n```python\nimport torch\nfrom transformers import AutoModelForCausalLM\n\nfrom deepseek_vl.models import DeepseekVLV2Processor, DeepseekVLV2ForCausalLM\nfrom deepseek_vl.utils.io import load_pil_images\n\n\n# specify the path to the model\nmodel_path = \"deepseek-ai/deepseek-vl2-small\"\nvl_chat_processor: DeepseekVLV2Processor = DeepseekVLV2Processor.from_pretrained(model_path)\ntokenizer = vl_chat_processor.tokenizer\n\nvl_gpt: DeepseekVLV2ForCausalLM = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)\nvl_gpt = vl_gpt.to(torch.bfloat16).cuda().eval()\n\n## single image conversation example\nconversation = [\n    {\n        \"role\": \"<|User|>\",\n        \"content\": \"<image>\\n<|ref|>The giraffe at the back.<|/ref|>.\",\n        \"images\": [\"./images/visual_grounding.jpeg\"],\n    },\n    {\"role\": \"<|Assistant|>\", \"content\": \"\"},\n]\n\n## multiple images (or in-context learning) conversation example\n# conversation = [\n#     {\n#         \"role\": \"User\",\n#         \"content\": \"<image_placeholder>A dog wearing nothing in the foreground, \"\n#                    \"<image_placeholder>a dog wearing a santa hat, \"\n#                    \"<image_placeholder>a dog wearing a wizard outfit, and \"\n#                    \"<image_placeholder>what's the dog wearing?\",\n#         \"images\": [\n#             \"images/dog_a.png\",\n#             \"images/dog_b.png\",\n#             \"images/dog_c.png\",\n#             \"images/dog_d.png\",\n#         ],\n#     },\n#     {\"role\": \"Assistant\", \"content\": \"\"}\n# ]\n\n# load images and prepare for inputs\npil_images = load_pil_images(conversation)\nprepare_inputs = vl_chat_processor(\n    conversations=conversation,\n    images=pil_images,\n    force_batchify=True,\n    system_prompt=\"\"\n).to(vl_gpt.device)\n\n# run image encoder to get the image embeddings\ninputs_embeds = vl_gpt.prepare_inputs_embeds(**prepare_inputs)\n\n# run the model to get the response\noutputs = vl_gpt.language_model.generate(\n    inputs_embeds=inputs_embeds,\n    attention_mask=prepare_inputs.attention_mask,\n    pad_token_id=tokenizer.eos_token_id,\n    bos_token_id=tokenizer.bos_token_id,\n    eos_token_id=tokenizer.eos_token_id,\n    max_new_tokens=512,\n    do_sample=False,\n    use_cache=True\n)\n\nanswer = tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True)\nprint(f\"{prepare_inputs['sft_format'][0]}\", answer)\n```\n\n### Gradio Demo (TODO)\n\n\n## 4. License\n\nThis code repository is licensed under [MIT License](./LICENSE-CODE). The use of DeepSeek-VL2 models is subject to [DeepSeek Model License](./LICENSE-MODEL). DeepSeek-VL2 series supports commercial use.\n\n## 5. Citation\n\n```\n@misc{wu2024deepseekvl2mixtureofexpertsvisionlanguagemodels,\n      title={DeepSeek-VL2: Mixture-of-Experts Vision-Language Models for Advanced Multimodal Understanding}, \n      author={Zhiyu Wu and Xiaokang Chen and Zizheng Pan and Xingchao Liu and Wen Liu and Damai Dai and Huazuo Gao and Yiyang Ma and Chengyue Wu and Bingxuan Wang and Zhenda Xie and Yu Wu and Kai Hu and Jiawei Wang and Yaofeng Sun and Yukun Li and Yishi Piao and Kang Guan and Aixin Liu and Xin Xie and Yuxiang You and Kai Dong and Xingkai Yu and Haowei Zhang and Liang Zhao and Yisong Wang and Chong Ruan},\n      year={2024},\n      eprint={2412.10302},\n      archivePrefix={arXiv},\n      primaryClass={cs.CV},\n      url={https://arxiv.org/abs/2412.10302}, \n}\n```\n\n## 6. Contact\n\nIf you have any questions, please raise an issue or contact us at [service@deepseek.com](mailto:service@deepseek.com).",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "deepseek",
+    "license_link": "https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-MODEL",
+    "pipeline_tag": "image-text-to-text",
+    "library_name": "transformers",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": null
+  }
+}

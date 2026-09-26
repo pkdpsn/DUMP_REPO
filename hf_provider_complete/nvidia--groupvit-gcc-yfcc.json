@@ -1,0 +1,162 @@
+{
+  "modelId": "nvidia/groupvit-gcc-yfcc",
+  "author": "nvidia",
+  "sha": "751f6d9a37c9e9e42ba527cc99d3c21b137bd2a3",
+  "lastModified": "2022-09-26 13:54:38+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "groupvit",
+    "feature-extraction",
+    "vision",
+    "arxiv:2202.11094",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "feature-extraction",
+  "library_name": "transformers",
+  "likes": 6,
+  "downloads": 14907,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "vision"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "GroupViTModel"
+    ],
+    "model_type": "groupvit",
+    "tokenizer_config": {
+      "bos_token": {
+        "__type": "AddedToken",
+        "content": "<|startoftext|>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "eos_token": {
+        "__type": "AddedToken",
+        "content": "<|endoftext|>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      },
+      "pad_token": "<|endoftext|>",
+      "unk_token": {
+        "__type": "AddedToken",
+        "content": "<|endoftext|>",
+        "lstrip": false,
+        "normalized": true,
+        "rstrip": false,
+        "single_word": false
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1173,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3566,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 4642,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 524657,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 380,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 223137427,
+      "lfs": {
+        "size": 223137427,
+        "sha256": "da21c48494896296493bf77c56589c0143f235234026fc6645bb7475ec788664",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 472,
+      "lfs": null
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 223577920,
+      "lfs": {
+        "size": 223577920,
+        "sha256": "63f08d517654420b5c6b599aae6cb0696c7284db7a0ceb463e7e33bd44990422",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 2224208,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 997,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 862328,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\ntags:\n- vision\n---\n\n# Model Card: GroupViT\n\nThis checkpoint is uploaded by Jiarui Xu. \n\n## Model Details\n\nThe GroupViT model was proposed in [GroupViT: Semantic Segmentation Emerges from Text Supervision](https://arxiv.org/abs/2202.11094) by Jiarui Xu, Shalini De Mello, Sifei Liu, Wonmin Byeon, Thomas Breuel, Jan Kautz, Xiaolong Wang.\nInspired by [CLIP](clip), GroupViT is a vision-language model that can perform zero-shot semantic segmentation on any given vocabulary categories.\n\n### Model Date\n\nJune 2022\n\n### Abstract\n\nGrouping and recognition are important components of visual scene understanding, e.g., for object detection and semantic segmentation. With end-to-end deep learning systems, grouping of image regions usually happens implicitly via top-down supervision from pixel-level recognition labels. Instead, in this paper, we propose to bring back the grouping mechanism into deep networks, which allows semantic segments to emerge automatically with only text supervision. We propose a hierarchical Grouping Vision Transformer (GroupViT), which goes beyond the regular grid structure representation and learns to group image regions into progressively larger arbitrary-shaped segments. We train GroupViT jointly with a text encoder on a large-scale image-text dataset via contrastive losses. With only text supervision and without any pixel-level annotations, GroupViT learns to group together semantic regions and successfully transfers to the task of semantic segmentation in a zero-shot manner, i.e., without any further fine-tuning. It achieves a zero-shot accuracy of 52.3% mIoU on the PASCAL VOC 2012 and 22.4% mIoU on PASCAL Context datasets, and performs competitively to state-of-the-art transfer-learning methods requiring greater levels of supervision.\n\n\n### Documents\n\n- [GroupViT Paper](https://arxiv.org/abs/2202.11094)\n\n\n### Use with Transformers\n\n\n```python\nfrom PIL import Image\nimport requests\nfrom transformers import AutoProcessor, GroupViTModel\n\nmodel = GroupViTModel.from_pretrained(\"nvidia/groupvit-gcc-yfcc\")\nprocessor = AutoProcessor.from_pretrained(\"nvidia/groupvit-gcc-yfcc\")\n\nurl = \"http://images.cocodataset.org/val2017/000000039769.jpg\"\nimage = Image.open(requests.get(url, stream=True).raw)\n\ninputs = processor(text=[\"a photo of a cat\", \"a photo of a dog\"], images=image, return_tensors=\"pt\", padding=True)\n\noutputs = model(**inputs)\nlogits_per_image = outputs.logits_per_image  # this is the image-text similarity score\nprobs = logits_per_image.softmax(dim=1)  # we can take the softmax to get the label probabilities\n```\n\n## Data\n\nThe model was trained on publicly available image-caption data. This was done through a combination of crawling a handful of websites and using commonly-used pre-existing image datasets such as [YFCC100M](http://projects.dfki.uni-kl.de/yfcc100m/). A large portion of the data comes from our crawling of the internet. This means that the data is more representative of people and societies most connected to the internet which tend to skew towards more developed nations, and younger, male users.\n\n\nFor more code examples, we refer to the [documentation](https://huggingface.co/transformers/model_doc/groupvit.html#).\n\n### BibTeX entry and citation info\n\n```bibtex\n@article{xu2022groupvit,\n  author    = {Xu, Jiarui and De Mello, Shalini and Liu, Sifei and Byeon, Wonmin and Breuel, Thomas and Kautz, Jan and Wang, Xiaolong},\n  title     = {GroupViT: Semantic Segmentation Emerges from Text Supervision},\n  journal   = {arXiv preprint arXiv:2202.11094},\n  year      = {2022},\n}\n```\n",
+  "cardDataParsed": {
+    "tags": [
+      "vision"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": null,
+    "pipeline_tag": "feature-extraction",
+    "processor": "AutoProcessor"
+  }
+}

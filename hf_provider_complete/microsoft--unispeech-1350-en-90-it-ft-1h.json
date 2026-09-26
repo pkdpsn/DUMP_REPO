@@ -1,0 +1,147 @@
+{
+  "modelId": "microsoft/unispeech-1350-en-90-it-ft-1h",
+  "author": "microsoft",
+  "sha": "3342ea75248472e76a34c5a9d7bad0eb9a9eab82",
+  "lastModified": "2021-12-19 13:19:29+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "unispeech",
+    "automatic-speech-recognition",
+    "audio",
+    "it",
+    "dataset:common_voice",
+    "arxiv:2101.07597",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "automatic-speech-recognition",
+  "library_name": "transformers",
+  "likes": 0,
+  "downloads": 88,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "common_voice"
+    ],
+    "eval_results": null,
+    "language": [
+      "it"
+    ],
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "audio",
+      "automatic-speech-recognition"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "UniSpeechForCTC"
+    ],
+    "model_type": "unispeech",
+    "tokenizer_config": {
+      "unk_token": "<unk>",
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6055,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1845,
+      "lfs": null
+    },
+    {
+      "rfilename": "phonesMatches_reduced.json",
+      "size": 793,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 254,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 1262168511,
+      "lfs": {
+        "size": 1262168511,
+        "sha256": "cdf09649b51dca05a020d26ec7065fba1b045423739ee13ac58dda26e42b3c2e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "run_eval.py",
+      "size": 1590,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 85,
+      "lfs": null
+    },
+    {
+      "rfilename": "testSeqs_uniform_new_version.text",
+      "size": 63947,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 275,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 666,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- it\ndatasets:\n- common_voice\ntags:\n- audio\n- automatic-speech-recognition\n---\n\n# UniSpeech-Large-plus ITALIAN\n\n[Microsoft's UniSpeech](https://www.microsoft.com/en-us/research/publication/unispeech-unified-speech-representation-learning-with-labeled-and-unlabeled-data/)\n\nThe large model pretrained on 16kHz sampled speech audio and phonetic labels and consequently fine-tuned on 1h of Italian phonemes. \nWhen using the model make sure that your speech input is also sampled at 16kHz and your text in converted into a sequence of phonemes. \n\n[Paper: UniSpeech: Unified Speech Representation Learning\nwith Labeled and Unlabeled Data](https://arxiv.org/abs/2101.07597)\n\nAuthors: Chengyi Wang, Yu Wu, Yao Qian, Kenichi Kumatani, Shujie Liu, Furu Wei, Michael Zeng, Xuedong Huang\n\n**Abstract**\n*In this paper, we propose a unified pre-training approach called UniSpeech to learn speech representations with both unlabeled and labeled data, in which supervised phonetic CTC learning and phonetically-aware contrastive self-supervised learning are conducted in a multi-task learning manner. The resultant representations can capture information more correlated with phonetic structures and improve the generalization across languages and domains. We evaluate the effectiveness of UniSpeech for cross-lingual representation learning on public CommonVoice corpus. The results show that UniSpeech outperforms self-supervised pretraining and supervised transfer learning for speech recognition by a maximum of 13.4% and 17.8% relative phone error rate reductions respectively (averaged over all testing languages). The transferability of UniSpeech is also demonstrated on a domain-shift speech recognition task, i.e., a relative word error rate reduction of 6% against the previous approach.*\n\nThe original model can be found under https://github.com/microsoft/UniSpeech/tree/main/UniSpeech.\n\n# Usage\n\nThis is an speech model that has been fine-tuned on phoneme classification.\n\n## Inference\n\n```python\nimport torch\nfrom datasets import load_dataset\nfrom transformers import AutoModelForCTC, AutoProcessor\nimport torchaudio.functional as F\n\nmodel_id = \"microsoft/unispeech-1350-en-90-it-ft-1h\"\n\nsample = next(iter(load_dataset(\"common_voice\", \"it\", split=\"test\", streaming=True)))\nresampled_audio = F.resample(torch.tensor(sample[\"audio\"][\"array\"]), 48_000, 16_000).numpy()\n\nmodel = AutoModelForCTC.from_pretrained(model_id)\nprocessor = AutoProcessor.from_pretrained(model_id)\n\ninput_values = processor(resampled_audio, return_tensors=\"pt\").input_values\n\nwith torch.no_grad():\n    logits = model(input_values).logits\n\nprediction_ids = torch.argmax(logits, dim=-1)\ntranscription = processor.batch_decode(prediction_ids)\n# => 'm \u026a a n n o f a t\u02d0 o \u028a n o f f \u025b r t a k e n o n p o t e v o p r \u0254 p r i o r i f j \u028a t a r e'\n# for \"Mi hanno fatto un\\'offerta che non potevo proprio rifiutare.\"\n```\n\n## Evaluation\n\n```python\nfrom datasets import load_dataset, load_metric                                                 \nimport datasets                                                                                \nimport torch\nfrom transformers import AutoModelForCTC, AutoProcessor\n\nmodel_id = \"microsoft/unispeech-1350-en-90-it-ft-1h\"\n                                                                                                                                                                                              \nds = load_dataset(\"mozilla-foundation/common_voice_3_0\", \"it\", split=\"train+validation+test+other\")\nwer = load_metric(\"wer\") \n\nmodel = AutoModelForCTC.from_pretrained(model_id)\nprocessor = AutoProcessor.from_pretrained(model_id)\n                                               \n# taken from\n# https://github.com/microsoft/UniSpeech/blob/main/UniSpeech/examples/unispeech/data/it/phonesMatches_reduced.json\n\nwith open(\"./testSeqs_uniform_new_version.text\", \"r\") as f:\n    lines = f.readlines()\n\n                                                                                               \n# retrieve ids model is evaluated on\nids = [x.split(\"\\t\")[0] for x in lines]\n                                               \n                                                                                                                                                                                              \nds = ds.filter(lambda p: p.split(\"/\")[-1].split(\".\")[0] in ids, input_columns=[\"path\"])                 \n\nds = ds.cast_column(\"audio\", datasets.Audio(sampling_rate=16_000))\n                                                                                               \n\ndef decode(batch):\n    input_values = processor(batch[\"audio\"][\"array\"], return_tensors=\"pt\", sampling_rate=16_000)\n    logits = model(input_values).logits\n                                                                                               \n    pred_ids = torch.argmax(logits, axis=-1)                                                   \n\n    batch[\"prediction\"] = processor.batch_decode(pred_ids)\n    batch[\"target\"] = processor.tokenizer.phonemize(batch[\"sentence\"])   \n\n    return batch  \n                                                                                                                                                                                              \n                                               \nout = ds.map(decode, remove_columns=ds.column_names)                                           \nper = wer.compute(predictions=out[\"prediction\"], references=out[\"target\"])                 \n\nprint(\"per\", per)  \n# -> should give per 0.06685252146070828 - compare to results below\n```\n\n# Contribution\n\nThe model was contributed by [cywang](https://huggingface.co/cywang) and [patrickvonplaten](https://huggingface.co/patrickvonplaten).\n\n# License\n\nThe official license can be found [here](https://github.com/microsoft/UniSpeech/blob/main/LICENSE)\n\n# Official Results\n\nSee *UniSpeeech-L^{+}* - *it*:\n\n![design](https://raw.githubusercontent.com/patrickvonplaten/scientific_images/master/unispeech_results.png)",
+  "cardDataParsed": {
+    "language": [
+      "it"
+    ],
+    "datasets": [
+      "common_voice"
+    ],
+    "tags": [
+      "audio",
+      "automatic-speech-recognition"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCTC",
+    "custom_class": null,
+    "pipeline_tag": "automatic-speech-recognition",
+    "processor": "AutoProcessor"
+  }
+}

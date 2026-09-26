@@ -1,0 +1,189 @@
+{
+  "modelId": "Qwen/Qwen3-VL-30B-A3B-Thinking-FP8",
+  "author": "Qwen",
+  "sha": "cf3058e421b60f13f81b16c0e3665f8554c03d6a",
+  "lastModified": "2025-11-26 13:18:07+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_vl_moe",
+    "image-text-to-text",
+    "conversational",
+    "arxiv:2505.09388",
+    "arxiv:2502.13923",
+    "arxiv:2409.12191",
+    "arxiv:2308.12966",
+    "base_model:Qwen/Qwen3-VL-30B-A3B-Thinking",
+    "base_model:quantized:Qwen/Qwen3-VL-30B-A3B-Thinking",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "fp8",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 58,
+  "downloads": 11606,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3-VL-30B-A3B-Thinking"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": null,
+    "base_model_relation": "quantized"
+  },
+  "config": {
+    "architectures": [
+      "Qwen3VLMoeForConditionalGeneration"
+    ],
+    "model_type": "qwen3_vl_moe",
+    "quantization_config": {
+      "quant_method": "fp8"
+    },
+    "processor_config": {
+      "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- else %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                <|vision_start|><|image_pad|><|vision_end|>\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                <|vision_start|><|video_pad|><|vision_end|>\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{%- endmacro %}\n{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- render_content(messages[0].content, false) + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + render_content(messages[0].content, false) + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false) %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, True) %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n<think>\\n' }}\n{%- endif %}\n"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- else %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                <|vision_start|><|image_pad|><|vision_end|>\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                <|vision_start|><|video_pad|><|vision_end|>\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{%- endmacro %}\n{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- render_content(messages[0].content, false) + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + render_content(messages[0].content, false) + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false) %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, True) %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n<think>\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 10142,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 5410,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 14458,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 242,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 10597785920,
+      "lfs": {
+        "size": 10597785920,
+        "sha256": "9c96daf32a06e0fffd68caa10030675b2655b9c08abeab92ae3c8fa6d51ab2a3",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 10600204240,
+      "lfs": {
+        "size": 10600204240,
+        "sha256": "bab421cdf488c7d5f291a5d45d7bc30bfaee50ba9d3cedbad50c6fc50ad7ed2a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 10728745128,
+      "lfs": {
+        "size": 10728745128,
+        "sha256": "c0b493f76e7e75aab74b78690fd1665fe3d12111e8c111cd0d6e34179753b013",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 325219632,
+      "lfs": {
+        "size": 325219632,
+        "sha256": "a5e525b6617aecd282f267080eb84f51129a6dca34ad4487deecdf631a8a1185",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 111705,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 336,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 10179867,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 10781,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 331,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 4957462,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\npipeline_tag: image-text-to-text\nlibrary_name: transformers\nbase_model:\n- Qwen/Qwen3-VL-30B-A3B-Thinking\nbase_model_relation: quantized\n---\n<a href=\"https://chat.qwenlm.ai/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/%F0%9F%92%9C%EF%B8%8F%20Qwen%20Chat%20-536af5\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n\n# Qwen3-VL-30B-A3B-Thinking-FP8\n\n> This repository contains an FP8 quantized version of the [Qwen3-VL-30B-A3B-Thinking](https://huggingface.co/Qwen/Qwen3-VL-30B-A3B-Thinking) model. The quantization method is fine-grained fp8 quantization with block size of 128, and its performance metrics are nearly identical to those of the original BF16 model. Enjoy!\n\n\nMeet Qwen3-VL \u2014 the most powerful vision-language model in the Qwen series to date.\n\nThis generation delivers comprehensive upgrades across the board: superior text understanding & generation, deeper visual perception & reasoning, extended context length, enhanced spatial and video dynamics comprehension, and stronger agent interaction capabilities.\n\nAvailable in Dense and MoE architectures that scale from edge to cloud, with Instruct and reasoning\u2011enhanced Thinking editions for flexible, on\u2011demand deployment.\n\n\n#### Key Enhancements:\n\n* **Visual Agent**: Operates PC/mobile GUIs\u2014recognizes elements, understands functions, invokes tools, completes tasks.\n\n* **Visual Coding Boost**: Generates Draw.io/HTML/CSS/JS from images/videos.\n\n* **Advanced Spatial Perception**: Judges object positions, viewpoints, and occlusions; provides stronger 2D grounding and enables 3D grounding for spatial reasoning and embodied AI.\n\n* **Long Context & Video Understanding**: Native 256K context, expandable to 1M; handles books and hours-long video with full recall and second-level indexing.\n\n* **Enhanced Multimodal Reasoning**: Excels in STEM/Math\u2014causal analysis and logical, evidence-based answers.\n\n* **Upgraded Visual Recognition**: Broader, higher-quality pretraining is able to \u201crecognize everything\u201d\u2014celebrities, anime, products, landmarks, flora/fauna, etc.\n\n* **Expanded OCR**: Supports 32 languages (up from 19); robust in low light, blur, and tilt; better with rare/ancient characters and jargon; improved long-document structure parsing.\n\n* **Text Understanding on par with pure LLMs**: Seamless text\u2013vision fusion for lossless, unified comprehension.\n\n\n#### Model Architecture Updates:\n\n<p align=\"center\">\n    <img src=\"https://qianwen-res.oss-accelerate.aliyuncs.com/Qwen3-VL/qwen3vl_arc.jpg\" width=\"80%\"/>\n<p>\n\n\n1. **Interleaved-MRoPE**: Full\u2011frequency allocation over time, width, and height via robust positional embeddings, enhancing long\u2011horizon video reasoning.\n\n2. **DeepStack**: Fuses multi\u2011level ViT features to capture fine\u2011grained details and sharpen image\u2013text alignment.\n\n3. **Text\u2013Timestamp Alignment:** Moves beyond T\u2011RoPE to precise, timestamp\u2011grounded event localization for stronger video temporal modeling.\n\n\nThis is the weight repository for Qwen3-VL-30B-A3B-Thinking-FP8.\n\n\n---\n\n## Model Performance\n\n**Multimodal performance**\n\n![](https://qianwen-res.oss-accelerate.aliyuncs.com/Qwen3-VL/table_thinking_vl_30A3.jpg)\n\n**Pure text performance**\n![](https://qianwen-res.oss-accelerate.aliyuncs.com/Qwen3-VL/table_thinking_text_30A3.jpg)\n\n\n## Quickstart\n\nCurrently, \ud83e\udd17 Transformers does not support loading these weights directly. Stay tuned!\n\nWe recommend deploying the model using vLLM or SGLang, with example launch commands provided below.  For details on the runtime environment and deployment, please refer to this [link](https://github.com/QwenLM/Qwen3-VL?tab=readme-ov-file#deployment). \n\n### vLLM Inference\n\nHere we provide a code snippet demonstrating how to use vLLM to run inference with Qwen3-VL locally. For more details on efficient deployment with vLLM, please refer to the [community deployment guide](https://docs.vllm.ai/projects/recipes/en/latest/Qwen/Qwen3-VL.html).\n\n```python\n# -*- coding: utf-8 -*-\nimport torch\nfrom qwen_vl_utils import process_vision_info\nfrom transformers import AutoProcessor\nfrom vllm import LLM, SamplingParams\n\nimport os\nos.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'\n\ndef prepare_inputs_for_vllm(messages, processor):\n    text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)\n    # qwen_vl_utils 0.0.14+ reqired\n    image_inputs, video_inputs, video_kwargs = process_vision_info(\n        messages,\n        image_patch_size=processor.image_processor.patch_size,\n        return_video_kwargs=True,\n        return_video_metadata=True\n    )\n    print(f\"video_kwargs: {video_kwargs}\")\n\n    mm_data = {}\n    if image_inputs is not None:\n        mm_data['image'] = image_inputs\n    if video_inputs is not None:\n        mm_data['video'] = video_inputs\n\n    return {\n        'prompt': text,\n        'multi_modal_data': mm_data,\n        'mm_processor_kwargs': video_kwargs\n    }\n\n\nif __name__ == '__main__':\n    # messages = [\n    #     {\n    #         \"role\": \"user\",\n    #         \"content\": [\n    #             {\n    #                 \"type\": \"video\",\n    #                 \"video\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen2-VL/space_woaudio.mp4\",\n    #             },\n    #             {\"type\": \"text\", \"text\": \"\u8fd9\u6bb5\u89c6\u9891\u6709\u591a\u957f\"},\n    #         ],\n    #     }\n    # ]\n\n    messages = [\n        {\n            \"role\": \"user\",\n            \"content\": [\n              {\n                  \"type\": \"image\",\n                  \"image\": \"https://ofasys-multimodal-wlcb-3-toshanghai.oss-accelerate.aliyuncs.com/wpf272043/keepme/image/receipt.png\",\n              },\n              {\"type\": \"text\", \"text\": \"Read all the text in the image.\"},\n            ],\n        }\n    ]\n\n    # TODO: change to your own checkpoint path\n    checkpoint_path = \"Qwen/Qwen3-VL-30B-A3B-Thinking-FP8\"\n    processor = AutoProcessor.from_pretrained(checkpoint_path)\n    inputs = [prepare_inputs_for_vllm(message, processor) for message in [messages]]\n\n    llm = LLM(\n        model=checkpoint_path,\n        trust_remote_code=True,\n        gpu_memory_utilization=0.70,\n        enforce_eager=False,\n        tensor_parallel_size=torch.cuda.device_count(),\n        seed=0\n    )\n\n    sampling_params = SamplingParams(\n        temperature=0,\n        max_tokens=1024,\n        top_k=-1,\n        stop_token_ids=[],\n    )\n\n    for i, input_ in enumerate(inputs):\n        print()\n        print('=' * 40)\n        print(f\"Inputs[{i}]: {input_['prompt']=!r}\")\n    print('\\n' + '>' * 40)\n\n    outputs = llm.generate(inputs, sampling_params=sampling_params)\n    for i, output in enumerate(outputs):\n        generated_text = output.outputs[0].text\n        print()\n        print('=' * 40)\n        print(f\"Generated text: {generated_text!r}\")\n```\n\n###  SGLang Inference\n\nHere we provide a code snippet demonstrating how to use SGLang to run inference with Qwen3-VL locally.\n\n```python\nimport time\nfrom PIL import Image\nfrom sglang import Engine\nfrom qwen_vl_utils import process_vision_info\nfrom transformers import AutoProcessor, AutoConfig\n\nif __name__ == \"__main__\":\n    # TODO: change to your own checkpoint path\n    checkpoint_path = \"Qwen/Qwen3-VL-30B-A3B-Thinking-FP8\"\n    processor = AutoProcessor.from_pretrained(checkpoint_path)\n\n    messages = [\n        {\n            \"role\": \"user\",\n            \"content\": [\n              {\n                  \"type\": \"image\",\n                  \"image\": \"https://ofasys-multimodal-wlcb-3-toshanghai.oss-accelerate.aliyuncs.com/wpf272043/keepme/image/receipt.png\",\n              },\n              {\"type\": \"text\", \"text\": \"Read all the text in the image.\"},\n            ],\n        }\n    ]\n\n    text = processor.apply_chat_template(\n        messages,\n        tokenize=False,\n        add_generation_prompt=True\n    )\n\n    image_inputs, _ = process_vision_info(messages, image_patch_size=processor.image_processor.patch_size)\n\n    llm = Engine(\n        model_path=checkpoint_path,\n        enable_multimodal=True,\n        mem_fraction_static=0.8,\n        tp_size=torch.cuda.device_count(),\n        attention_backend=\"fa3\"\n    )\n\n    start = time.time()\n    sampling_params = {\"max_new_tokens\": 1024}\n    response = llm.generate(prompt=text, image_data=image_inputs, sampling_params=sampling_params)\n    print(f\"Response costs: {time.time() - start:.2f}s\")\n    print(f\"Generated text: {response['text']}\")\n```\n\n\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@misc{qwen3technicalreport,\n      title={Qwen3 Technical Report}, \n      author={Qwen Team},\n      year={2025},\n      eprint={2505.09388},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2505.09388}, \n}\n\n@article{Qwen2.5-VL,\n  title={Qwen2.5-VL Technical Report},\n  author={Bai, Shuai and Chen, Keqin and Liu, Xuejing and Wang, Jialin and Ge, Wenbin and Song, Sibo and Dang, Kai and Wang, Peng and Wang, Shijie and Tang, Jun and Zhong, Humen and Zhu, Yuanzhi and Yang, Mingkun and Li, Zhaohai and Wan, Jianqiang and Wang, Pengfei and Ding, Wei and Fu, Zheren and Xu, Yiheng and Ye, Jiabo and Zhang, Xi and Xie, Tianbao and Cheng, Zesen and Zhang, Hang and Yang, Zhibo and Xu, Haiyang and Lin, Junyang},\n  journal={arXiv preprint arXiv:2502.13923},\n  year={2025}\n}\n\n@article{Qwen2VL,\n  title={Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution},\n  author={Wang, Peng and Bai, Shuai and Tan, Sinan and Wang, Shijie and Fan, Zhihao and Bai, Jinze and Chen, Keqin and Liu, Xuejing and Wang, Jialin and Ge, Wenbin and Fan, Yang and Dang, Kai and Du, Mengfei and Ren, Xuancheng and Men, Rui and Liu, Dayiheng and Zhou, Chang and Zhou, Jingren and Lin, Junyang},\n  journal={arXiv preprint arXiv:2409.12191},\n  year={2024}\n}\n\n@article{Qwen-VL,\n  title={Qwen-VL: A Versatile Vision-Language Model for Understanding, Localization, Text Reading, and Beyond},\n  author={Bai, Jinze and Bai, Shuai and Yang, Shusheng and Wang, Shijie and Tan, Sinan and Wang, Peng and Lin, Junyang and Zhou, Chang and Zhou, Jingren},\n  journal={arXiv preprint arXiv:2308.12966},\n  year={2023}\n}\n```",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "pipeline_tag": "image-text-to-text",
+    "library_name": "transformers",
+    "base_model": [
+      "Qwen/Qwen3-VL-30B-A3B-Thinking"
+    ],
+    "base_model_relation": "quantized",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

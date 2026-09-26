@@ -1,0 +1,191 @@
+{
+  "modelId": "nvidia/Llama-3.1-Nemotron-Nano-8B-v1",
+  "author": "nvidia",
+  "sha": "54641c1611fcff44fa4865626462445e0a153fc7",
+  "lastModified": "2025-10-15 16:20:41+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "llama",
+    "text-generation",
+    "nvidia",
+    "llama-3",
+    "pytorch",
+    "conversational",
+    "en",
+    "arxiv:2505.00949",
+    "arxiv:2502.00203",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 224,
+  "downloads": 10100,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "LlamaForCausalLM"
+    ],
+    "model_type": "llama",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{%- if messages[0]['role'] == 'system' -%}{%- set system_message = messages[0]['content'] | trim -%}{%- set messages = messages[1:] -%}{%- else -%}{%- set system_message = '' -%}{%- endif -%}{%- if tools is not none -%}{{- '<|begin_of_text|><|start_header_id|>system<|end_header_id|>' + '\n\n' + system_message -}} {{- '\n\n' if system_message else '' -}} {{- '<AVAILABLE_TOOLS>[' -}} {% for t in tools %}{{- (t.function if t.function is defined else t) | tojson() -}}{{- ', ' if not loop.last else '' -}}{%- endfor -%} {{- ']</AVAILABLE_TOOLS>' -}} {{- '<|eot_id|>' -}}{%- else -%}{{- '<|begin_of_text|><|start_header_id|>system<|end_header_id|>' + '\n\n' + system_message + '<|eot_id|>' -}}{%- endif -%}{%- for message in messages -%}{%- if (message['role'] in ['user', 'tool']) != (loop.index0 % 2 == 0) -%}{{- raise_exception('Conversation roles must alternate between user/tool and assistant') -}}{%- elif message['role'] == 'user' -%}{{- '<|start_header_id|>user<|end_header_id|>' + '\n\n' + message['content'] | trim + '<|eot_id|>' -}}{%- elif message['role'] == 'tool' -%}{%- set tool_response = '<TOOL_RESPONSE>[' + message['content'] | trim + ']</TOOL_RESPONSE>' -%}{{- '<|start_header_id|>user<|end_header_id|>' + '\n\n' + tool_response + '<|eot_id|>' -}}{%- elif message['role'] == 'assistant' and message.get('tool_calls') is not none -%}{%- set tool_calls = message['tool_calls'] -%}{{- '<|start_header_id|>assistant<|end_header_id|>' + '\n\n' + '<TOOLCALL>[' -}}{%- for tool_call in tool_calls -%}{{ '{' + '\"name\": \"' + tool_call.function.name + '\", \"arguments\": ' + tool_call.function.arguments | tojson + '}' }}{%- if not loop.last -%}{{ ', ' }}{%- else -%}{{ ']</TOOLCALL>' + '<|eot_id|>' }}{%- endif -%}{%- endfor -%}{%- elif message['role'] == 'assistant' -%}{{- '<|start_header_id|>assistant<|end_header_id|>' + '\n\n' + message['content'] | trim + '<|eot_id|>' -}}{%- endif -%}{%- endfor -%}{%- if add_generation_prompt -%}{{ '<|start_header_id|>assistant<|end_header_id|>' + '\n\n' }}{%- endif -%}",
+      "eos_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 14970,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 204,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 933,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 2922,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 185,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00004.safetensors",
+      "size": 4976698672,
+      "lfs": {
+        "size": 4976698672,
+        "sha256": "f768d819cd1433b87a47fe01c7643550a8798a5aa43a245863be7220b43d9f58",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00004.safetensors",
+      "size": 4999802720,
+      "lfs": {
+        "size": 4999802720,
+        "sha256": "b50926b205aa861bac7b900a86ef083a7ef709cd6c6ad86f78f51996926455a8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00004.safetensors",
+      "size": 4915916176,
+      "lfs": {
+        "size": 4915916176,
+        "sha256": "bff287b9b6e6d61cdd7fc86c1f17ed33422f7d6371fcda2f004fce7ec09a8ee1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00004.safetensors",
+      "size": 1168138808,
+      "lfs": {
+        "size": 1168138808,
+        "sha256": "4355c64891f757e82a04b8091f94c0d47a30560ada0f322cf918e7287d989aca",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 23950,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 503,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 913,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 296,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17209920,
+      "lfs": {
+        "size": 17209920,
+        "sha256": "6b9e4e7fb171f92fd137b777cc2714bf87d11576700a1dcd7a399e7bbe39537b",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 52574,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- llama-3\n- pytorch\n---\n\n# Llama-3.1-Nemotron-Nano-8B-v1\n\n\n## Model Overview \n\nLlama-3.1-Nemotron-Nano-8B-v1 is a large language model (LLM) which is a derivative of [Meta Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) (AKA the reference model). It is a reasoning model that is post trained for reasoning, human chat preferences, and tasks, such as RAG and tool calling. \n\nLlama-3.1-Nemotron-Nano-8B-v1 is a model which offers a great tradeoff between model accuracy and efficiency. It is created from Llama 3.1 8B Instruct and offers improvements in model accuracy. The model fits on a single RTX GPU and can be used locally. The model supports a context length of 128K.\n\nThis model underwent a multi-phase post-training process to enhance both its reasoning and non-reasoning capabilities. This includes a supervised fine-tuning stage for Math, Code, Reasoning, and Tool Calling as well as multiple reinforcement learning (RL) stages using REINFORCE (RLOO) and Online Reward-aware Preference Optimization (RPO) algorithms for both chat and instruction-following. The final model checkpoint is obtained after merging the final SFT and Online RPO checkpoints. Improved using Qwen.\n\nThis model is part of the Llama Nemotron Collection. You can find the other model(s) in this family here: \n[Llama-3.3-Nemotron-Super-49B-v1](https://huggingface.co/nvidia/Llama-3.3-Nemotron-Super-49B-v1)\n\nThis model is ready for commercial use.\n\n## Feature Voting\n\nWe want to hear from you! Share your ideas, vote on what matters, and help [shape the future of Nemotron](https://nemotron.ideas.nvidia.com/).\n\n## License/Terms of Use\n\nGOVERNING TERMS: Your use of this model is governed by the [NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/). Additional Information: [Llama 3.1 Community License Agreement](https://www.llama.com/llama3_1/license/). Built with Llama.\n\n**Model Developer:** NVIDIA\n\n**Model Dates:** Trained between August 2024 and March 2025\n\n**Data Freshness:** The pretraining data has a cutoff of 2023 per Meta Llama 3.1 8B\n\n\n## Use Case: \n\nDevelopers designing AI Agent systems, chatbots, RAG systems, and other AI-powered applications. Also suitable for typical instruction-following tasks. Balance of model accuracy and compute efficiency (the model fits on a single RTX GPU and can be used locally).\n\n## Release Date: <br>\n3/18/2025 <br>\n\n## References\n\n- [\\[2505.00949\\] Llama-Nemotron: Efficient Reasoning Models](https://arxiv.org/abs/2505.00949)\n- [\\[2502.00203\\] Reward-aware Preference Optimization: A Unified Mathematical Framework for Model Alignment](https://arxiv.org/abs/2502.00203)\n\n\n## Model Architecture\n\n**Architecture Type:** Dense decoder-only Transformer model\n\n**Network Architecture:** Llama 3.1 8B Instruct\n\n## Intended use\n\nLlama-3.1-Nemotron-Nano-8B-v1 is a general purpose reasoning and chat model intended to be used in English and coding languages. Other non-English languages (German, French, Italian, Portuguese, Hindi, Spanish, and Thai) are also supported. \n\n# Input:\n- **Input Type:** Text\n- **Input Format:** String\n- **Input Parameters:** One-Dimensional (1D)\n- **Other Properties Related to Input:** Context length up to 131,072 tokens\n\n## Output:\n- **Output Type:** Text\n- **Output Format:** String\n- **Output Parameters:** One-Dimensional (1D)\n- **Other Properties Related to Output:** Context length up to 131,072 tokens\n\n## Model Version:\n1.0 (3/18/2025)\n\n## Software Integration\n- **Runtime Engine:** NeMo 24.12 <br>\n- **Recommended Hardware Microarchitecture Compatibility:**\n    - NVIDIA Hopper\n    - NVIDIA Ampere\n\n## Quick Start and Usage Recommendations:\n\n1. Reasoning mode (ON/OFF) is controlled via the system prompt, which must be set as shown in the example below. All instructions should be contained within the user prompt\n2. We recommend setting temperature to `0.6`, and Top P to `0.95` for Reasoning ON mode\n3. We recommend using greedy decoding for Reasoning OFF mode\n4. We have provided a list of prompts to use for evaluation for each benchmark where a specific template is required\n5. The model will include `<think></think>` if no reasoning was necessary in Reasoning ON model, this is expected behaviour\n\nYou can try this model out through the preview API, using this link: [Llama-3.1-Nemotron-Nano-8B-v1](https://build.nvidia.com/nvidia/llama-3_1-nemotron-nano-8b-v1).\n\nSee the snippet below for usage with Hugging Face Transformers library. Reasoning mode (ON/OFF) is controlled via system prompt. Please see the example below.\nOur code requires the transformers package version to be `4.44.2` or higher.\n\n\n### Example of \u201cReasoning On:\u201d\n\n```python\nimport torch\nimport transformers\n\nmodel_id = \"nvidia/Llama-3.1-Nemotron-Nano-8B-v1\"\nmodel_kwargs = {\"torch_dtype\": torch.bfloat16, \"device_map\": \"auto\"}\ntokenizer = transformers.AutoTokenizer.from_pretrained(model_id)\ntokenizer.pad_token_id = tokenizer.eos_token_id\n\npipeline = transformers.pipeline(\n   \"text-generation\",\n   model=model_id,\n   tokenizer=tokenizer,\n   max_new_tokens=32768,\n   temperature=0.6,\n   top_p=0.95,\n   **model_kwargs\n)\n\n# Thinking can be \"on\" or \"off\"\nthinking = \"on\"\n\nprint(pipeline([{\"role\": \"system\", \"content\": f\"detailed thinking {thinking}\"}, {\"role\": \"user\", \"content\": \"Solve x*(sin(x)+2)=0\"}]))\n```\n\n\n### Example of \u201cReasoning Off:\u201d\n\n```python\nimport torch\nimport transformers\n\nmodel_id = \"nvidia/Llama-3.1-Nemotron-Nano-8B-v1\"\nmodel_kwargs = {\"torch_dtype\": torch.bfloat16, \"device_map\": \"auto\"}\ntokenizer = transformers.AutoTokenizer.from_pretrained(model_id)\ntokenizer.pad_token_id = tokenizer.eos_token_id\n\npipeline = transformers.pipeline(\n   \"text-generation\",\n   model=model_id,\n   tokenizer=tokenizer,\n   max_new_tokens=32768,\n   do_sample=False,\n   **model_kwargs\n)\n\n# Thinking can be \"on\" or \"off\"\nthinking = \"off\"\n\nprint(pipeline([{\"role\": \"system\", \"content\": f\"detailed thinking {thinking}\"}, {\"role\": \"user\", \"content\": \"Solve x*(sin(x)+2)=0\"}]))\n```\n\nFor some prompts, even though thinking is disabled, the model emergently prefers to think before responding. But if desired, the users can prevent it by pre-filling the assistant response.\n\n```python\nimport torch\nimport transformers\n\nmodel_id = \"nvidia/Llama-3.1-Nemotron-Nano-8B-v1\"\nmodel_kwargs = {\"torch_dtype\": torch.bfloat16, \"device_map\": \"auto\"}\ntokenizer = transformers.AutoTokenizer.from_pretrained(model_id)\ntokenizer.pad_token_id = tokenizer.eos_token_id\n\n# Thinking can be \"on\" or \"off\"\nthinking = \"off\"\n\npipeline = transformers.pipeline(\n   \"text-generation\",\n   model=model_id,\n   tokenizer=tokenizer,\n   max_new_tokens=32768,\n   do_sample=False,\n   **model_kwargs\n)\n\nprint(pipeline([{\"role\": \"system\", \"content\": f\"detailed thinking {thinking}\"}, {\"role\": \"user\", \"content\": \"Solve x*(sin(x)+2)=0\"}, {\"role\":\"assistant\", \"content\":\"<think>\\n</think>\"}]))\n```\n\n## Inference:\n**Engine:** Transformers\n**Test Hardware:**\n\n- BF16:\n    - 1x RTX 50 Series GPUs\n    - 1x RTX 40 Series GPUs\n    - 1x RTX 30 Series GPUs\n    - 1x H100-80GB GPU\n    - 1x A100-80GB GPU\n    - Jetson AGX Thor\n\n\n**Preferred/Supported] Operating System(s):** Linux <br>\n\n## Training Datasets\n\nA large variety of training data was used for the post-training pipeline, including manually annotated data and synthetic data.\n\nThe data for the multi-stage post-training phases for improvements in Code, Math, and Reasoning is a compilation of SFT and RL data that supports improvements of math, code, general reasoning, and instruction following capabilities of the original Llama instruct model. \n\nPrompts have been sourced from either public and open corpus or synthetically generated. Responses were synthetically generated by a variety of models, with some prompts containing responses for both Reasoning On and Off modes, to train the model to distinguish between two modes. \n\n**Data Collection for Training Datasets:** <br>\n* Hybrid: Automated, Human, Synthetic <br>\n\n**Data Labeling for Training Datasets:** <br>\n* N/A <br>\n\n## Evaluation Datasets\n\nWe used the datasets listed below to evaluate Llama-3.1-Nemotron-Nano-8B-v1. \n\n**Data Collection for Evaluation Datasets:** Hybrid: Human/Synthetic\n\n**Data Labeling for Evaluation Datasets:** Hybrid: Human/Synthetic/Automatic\n\n## Evaluation Results\n\nThese results contain both \u201cReasoning On\u201d, and \u201cReasoning Off\u201d. We recommend using temperature=`0.6`, top_p=`0.95` for \u201cReasoning On\u201d mode, and greedy decoding for \u201cReasoning Off\u201d mode. All evaluations are done with 32k sequence length. We run the benchmarks up to 16 times and average the scores to be more accurate.\n\n> NOTE: Where applicable, a Prompt Template will be provided. While completing benchmarks, please ensure that you are parsing for the correct output format as per the provided prompt in order to reproduce the benchmarks seen below. \n\n### MT-Bench\n\n| Reasoning Mode | Score |\n|--------------|------------|\n| Reasoning Off | 7.9 |\n| Reasoning On | 8.1 |\n\n\n### MATH500\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 36.6% | \n| Reasoning On | 95.4%  |\n\nUser Prompt Template: \n\n```\n\"Below is a math question. I want you to reason through the steps and then give a final answer. Your final answer should be in \\boxed{}.\\nQuestion: {question}\"\n```\n\n\n### AIME25\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 0% | \n| Reasoning On | 47.1% |\n\nUser Prompt Template: \n\n```\n\"Below is a math question. I want you to reason through the steps and then give a final answer. Your final answer should be in \\boxed{}.\\nQuestion: {question}\"\n```\n\n\n### GPQA-D\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 39.4% | \n| Reasoning On | 54.1% |\n\nUser Prompt Template: \n\n\n```\n\"What is the correct answer to this question: {question}\\nChoices:\\nA. {option_A}\\nB. {option_B}\\nC. {option_C}\\nD. {option_D}\\nLet's think step by step, and put the final answer (should be a single letter A, B, C, or D) into a \\boxed{}\"\n```\n\n\n### IFEval Average\n\n| Reasoning Mode | Strict:Prompt | Strict:Instruction |\n|--------------|------------|------------|\n| Reasoning Off | 74.7% | 82.1% |\n| Reasoning On | 71.9% | 79.3% |\n\n### BFCL v2 Live\n\n| Reasoning Mode | Score |\n|--------------|------------|\n| Reasoning Off | 63.9% | \n| Reasoning On | 63.6% | \n\nUser Prompt Template:\n\n\n```\n<AVAILABLE_TOOLS>{functions}</AVAILABLE_TOOLS>\n\n{user_prompt}\n```\n\n\n### MBPP 0-shot\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 66.1% | \n| Reasoning On | 84.6% |\n\nUser Prompt Template:\n\n\n````\nYou are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.\n\n@@ Instruction\nHere is the given problem and test examples:\n{prompt}\nPlease use the python programming language to solve this problem.\nPlease make sure that your code includes the functions from the test samples and that the input and output formats of these functions match the test samples.\nPlease return all completed codes in one code block.\nThis code block should be in the following format:\n```python\n# Your codes here\n```\n````\n\n\n## Ethical Considerations:\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. \n\nFor more detailed information on ethical considerations for this model, please see the Model Card++ [Explainability](explainability.md), [Bias](bias.md), [Safety & Security](safety.md), and [Privacy](privacy.md) Subcards.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n\n## Citation\n```\n@misc{bercovich2025llamanemotronefficientreasoningmodels,\n      title={Llama-Nemotron: Efficient Reasoning Models}, \n      author={Akhiad Bercovich and Itay Levy and Izik Golan and Mohammad Dabbah and Ran El-Yaniv and Omri Puny and Ido Galil and Zach Moshe and Tomer Ronen and Najeeb Nabwani and Ido Shahaf and Oren Tropp and Ehud Karpas and Ran Zilberstein and Jiaqi Zeng and Soumye Singhal and Alexander Bukharin and Yian Zhang and Tugrul Konuk and Gerald Shen and Ameya Sunil Mahabaleshwarkar and Bilal Kartal and Yoshi Suhara and Olivier Delalleau and Zijia Chen and Zhilin Wang and David Mosallanezhad and Adi Renduchintala and Haifeng Qian and Dima Rekesh and Fei Jia and Somshubra Majumdar and Vahid Noroozi and Wasi Uddin Ahmad and Sean Narenthiran and Aleksander Ficek and Mehrzad Samadi and Jocelyn Huang and Siddhartha Jain and Igor Gitman and Ivan Moshkov and Wei Du and Shubham Toshniwal and George Armstrong and Branislav Kisacanin and Matvei Novikov and Daria Gitman and Evelina Bakhturina and Jane Polak Scowcroft and John Kamalu and Dan Su and Kezhi Kong and Markus Kliegl and Rabeeh Karimi and Ying Lin and Sanjeev Satheesh and Jupinder Parmar and Pritam Gundecha and Brandon Norick and Joseph Jennings and Shrimai Prabhumoye and Syeda Nahida Akter and Mostofa Patwary and Abhinav Khattar and Deepak Narayanan and Roger Waleffe and Jimmy Zhang and Bor-Yiing Su and Guyue Huang and Terry Kong and Parth Chadha and Sahil Jain and Christine Harvey and Elad Segal and Jining Huang and Sergey Kashirsky and Robert McQueen and Izzy Putterman and George Lam and Arun Venkatesan and Sherry Wu and Vinh Nguyen and Manoj Kilaru and Andrew Wang and Anna Warno and Abhilash Somasamudramath and Sandip Bhaskar and Maka Dong and Nave Assaf and Shahar Mor and Omer Ullman Argov and Scot Junkin and Oleksandr Romanenko and Pedro Larroy and Monika Katariya and Marco Rovinelli and Viji Balas and Nicholas Edelman and Anahita Bhiwandiwalla and Muthu Subramaniam and Smita Ithape and Karthik Ramamoorthy and Yuting Wu and Suguna Varshini Velury and Omri Almog and Joyjit Daw and Denys Fridman and Erick Galinkin and Michael Evans and Katherine Luna and Leon Derczynski and Nikki Pope and Eileen Long and Seth Schneider and Guillermo Siman and Tomasz Grzegorzek and Pablo Ribalta and Monika Katariya and Joey Conway and Trisha Saar and Ann Guan and Krzysztof Pawelec and Shyamala Prayaga and Oleksii Kuchaiev and Boris Ginsburg and Oluwatobi Olabiyi and Kari Briski and Jonathan Cohen and Bryan Catanzaro and Jonah Alben and Yonatan Geifman and Eric Chung and Chris Alexiuk},\n      year={2025},\n      eprint={2505.00949},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2505.00949}, \n}\n```",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

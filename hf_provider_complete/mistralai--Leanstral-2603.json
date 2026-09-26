@@ -1,0 +1,155 @@
+{
+  "modelId": "mistralai/Leanstral-2603",
+  "author": "mistralai",
+  "sha": "410f315f41cdb7e6ed1330dbb5cda88ede250064",
+  "lastModified": "2026-07-15 12:20:49+00:00",
+  "tags": [
+    "vllm",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "vllm",
+  "likes": 168,
+  "downloads": 113,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "vllm",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "chat_template_jinja": "{#- Default system message if no system prompt is passed. #}\n{%- set default_system_message = '' %}\n\n{#- Begin of sequence token. #}\n{{- bos_token }}\n\n\n{#- Handle system prompt if it exists. #}\n{%- set loop_messages = messages %}\n{%- if messages[0]['role'] != 'system' and default_system_message != '' %}\n    {{- '[SYSTEM_PROMPT]' + default_system_message + '[/SYSTEM_PROMPT]' }}\n{%- endif %}\n\n\n{#- Tools and model settings definition #}\n{%- set available_tools = '' %}\n{%- set has_tools = false %}\n{%- if tools is defined and tools is not none and tools|length > 0 %}\n    {%- set has_tools = true %}\n    {%- set available_tools = '[AVAILABLE_TOOLS]' + (tools| tojson) + '[/AVAILABLE_TOOLS]' %}\n{%- endif %}\n{%- if reasoning_effort is not defined or reasoning_effort is none %}\n    {%- set reasoning_effort = 'none' %}\n{%- endif %}\n{%- if reasoning_effort not in ['none', 'high'] %}\n    {{- raise_exception('reasoning_effort must be either \"none\" or \"high\"') }}\n{%- endif %}\n{%- set model_settings = '[MODEL_SETTINGS]{\"reasoning_effort\": \"' + reasoning_effort + '\"}[/MODEL_SETTINGS]' %}\n\n{#- Macros #}\n{%- macro render_content(content, context_name, supported_types_desc, support_thinking, support_images) -%}\n    {%- if content is string -%}\n        {{- content -}}\n    {%- elif content -%}\n        {%- for block in content -%}\n            {%- if block['type'] == 'text' -%}\n                {{- block['text'] -}}\n            {%- elif support_thinking and block['type'] == 'thinking' -%}\n                {{- '[THINK]' + block['thinking'] -}}\n                {%- if block.get('closed', true) -%}{{- '[/THINK]' -}}{%- endif -%}\n            {%- elif support_images and block['type'] in ['image', 'image_url'] -%}\n                {{- '[IMG]' -}}\n            {%- else -%}\n                {{- raise_exception('Only ' + supported_types_desc + ' chunks are supported in ' + context_name + '.') -}}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{- raise_exception(context_name + ' must have non-empty content.') -}}\n    {%- endif -%}\n{%- endmacro -%}\n\n{#- Aggregate consecutive messages with the same role except system and tool. #}\n{#- A sentinel message is appended so the last group gets flushed inside the loop. #}\n{%- set ns_agg = namespace(messages=[], current_group=[], current_role=none) %}\n{%- for message in loop_messages + [{'role': '__sentinel__'}] %}\n    {%- if message['role'] != ns_agg.current_role or message['role'] == 'system' or message['role'] == 'tool' %}\n        {%- if ns_agg.current_role == 'tool' %}\n            {%- set ns_agg.messages = ns_agg.messages + ns_agg.current_group %}\n        {%- elif ns_agg.current_role is not none %}\n            {%- set ns_c = namespace(text_parts=[], chunks=[], has_non_text=false, tool_calls=[]) %}\n            {%- for msg in ns_agg.current_group %}\n                {#- Convert reasoning / reasoning_content to a leading thinking chunk. #}\n                {%- set reasoning = msg.get('reasoning_content', msg.get('reasoning', none)) %}\n                {%- if reasoning is not none and reasoning != '' %}\n                    {%- if msg['content'] is not none and msg['content'] is not string %}\n                        {%- for block in msg['content'] %}\n                            {%- if block['type'] == 'thinking' %}\n                                {{- raise_exception('Message cannot have both thinking chunks in content and a top-level `reasoning` or `reasoning_content` field.') }}\n                            {%- endif %}\n                        {%- endfor %}\n                    {%- endif %}\n                    {%- set think_chunk = {'type': 'thinking', 'thinking': reasoning} %}\n                    {%- if msg['content'] is string and msg['content'] != '' %}\n                        {%- set new_content = [think_chunk, {'type': 'text', 'text': msg['content']}] %}\n                    {%- elif msg['content'] is not none and msg['content'] is not string and msg['content'] | length > 0 %}\n                        {%- set new_content = [think_chunk] + msg['content'] | list %}\n                    {%- else %}\n                        {%- set new_content = [think_chunk] %}\n                    {%- endif %}\n                    {%- if msg['tool_calls'] is defined and msg['tool_calls'] is not none %}\n                        {%- set msg = {'role': msg['role'], 'content': new_content, 'tool_calls': msg['tool_calls']} %}\n                    {%- else %}\n                        {%- set msg = {'role': msg['role'], 'content': new_content} %}\n                    {%- endif %}\n                {%- endif %}\n                {%- if msg['content'] is string %}\n                    {%- set ns_c.text_parts = ns_c.text_parts + [msg['content']] %}\n                {%- elif msg['content'] is not none %}\n                    {%- set ns_msg = namespace(msg_text_parts=[]) %}\n                    {%- for block in msg['content'] %}\n                        {%- if block['type'] == 'text' %}\n                            {%- set ns_msg.msg_text_parts = ns_msg.msg_text_parts + [block['text']] %}\n                        {%- else %}\n                            {%- if ns_msg.msg_text_parts | length > 0 %}\n                                {%- set ns_c.text_parts = ns_c.text_parts + [ns_msg.msg_text_parts | join('')] %}\n                                {%- set ns_msg.msg_text_parts = [] %}\n                            {%- endif %}\n                            {%- if ns_c.text_parts | length > 0 %}\n                                {%- set ns_c.chunks = ns_c.chunks + [{'type': 'text', 'text': ns_c.text_parts | join('\\n\\n')}] %}\n                                {%- set ns_c.text_parts = [] %}\n                            {%- endif %}\n                            {%- set ns_c.chunks = ns_c.chunks + [block] %}\n                            {%- set ns_c.has_non_text = true %}\n                        {%- endif %}\n                    {%- endfor %}\n                    {%- if ns_msg.msg_text_parts | length > 0 %}\n                        {%- set ns_c.text_parts = ns_c.text_parts + [ns_msg.msg_text_parts | join('')] %}\n                    {%- endif %}\n                {%- endif %}\n                {%- if msg['tool_calls'] is defined and msg['tool_calls'] is not none %}\n                    {%- set ns_c.tool_calls = ns_c.tool_calls + msg['tool_calls'] | list %}\n                {%- endif %}\n            {%- endfor %}\n            {%- if ns_c.has_non_text %}\n                {%- if ns_c.text_parts | length > 0 %}\n                    {%- set ns_c.chunks = ns_c.chunks + [{'type': 'text', 'text': ns_c.text_parts | join('\\n\\n')}] %}\n                {%- endif %}\n                {%- set merged_content = ns_c.chunks %}\n            {%- else %}\n                {%- set merged_content = ns_c.text_parts | join('\\n\\n') %}\n            {%- endif %}\n            {%- if ns_c.tool_calls | length > 0 %}\n                {%- set ns_agg.messages = ns_agg.messages + [{'role': ns_agg.current_role, 'content': merged_content, 'tool_calls': ns_c.tool_calls}] %}\n            {%- else %}\n                {%- set ns_agg.messages = ns_agg.messages + [{'role': ns_agg.current_role, 'content': merged_content}] %}\n            {%- endif %}\n        {%- endif %}\n        {%- if message['role'] != '__sentinel__' %}\n            {%- set ns_agg.current_group = [message] %}\n            {%- set ns_agg.current_role = message['role'] %}\n        {%- endif %}\n    {%- else %}\n        {%- set ns_agg.current_group = ns_agg.current_group + [message] %}\n    {%- endif %}\n{%- endfor %}\n{%- set loop_messages = ns_agg.messages %}\n\n{#- Validates message ordering. #}\n{%- set ns = namespace(available_tools_and_settings_emitted=false) %}\n{%- if loop_messages | length > 0 and loop_messages[0]['role'] not in ['user', 'system'] %}\n    {{- raise_exception('Conversation must start with a user or system message, got ' + loop_messages[0]['role'] + '.') }}\n{%- endif %}\n{%- set ns_order = namespace(previous_role=none) %}\n{%- for message in loop_messages %}\n    {%- set current_role = message['role'] %}\n    {%- if ns_order.previous_role is not none %}\n        {%- if ns_order.previous_role == 'system' %}\n            {%- if current_role not in ['user', 'assistant', 'system'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'user' %}\n            {%- if current_role not in ['assistant', 'system', 'user'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'assistant' %}\n            {%- if current_role not in ['assistant', 'user', 'tool'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'tool' %}\n            {%- if current_role not in ['assistant', 'tool', 'user'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- endif %}\n    {%- endif %}\n    {%- set ns_order.previous_role = current_role %}\n{%- endfor %}\n\n{#- Handle conversation messages. #}\n{%- for message in loop_messages %}\n    {#- User messages supports text, image and image_url content. #}\n    {%- if message['role'] == 'user' %}\n        {%- if not ns.available_tools_and_settings_emitted %}\n            {{- available_tools }}\n            {{- model_settings }}\n            {%- set ns.available_tools_and_settings_emitted = true %}\n        {%- endif %}\n        {%- if message['content'] is not string and message['content'] %}\n            {#- When content has exactly one image and one text block, put image first. #}\n            {%- if message['content'] | length == 2 and message['content'][0]['type'] == 'text' and message['content'][1]['type'] in ['image', 'image_url'] %}\n                {%- set blocks = [message['content'][1], message['content'][0]] %}\n            {%- else %}\n                {%- set blocks = message['content'] %}\n            {%- endif %}\n            {%- set user_content = blocks %}\n        {%- else %}\n            {%- set user_content = message['content'] %}\n        {%- endif %}\n        {{- '[INST]' -}}\n        {{- render_content(user_content, 'user message content', supported_types_desc='text, image and image_url', support_thinking=false, support_images=true) -}}\n        {{- '[/INST]' }}\n\n    {#- Assistant messages supports text and thinking content. #}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if (message['content'] is none or message['content'] == '' or message['content']|length == 0) and (message['tool_calls'] is not defined or message['tool_calls'] is none or message['tool_calls']|length == 0) %}\n            {{- raise_exception('Assistant message must have a string or a list of chunks in content or a list of tool calls.') }}\n        {%- endif %}\n\n        {%- if message['content'] %}\n            {{- render_content(message['content'], 'assistant message contents', supported_types_desc='text and thinking', support_thinking=true, support_images=false) -}}\n        {%- endif %}\n\n        {%- if message['tool_calls'] is defined and message['tool_calls'] is not none and message['tool_calls']|length > 0 %}\n            {%- for tool in message['tool_calls'] %}\n                {{- '[TOOL_CALLS]' }}\n                {%- set name = tool['function']['name'] %}\n                {%- set arguments = tool['function']['arguments'] %}\n                {%- if arguments is not string %}\n                    {%- set arguments = arguments|tojson|safe %}\n                {%- elif arguments == '' %}\n                    {%- set arguments = '{}' %}\n                {%- endif %}\n                {{- name + '[ARGS]' + arguments }}\n            {%- endfor %}\n        {%- endif %}\n\n        {{- eos_token }}\n\n    {#- Tool messages (multimodal). #}\n    {%- elif message['role'] == 'tool' %}\n        {{- '[TOOL_RESULTS]' -}}\n        {{- render_content(message['content'], 'tool message contents', supported_types_desc='text and image', support_images=true) -}}\n        {{- '[/TOOL_RESULTS]' }}\n\n    {#- System messages. #}\n    {%- elif message['role'] == 'system' %}\n        {{- '[SYSTEM_PROMPT]' -}}\n        {{- render_content(message['content'], 'system message contents', supported_types_desc='text', support_thinking=false, support_images=false) -}}\n        {{- '[/SYSTEM_PROMPT]' -}}\n\n    {#- Raise exception for unsupported roles. #}\n    {%- else %}\n        {{- raise_exception('Only user, assistant, system and tool roles are supported, got ' + message['role'] + '.') }}\n    {%- endif %}\n{%- endfor %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1567,
+      "lfs": null
+    },
+    {
+      "rfilename": "LEAN.md",
+      "size": 8574,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 12199,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 12792,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated-00001-of-00007.safetensors",
+      "size": 20000632534,
+      "lfs": {
+        "size": 20000632534,
+        "sha256": "c6edc7dabc142d23283e00a9aba7393788043bf85ecc1e6d19d16bcf9b4d3b0b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00002-of-00007.safetensors",
+      "size": 19997737172,
+      "lfs": {
+        "size": 19997737172,
+        "sha256": "c793c203934be95384be7bccf2a38290df6d1bd164e8361d3cd458c86baa7931",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00003-of-00007.safetensors",
+      "size": 19997736948,
+      "lfs": {
+        "size": 19997736948,
+        "sha256": "51edc063dafcf83dcc7e271fb122495b9514597b742c2d0fe8e8972bd2547f98",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00004-of-00007.safetensors",
+      "size": 19997737108,
+      "lfs": {
+        "size": 19997737108,
+        "sha256": "b9d605977eed5d6c9876ec013f71a1642c4edbb8af6765c601e32e2115715719",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00005-of-00007.safetensors",
+      "size": 19997738276,
+      "lfs": {
+        "size": 19997738276,
+        "sha256": "84c2d0923cc0713554114689213f4dccf9e475813dc8cde74e0936ab9137b0ff",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00006-of-00007.safetensors",
+      "size": 19861887138,
+      "lfs": {
+        "size": 19861887138,
+        "sha256": "d3bef3c6656bd083e24c0a9f5d244a73ce7c1871aec03a590b84536393ef3424",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "consolidated-00007-of-00007.safetensors",
+      "size": 1073741920,
+      "lfs": {
+        "size": 1073741920,
+        "sha256": "06ab960fa7f05b0b914425919470114777643fee069ddcb601861e91a2d343c5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "consolidated.safetensors.index.json",
+      "size": 3619748,
+      "lfs": null
+    },
+    {
+      "rfilename": "params.json",
+      "size": 1510,
+      "lfs": null
+    },
+    {
+      "rfilename": "tekken.json",
+      "size": 16275354,
+      "lfs": {
+        "size": 16275354,
+        "sha256": "b1272b956bd6edd2d2c674c76896c7661308c9e723997b0afb55ecb429cb5dc7",
+        "pointer_size": 133
+      }
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nlibrary_name: vllm\n---\n\n# Leanstral 119B A6B\n\nLeanstral is the first open-source code agent designed for [Lean 4](https://github.com/leanprover/lean4), a proof assistant capable of expressing complex mathematical objects such as [perfectoid spaces](https://xenaproject.wordpress.com/2020/12/05/liquid-tensor-experiment/) and software specifications like [properties of Rust fragments](https://github.com/AeneasVerif/aeneas).\n\nBuilt as part of the [Mistral Small 4 family](https://huggingface.co/collections/mistralai/mistral-small-4), it combines multimodal capabilities and an efficient architecture, making it both performant and cost-effective compared to existing closed-source alternatives.\n\nFor more details about the model and its scope, please read the related [blog post](https://mistral.ai/news/leanstral).\n\n## Key Features\n\nLeanstral incorporates the following architectural choices:\n\n- **MoE**: 128 experts, 4 active per token\n- **Model Size**: 119B parameters with 6.5B activated per token\n- **Context Length**: 256k tokens\n- **Multimodal Input**: Accepts text and image input, producing text output\n\nLeanstral offers these capabilities:\n\n- **Proof Agentic**: Designed specifically for proof engineering scenarios\n- **Tool Calling Support**: Optimized for Mistral Vibe\n- **Vision**: Can analyze images and provide insights\n- **Multilingual**: Supports English, French, Spanish, German, Italian, Portuguese, Dutch, Chinese, Japanese, Korean, and Arabic\n- **System Prompt Compliance**: Strong adherence to system prompts\n- **Speed-Optimized**: Best-in-class performance\n- **Apache 2.0 License**: Open-source license for commercial and non-commercial use\n- **Large Context Window**: Supports up to 256k tokens\n\n## Recommended Settings\n\n- **Temperature**: 1.0\n- **Reasoning Effort**:\n  - `'none'` \u2192 Do not use reasoning\n  - `'high'` \u2192 Use reasoning (recommended for complex prompts)\n  Use `reasoning_effort=\"high\"` for complex tasks\n- **Context Length**: \u2264 200k tokens recommended\n\n## Usage\n\n### Mistral-Vibe\n\nUse `Leanstral 119B A6B` with [Mistral Vibe](https://github.com/mistralai/mistral-vibe). Install the latest version (2.5.0):\n\n```sh\nuv pip install mistral-vibe --upgrade\n\n# make sure it's >= 2.5.0\n```\n\nLeanstral can be added by starting `vibe` and simply running:\n\n```\n/leanstall\n```\n\nThis will add `leanstral` as an additional model, add a system prompt (see [LEAD.md](https://huggingface.co/mistralai/Leanstral-2603/blob/main/LEAN.md)) as well as \nensure `leanstral` can be used as a subagent.\n\n\n![Screenshot 2026-03-16 at 18.03.39](https://cdn-uploads.huggingface.co/production/uploads/5dfcb1aada6d0311fd3d5448/Sm_mBI7u4XTjlKGzdXQqe.png)\n\nThen just press \"tab+shift\" a couple times until you see the new \"lean\" mode and `leanstral` model.\n\n![Screenshot 2026-03-16 at 18.17.04](https://cdn-uploads.huggingface.co/production/uploads/5dfcb1aada6d0311fd3d5448/DHwtKamfj2QfMv0TkJK6G.png)\n\n**Local server**\n\nIf instead of pinging the Mistral API, you want to use your local vLLM server, you can do the following:\n- 1. Spin up a vllm server as explained in [`Usage - vllm`](#vllm-recommended)\n- 2. Create a new agent file called `lean.toml` in `~/.vibe/agents`:\n\n```sh\nmkdir ~/.vibe/agents/ && touch ~/.vibe/agents/lean.toml\n```\n\nAnd then copy-paste the following config into `~/.vibe/agents/lean.toml`\n\n```toml\ndisplay_name = \"Lean (local vLLM)\"\ndescription = \"Lean 4 mode using local vLLM\"\nsafety = \"neutral\"\n\nsystem_prompt_id = \"lean\"\nactive_model = \"leanstral\"\n\n[[providers]]\nname = \"vllm\"\napi_base = \"http://<your-host-url>:8000/v1\"\napi_key_env_var = \"\"\nbackend = \"generic\"\nreasoning_field_name = \"reasoning_content\"\n\n[[models]]\nname = \"mistralai/Leanstral-2603\"\nprovider = \"vllm\"\nalias = \"leanstral\"\nthinking = \"high\"\ntemperature = 1.0\nauto_compact_threshold = 168000\n\n[tools.bash]\ndefault_timeout = 1200\n```\n\n**Note**: Make sure to overwrite `<your-host-url>` with your server's url.\n\nThen restart `vibe` and \"tab-shift\" to \"lean\" mode.\n\nGive it a try on some \"lean\" code such as, *e.g.*: [PrimeNumberTheoremAnd](https://github.com/AlexKontorovich/PrimeNumberTheoremAnd)\n\n### Local Deployment\n\nThe model can also be deployed with the following libraries, we advise everyone to use the Mistral AI API if the model is subpar with local serving:\n- [`vllm (recommended)`](https://github.com/vllm-project/vllm): See [here](#vllm-recommended).\n- [`transformers`](https://github.com/huggingface/transformers): WIP \u23f3 - follow updates on [this PR](https://github.com/huggingface/transformers/pull/44760).\n- [`SGLang`](https://github.com/sgl-project/sglang): WIP \u23f3 - follow updates on [this PR](https://github.com/sgl-project/sglang/pull/20708/)\n\n#### vLLM (recommended)\n\nWe recommend using this model with the [vLLM library](https://github.com/vllm-project/vllm) to implement production-ready inference pipelines.\n\n**_Installation_**\n\n1. Make sure to install **vllm nightly**:\n\n   ```\n   uv pip install -U vllm \\\n       --torch-backend=auto \\\n       --extra-index-url https://wheels.vllm.ai/nightly\n   ```\n\n   Doing so should automatically install [`mistral_common >= 1.11.0`](https://github.com/mistralai/mistral-common/releases/tag/v1.11.0).\n  \n   To check:\n   ```\n   python -c \"import mistral_common; print(mistral_common.__version__)\"\n   ```\n  \n   You can also make use of a ready-to-go [docker image](https://github.com/vllm-project/vllm/blob/main/docker/Dockerfile) or on the [docker hub](https://hub.docker.com/layers/vllm/vllm-openai/nightly).\n\n2. Install `transformers` from main:\n\n   ```bash\n   uv pip install git+https://github.com/huggingface/transformers.git\n   ```\n\n**_Launch server_**\n\nWe recommend that you use Leanstral in a server/client setting. \n\n```\nvllm serve mistralai/Leanstral-2603 \\\n  --max-model-len 200000 \\\n  --tensor-parallel-size 4 \\\n  --attention-backend FLASH_ATTN_MLA \\\n  --tool-call-parser mistral \\\n  --enable-auto-tool-choice \\\n  --reasoning-parser mistral\n```\n\n\n**_Client_**\n\n```py\nfrom openai import OpenAI\nfrom huggingface_hub import hf_hub_download\n\n# Modify OpenAI's API key and API base to use vLLM's API server.\nopenai_api_key = \"EMPTY\"\nopenai_api_base = \"<your-host-url>\"\n\nclient = OpenAI(\n    api_key=openai_api_key,\n    base_url=openai_api_base,\n)\n\nTEMP = 1.0\nMAX_TOK = 32000\nREASONING = \"high\" # switch to 'none' for faster answers\n\nmodels = client.models.list()\nmodel = models.data[0].id\n\n\nprompt = \"\"\"Define the transition rules as an inductive proposition.\n\nThis choice provides better support for proving properties about valid transitions and is generally more natural for modeling state machines in Lean, where you want to express logical rules rather than just computing a yes/no vale for each possible transition.\"\"\"\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"text\": prompt,\n            },\n        ],\n    },\n]\n\n\n\nresponse = client.chat.completions.create(\n    model=model,\n    messages=messages,\n    temperature=TEMP,\n    max_tokens=MAX_TOK,\n    reasoning_effort=REASONING,\n)\n\nprint(\"Content\")\nprint(response.choices[0].message.content)\n\npritn(\"Reasoning\")\nprint(response.choices[0].message.reasoning)\n```\n\n_Example Content_:\n<details>\n<summary>Expand</summary\nTo define transaction rules as an inductive proposition in Lean, you can create an inductive type that captures the valid transitions between states. This approach is particularly useful for modeling state machines and proving properties about transitions, such as invariants.\n\nHere is an example of how to define an inductive proposition for valid transitions in a simple counter machine:\n\n```lean\n-- Example: Counter that can only increment by 1 (no decrement, no shortcuts)\ninductive ValidTransition : Nat \u2192 Nat \u2192 Prop\n  | step1 : \u2200 s, ValidTransition s (s + 1)   -- Core transition: s \u2192 s+1\n  | step2 : \u2200 s, ValidTransition s (2 * s)    -- Bonus: s \u2192 2s (optional)\n  | zero_step : ValidTransition 0 0          -- Additional special case\n\nlemma reach_any_positive : \u2200 n > 0, ValidTransition 0 n := by\n  induction n with\n  | zero => contradiction\n  | succ n ih =>\n    cases' Nat.eq_zero_or_pos n with h h\n    \u00b7 simp [h]\n    \u00b7 have : ValidTransition 0 (n + 1) := by\n        cases' h with _ ih    -- Wait, this is messy...\n```\n\nIn this example, `ValidTransition` is defined as an inductive proposition with constructors `step1`, `step2`, and `zero_step`. The `step1` constructor allows for any state to transition to the next state by incrementing by 1, while `step2` allows for doubling the state. The `zero_step` constructor is a special case for the initial state 0.\n\nThe lemma `reach_any_positive` aims to prove that any positive natural number is reachable from the initial state 0 through valid transitions. The proof uses induction on `n`, but due to simplification issues, the current approach may not be the most effective.\n\nA more concise and effective way to define and prove properties about transitions is to use a simpler model, such as the following:\n\n```lean\n-- Simpler model for counter transitions (suffices for proofs)\ninductive CounterTrans : Nat \u2192 Nat \u2192 Prop\n  | valid : \u2200 n, CounterTrans n (n + 1)\n\nlemma reach_positive : \u2200 n > 0, CounterTrans 0 n\n  -- Proof is now trivial (by induction)\n```\n\nIn this simpler model, `CounterTrans` is defined with a single constructor `valid`, which allows for any state to transition to the next state by incrementing by 1. The lemma `reach_positive` is straightforward to prove by induction, leveraging the simplicity of the transition rules.\n\nThis approach ensures that the proof remains concise and effective, avoiding unnecessary complexity in the transition rules. By using inductive propositions, we can effectively reason about state transitions and prove properties about the system.\n</details>\n\n**_Tool-Calling_**\n\nYou can add `tools` to the chat completion as follows:\n\n```py\nprompt = \"\"\"I have the following Lean 4 code snippet and want to check if it compiles and runs without errors. Can you run it for me and let me know the result?\n\n```lean\\ninductive State where\\n  | idle\\n  | busy\\n  | error\\n\\ndef transition : State \u2192 State \u2192 Bool\\n  | .idle, .busy => true\\n  | .busy, .idle => true\\n  | .busy, .error => true\\n  | _, _ => false\\n\\n#eval transition .idle .busy\\n```\"\"\"\n\ntools = [{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"lean_run_code\",\n        \"description\": \"Run or compile an independent Lean code snippet or file and return the result or error message.\",\n        \"parameters\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"code\": {\n                    \"type\": \"string\",\n                    \"description\": \"Lean code snippet to run or compile. Either this or file_path must be provided.\"\n                },\n                \"file_path\": {\n                    \"type\": \"string\",\n                    \"description\": \"Path to the Lean file to run or compile. Either this or code must be provided.\"\n                }\n            },\n        }\n        }\n}]\n\nmessages = [\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"text\",\n                \"text\": prompt,\n            },\n        ],\n    },\n]\n\nresponse = client.chat.completions.create(\n    model=model,\n    messages=messages,\n    temperature=TEMP,\n    max_tokens=MAX_TOK,\n    reasoning_effort=REASONING,\n    tools=tools,\n)\n\nprint(\"Tool Calls\")\nprint(response.choices[0].message.tool_calls)\n\nprint(\"Reasoning\")\nprint(response.choices[0].message.reasoning)\n```\n\n_Example Tool Calls_:\n<details>\n<summary>Expand</summary\n\n`Function(arguments='{\"code\": \"inductive State where\\\\n  | idle\\\\n  | busy\\\\n  | error\\\\n\\\\ndef transition : State \u2192 State \u2192 Bool\\\\n  | .idle, .busy => true\\\\n  | .busy, .idle => true\\\\n  | .busy, .error => true\\\\n  | _, _ => false\\\\n\\\\n#eval transition .idle .busy\"}', name='lean_run_code')`\n\n</details>\n\n## License\n\nThis model is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0.txt).\n\n*You must not use this model in a manner that infringes, misappropriates, or otherwise violates any third party\u2019s rights, including intellectual property rights.*",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "library_name": "vllm",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": null
+}

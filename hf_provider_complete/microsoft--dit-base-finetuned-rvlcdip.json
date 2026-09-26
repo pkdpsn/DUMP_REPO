@@ -1,0 +1,140 @@
+{
+  "modelId": "microsoft/dit-base-finetuned-rvlcdip",
+  "author": "microsoft",
+  "sha": "23f8b03d130fb66bbc9a15df3c75d753e49240eb",
+  "lastModified": "2023-02-27 17:57:24+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "beit",
+    "image-classification",
+    "dit",
+    "vision",
+    "dataset:rvl_cdip",
+    "arxiv:2203.02378",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-classification",
+  "library_name": "transformers",
+  "likes": 40,
+  "downloads": 16717,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "rvl_cdip"
+    ],
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "dit",
+      "vision",
+      "image-classification"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/microsoft/dit-base-finetuned-rvlcdip/resolve/main/coca_cola_advertisement.png",
+        "example_title": "Advertisement"
+      },
+      {
+        "src": "https://huggingface.co/microsoft/dit-base-finetuned-rvlcdip/resolve/main/scientific_publication.png",
+        "example_title": "Scientific publication"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "BeitForImageClassification"
+    ],
+    "model_type": "beit"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3583,
+      "lfs": null
+    },
+    {
+      "rfilename": "coca_cola_advertisement.png",
+      "size": 3957434,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1791,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 302,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 343362393,
+      "lfs": {
+        "size": 343362393,
+        "sha256": "1b7a901642c36ec7e32de997683223faf02028624fb2e62a7e7e798a5dd1344e",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "scientific_publication.png",
+      "size": 1328120,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\ntags:\n- dit\n- vision\n- image-classification\ndatasets:\n- rvl_cdip\nwidget:\n- src: https://huggingface.co/microsoft/dit-base-finetuned-rvlcdip/resolve/main/coca_cola_advertisement.png\n  example_title: Advertisement\n- src: https://huggingface.co/microsoft/dit-base-finetuned-rvlcdip/resolve/main/scientific_publication.png\n  example_title: Scientific publication\n---\n\n# Document Image Transformer (base-sized model) \n\nDocument Image Transformer (DiT) model pre-trained on IIT-CDIP (Lewis et al., 2006), a dataset that includes 42 million document images and fine-tuned on [RVL-CDIP](https://www.cs.cmu.edu/~aharley/rvl-cdip/), a dataset consisting of 400,000 grayscale images in 16 classes, with 25,000 images per class. It was introduced in the paper [DiT: Self-supervised Pre-training for Document Image Transformer](https://arxiv.org/abs/2203.02378) by Li et al. and first released in [this repository](https://github.com/microsoft/unilm/tree/master/dit). Note that DiT is identical to the architecture of [BEiT](https://huggingface.co/docs/transformers/model_doc/beit). \n\nDisclaimer: The team releasing DiT did not write a model card for this model so this model card has been written by the Hugging Face team.\n\n## Model description\n\nThe Document Image Transformer (DiT) is a transformer encoder model (BERT-like) pre-trained on a large collection of images in a self-supervised fashion. The pre-training objective for the model is to predict visual tokens from the encoder of a discrete VAE (dVAE), based on masked patches.\n\nImages are presented to the model as a sequence of fixed-size patches (resolution 16x16), which are linearly embedded. One also adds absolute position embeddings before feeding the sequence to the layers of the Transformer encoder.\n\nBy pre-training the model, it learns an inner representation of images that can then be used to extract features useful for downstream tasks: if you have a dataset of labeled document images for instance, you can train a standard classifier by placing a linear layer on top of the pre-trained encoder.\n\n## Intended uses & limitations\n\nYou can use the raw model for encoding document images into a vector space, but it's mostly meant to be fine-tuned on tasks like document image classification, table detection or document layout analysis. See the [model hub](https://huggingface.co/models?search=microsoft/dit) to look for fine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model in PyTorch:\n\n```python\nfrom transformers import AutoImageProcessor, AutoModelForImageClassification\nimport torch\nfrom PIL import Image\n\nimage = Image.open('path_to_your_document_image').convert('RGB')\n\nprocessor = AutoImageProcessor.from_pretrained(\"microsoft/dit-base-finetuned-rvlcdip\")\nmodel = AutoModelForImageClassification.from_pretrained(\"microsoft/dit-base-finetuned-rvlcdip\")\n\ninputs = processor(images=image, return_tensors=\"pt\")\noutputs = model(**inputs)\nlogits = outputs.logits\n\n# model predicts one of the 16 RVL-CDIP classes\npredicted_class_idx = logits.argmax(-1).item()\nprint(\"Predicted class:\", model.config.id2label[predicted_class_idx])\n```\n\n### BibTeX entry and citation info\n\n```bibtex\n@article{Lewis2006BuildingAT,\n  title={Building a test collection for complex document information processing},\n  author={David D. Lewis and Gady Agam and Shlomo Engelson Argamon and Ophir Frieder and David A. Grossman and Jefferson Heard},\n  journal={Proceedings of the 29th annual international ACM SIGIR conference on Research and development in information retrieval},\n  year={2006}\n}\n```",
+  "cardDataParsed": {
+    "tags": [
+      "dit",
+      "vision",
+      "image-classification"
+    ],
+    "datasets": [
+      "rvl_cdip"
+    ],
+    "widget": [
+      {
+        "src": "https://huggingface.co/microsoft/dit-base-finetuned-rvlcdip/resolve/main/coca_cola_advertisement.png",
+        "example_title": "Advertisement"
+      },
+      {
+        "src": "https://huggingface.co/microsoft/dit-base-finetuned-rvlcdip/resolve/main/scientific_publication.png",
+        "example_title": "Scientific publication"
+      }
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageClassification",
+    "custom_class": null,
+    "pipeline_tag": "image-classification",
+    "processor": "AutoImageProcessor"
+  }
+}

@@ -1,0 +1,702 @@
+{
+  "modelId": "nvidia/Llama-3_1-Nemotron-Ultra-253B-v1",
+  "author": "nvidia",
+  "sha": "5b47def5b8957142d82faeb44bfad9349d02840d",
+  "lastModified": "2025-10-15 16:21:20+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "nemotron-nas",
+    "text-generation",
+    "nvidia",
+    "llama-3",
+    "pytorch",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2503.18908",
+    "arxiv:2505.00949",
+    "arxiv:2502.00203",
+    "arxiv:2411.19146",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 357,
+  "downloads": 1569,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "DeciLMForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_decilm.DeciLMConfig",
+      "AutoModelForCausalLM": "modeling_decilm.DeciLMForCausalLM"
+    },
+    "model_type": "nemotron-nas",
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{{- bos_token }}{%- if messages[0]['role'] == 'system' %}{%- set system_message = messages[0]['content']|trim %}{%- set messages = messages[1:] %}{%- else %}{%- set system_message = \"detailed thinking on\" %}{%- endif %}{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}{{- system_message }}{{- \"<|eot_id|>\" }}{%- for message in messages %}{%- if message['role'] == 'assistant' and '</think>' in message['content'] %}{%- set content = message['content'].split('</think>')[-1].lstrip() %}{%- else %}{%- set content = message['content'] %}{%- endif %}{{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n' + content | trim + '<|eot_id|>' }}{%- endfor %}{%- if add_generation_prompt %}{{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}{%- endif %}",
+      "eos_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1746,
+      "lfs": null
+    },
+    {
+      "rfilename": "BIAS.md",
+      "size": 223,
+      "lfs": null
+    },
+    {
+      "rfilename": "EXPLAINABILITY.md",
+      "size": 2969,
+      "lfs": null
+    },
+    {
+      "rfilename": "PRIVACY.md",
+      "size": 535,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 18332,
+      "lfs": null
+    },
+    {
+      "rfilename": "SAFETY_and_SECURITY.md",
+      "size": 922,
+      "lfs": null
+    },
+    {
+      "rfilename": "__init__.py",
+      "size": 0,
+      "lfs": null
+    },
+    {
+      "rfilename": "accuracy_plot.png",
+      "size": 1598635,
+      "lfs": {
+        "size": 1598635,
+        "sha256": "ded932e846454a7691f2e0cc2c916132731eba4df00f488b7bfaf7bc359b2d60",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "block_config.py",
+      "size": 4347,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 74101,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_decilm.py",
+      "size": 2573,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00049.safetensors",
+      "size": 9496497704,
+      "lfs": {
+        "size": 9496497704,
+        "sha256": "5dbe6134deefa5c58219493ad5ed304690cb53c9817f50b8e441a42d0a56d768",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00049.safetensors",
+      "size": 9923726576,
+      "lfs": {
+        "size": 9923726576,
+        "sha256": "e453414a781fc32003cc4590f672772127e9a455574ec27c8db26435d04baf7f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00049.safetensors",
+      "size": 9403632784,
+      "lfs": {
+        "size": 9403632784,
+        "sha256": "15949222a368cc658583f4c7d623237a78933d5f4f38b8953067983b2ff13d02",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00049.safetensors",
+      "size": 9999254704,
+      "lfs": {
+        "size": 9999254704,
+        "sha256": "caa989cb73609dda3f8a705d1b8d7095c0cb26fee264e5e23aa4902ceb688e90",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00049.safetensors",
+      "size": 9529756680,
+      "lfs": {
+        "size": 9529756680,
+        "sha256": "df55b5e6606dc53077bfaf33ecfb1e216ff5b894b57a7caaa91784677855031e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00049.safetensors",
+      "size": 8824816704,
+      "lfs": {
+        "size": 8824816704,
+        "sha256": "ed59b0fd56d0b1c62e3ca058303cad864f7e8a4716723309aa2a6eeca2180dd0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00049.safetensors",
+      "size": 7516391416,
+      "lfs": {
+        "size": 7516391416,
+        "sha256": "34e262b6f839a165b26875bf8a7199e7c5cd31fd14386c1d55ade118f4b957a6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00049.safetensors",
+      "size": 8120173520,
+      "lfs": {
+        "size": 8120173520,
+        "sha256": "17bcdc7a25930719e6581c1e69495bbdd6fd9db56b16ce6a4cd18839d6bf63aa",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00049.safetensors",
+      "size": 8724153648,
+      "lfs": {
+        "size": 8724153648,
+        "sha256": "71329fd9755fcbffaa0c505e6b565d79f5e4a788d59ced0423fe48e4d9aeffcf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00049.safetensors",
+      "size": 9797928728,
+      "lfs": {
+        "size": 9797928728,
+        "sha256": "424671a36a4b76cdcef53c3780127395b343fcd4148b4f6a5b79b967096bfedd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00049.safetensors",
+      "size": 8321730600,
+      "lfs": {
+        "size": 8321730600,
+        "sha256": "5b7dac37dc498f469168f42dde8151ed3eaa82fcd4e4c6083559b6dbc7a9658e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00049.safetensors",
+      "size": 9630156560,
+      "lfs": {
+        "size": 9630156560,
+        "sha256": "c53bb43c1a9fa69d16c4beeacd387495c86bc1b6431045379cedeb8de844267f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00049.safetensors",
+      "size": 7550077744,
+      "lfs": {
+        "size": 7550077744,
+        "sha256": "d00fc7ed4c9313fb37a13e5985dbfe56133e00efa15e896b5c59d2fb4d0f3461",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00049.safetensors",
+      "size": 9865234288,
+      "lfs": {
+        "size": 9865234288,
+        "sha256": "5a9cbfa9f26773a4f2b2f058c213b77a9814f304d8bff642485486d311341582",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00049.safetensors",
+      "size": 8120173520,
+      "lfs": {
+        "size": 8120173520,
+        "sha256": "b5488a00c542a5a261294e7d8b899ce4dbe1edc4869847f7cb26d08c73317523",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00049.safetensors",
+      "size": 7516227000,
+      "lfs": {
+        "size": 7516227000,
+        "sha256": "c6f9b5cd0c6b12a80d37df2d982cd1541f7c3c456d6c510fdfd12c6805d36629",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00049.safetensors",
+      "size": 9865234288,
+      "lfs": {
+        "size": 9865234288,
+        "sha256": "5b58bff67f2f8e0e47b86e83cd171df7254c8e21fb83e3a4cc465d7ea837f403",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00049.safetensors",
+      "size": 8120173520,
+      "lfs": {
+        "size": 8120173520,
+        "sha256": "0aba6a488d1b2c8a2244dfac7db48e725d0128d9820ef8fa30af5f41c538baf0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00049.safetensors",
+      "size": 7516227000,
+      "lfs": {
+        "size": 7516227000,
+        "sha256": "d0b5c605987e1a43c5bbf1c4d2e6177020852ffcea7bb8b40dc5df3a6bb8ce9d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00049.safetensors",
+      "size": 9865234288,
+      "lfs": {
+        "size": 9865234288,
+        "sha256": "514b2870d3ee3a6c10fc6dfae1da8bd66b1e4de5a07f0d3402cd8b010a0665db",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00049.safetensors",
+      "size": 8120173520,
+      "lfs": {
+        "size": 8120173520,
+        "sha256": "5a741e720b18b95992f32c82702aa6ffee0cb0e5dee0f91854d552ad12f96604",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00049.safetensors",
+      "size": 7516227000,
+      "lfs": {
+        "size": 7516227000,
+        "sha256": "be64c2a2e5b7c9a01f5480a4b4a957fbd53274abf16d4d1d59b3d88101671b63",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00049.safetensors",
+      "size": 9865234288,
+      "lfs": {
+        "size": 9865234288,
+        "sha256": "57140ddbdb1492884d83a5c4765633a345412e0c95b094cfbb9e1dfa634f8941",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00049.safetensors",
+      "size": 8120173520,
+      "lfs": {
+        "size": 8120173520,
+        "sha256": "236476c971742130bc74f2f11ce0271c861e970be44f300dba157d731ee810ae",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00049.safetensors",
+      "size": 9865004104,
+      "lfs": {
+        "size": 9865004104,
+        "sha256": "d102f6f7604ac4af54999d44c7fac7b0cffee2803a8c9fa591334d4355e494e7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00049.safetensors",
+      "size": 8405386784,
+      "lfs": {
+        "size": 8405386784,
+        "sha256": "cec920c4d730196ac4eda55e9632b905e7fdcf5ab77eabcc38adcbf054eed029",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00049.safetensors",
+      "size": 9529723696,
+      "lfs": {
+        "size": 9529723696,
+        "sha256": "b2fa6f03938e1cc17dd014246e137dc40f12fe6582419d2fdb88c4de8ebd9ae4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00049.safetensors",
+      "size": 9076475656,
+      "lfs": {
+        "size": 9076475656,
+        "sha256": "81f5c79d696b1b31a5604696df6426d99297cbf61856262aae98451fb7cbf435",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00049.safetensors",
+      "size": 9101641608,
+      "lfs": {
+        "size": 9101641608,
+        "sha256": "1d9bc6be03f9f8d42fcd5994f87f2ee07fd90d3de7dc52c895ea71e5b1153135",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00049.safetensors",
+      "size": 9261419184,
+      "lfs": {
+        "size": 9261419184,
+        "sha256": "62fbd93b4cef1eadf647d28b9ed2da98e88cb276059f902942d26345c6242ea4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00049.safetensors",
+      "size": 9865004696,
+      "lfs": {
+        "size": 9865004696,
+        "sha256": "25eef50bd433ebb2c3e15b004c20fabf490c09ac43456b384f31952950858711",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00049.safetensors",
+      "size": 8724482424,
+      "lfs": {
+        "size": 8724482424,
+        "sha256": "b13a8bc3b993a7d35edcda6be1c19cd5568584aed2bf2d2dceb068b21ca7dab2",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00049.safetensors",
+      "size": 9865201416,
+      "lfs": {
+        "size": 9865201416,
+        "sha256": "52796fd5c6b4629013fa76d4de4a7266c0ddec65b457ab792c520fc7e6b72a54",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00049.safetensors",
+      "size": 6727664600,
+      "lfs": {
+        "size": 6727664600,
+        "sha256": "abf4a1294e78cb9d522ec393a6ef9c1a1bd96e733a69393e927e2e26c121b47d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00049.safetensors",
+      "size": 26172457232,
+      "lfs": {
+        "size": 26172457232,
+        "sha256": "758a9f00f001b5de7426fd5f60f7025b17f6c851310945a0f36e189acfe2ce41",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00049.safetensors",
+      "size": 13086228632,
+      "lfs": {
+        "size": 13086228632,
+        "sha256": "106061a51c4005c956ce5b7b1188850aca3e946c6a9350b52820c34bd5ede094",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00049.safetensors",
+      "size": 27917287696,
+      "lfs": {
+        "size": 27917287696,
+        "sha256": "08be35796d7e6b955d761062b00d6d41f9ffaddf14b068ce1e1fda609611a90d",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00049.safetensors",
+      "size": 13958643864,
+      "lfs": {
+        "size": 13958643864,
+        "sha256": "1a254b9c52c747e760bc00e7d51e9f8ecb8360445b656cb4ca6cdc59f294bbfd",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00039-of-00049.safetensors",
+      "size": 22481469712,
+      "lfs": {
+        "size": 22481469712,
+        "sha256": "069c7a61fffbd35237e443a91d2038f2a2c1a6c1b3e41713dd300a4e27c8393a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00040-of-00049.safetensors",
+      "size": 11240734872,
+      "lfs": {
+        "size": 11240734872,
+        "sha256": "cddb00fbb8d7d0e867716621f39df8aa765fca99a70b13d398527102d707f54b",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00041-of-00049.safetensors",
+      "size": 19730006288,
+      "lfs": {
+        "size": 19730006288,
+        "sha256": "6da605fbb86f89d3ba909881451d2d185385c5611c65b4fda88f5583d0f9a0ba",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "model-00042-of-00049.safetensors",
+      "size": 5679187160,
+      "lfs": {
+        "size": 5679187160,
+        "sha256": "ef80aadc1deef5792b941e0229b8bb43b2cd475538d4f44ba3c83e28695b1d8c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00043-of-00049.safetensors",
+      "size": 9865036056,
+      "lfs": {
+        "size": 9865036056,
+        "sha256": "afc97447fb1297d51e2ec8a8dfd39b7abc96906a3b17df43119648903883c450",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00044-of-00049.safetensors",
+      "size": 9663843024,
+      "lfs": {
+        "size": 9663843024,
+        "sha256": "de741e1d14911e68654ec86b2b1135dec00866a06b334a4246b79179c4f7fdc8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00045-of-00049.safetensors",
+      "size": 8556447384,
+      "lfs": {
+        "size": 8556447384,
+        "sha256": "cc757075156fc5372efe22fccbc7b4f8c4e3bf114b820e285a4558dfb8cc7d7b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00046-of-00049.safetensors",
+      "size": 9974549144,
+      "lfs": {
+        "size": 9974549144,
+        "sha256": "d2548a8e44f1211139f4c2c71a2a54ca1a8676156db4c44e9a53c7689ff1b567",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00047-of-00049.safetensors",
+      "size": 8120173528,
+      "lfs": {
+        "size": 8120173528,
+        "sha256": "e2237b77310cdbaa4a502566598c39b9c6033c29f4d0642e670c57da7a3df65f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00048-of-00049.safetensors",
+      "size": 9865004944,
+      "lfs": {
+        "size": 9865004944,
+        "sha256": "49205c0518d292f06806faa2f58364d86236a56af971eb05b0211e0f7caff900",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00049-of-00049.safetensors",
+      "size": 8740931008,
+      "lfs": {
+        "size": 8740931008,
+        "sha256": "8b22c1f60de575e43ea63af0a9ab68652bfb731337fb9cb47000c4f1d377c5d5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 53506,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling_decilm.py",
+      "size": 78580,
+      "lfs": null
+    },
+    {
+      "rfilename": "nemo_common.json",
+      "size": 2,
+      "lfs": null
+    },
+    {
+      "rfilename": "nemo_common.pt",
+      "size": 860,
+      "lfs": {
+        "size": 860,
+        "sha256": "e4e4090fa34d96307127606cccef3ae99aedae58279e8bdf1746d44d3bf7aa47",
+        "pointer_size": 128
+      }
+    },
+    {
+      "rfilename": "nemo_model_config.yaml",
+      "size": 5676,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 296,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17209920,
+      "lfs": {
+        "size": 17209920,
+        "sha256": "6b9e4e7fb171f92fd137b777cc2714bf87d11576700a1dcd7a399e7bbe39537b",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 51331,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_name.txt",
+      "size": 34,
+      "lfs": null
+    },
+    {
+      "rfilename": "training_flowchart.png",
+      "size": 505013,
+      "lfs": {
+        "size": 505013,
+        "sha256": "e2cbe095571b305bf14370bb8669900a79c0c834cc614a5bb6475f7214ea345f",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "transformers_4_44_2__activations.py",
+      "size": 8189,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__cache_utils.py",
+      "size": 64589,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__configuration_llama.py",
+      "size": 11066,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_attn_mask_utils.py",
+      "size": 21330,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_flash_attention_utils_backward_compat.py",
+      "size": 15751,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_outputs.py",
+      "size": 112579,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__modeling_rope_utils.py",
+      "size": 28067,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformers_4_44_2__pytorch_utils.py",
+      "size": 666,
+      "lfs": null
+    },
+    {
+      "rfilename": "variable_cache.py",
+      "size": 6206,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/\npipeline_tag: text-generation\nlanguage:\n- en\ntags:\n- nvidia\n- llama-3\n- pytorch\n---\n\n# Llama-3.1-Nemotron-Ultra-253B-v1\n\n## Model Overview \n\n![Accuracy Plot](./accuracy_plot.png)\n\nLlama-3.1-Nemotron-Ultra-253B-v1 is a large language model (LLM) which is a derivative of [Meta Llama-3.1-405B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct) (AKA the *reference model*). It is a reasoning model that is post trained for reasoning, human chat preferences, and tasks, such as RAG and tool calling. The model supports a context length of 128K tokens. This model fits on a single 8xH100 node for inference.\n\nLlama-3.1-Nemotron-Ultra-253B-v1 is a model which offers a great tradeoff between model accuracy and efficiency. Efficiency (throughput) directly translates to savings. Using a novel Neural Architecture Search (NAS) approach, we greatly reduce the model\u2019s memory footprint, enabling larger workloads, as well as reducing the number of GPUs required to run the model in a data center environment. This NAS approach enables the selection of a desired point in the accuracy-efficiency tradeoff. Furthermore, by using a novel method to vertically compress the model (see details [here](https://arxiv.org/abs/2503.18908)), it also offers a significant improvement in latency.\n\nThe model underwent a multi-phase post-training process to enhance both its reasoning and non-reasoning capabilities. This includes a supervised fine-tuning stage for Math, Code, Reasoning, Chat, and Tool Calling as well as multiple reinforcement learning (RL) stages using Group Relative Policy Optimization (GRPO) algorithms for reasoning, chat, and instruction-following. \n\nThis model is ready for commercial use. \n\nFor more details on how the model was trained, please see our [technical report](https://arxiv.org/abs/2505.00949) and [blog](https://developer.nvidia.com/blog/build-enterprise-ai-agents-with-advanced-open-nvidia-llama-nemotron-reasoning-models/).\n\n![Training Flow](./training_flowchart.png)\n\nThis model is part of the Llama Nemotron Collection. You can find the other model(s) in this family here: \n\n- [Llama-3.1-Nemotron-Nano-8B-v1](https://huggingface.co/nvidia/Llama-3.1-Nemotron-Nano-8B-v1)  \n- [Llama-3.3-Nemotron-Super-49B-v1](https://huggingface.co/nvidia/Llama-3\\_3-Nemotron-Super-49B-v1)\n\n## Feature Voting\n\nWe want to hear from you! Share your ideas, vote on what matters, and help [shape the future of Nemotron](https://nemotron.ideas.nvidia.com/).\n\n\n## License/Terms of Use\n\nGOVERNING TERMS: Your use of this model is governed by the [NVIDIA Open Model License.](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/) Additional Information: [Llama 3.1 Community License Agreement](https://www.llama.com/llama3\\_1/license/). Built with Llama.\n\n**Model Developer:** NVIDIA\n\n**Model Dates:** Trained between November 2024 and April 2025\n\n**Data Freshness:**  The pretraining data has a cutoff of 2023 per Llama-3.1-405B-Instruct\n\n### Use Case:\nDevelopers designing AI Agent systems, chatbots, RAG systems, and other AI-powered applications. Also suitable for typical instruction-following tasks. \n\n### Release Date: \n2025-04-07\n\n## References\n\n* [\\[2505.00949\\] Llama-Nemotron: Efficient Reasoning Models](https://arxiv.org/abs/2505.00949)\n* [\\[2502.00203\\] Reward-aware Preference Optimization: A Unified Mathematical Framework for Model Alignment](https://arxiv.org/abs/2502.00203)  \n* [\\[2411.19146\\]Puzzle: Distillation-Based NAS for Inference-Optimized LLMs](https://arxiv.org/abs/2411.19146)  \n* [\\[2503.18908\\]FFN Fusion: Rethinking Sequential Computation in Large Language Models](https://arxiv.org/abs/2503.18908)\n\n## Model Architecture  \n**Architecture Type:** Dense decoder-only Transformer model  \n**Network Architecture:** Llama-3.1-405B-Instruct, customized through Neural Architecture Search (NAS)\n\n**This model was developed based on Llama-3.1-405B-Instruct <br> \n** This model has 253B model parameters. <br> \n\nThe model is a derivative of Llama 3.1-405B-Instruct, using Neural Architecture Search (NAS). The NAS algorithm results in non-standard and non-repetitive blocks. This includes the following: \n\n* Skip attention: In some blocks, the attention is skipped entirely, or replaced with a single linear layer.  \n* Variable FFN: The expansion/compression ratio in the FFN layer is different between blocks.   \n* FFN Fusion: When several consecutive attention layers are skipped, which can result in a sequence of multiple FFNs, that sequence of FFNs are fused into a smaller number of wider FFN layers.\n\nFor each block of the reference model, we create multiple variants providing different tradeoffs of quality vs. computational complexity, discussed in more depth below. We then search over the blocks to create a model which meets the required throughput and memory while minimizing the quality degradation. To recover performance, the model initially undergoes knowledge distillation (KD) for 65 billion tokens. This is followed by a continual pretraining (CPT) phase for 88 billion tokens.\n\n## Intended use\n\nLlama-3.1-Nemotron-Ultra-253B-v1 is a general purpose reasoning and chat model intended to be used in English and coding languages. Other non-English languages (German, French, Italian, Portuguese, Hindi, Spanish, and Thai) are also supported. \n\n## Input  \n- **Input Type:** Text  \n- **Input Format:** String  \n- **Input Parameters:** One-Dimensional (1D)  \n- **Other Properties Related to Input:** Context length up to 131,072 tokens\n\n## Output  \n- **Output Type:** Text  \n- **Output Format:** String  \n- **Output Parameters:** One-Dimensional (1D)  \n- **Other Properties Related to Output:** Context length up to 131,072 tokens\n\n## Software Integration  \n- **Runtime Engine:** Transformers  \n- **Recommended Hardware Microarchitecture Compatibility:**   \n  - NVIDIA Hopper  \n  - NVIDIA Ampere  \n- **Preferred Operating System(s):** Linux \n\n## Model Version  \n1.0 (4/7/2025)\n\n## Quick Start and Usage Recommendations:\n\n1. Reasoning mode (ON/OFF) is controlled via the system prompt, which must be set as shown in the example below. All instructions should be contained within the user prompt  \n2. We recommend setting temperature to \\`0.6\\`, and Top P to \\`0.95\\` for Reasoning ON mode  \n3. We recommend using greedy decoding (temperature 0\\) for Reasoning OFF mode  \n4. We do not recommend to add additional system prompts besides the control prompt, all instructions should be put into user query  \n5. We have provided a list of prompts to use for evaluation for each benchmark where a specific template is required\n6. The model will include `<think></think>` if no reasoning was necessary in Reasoning ON model, this is expected behaviour\n\nYou can try this model out through the preview API, using this link: [Llama-3\\_1-Nemotron-Ultra-253B-v1](https://build.nvidia.com/nvidia/llama-3\\_1-nemotron-ultra-253b-v1).\n\n### Use It with Transformers\nSee the snippet below for usage with [Hugging Face Transformers](https://huggingface.co/docs/transformers/main/en/index) library. Reasoning mode (ON/OFF) is controlled via system prompt. Please see the example below\n\nWe recommend using the *transformers* package with version 4.48.3.   \nExample of reasoning on:\n\n```py\nimport torch\nimport transformers\n\nmodel_id = \"nvidia/Llama-3_1-Nemotron-Ultra-253B-v1\"\nmodel_kwargs = {\"torch_dtype\": torch.bfloat16, \"trust_remote_code\": True, \"device_map\": \"auto\"}\ntokenizer = transformers.AutoTokenizer.from_pretrained(model_id)\ntokenizer.pad_token_id = tokenizer.eos_token_id\n\npipeline = transformers.pipeline(\n   \"text-generation\",\n   model=model_id,\n   tokenizer=tokenizer,\n   max_new_tokens=32768,\n   temperature=0.6,\n   top_p=0.95,\n   **model_kwargs\n)\n\nthinking = \"on\"\n\n\nprint(pipeline([{\"role\": \"system\", \"content\": f\"detailed thinking {thinking}\"},{\"role\": \"user\", \"content\": \"Solve x*(sin(x)+2)=0\"}]))\n```\n\nExample of reasoning off:\n\n```py\nimport torch\nimport transformers\n\nmodel_id = \"nvidia/Llama-3_1-Nemotron-ULtra-253B-v1\"\nmodel_kwargs = {\"torch_dtype\": torch.bfloat16, \"trust_remote_code\": True, \"device_map\": \"auto\"}\ntokenizer = transformers.AutoTokenizer.from_pretrained(model_id)\ntokenizer.pad_token_id = tokenizer.eos_token_id\n\npipeline = transformers.pipeline(\n   \"text-generation\",\n   model=model_id,\n   tokenizer=tokenizer,\n   max_new_tokens=32768,\n   do_sample=False,\n   **model_kwargs\n)\n\nthinking = \"off\"\n\n\nprint(pipeline([{\"role\": \"system\", \"content\": f\"detailed thinking {thinking}\"},{\"role\": \"user\", \"content\": \"Solve x*(sin(x)+2)=0\"}]))\n```\n\n### Use It with vLLM\n\n```\npip install vllm==0.8.3\n```\nAn example on how to serve with vLLM:\n```\npython3 -m vllm.entrypoints.openai.api_server \\\n  --model \"nvidia/Llama-3_1-Nemotron-Ultra-253B-v1\" \\\n  --trust-remote-code \\\n  --seed=1 \\\n  --host=\"0.0.0.0\" \\\n  --port=5000 \\\n  --served-model-name \"nvidia/Llama-3_1-Nemotron-Ultra-253B-v1\" \\\n  --tensor-parallel-size=8 \\\n  --max-model-len=32768 \\\n  --gpu-memory-utilization 0.95 \\\n  --enforce-eager\n```\n## Inference:  \n**Engine:**\n\n- Transformers\n\n**Test Hardware:**  \n- BF16:   \n  - 8x NVIDIA H100-80GB   \n  - 4x NVIDIA B100  \n- FP 8  \n  - 4x NVIDIA H100-80GB  \n   \n## Training and Evaluation Datasets\n\n## Training Datasets\n\nA large variety of training data was used for the knowledge distillation phase before post-training pipeline, 3 of which included: FineWeb, Buzz-V1.2, and Dolma.\n\nThe data for the multi-stage post-training phases is a compilation of SFT and RL data that supports improvements of math, code, general reasoning, and instruction following capabilities of the original Llama instruct model.\n\nPrompts have been sourced from either public and open corpus or synthetically generated. Responses were synthetically generated by a variety of models, with some prompts containing responses for both reasoning on and off modes, to train the model to distinguish between two modes. This model was improved with Qwen.\n\nWe have released our [Llama-Nemotron-Post-Training-Dataset](https://huggingface.co/datasets/nvidia/Llama-Nemotron-Post-Training-Dataset) to promote openness and transparency in model development and improvement.\n\n**Data Collection for Training Datasets:**\n\n- Hybrid: Automated, Human, Synthetic\n\n**Data Labeling for Training Datasets:**\n\n- Hybrid: Automated, Human, Synthetic\n\n## Evaluation Datasets \n\nWe used the datasets listed in the next section to evaluate Llama-3.1-Nemotron-Ultra-253B-v1. \n\nData Collection for Evaluation Datasets:\n\n- Hybrid: Human/Synthetic\n\nData Labeling for Evaluation Datasets:\n\n- Hybrid: Human/Synthetic/Automatic\n\n## Evaluation Results  \n*These results contain both Reasoning On, and Reasoning Off. We recommend using temperature=\\`0.6\\`, top\\_p=\\`0.95\\` for Reasoning On mode, and greedy decoding for Reasoning Off mode. All evaluations are done with 32k sequence length. We run the benchmarks up to 16 times and average the scores to be more accurate.*  \n \n\n> NOTE: Where applicable, a Prompt Template will be provided. While completing benchmarks, please ensure that you are parsing for the correct output format as per the provided prompt in order to reproduce the benchmarks seen below. \n\n### GPQA\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 56.60 | \n| Reasoning On | 76.01 |\n\nUser Prompt Template: \n\n```\n\"What is the correct answer to this question: {question}\\nChoices:\\nA. {option_A}\\nB. {option_B}\\nC. {option_C}\\nD. {option_D}\\nLet's think step by step, and put the final answer (should be a single letter A, B, C, or D) into a \\boxed{}\"\n```\n\n### AIME25\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 16.67 | \n| Reasoning On | 72.50 |\n\nUser Prompt Template: \n\n```\n\"Below is a math question. I want you to reason through the steps and then give a final answer. Your final answer should be in \\boxed{}.\\nQuestion: {question}\"\n```\n\n### BFCL V2 Live\n\n| Reasoning Mode | Score |\n|--------------|------------|\n| Reasoning Off | 73.62 |\n| Reasoning On | 74.10 | \n\nUser Prompt Template:\n\n```\nYou are an expert in composing functions. You are given a question and a set of possible functions. \nBased on the question, you will need to make one or more function/tool calls to achieve the purpose. \nIf none of the function can be used, point it out. If the given question lacks the parameters required by the function,\nalso point it out. You should only return the function call in tools call sections.\n\nIf you decide to invoke any of the function(s), you MUST put it in the format of <TOOLCALL>[func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]</TOOLCALL>\n\nYou SHOULD NOT include any other text in the response.\nHere is a list of functions in JSON format that you can invoke.\n\n<AVAILABLE_TOOLS>{functions}</AVAILABLE_TOOLS>\n\n{user_prompt}\n```\n\n### LiveCodeBench (20240801-20250201)\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 29.03 | \n| Reasoning On | 66.31 |\n\nUser Prompt Template (without starter code):\n\n````\n\"You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests.\n\nQuestion: {prompt}\n\nRead the inputs from stdin solve the problem and write the answer to stdout (do not directly test on the sample inputs). Enclose your code within delimiters as follows. Ensure that when the python program runs, it reads the inputs, runs the algorithm and writes output to STDOUT.\n```python\n# YOUR CODE HERE\n```\n````\n\nUser Prompt Template (with starter code):\n\n````\nYou will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests.\n\nQuestion: {prompt}\n\nYou will use the following starter code to write the solution to the problem and enclose your code within delimiters.\n```python\n{starter_code}\n```\n````\n\n### IFEval\n\n| Reasoning Mode | Strict:Instruction |\n|--------------|------------|\n| Reasoning Off | 88.85 | \n| Reasoning On | 89.45 | \n\n### MATH500\n\n| Reasoning Mode | pass@1 |\n|--------------|------------|\n| Reasoning Off | 80.40 | \n| Reasoning On | 97.00 |\n\nUser Prompt Template: \n\n```\n\"Below is a math question. I want you to reason through the steps and then give a final answer. Your final answer should be in \\boxed{}.\\nQuestion: {question}\"\n```\n\n### JudgeBench\n\n| Reasoning Mode | Knowledge Score | Reasoning Score | Math Score | Coding Score | Overall Score | \n|--------------|------------|------------|------------|------------|------------|\n| Reasoning On | 70.13 | 81.63 | 89.29 | 92.86 | 79.14 | \n\n## Ethical Considerations:\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications.  When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. \n\nFor more detailed information on ethical considerations for this model, please see the Model Card++ [Explainability](./EXPLAINABILITY.md), [Bias](./BIAS.md), [Safety & Security](./SAFETY_and_SECURITY.md), and [Privacy](./PRIVACY.md) Subcards.\n\nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n\n## Citation\n```\n@misc{bercovich2025llamanemotronefficientreasoningmodels,\n      title={Llama-Nemotron: Efficient Reasoning Models}, \n      author={Akhiad Bercovich and Itay Levy and Izik Golan and Mohammad Dabbah and Ran El-Yaniv and Omri Puny and Ido Galil and Zach Moshe and Tomer Ronen and Najeeb Nabwani and Ido Shahaf and Oren Tropp and Ehud Karpas and Ran Zilberstein and Jiaqi Zeng and Soumye Singhal and Alexander Bukharin and Yian Zhang and Tugrul Konuk and Gerald Shen and Ameya Sunil Mahabaleshwarkar and Bilal Kartal and Yoshi Suhara and Olivier Delalleau and Zijia Chen and Zhilin Wang and David Mosallanezhad and Adi Renduchintala and Haifeng Qian and Dima Rekesh and Fei Jia and Somshubra Majumdar and Vahid Noroozi and Wasi Uddin Ahmad and Sean Narenthiran and Aleksander Ficek and Mehrzad Samadi and Jocelyn Huang and Siddhartha Jain and Igor Gitman and Ivan Moshkov and Wei Du and Shubham Toshniwal and George Armstrong and Branislav Kisacanin and Matvei Novikov and Daria Gitman and Evelina Bakhturina and Jane Polak Scowcroft and John Kamalu and Dan Su and Kezhi Kong and Markus Kliegl and Rabeeh Karimi and Ying Lin and Sanjeev Satheesh and Jupinder Parmar and Pritam Gundecha and Brandon Norick and Joseph Jennings and Shrimai Prabhumoye and Syeda Nahida Akter and Mostofa Patwary and Abhinav Khattar and Deepak Narayanan and Roger Waleffe and Jimmy Zhang and Bor-Yiing Su and Guyue Huang and Terry Kong and Parth Chadha and Sahil Jain and Christine Harvey and Elad Segal and Jining Huang and Sergey Kashirsky and Robert McQueen and Izzy Putterman and George Lam and Arun Venkatesan and Sherry Wu and Vinh Nguyen and Manoj Kilaru and Andrew Wang and Anna Warno and Abhilash Somasamudramath and Sandip Bhaskar and Maka Dong and Nave Assaf and Shahar Mor and Omer Ullman Argov and Scot Junkin and Oleksandr Romanenko and Pedro Larroy and Monika Katariya and Marco Rovinelli and Viji Balas and Nicholas Edelman and Anahita Bhiwandiwalla and Muthu Subramaniam and Smita Ithape and Karthik Ramamoorthy and Yuting Wu and Suguna Varshini Velury and Omri Almog and Joyjit Daw and Denys Fridman and Erick Galinkin and Michael Evans and Katherine Luna and Leon Derczynski and Nikki Pope and Eileen Long and Seth Schneider and Guillermo Siman and Tomasz Grzegorzek and Pablo Ribalta and Monika Katariya and Joey Conway and Trisha Saar and Ann Guan and Krzysztof Pawelec and Shyamala Prayaga and Oleksii Kuchaiev and Boris Ginsburg and Oluwatobi Olabiyi and Kari Briski and Jonathan Cohen and Bryan Catanzaro and Jonah Alben and Yonatan Geifman and Eric Chung and Chris Alexiuk},\n      year={2025},\n      eprint={2505.00949},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2505.00949}, \n}\n```",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "pipeline_tag": "text-generation",
+    "language": [
+      "en"
+    ],
+    "tags": [
+      "nvidia",
+      "llama-3",
+      "pytorch"
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_decilm.DeciLMForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

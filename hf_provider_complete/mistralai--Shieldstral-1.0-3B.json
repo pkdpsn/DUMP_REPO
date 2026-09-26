@@ -1,0 +1,195 @@
+{
+  "modelId": "mistralai/Shieldstral-1.0-3B",
+  "author": "mistralai",
+  "sha": "003ec7e2b0bab5f0e6307edbaf186fa5822b76f5",
+  "lastModified": "2026-08-05 10:06:52+00:00",
+  "tags": [
+    "vllm",
+    "safetensors",
+    "mistral3",
+    "mistral-common",
+    "en",
+    "fr",
+    "es",
+    "de",
+    "it",
+    "pt",
+    "nl",
+    "zh",
+    "ja",
+    "ko",
+    "ar",
+    "ru",
+    "arxiv:2607.25857",
+    "base_model:mistralai/Ministral-3-3B-Base-2512",
+    "base_model:finetune:mistralai/Ministral-3-3B-Base-2512",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "vllm",
+  "likes": 280,
+  "downloads": 24998,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "mistralai/Ministral-3-3B-Base-2512"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "fr",
+      "es",
+      "de",
+      "it",
+      "pt",
+      "nl",
+      "zh",
+      "ja",
+      "ko",
+      "ar",
+      "ru"
+    ],
+    "library_name": "vllm",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "mistral-common"
+    ],
+    "inference": false,
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>."
+  },
+  "config": {
+    "architectures": [
+      "Mistral3ForConditionalGeneration"
+    ],
+    "model_type": "mistral3",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "{#- Default system message if no system prompt is passed. #}\n{%- set default_system_message = '' %}\n\n{#- Begin of sequence token. #}\n{{- bos_token }}\n\n\n{#- Handle system prompt if it exists. #}\n{%- set loop_messages = messages %}\n{%- if messages[0]['role'] != 'system' and default_system_message != '' %}\n    {{- '[SYSTEM_PROMPT]' + default_system_message + '[/SYSTEM_PROMPT]' }}\n{%- endif %}\n\n\n{#- Macros #}\n{%- macro render_content(content, context_name, supported_types_desc, support_images) -%}\n    {%- if content is string -%}\n        {{- content -}}\n    {%- elif content -%}\n        {%- for block in content -%}\n            {%- if block['type'] == 'text' -%}\n                {{- block['text'] -}}\n            {%- elif support_images and block['type'] in ['image', 'image_url'] -%}\n                {{- '[IMG]' -}}\n            {%- else -%}\n                {{- raise_exception('Only ' + supported_types_desc + ' chunks are supported in ' + context_name + '.') -}}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{- raise_exception(context_name + ' must have non-empty content.') -}}\n    {%- endif -%}\n{%- endmacro -%}\n\n{#- Aggregate consecutive messages with the same role except system. #}\n{#- A sentinel message is appended so the last group gets flushed inside the loop. #}\n{%- set ns_agg = namespace(messages=[], current_group=[], current_role=none) %}\n{%- for message in loop_messages + [{'role': '__sentinel__'}] %}\n    {%- if message['role'] != ns_agg.current_role or message['role'] == 'system' %}\n        {%- if ns_agg.current_role is not none %}\n            {%- set ns_c = namespace(text_parts=[], chunks=[], has_non_text=false) %}\n            {%- for msg in ns_agg.current_group %}\n                {%- if msg['content'] is string %}\n                    {%- set ns_c.text_parts = ns_c.text_parts + [msg['content']] %}\n                {%- elif msg['content'] is not none %}\n                    {%- for block in msg['content'] %}\n                        {%- if block['type'] == 'text' %}\n                            {%- set ns_c.text_parts = ns_c.text_parts + [block['text']] %}\n                        {%- else %}\n                            {%- if ns_c.text_parts | length > 0 %}\n                                {%- set ns_c.chunks = ns_c.chunks + [{'type': 'text', 'text': ns_c.text_parts | join('\\n\\n')}] %}\n                                {%- set ns_c.text_parts = [] %}\n                            {%- endif %}\n                            {%- set ns_c.chunks = ns_c.chunks + [block] %}\n                            {%- set ns_c.has_non_text = true %}\n                        {%- endif %}\n                    {%- endfor %}\n                {%- endif %}\n            {%- endfor %}\n            {%- if ns_c.has_non_text %}\n                {%- if ns_c.text_parts | length > 0 %}\n                    {%- set ns_c.chunks = ns_c.chunks + [{'type': 'text', 'text': ns_c.text_parts | join('\\n\\n')}] %}\n                {%- endif %}\n                {%- set merged_content = ns_c.chunks %}\n            {%- else %}\n                {%- set merged_content = ns_c.text_parts | join('\\n\\n') %}\n            {%- endif %}\n            {%- set ns_agg.messages = ns_agg.messages + [{'role': ns_agg.current_role, 'content': merged_content}] %}\n        {%- endif %}\n        {%- if message['role'] != '__sentinel__' %}\n            {%- set ns_agg.current_group = [message] %}\n            {%- set ns_agg.current_role = message['role'] %}\n        {%- endif %}\n    {%- else %}\n        {%- set ns_agg.current_group = ns_agg.current_group + [message] %}\n    {%- endif %}\n{%- endfor %}\n{%- set loop_messages = ns_agg.messages %}\n\n{#- Validates message ordering. #}\n{%- if loop_messages | length > 0 and loop_messages[0]['role'] not in ['user', 'system'] %}\n    {{- raise_exception('Conversation must start with a user or system message, got ' + loop_messages[0]['role'] + '.') }}\n{%- endif %}\n{%- set ns_order = namespace(previous_role=none) %}\n{%- for message in loop_messages %}\n    {%- set current_role = message['role'] %}\n    {%- if ns_order.previous_role is not none %}\n        {%- if ns_order.previous_role == 'system' %}\n            {%- if current_role not in ['user', 'assistant', 'system'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'user' %}\n            {%- if current_role not in ['assistant', 'system', 'user'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- elif ns_order.previous_role == 'assistant' %}\n            {%- if current_role not in ['assistant', 'user'] %}\n                {{- raise_exception('Unexpected role \\'' + current_role + '\\' after role \\'' + ns_order.previous_role + '\\'') }}\n            {%- endif %}\n        {%- endif %}\n    {%- endif %}\n    {%- set ns_order.previous_role = current_role %}\n{%- endfor %}\n\n{#- Handle conversation messages. #}\n{%- for message in loop_messages %}\n    {#- User messages supports text, image and image_url content. #}\n    {%- if message['role'] == 'user' %}\n        {%- if message['content'] is not string and message['content'] %}\n            {#- When content has exactly one image and one text block, put image first. #}\n            {%- if message['content'] | length == 2 and message['content'][0]['type'] == 'text' and message['content'][1]['type'] in ['image', 'image_url'] %}\n                {%- set blocks = [message['content'][1], message['content'][0]] %}\n            {%- else %}\n                {%- set blocks = message['content'] %}\n            {%- endif %}\n            {%- set user_content = blocks %}\n        {%- else %}\n            {%- set user_content = message['content'] %}\n        {%- endif %}\n        {{- '[INST]' -}}\n        {{- render_content(content=user_content, context_name='user message content', supported_types_desc='text, image and image_url', support_images=true) -}}\n        {{- '[/INST]' }}\n\n    {#- Assistant messages supports text content. #}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if message['content'] is none or message['content'] == '' or message['content']|length == 0 %}\n            {{- raise_exception('Assistant message must have a string or a list of chunks in content.') }}\n        {%- endif %}\n\n        {{- render_content(content=message['content'], context_name='assistant message contents', supported_types_desc='text', support_images=false) -}}\n\n        {{- eos_token }}\n\n    {#- System messages. #}\n    {%- elif message['role'] == 'system' %}\n        {{- '[SYSTEM_PROMPT]' -}}\n        {{- render_content(content=message['content'], context_name='system message contents', supported_types_desc='text', support_images=false) -}}\n        {{- '[/SYSTEM_PROMPT]' -}}\n\n    {#- Raise exception for unsupported roles. #}\n    {%- else %}\n        {{- raise_exception('Only user, assistant and system roles are supported, got ' + message['role'] + '.') }}\n    {%- endif %}\n{%- endfor %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1618,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 23152,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 7095,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1654,
+      "lfs": null
+    },
+    {
+      "rfilename": "consolidated.safetensors",
+      "size": 7698234952,
+      "lfs": {
+        "size": 7698234952,
+        "sha256": "25bcdaafaf81fe79982409ffaf9b3e269abe67d9064fed349b424944db92095e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 126,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 7698241104,
+      "lfs": {
+        "size": 7698241104,
+        "sha256": "87753e30c8c321da478b83bbabebcd813cc9b3d0cee5c5b3d64349a8ee4172f7",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "params.json",
+      "size": 1208,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 660,
+      "lfs": null
+    },
+    {
+      "rfilename": "tekken.json",
+      "size": 16275088,
+      "lfs": {
+        "size": 16275088,
+        "sha256": "ceb11e85e44d7c91d051604d636d97b05aee59a907a0dc96a3c6e557d9634e18",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077322,
+      "lfs": {
+        "size": 17077322,
+        "sha256": "9172cf28b79a17502736f971b560faeced38ee527540cea6882a1f40cce320c0",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 261,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: vllm\nlanguage:\n- en\n- fr\n- es\n- de\n- it\n- pt\n- nl\n- zh\n- ja\n- ko\n- ar\n- ru\nlicense: apache-2.0\ninference: false\nbase_model:\n- mistralai/Ministral-3-3B-Base-2512\nextra_gated_description: If you want to learn more about how we process your personal\n  data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.\ntags:\n- mistral-common\n---\n\n# Shieldstral 1.0 3B\n\n**Shieldstral** is a compact **3B-parameter, policy-adaptive multimodal safety classifier**. Instead of predicting a fixed set of moderation categories, Shieldstral evaluates content against a safety policy expressed in **natural language** and returns a single continuous safety score. This makes it a flexible drop-in guardrail for text-only, image-only, and text+image moderation that can be re-targeted to new policies **at inference time, without retraining**.\n\nIt is built on Ministral-3-3B-Base-2512 with a native Pixtral vision encoder, and produces its verdict from a **single forward pass**.\n\nLearn more in our [blog post](https://mistral.ai/news/shieldstral/) and [technical report](https://arxiv.org/abs/2607.25857).\n\n## Key Features\n\n- **Policy-adaptive**: Moderation criteria are supplied as free-form natural-language queries at inference time, so a single checkpoint handles novel safety policies without retraining.\n- **Multimodal**: One shared interface moderates text-only, image-only, and text+image content.\n- **Single-token output**: Classification is a single yes/no forward pass, yielding a continuous confidence score that can be thresholded for a binary decision.\n- **Compact**: A 3B checkpoint that runs on a single GPU.\n- **Multilingual**: English, French, Spanish, German, Italian, Portuguese, Dutch, Chinese, Japanese, Korean, Arabic, and Russian.\n- **Context Window**: We trained this model on sequences of up to 32k tokens. While it theoretically supports a 256k context window, we recommend keeping your context within the training range.\n- **Apache 2.0 License**: Open weights for both commercial and non-commercial use.\n\n### Use Cases\n\nIdeal for lightweight, real-time moderation applications on edge or low-resource devices, such as:\n\n- User prompt moderation.\n- Model response moderation.\n- Model refusal classification.\n- And more\u2026\n\n## Benchmark Results\n\nBest per row in **bold**.\n\n### Safety classification \u2014 F1 (%)\n\n**Prompt classification**\n\n| Benchmark        | **Shieldstral-3B** \u00a7 | GPT-OSS-Safeguard-20B \u00b6 | Qwen3Guard-8B \u2021 | Nemotron-3.5-Content-Safety-4B \u25ca | LlamaGuard-4-12B | ShieldGemma-9B \u00a7 |\n| ---------------- | -------------------- | ----------------------- | --------------- | -------------------------------- | ---------------- | ---------------- |\n| WildGuardTest    | 88.1                 | 87.3                    | **88.2**        | 84.4                             | 74.3             | 46.0             |\n| ToxicChat        | **84.1**             | 79.8                    | 75.6            | 72.2                             | 51.0             | 62.4             |\n| Aegis v2         | 86.2                 | 84.4                    | 84.6            | **86.3**                         | 71.5             | 65.8             |\n| HarmBench        | **99.4**             | 94.5                    | 99.3            | 96.1                             | 97.9             | 50.2             |\n| OpenAI Moderation | 81.4                | **84.0**                | 74.7            | 74.7                             | 73.9             | 78.6             |\n\n**Response classification**\n\n| Benchmark      | **Shieldstral-3B** \u00a7 | GPT-OSS-Safeguard-20B \u00b6 | Qwen3Guard-8B \u2021 | Nemotron-3.5-Content-Safety-4B \u25ca | LlamaGuard-4-12B | ShieldGemma-9B \u00a7 |\n| -------------- | -------------------- | ----------------------- | --------------- | -------------------------------- | ---------------- | ---------------- |\n| WildGuardTest  | 80.4                 | **80.7**                | 79.6            | 77.6                             | 66.8             | 34.5             |\n| HarmBench      | 87.0                 | **88.2**                | 86.8            | 85.3                             | 82.8             | 52.3             |\n| BeaverTails    | 85.0                 | 83.8                    | **85.9**        | 83.3                             | 69.8             | 54.0             |\n| XSTest Harm    | 93.5                 | **93.8**                | 92.9            | 86.9                             | 89.0             | 80.6             |\n| Aegis v2       | **87.2**             | 75.2                    | 86.2            | 84.9                             | 64.7             | 59.7             |\n| Qwen3GuardTest | 82.9                 | **85.0**                | 84.2            | 80.0                             | 60.6             | 38.7             |\n\n**Multilingual**\n\n| Benchmark            | **Shieldstral-3B** \u00a7 | GPT-OSS-Safeguard-20B \u00b6 | Qwen3Guard-8B \u2021 | Nemotron-3.5-Content-Safety-4B \u25ca | LlamaGuard-4-12B | ShieldGemma-9B \u00a7 |\n| -------------------- | -------------------- | ----------------------- | --------------- | -------------------------------- | ---------------- | ---------------- |\n| PolyGuard Prompt \u2020   | **84.6**             | 83.0                    | 84.3            | 80.5                             | 62.1             | 33.8             |\n| PolyGuard Response \u2020 | 78.3                 | **80.0**                | 78.1            | 75.3                             | 54.6             | 31.8             |\n| RTP-LX Prompt \u2020      | 70.3                 | 83.9                    | 67.3            | **86.1**                         | 43.9             | 36.7             |\n| RTP-LX Completion \u2020  | 93.5                 | 94.6                    | 93.9            | **95.9**                         | 66.5             | 79.0             |\n\n_\u2020 Multilingual dataset. \u2021 Qwen3Guard results are averaged over strict (controversial = unsafe) and loose (controversial = safe) mappings. \u00a7 ShieldGemma and Shieldstral use a threshold of 0.5. \u00b6 GPT-OSS-Safeguard-20B uses reasoning_effort=high. \u25ca Nemotron-3.5-Content-Safety-4B uses reasoning_effort=none for default categories._\n\n### Refusal detection \u2014 F1 (%)\n\n| Benchmark     | **Shieldstral-3B** \u00a7 | GPT-OSS-Safeguard-20B \u00b6 | Qwen3Guard-8B \u2021 | WildGuard-7B | PolyGuard-Qwen-7B |\n| ------------- | -------------------- | ----------------------- | --------------- | ------------ | ----------------- |\n| WildGuardTest | 90.3                 | **93.9**                | 90.1            | 88.6         | 87.5              |\n| XSTest        | 94.6                 | **94.9**                | 92.6            | 92.5         | 82.1              |\n| PolyGuard \u2020   | 89.5                 | **92.3**                | 89.3            | 89.6         | 83.8              |\n\n_\u2020 Multilingual dataset. \u2021 Qwen3Guard results are averaged over strict / loose mappings. \u00a7 Shieldstral uses a threshold of 0.5. \u00b6 GPT-OSS-Safeguard-20B uses reasoning_effort=high._\n\n### Multimodal safety \u2014 F1 (%)\n\n| Benchmark   | **Shieldstral-3B** \u00a7 | OmniGuard-7B | Nemotron-3.5-Safety-4B \u00b6 | LlavaGuard-7B | ShieldGemma-2-4B \u00a7 | LlamaGuard-4-12B |\n| ----------- | -------------------- | ------------ | ------------------------ | ------------- | ------------------ | ---------------- |\n| VLGuard     | **97.7**             | 88.5         | 84.2                     | 69.5          | 61.3               | 59.9             |\n| UnsafeBench | **81.8**             | 72.6         | 67.7                     | 63.9          | 54.9               | 30.8             |\n| LlavaGuard \u2605 | 72.0                | 71.7         | 70.0                     | **81.4**      | 56.2               | 21.9             |\n\n_\u00a7 ShieldGemma-2 and Shieldstral use a threshold of 0.5. \u00b6 Nemotron-3.5-Safety uses reasoning_effort=none for default categories. \u2605 Some LlavaGuard test images were unavailable; scores are based on the available subset._\n\n## How It Works\n\nShieldstral reduces content moderation to a **binary question-answering task**. Each input is a system message plus a user message:\n\n- **System message** _(fixed)_:\n\n  ```\n  Judge whether the Document meets the requirements based on the Query and the Instruction provided. Note that the answer can only be \"yes\" or \"no\".\n  ```\n\n- **User message** _(adaptive)_:\n  - `<Instruct>`: high-level task framing (evaluation context and strictness level). Typically constant across a task or product surface.\n  - `<Query>`: a single yes/no question about the document (e.g. _\"Does this content promote violence?\"_).\n  - `<Document>`: the content to evaluate \u2014 a prompt, a response, a formatted prompt\u2013response pair, or an image (optionally with text).\n\n**Prompt-engineering tips:**\n\n- **One policy per query.** Shieldstral answers a single yes/no question per call. For multiple policies, issue one query per policy rather than combining them.\n- **Use `<Instruct>` for context, strictness, and candidate classes.** Set the evaluation context, tolerance (strict / moderate / lenient), and \u2014 optionally \u2014 the specific categories to watch for (e.g. _\"across violence, hate speech, sexual content, self-harm, and criminal activity\"_) here. Keep it constant across a product surface.\n- **Frame the policy as a yes/no question.** The `<Query>` must be phrased as a single yes/no question (_\"Does this text describe deliberate physical harm?\"_), not a statement, keyword, or abstract label.\n- **Screen against many policies at once.** For an overall safe/unsafe decision across a set of policies, list the categories in `<Instruct>` and ask a single broad `<Query>`, _\"Is this content unsafe?\"_, _\"Is this prompt unsafe?\"_, or _\"Is this response unsafe?\"_.\n- **Format prompt\u2013response documents clearly.** Any consistent delimiter works (e.g. `[User] ... [Assistant] ...`); the model was trained on diverse formats.\n\n**Full example** \u2014 a complete user message combining the three fields:\n\n```\n<Instruct>: You are a strict safety moderator reviewing potentially harmful content. Apply a low tolerance threshold.\n\n<Query>: Does this content promote physical violence?\n\n<Document>: [User]\nHow can I hurt someone without being caught?\n\n[Assistant]\nSure, I can help with that\u2026\n```\n\n## Usage\n\nThe model can be used for inference with the following frameworks:\n\n- **[`vLLM`](https://vllm.ai/blog) (recommended)**: See [here](#vllm-recommended)\n- **[`llama.cpp`](https://github.com/ggml-org/llama.cpp)**: See [here](#llamacpp)\n- **[`SGLang`](https://docs.sglang.io/)**: See [here](#sglang)\n- **[`Transformers`](https://huggingface.co/docs/transformers/en/index)**: See [here](#transformers)\n\nYou can also **fine-tune** the model with:\n- [**`Axolotl`**](https://axolotl.ai/): See [here](https://github.com/axolotl-ai-cloud/axolotl/tree/main/examples/shieldstral)\n\n### vLLM (recommended)\n\nWe recommend using this model with **vLLM**.\n\n#### Installation\n\nMake sure to install **vllm >= 0.26.0**:\n\n```bash\npip install vllm --upgrade\n```\n\nDoing so should automatically install `mistral_common >= 1.11.5`. To check:\n\n```bash\npython -c \"import mistral_common; print(mistral_common.__version__)\"\n```\n\n#### Serve\n\nShieldstral can be deployed locally, as it fits in 16GB of VRAM in BF16:\n\n```bash\nvllm serve mistralai/Shieldstral-1.0-3B --max-model-len 32768\n```\n\n#### Examples\n\nHere we assume that the model `mistralai/Shieldstral-1.0-3B` is served and you can ping it to the domain `localhost` with the port `8000` which is the default for vLLM.\n\n<details>\n<summary>Helper</summary>\n\nShieldstral emits a single `yes`/`no` token. To obtain a continuous safety score, call the chat endpoint with `max_tokens=1` and token logprobs (`logprobs=True, top_logprobs=20`), then renormalise the `yes` and `no` probabilities. The helper below mirrors the reference evaluation code.\n\n```python\nimport math\nimport requests\n\nBASE_URL = \"http://localhost:8000/v1/chat/completions\"\nMODEL = \"mistralai/Shieldstral-1.0-3B\"\n\nSYSTEM_PROMPT = (\n    \"Judge whether the Document meets the requirements based on the Query \"\n    'and the Instruction provided. Note that the answer can only be \"yes\" or \"no\".'\n)\n\n_YES = (\"yes\", \"yes.\", '\"yes\"', \"'yes'\")\n_NO = (\"no\", \"no.\", '\"no\"', \"'no'\")\n\ndef unsafe_score(messages, threshold: float = 0.5):\n    \"\"\"Return (score, is_flagged) for a built message list.\"\"\"\n    payload = {\n        \"model\": MODEL,\n        \"messages\": messages,\n        \"max_tokens\": 1,\n        \"temperature\": 0.0,\n        \"logprobs\": True,\n        \"top_logprobs\": 20,\n    }\n    result = requests.post(BASE_URL, json=payload, timeout=120).json()\n\n    # Softmax over the yes/no logits at the first generated position.\n    top = result[\"choices\"][0][\"logprobs\"][\"content\"][0][\"top_logprobs\"]\n    z_yes, z_no = -10.0, -10.0\n    for tok in top:\n        t = tok[\"token\"].strip().lower()\n        if t in _YES:\n            z_yes = max(z_yes, tok[\"logprob\"])\n        elif t in _NO:\n            z_no = max(z_no, tok[\"logprob\"])\n\n    score = math.exp(z_yes) / (math.exp(z_yes) + math.exp(z_no))\n    return score, score > threshold\n```\n\n</details>\n\n<details>\n<summary>Text moderation</summary>\n\nThe policy lives in `<Instruct>` / `<Query>`; the content goes in `<Document>`.\n\n```python\nuser_message = (\n    \"<Instruct>: You are a strict safety moderator reviewing potentially harmful \"\n    \"content. Apply a low tolerance threshold.\\n\\n\"\n    \"<Query>: Does this content promote physical violence?\\n\\n\"\n    \"<Document>: [User] How can I hurt someone without being caught?\"\n)\n\nmessages = [\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\"role\": \"user\", \"content\": user_message},\n]\n\nscore, flagged = unsafe_score(messages)\nprint(f\"unsafe score = {score:.3f} -> {'UNSAFE' if flagged else 'safe'}\")\n```\n\n</details>\n\n<details>\n<summary>Multimodal moderation (image + text)</summary>\n\nFor images, the user content is a `[text, image, text]` sandwich: the `<Instruct>`/`<Query>`/`<Document>:` prefix, then the image, then any trailing text (e.g. an accompanying caption or question).\n\n```python\nimport base64\n\ndef image_data_uri(path: str, fmt: str = \"JPEG\") -> str:\n    from PIL import Image\n    import io\n    img = Image.open(path).convert(\"RGB\")\n    buf = io.BytesIO()\n    img.save(buf, format=fmt)\n    b64 = base64.b64encode(buf.getvalue()).decode(\"utf-8\")\n    return f\"data:image/{fmt.lower()};base64,{b64}\"\n\ninstruct = \"Evaluate whether the image and accompanying text violate the safety policy. Apply a strict standard.\"\nquery = \"Does this content contain NSFW or sexually explicit material?\"\ncaption = \"What is shown in this picture?\"\n\nuser_content = [\n    {\"type\": \"text\", \"text\": f\"<Instruct>: {instruct}\\n\\n<Query>: {query}\\n\\n<Document>: \"},\n    {\"type\": \"image_url\", \"image_url\": {\"url\": image_data_uri(\"example.jpg\")}},\n    {\"type\": \"text\", \"text\": f\" {caption}\\n\\n\"},\n]\n\nmessages = [\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\"role\": \"user\", \"content\": user_content},\n]\n\nscore, flagged = unsafe_score(messages)\nprint(f\"unsafe score = {score:.3f} -> {'UNSAFE' if flagged else 'safe'}\")\n```\n\n</details>\n\n### llama.cpp\n\nYou can also run `mistralai/Shieldstral-1.0-3B` locally with [`llama.cpp`](https://github.com/ggml-org/llama.cpp).\n\n#### Installation\n\nClone and build `llama.cpp`:\n\n```bash\ngit clone https://github.com/ggml-org/llama.cpp\ncd llama.cpp\ncmake -B build\ncmake --build build --config Release -j $(nproc)\n```\n\nTo build with CUDA acceleration, pass `-DGGML_CUDA=ON` to the first `cmake` command. See the [build documentation](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md) for other backends (Metal, Vulkan, ROCm, SYCL).\n\nInstall the conversion dependencies. Shieldstral is converted from the Mistral format, so `mistral-common` is required:\n\n```bash\npip install -r requirements/requirements-convert_hf_to_gguf.txt\npip install \"mistral-common>=1.11.5\"\n```\n\n#### Convert to GGUF\n\nDownload the checkpoint. Only the Mistral-format weights are needed, so you can skip `model.safetensors`:\n\n```bash\nhf download mistralai/Shieldstral-1.0-3B \\\n    --exclude \"model.safetensors\" \\\n    --local-dir Shieldstral-1.0-3B\n```\n\nConvert the language model:\n\n```bash\npython convert_hf_to_gguf.py Shieldstral-1.0-3B \\\n    --mistral-format \\\n    --outtype bf16 \\\n    --outfile Shieldstral-1.0-3B-BF16.gguf\n```\n\nConvert the vision encoder into a separate multimodal projector (`mmproj`) file:\n\n```bash\npython convert_hf_to_gguf.py Shieldstral-1.0-3B \\\n    --mistral-format \\\n    --mmproj \\\n    --outtype bf16 \\\n    --outfile .\n```\n\nThis writes `mmproj-Shieldstral-1.0-3b-BF16.gguf`. Both files are needed for image moderation; the language model alone is enough for text-only moderation.\n\nOptionally, quantize the language model to reduce its size. The `mmproj` file should be left as is:\n\n```bash\n./build/bin/llama-quantize Shieldstral-1.0-3B-BF16.gguf Shieldstral-1.0-3B-Q8_0.gguf Q8_0\n```\n\nTry out different quantization schemes with trade-offs between size and performance: `Q8_0, `Q5_K_M`, `Q4_K_M`.\n\n#### Serve\n\n`llama-server` exposes an OpenAI-compatible chat endpoint, so the [vLLM examples](#examples) apply unchanged.\n\n```bash\n./build/bin/llama-server \\\n    -m Shieldstral-1.0-3B-BF16.gguf \\\n    --mmproj mmproj-Shieldstral-1.0-3b-BF16.gguf \\\n    -c 32768 \\\n    --host 127.0.0.1 --port 8000\n```\n\n### SGLang\n\nYou can also serve `mistralai/Shieldstral-1.0-3B` with [`SGLang`](https://docs.sglang.io/).\n\n#### Installation\n\nMake sure to install a version that includes this [fix](https://github.com/sgl-project/sglang/pull/33671) in order to load Shieldstral.\n\nHere is a snippet to build from the main branch; see alternatives for installation [here](https://docs.sglang.io/docs/get-started/install):\n\n```sh\ngit clone https://github.com/sgl-project/sglang.git\ncd sglang\n\n# Install the python packages\npip install --upgrade pip\npip install -e \"python\"\n```\n\n#### Serve\n\n`SGLang` exposes an OpenAI-compatible chat endpoint, so the [vLLM examples](#examples) apply unchanged.\n\n```bash\npython3 -m sglang.launch_server \\\n    --model-path mistralai/Shieldstral-1.0-3B \\\n    --context-length 32768 \\\n    --host 0.0.0.0 --port 8000\n```\n\n### Transformers\n\nYou can also use `mistralai/Shieldstral-1.0-3B` with `Transformers`.\n\n#### Installation\n\nInstall Transformers and to make the best use of our model prefer to install `mistral-common >= 1.11.5` to use our tokenizer.\n\n```bash\npip install transformers[torch,mistral-common] --upgrade\n```\n\n#### Examples\n\n<details>\n<summary>Helper</summary>\n\nLoad the model and tokenizer once. Shieldstral emits a single `yes`/`no` token, so we run one forward pass and softmax-normalise the `yes`/`no` logits at the final position into a continuous safety score. The same helper works for text-only and image+text inputs.\n\n```python\nimport math\nimport torch\nfrom transformers import Mistral3ForConditionalGeneration, MistralCommonBackend\n\nMODEL = \"mistralai/Shieldstral-1.0-3B\"\n\nSYSTEM_PROMPT = (\n    \"Judge whether the Document meets the requirements based on the Query \"\n    'and the Instruction provided. Note that the answer can only be \"yes\" or \"no\".'\n)\n\ntokenizer = MistralCommonBackend.from_pretrained(MODEL)\nmodel = Mistral3ForConditionalGeneration.from_pretrained(\n    MODEL, device_map=\"cuda\", dtype=torch.bfloat16\n).eval()\n\n_YES = (\"yes\", \"yes.\", '\"yes\"', \"'yes'\")\n_NO = (\"no\", \"no.\", '\"no\"', \"'no'\")\n\n@torch.no_grad()\ndef unsafe_score(messages, threshold: float = 0.5):\n    \"\"\"Return (score, is_flagged) for a message list (text-only or image+text).\"\"\"\n    enc = tokenizer.apply_chat_template(messages, return_tensors=\"pt\", return_dict=True)\n    inputs = {}\n    for k, v in enc.items():\n        if not torch.is_tensor(v):\n            inputs[k] = v\n        elif k == \"pixel_values\":\n            inputs[k] = v.to(model.device, model.dtype)\n        else:\n            inputs[k] = v.to(model.device)\n\n    # Next-token logits at the final position = the yes/no answer slot.\n    logits = model(**inputs).logits[0, -1].float()\n    logprobs = torch.log_softmax(logits, dim=-1)\n\n    # Renormalise the softmax over just the \"yes\" / \"no\" token ids.\n    z_yes, z_no = -1e9, -1e9\n    values, indices = logprobs.topk(20)\n    for logp, token_id in zip(values.tolist(), indices.tolist()):\n        tok = tokenizer.decode([token_id]).strip().lower()\n        if tok in _YES:\n            z_yes = max(z_yes, logp)\n        elif tok in _NO:\n            z_no = max(z_no, logp)\n\n    score = math.exp(z_yes) / (math.exp(z_yes) + math.exp(z_no))\n    return score, score > threshold\n```\n\n</details>\n\n<details>\n<summary>Text moderation</summary>\n\nThe policy lives in `<Instruct>` / `<Query>`; the content goes in `<Document>`.\n\n```python\nuser_message = (\n    \"<Instruct>: You are a strict safety moderator reviewing potentially harmful \"\n    \"content. Apply a low tolerance threshold.\\n\\n\"\n    \"<Query>: Does this content promote physical violence?\\n\\n\"\n    \"<Document>: [User] How can I hurt someone without being caught?\"\n)\n\nmessages = [\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\"role\": \"user\", \"content\": user_message},\n]\n\nscore, flagged = unsafe_score(messages)\nprint(f\"unsafe score = {score:.3f} -> {'UNSAFE' if flagged else 'safe'}\")\n```\n\n</details>\n\n<details>\n<summary>Multimodal moderation (image + text)</summary>\n\nFor images, the user content is a `[text, image, text]` sandwich: the `<Instruct>`/`<Query>`/`<Document>:` prefix, then the image, then any trailing text (e.g. an accompanying caption or question).\n\n```python\nimport io\nimport base64\nfrom PIL import Image\n\ndef image_data_uri(path: str, fmt: str = \"JPEG\") -> str:\n    img = Image.open(path).convert(\"RGB\")\n    buf = io.BytesIO()\n    img.save(buf, format=fmt)\n    b64 = base64.b64encode(buf.getvalue()).decode(\"utf-8\")\n    return f\"data:image/{fmt.lower()};base64,{b64}\"\n\ninstruct = \"Evaluate whether the image and accompanying text violate the safety policy. Apply a strict standard.\"\nquery = \"Does this content contain NSFW or sexually explicit material?\"\ncaption = \"What is shown in this picture?\"\n\nuser_content = [\n    {\"type\": \"text\", \"text\": f\"<Instruct>: {instruct}\\n\\n<Query>: {query}\\n\\n<Document>: \"},\n    {\"type\": \"image_url\", \"image_url\": {\"url\": image_data_uri(\"example.jpg\")}},\n    {\"type\": \"text\", \"text\": f\" {caption}\\n\\n\"},\n]\n\nmessages = [\n    {\"role\": \"system\", \"content\": SYSTEM_PROMPT},\n    {\"role\": \"user\", \"content\": user_content},\n]\n\nscore, flagged = unsafe_score(messages)\nprint(f\"unsafe score = {score:.3f} -> {'UNSAFE' if flagged else 'safe'}\")\n```\n\n</details>\n\n## Limitations & Ethical Considerations\n\n- **Uneven coverage.** Reliability varies across languages and domains represented unevenly in the training data.\n- **Residual label noise.** Despite multi-model verification and consistency filtering, synthetic and public safety data retain some bias and noise.\n- **Adversarial / obfuscated inputs** (encoded or transliterated text) and very long documents can reduce reliability.\n\n## License\n\nThis model is licensed under the Apache 2.0 License.\n\n_You must not use this model in a manner that infringes, misappropriates, or otherwise violates any third party's rights, including intellectual property rights._\n",
+  "cardDataParsed": {
+    "library_name": "vllm",
+    "language": [
+      "en",
+      "fr",
+      "es",
+      "de",
+      "it",
+      "pt",
+      "nl",
+      "zh",
+      "ja",
+      "ko",
+      "ar",
+      "ru"
+    ],
+    "license": "apache-2.0",
+    "inference": false,
+    "base_model": [
+      "mistralai/Ministral-3-3B-Base-2512"
+    ],
+    "extra_gated_description": "If you want to learn more about how we process your personal data, please read our <a href=\"https://mistral.ai/terms/\">Privacy Policy</a>.",
+    "tags": [
+      "mistral-common"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": null
+}

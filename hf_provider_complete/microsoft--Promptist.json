@@ -1,0 +1,97 @@
+{
+  "modelId": "microsoft/Promptist",
+  "author": "microsoft",
+  "sha": "cffa2f868729f40ddf7a51fed692e592349f596c",
+  "lastModified": "2023-01-24 17:21:42+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "gpt2",
+    "text-generation",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 75,
+  "downloads": 569,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": null,
+  "config": {
+    "architectures": [
+      "GPT2LMHeadModel"
+    ],
+    "model_type": "gpt2"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1477,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2842,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 665,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 124,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config_for_text_generation.json",
+      "size": 165,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 510395581,
+      "lfs": {
+        "size": 510395581,
+        "sha256": "7991fb65b10e22a33fb2455dc2311ae922f5ba2e442fa33f1fcb9e0d351c5b28",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1355256,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 1042301,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\n{}\n---\n# Promptist: reinforcement learning for automatic prompt optimization\n\n## News\n- [Demo Release] Dec, 2022: [Demo at HuggingFace Space](https://aka.ms/promptist-demo)\n- [Model Release] Dec, 2022: [link](#load-pretrained-model-for-stable-diffusion-v14)\n- [Paper Release] Dec, 2022: [Optimizing Prompts for Text-to-Image Generation](https://aka.ms/promptist-paper)\n\n> - Language models serve as a prompt interface that optimizes user input into model-preferred prompts.\n\n> - Learn a language model for automatic prompt optimization via reinforcement learning.\n\n![image](https://user-images.githubusercontent.com/1070872/207856962-02f08d92-f2bf-441a-b1c3-efff1a4b6187.png)\n\n\n## Load Pretrained Model for [Stable Diffusion v1.4](https://huggingface.co/CompVis/stable-diffusion-v1-4)\n\nYou can try the online demo at [https://huggingface.co/spaces/microsoft/Promptist](https://huggingface.co/spaces/microsoft/Promptist).\n\n`[Note]` the online demo at HuggingFace Space is using CPU, so slow generation speed would be expected. Please load the model locally with GPUs for faster generation.\n\n```python\nimport gradio as grad\nimport torch\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\ndef load_prompter():\n  prompter_model = AutoModelForCausalLM.from_pretrained(\"microsoft/Promptist\")\n  tokenizer = AutoTokenizer.from_pretrained(\"gpt2\")\n  tokenizer.pad_token = tokenizer.eos_token\n  tokenizer.padding_side = \"left\"\n  return prompter_model, tokenizer\n\nprompter_model, prompter_tokenizer = load_prompter()\n\ndef generate(plain_text):\n    input_ids = prompter_tokenizer(plain_text.strip()+\" Rephrase:\", return_tensors=\"pt\").input_ids\n    eos_id = prompter_tokenizer.eos_token_id\n    outputs = prompter_model.generate(input_ids, do_sample=False, max_new_tokens=75, num_beams=8, num_return_sequences=8, eos_token_id=eos_id, pad_token_id=eos_id, length_penalty=-1.0)\n    output_texts = prompter_tokenizer.batch_decode(outputs, skip_special_tokens=True)\n    res = output_texts[0].replace(plain_text+\" Rephrase:\", \"\").strip()\n    return res\n\ntxt = grad.Textbox(lines=1, label=\"Initial Text\", placeholder=\"Input Prompt\")\nout = grad.Textbox(lines=1, label=\"Optimized Prompt\")\nexamples = [\"A rabbit is wearing a space suit\", \"Several railroad tracks with one train passing by\", \"The roof is wet from the rain\", \"Cats dancing in a space club\"]\n\ngrad.Interface(fn=generate,\n               inputs=txt,\n               outputs=out,\n               title=\"Promptist Demo\",\n               description=\"Promptist is a prompt interface for Stable Diffusion v1-4 (https://huggingface.co/CompVis/stable-diffusion-v1-4) that optimizes user input into model-preferred prompts.\",\n               examples=examples,\n               allow_flagging='never',\n               cache_examples=False,\n               theme=\"default\").launch(enable_queue=True, debug=True)\n```\n",
+  "cardDataParsed": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

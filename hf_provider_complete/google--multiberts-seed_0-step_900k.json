@@ -1,0 +1,135 @@
+{
+  "modelId": "google/multiberts-seed_0-step_900k",
+  "author": "google",
+  "sha": "08a690ae07a6f913cc6cb17f29868c9c4dd166ee",
+  "lastModified": "2021-11-06 00:06:27+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "bert",
+    "pretraining",
+    "multiberts",
+    "multiberts-seed_0",
+    "multiberts-seed_0-step_900k",
+    "en",
+    "arxiv:2106.16163",
+    "arxiv:1908.08962",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 0,
+  "downloads": 293,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "multiberts",
+      "multiberts-seed_0",
+      "multiberts-seed_0-step_900k"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "BertForPreTraining"
+    ],
+    "model_type": "bert",
+    "tokenizer_config": {
+      "unk_token": "[UNK]",
+      "sep_token": "[SEP]",
+      "pad_token": "[PAD]",
+      "cls_token": "[CLS]",
+      "mask_token": "[MASK]"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 3637,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 624,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 440509027,
+      "lfs": {
+        "size": 440509027,
+        "sha256": "7d07f5742e00696ff570f48aea349786b89c98a3780d7324b59fdcfed1b1c49a",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 112,
+      "lfs": null
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 536063536,
+      "lfs": {
+        "size": 536063536,
+        "sha256": "f2faae2f7a10304293cf72d960c87fa4ad6b1588a8b801a7e3457257c6a01037",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 274,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.txt",
+      "size": 231508,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\ntags:\n- multiberts\n- multiberts-seed_0\n- multiberts-seed_0-step_900k\nlicense: apache-2.0\n---\n\n# MultiBERTs, Intermediate Checkpoint - Seed 0, Step 900k\n\nMultiBERTs is a collection of checkpoints and a statistical library to support\nrobust research on BERT. We provide 25 BERT-base models trained with\nsimilar hyper-parameters as\n[the original BERT model](https://github.com/google-research/bert) but\nwith different random seeds, which causes variations in the initial weights and order of\ntraining instances. The aim is to distinguish findings that apply to a specific\nartifact (i.e., a particular instance of the model) from those that apply to the\nmore general procedure.\n\nWe also provide 140 intermediate checkpoints captured\nduring the course of pre-training (we saved 28 checkpoints for the first 5 runs).\n\nThe models were originally released through\n[http://goo.gle/multiberts](http://goo.gle/multiberts). We describe them in our\npaper\n[The MultiBERTs: BERT Reproductions for Robustness Analysis](https://arxiv.org/abs/2106.16163).\n\nThis is model #0, captured at step 900k (max: 2000k, i.e., 2M steps).\n\n## Model Description\n\nThis model was captured during a reproduction of\n[BERT-base uncased](https://github.com/google-research/bert), for English: it\nis a Transformers model pretrained on a large corpus of English data, using the\nMasked Language Modelling (MLM) and the Next Sentence Prediction (NSP)\nobjectives.\n\nThe intended uses, limitations, training data and training procedure for the fully trained model are similar\nto [BERT-base uncased](https://github.com/google-research/bert). Two major\ndifferences with the original model:\n\n*   We pre-trained the MultiBERTs models for 2 million steps using sequence\n    length 512 (instead of 1 million steps using sequence length 128 then 512).\n*   We used an alternative version of Wikipedia and Books Corpus, initially\n    collected for [Turc et al., 2019](https://arxiv.org/abs/1908.08962).\n\nThis is a best-effort reproduction, and so it is probable that differences with\nthe original model have gone unnoticed. The performance of MultiBERTs on GLUE after full training is oftentimes comparable to that of original\nBERT, but we found significant differences on the dev set of SQuAD (MultiBERTs outperforms original BERT).\nSee our [technical report](https://arxiv.org/abs/2106.16163) for more details.\n\n### How to use\n\nUsing code from\n[BERT-base uncased](https://huggingface.co/bert-base-uncased), here is an example based on\nTensorflow:\n\n```\nfrom transformers import BertTokenizer, TFBertModel\ntokenizer = BertTokenizer.from_pretrained('google/multiberts-seed_0-step_900k')\nmodel = TFBertModel.from_pretrained(\"google/multiberts-seed_0-step_900k\")\ntext = \"Replace me by any text you'd like.\"\nencoded_input = tokenizer(text, return_tensors='tf')\noutput = model(encoded_input)\n```\n\nPyTorch version:\n\n```\nfrom transformers import BertTokenizer, BertModel\ntokenizer = BertTokenizer.from_pretrained('google/multiberts-seed_0-step_900k')\nmodel = BertModel.from_pretrained(\"google/multiberts-seed_0-step_900k\")\ntext = \"Replace me by any text you'd like.\"\nencoded_input = tokenizer(text, return_tensors='pt')\noutput = model(**encoded_input)\n```\n\n## Citation info\n\n```bibtex\n@article{sellam2021multiberts,\n  title={The MultiBERTs: BERT Reproductions for Robustness Analysis},\n  author={Thibault Sellam and Steve Yadlowsky and Jason Wei and Naomi Saphra and Alexander D'Amour and Tal Linzen and Jasmijn Bastings and Iulia Turc and Jacob Eisenstein and Dipanjan Das and Ian Tenney and Ellie Pavlick},\n  journal={arXiv preprint arXiv:2106.16163},\n  year={2021}\n}\n```\n",
+  "cardDataParsed": {
+    "language": "en",
+    "tags": [
+      "multiberts",
+      "multiberts-seed_0",
+      "multiberts-seed_0-step_900k"
+    ],
+    "license": "apache-2.0",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForPreTraining",
+    "custom_class": null,
+    "pipeline_tag": "pretraining",
+    "processor": "AutoTokenizer"
+  }
+}

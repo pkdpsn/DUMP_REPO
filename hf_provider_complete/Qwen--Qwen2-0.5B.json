@@ -1,0 +1,143 @@
+{
+  "modelId": "Qwen/Qwen2-0.5B",
+  "author": "Qwen",
+  "sha": "91d2aff3f957f99e4c74c962f2f408dcc88a18d8",
+  "lastModified": "2024-10-22 13:47:30+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "pretrained",
+    "conversational",
+    "en",
+    "license:apache-2.0",
+    "eval-results",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:sagemaker",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 172,
+  "downloads": 636457,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "pretrained"
+    ],
+    "new_version": "Qwen/Qwen2.5-0.5B"
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system\nYou are a helpful assistant<|im_end|>\n' }}{% endif %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}",
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 11344,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4026,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 661,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 138,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 988097824,
+      "lfs": {
+        "size": 988097824,
+        "sha256": "9cd8fc8c85a197b8c551d6b931b5709fe2611889d6b44945876472fecdf77cad",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7028015,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1289,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\npipeline_tag: text-generation\ntags:\n- pretrained\nlicense: apache-2.0\nnew_version: Qwen/Qwen2.5-0.5B\n---\n\n# Qwen2-0.5B\n\n## Introduction\n\nQwen2 is the new series of Qwen large language models. For Qwen2, we release a number of base language models and instruction-tuned language models ranging from 0.5 to 72 billion parameters, including a Mixture-of-Experts model. This repo contains the 0.5B Qwen2 base language model.\n\nCompared with the state-of-the-art opensource language models, including the previous released Qwen1.5, Qwen2 has generally surpassed most opensource models and demonstrated competitiveness against proprietary models across a series of benchmarks targeting for language understanding, language generation, multilingual capability, coding, mathematics, reasoning, etc.\n\nFor more details, please refer to our [blog](https://qwenlm.github.io/blog/qwen2/), [GitHub](https://github.com/QwenLM/Qwen2), and [Documentation](https://qwen.readthedocs.io/en/latest/).\n<br>\n\n\n## Model Details\nQwen2 is a language model series including decoder language models of different model sizes. For each size, we release the base language model and the aligned chat model. It is based on the Transformer architecture with SwiGLU activation, attention QKV bias, group query attention, etc. Additionally, we have an improved tokenizer adaptive to multiple natural languages and codes.\n\n## Requirements\nThe code of Qwen2 has been in the latest Hugging face transformers and we advise you to install `transformers>=4.37.0`, or you might encounter the following error:\n```\nKeyError: 'qwen2'\n```\n\n\n## Usage\n\nWe do not advise you to use base language models for text generation. Instead, you can apply post-training, e.g., SFT, RLHF, continued pretraining, etc., on this model.\n\n## Performance\n\n\nThe evaluation of base models mainly focuses on the model performance of natural language understanding, general question answering, coding, mathematics, scientific knowledge, reasoning, multilingual capability, etc. \n\nThe datasets for evaluation include: \n \n**English Tasks**: MMLU (5-shot), MMLU-Pro (5-shot), GPQA (5shot), Theorem QA (5-shot), BBH (3-shot), HellaSwag (10-shot), Winogrande (5-shot), TruthfulQA (0-shot), ARC-C (25-shot)\n \n**Coding Tasks**: EvalPlus (0-shot) (HumanEval, MBPP, HumanEval+, MBPP+), MultiPL-E (0-shot) (Python, C++, JAVA, PHP, TypeScript, C#, Bash, JavaScript)\n  \n**Math Tasks**: GSM8K (4-shot), MATH (4-shot)\n \n**Chinese Tasks**: C-Eval(5-shot), CMMLU (5-shot)\n \n**Multilingual Tasks**: Multi-Exam (M3Exam 5-shot, IndoMMLU 3-shot, ruMMLU 5-shot, mMMLU 5-shot), Multi-Understanding (BELEBELE 5-shot, XCOPA 5-shot, XWinograd 5-shot, XStoryCloze 0-shot, PAWS-X 5-shot), Multi-Mathematics (MGSM 8-shot), Multi-Translation (Flores-101 5-shot)\n \n#### Qwen2-0.5B & Qwen2-1.5B performances\n|  Datasets  |  Phi-2 |   Gemma-2B | MiniCPM |  Qwen1.5-1.8B  |   Qwen2-0.5B  |  Qwen2-1.5B  |\n| :--------| :---------: | :------------: | :------------: |:------------: | :------------: | :------------: |\n|#Non-Emb Params | 2.5B | 2.0B | 2.4B | 1.3B | 0.35B | 1.3B |\n|MMLU | 52.7 | 42.3 | 53.5 | 46.8 | 45.4 | **56.5** |\n|MMLU-Pro | - | 15.9 | - | - | 14.7 | 21.8 |\n|Theorem QA | - | - | - |- | 8.9 | **15.0** |\n|HumanEval | 47.6 |  22.0 |**50.0**| 20.1 | 22.0 | 31.1 |\n|MBPP | **55.0** | 29.2 | 47.3 | 18.0 | 22.0 | 37.4  |\n|GSM8K | 57.2 |  17.7  | 53.8 | 38.4 | 36.5 | **58.5** |\n|MATH  | 3.5 |  11.8  | 10.2 | 10.1 | 10.7 | **21.7** |\n|BBH  | **43.4** |  35.2 | 36.9 | 24.2 | 28.4 | 37.2 |\n|HellaSwag  | **73.1** |  71.4 | 68.3 | 61.4 |  49.3 | 66.6 |\n|Winogrande  | **74.4** |  66.8 | -| 60.3 |  56.8 |  66.2 |\n|ARC-C  | **61.1** |  48.5  | -| 37.9 | 31.5 |  43.9 |\n|TruthfulQA  | 44.5 |  33.1  | -| 39.4 | 39.7 |  **45.9** |\n|C-Eval   | 23.4 |   28.0    | 51.1| 59.7 |  58.2 |  **70.6** |\n|CMMLU   | 24.2 |   -    | 51.1 | 57.8 | 55.1 | **70.3** |\n\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@article{qwen2,\n  title={Qwen2 Technical Report},\n  year={2024}\n}\n```",
+  "cardDataParsed": {
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "pretrained"
+    ],
+    "license": "apache-2.0",
+    "new_version": "Qwen/Qwen2.5-0.5B",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

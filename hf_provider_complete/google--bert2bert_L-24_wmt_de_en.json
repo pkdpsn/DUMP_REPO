@@ -1,0 +1,119 @@
+{
+  "modelId": "google/bert2bert_L-24_wmt_de_en",
+  "author": "google",
+  "sha": "f4e4fa921a6fb29e348f0dc34a6c4895e84de1ec",
+  "lastModified": "2023-01-24 16:35:54+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "encoder-decoder",
+    "text2text-generation",
+    "translation",
+    "en",
+    "de",
+    "dataset:wmt14",
+    "arxiv:1907.12461",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "translation",
+  "library_name": "transformers",
+  "likes": 8,
+  "downloads": 784,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "wmt14"
+    ],
+    "eval_results": null,
+    "language": [
+      "en",
+      "de"
+    ],
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "translation"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "EncoderDecoderModel"
+    ],
+    "model_type": "encoder-decoder"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 1308,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3442,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 207,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 3088233282,
+      "lfs": {
+        "size": 3088233282,
+        "sha256": "104a7cb1de568de8b37d239754a3266d3c80ce997d9cc200cf21ad13bade2ee0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "vocab.txt",
+      "size": 269161,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage:\n- en\n- de\nlicense: apache-2.0\ndatasets:\n- wmt14\ntags:\n- translation\n---\n\n# bert2bert_L-24_wmt_de_en EncoderDecoder model\n\nThe model was introduced in \n[this paper](https://arxiv.org/abs/1907.12461) by Sascha Rothe, Shashi Narayan, Aliaksei Severyn and first released in [this repository](https://tfhub.dev/google/bertseq2seq/bert24_de_en/1). \n\nThe model is an encoder-decoder model that was initialized on the `bert-large` checkpoints for both the encoder \nand decoder and fine-tuned on German to English translation on the WMT dataset, which is linked above.\n\nDisclaimer: The model card has been written by the Hugging Face team.\n\n## How to use\n\nYou can use this model for translation, *e.g.*\n\n```python\nfrom transformers import AutoTokenizer, AutoModelForSeq2SeqLM\n\ntokenizer = AutoTokenizer.from_pretrained(\"google/bert2bert_L-24_wmt_de_en\", pad_token=\"<pad>\", eos_token=\"</s>\", bos_token=\"<s>\")\nmodel = AutoModelForSeq2SeqLM.from_pretrained(\"google/bert2bert_L-24_wmt_de_en\")\n\nsentence = \"Willst du einen Kaffee trinken gehen mit mir?\"\n\ninput_ids = tokenizer(sentence, return_tensors=\"pt\", add_special_tokens=False).input_ids\noutput_ids = model.generate(input_ids)[0]\nprint(tokenizer.decode(output_ids, skip_special_tokens=True))\n# should output\n# Want to drink a kaffee go with me? .\n```\n",
+  "cardDataParsed": {
+    "language": [
+      "en",
+      "de"
+    ],
+    "license": "apache-2.0",
+    "datasets": [
+      "wmt14"
+    ],
+    "tags": [
+      "translation"
+    ],
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

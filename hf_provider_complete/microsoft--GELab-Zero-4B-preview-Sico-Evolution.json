@@ -1,0 +1,194 @@
+{
+  "modelId": "microsoft/GELab-Zero-4B-preview-Sico-Evolution",
+  "author": "microsoft",
+  "sha": "c92fa0701ee08104d528068ee45cc0a516be972e",
+  "lastModified": "2026-07-15 05:57:37+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_vl",
+    "image-text-to-text",
+    "gui-agent",
+    "mobile-agent",
+    "vision-language",
+    "qwen3-vl",
+    "lora",
+    "conversational",
+    "en",
+    "zh",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 57,
+  "downloads": 1,
+  "private": false,
+  "gated": "auto",
+  "disabled": false,
+  "cardData": {
+    "base_model": "GELab-Zero-4B-preview",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en",
+      "zh"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "gui-agent",
+      "mobile-agent",
+      "vision-language",
+      "qwen3-vl",
+      "lora"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen3VLForConditionalGeneration"
+    ],
+    "model_type": "qwen3_vl",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1627,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 1882,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 707,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 5292,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1677,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671853,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4990503096,
+      "lfs": {
+        "size": 4990503096,
+        "sha256": "637f7c731f22b8717344f07de4e06cfae77d5cbb24e31a25f372a32fb43488c0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 3885216184,
+      "lfs": {
+        "size": 3885216184,
+        "sha256": "5f94144f75cfaf0e50e3d05978fe9e4941e8ef82169720ec8d5dca11fd19220f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 64741,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 390,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 613,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 11422654,
+      "lfs": {
+        "size": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5445,
+      "lfs": null
+    },
+    {
+      "rfilename": "tsr_edge_copilot.png",
+      "size": 175481,
+      "lfs": {
+        "size": 175481,
+        "sha256": "b311c132872903bf481b5d979ab96a10634d4bae9521b8365dedf14596022b4c",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 817,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: apache-2.0\nbase_model: GELab-Zero-4B-preview\nlibrary_name: transformers\npipeline_tag: image-text-to-text\nlanguage:\n- en\n- zh\ntags:\n- gui-agent\n- mobile-agent\n- vision-language\n- qwen3-vl\n- lora\n---\n\n> - \ud83d\udd27 This model is part of [**Sico**](https://github.com/microsoft/Sico) \u2014 an open-source platform for building and evolving Digital Workers, where AI agents and their human operators co-evolve through real work.\n> - \u2b50 [**Star the Sico repository**](https://github.com/microsoft/Sico) to follow new evolved models and our model evolution pipeline \u2014 this GUI agent is the first public release, with more on the way.\n> - \ud83d\udcc4 Backed by our survey on [**agentic evolution and co-evolving human\u2013AI systems**](https://www.microsoft.com/en-us/research/publication/agentic-evolution-from-self-improving-agents-to-co-evolving-human-ai-systems/).\n\n# GELab-Zero-4B-preview-Sico-Evolution\n\nA 4B GUI agent fine-tuned (LoRA) from the open-source **GELab-Zero-4B-preview** base model\non **Microsoft Edge** and **Copilot** UI trajectories. It is built with our **general-purpose\nGUI model evolution pipeline** \u2014 an iterative mechanism that keeps lifting an agent's real\ntask success rate round after round, and transfers to any GUI app.  \n**Base model address:** https://huggingface.co/stepfun-ai/GELab-Zero-4B-preview\n\n## Highlights\n\n**From 39.8% to 82.9%:** Sico-Evolution achieves a dominant **82.9%\nTask Success Rate**, a massive **+43.1% absolute surge** over the **39.8%** base-model\nbaseline.\n\n**Outperforms Closed-Source SOTAs:** It edges out top proprietary giants like **gpt-5.4\n(79.7%)**, **Claude-Opus-4.6 (81.3%)**, and **claude-opus-4.7 (82.1%)**.\n\n**Vastly Exceeds Open-Source Models:** It crushes leading competitors including\n**kimi-k2.6 (62.6%)** and **UI-Venus-1.5-30B (61.0%)**.\n\n## Results\n\n![Edge / Copilot Test Cases \u2014 TSR](tsr_edge_copilot.png)\n",
+  "cardDataParsed": {
+    "license": "apache-2.0",
+    "base_model": "GELab-Zero-4B-preview",
+    "library_name": "transformers",
+    "pipeline_tag": "image-text-to-text",
+    "language": [
+      "en",
+      "zh"
+    ],
+    "tags": [
+      "gui-agent",
+      "mobile-agent",
+      "vision-language",
+      "qwen3-vl",
+      "lora"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

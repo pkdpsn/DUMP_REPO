@@ -1,0 +1,180 @@
+{
+  "modelId": "nvidia/Hymba-1.5B-Instruct",
+  "author": "nvidia",
+  "sha": "bc2d2b43bc73d62ad8bfc9e6a3dcc26ab0795e77",
+  "lastModified": "2025-01-02 21:25:20+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "hymba",
+    "text-generation",
+    "conversational",
+    "custom_code",
+    "arxiv:2411.13676",
+    "base_model:nvidia/Hymba-1.5B-Base",
+    "base_model:finetune:nvidia/Hymba-1.5B-Base",
+    "license:other",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 247,
+  "downloads": 1302,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "nvidia/Hymba-1.5B-Base"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "HymbaForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_hymba.HymbaConfig",
+      "AutoModelForCausalLM": "modeling_hymba.HymbaForCausalLM"
+    },
+    "model_type": "hymba",
+    "num_experts": 1,
+    "num_experts_per_tok": 1,
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "chat_template": "{{'<extra_id_0>System'}}{% for message in messages %}{% if message['role'] == 'system' %}{{'\n' + message['content'].strip()}}{% if tools or contexts %}{{'\n'}}{% endif %}{% endif %}{% endfor %}{% if tools %}{% for tool in tools %}{{ '\n<tool> ' + tool|tojson + ' </tool>' }}{% endfor %}{% endif %}{% if contexts %}{% if tools %}{{'\n'}}{% endif %}{% for context in contexts %}{{ '\n<context> ' + context.strip() + ' </context>' }}{% endfor %}{% endif %}{{'\n\n'}}{% for message in messages %}{% if message['role'] == 'user' %}{{ '<extra_id_1>User\n' + message['content'].strip() + '\n' }}{% elif message['role'] == 'assistant' %}{{ '<extra_id_1>Assistant\n' + message['content'].strip() + '\n' }}{% elif message['role'] == 'tool' %}{{ '<extra_id_1>Tool\n' + message['content'].strip() + '\n' }}{% endif %}{% endfor %}{%- if add_generation_prompt %}{{'<extra_id_1>Assistant\n'}}{%- endif %}",
+      "eos_token": "</s>",
+      "pad_token": "[PAD]",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 9214,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 21,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 2899,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration_hymba.py",
+      "size": 4212,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 154,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/instruct_performance.png",
+      "size": 97876,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/macro_arch.png",
+      "size": 143032,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/module.png",
+      "size": 117324,
+      "lfs": null
+    },
+    {
+      "rfilename": "instruct_performance.png",
+      "size": 97876,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 3045665048,
+      "lfs": {
+        "size": 3045665048,
+        "sha256": "83e5b3b0f41d82964e0c22809786ff0eb10afc116d43cbbe53325ebf6cba85f1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "modeling_hymba.py",
+      "size": 118425,
+      "lfs": null
+    },
+    {
+      "rfilename": "setup.sh",
+      "size": 1243,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 552,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 1842976,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 499723,
+      "lfs": {
+        "size": 499723,
+        "sha256": "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 2073,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nbase_model:\n- nvidia/Hymba-1.5B-Base\nlibrary_name: transformers\nlicense: other\nlicense_name: nvidia-open-model-license\nlicense_link: https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf\npipeline_tag: text-generation\n---\n\n# Hymba-1.5B-Instruct \n\n<p align=\"center\">\n \ud83d\udcbe <a href=\"https://github.com/NVlabs/hymba\">Github</a>&nbsp&nbsp | &nbsp&nbsp \ud83d\udcc4 <a href=\"https://arxiv.org/abs/2411.13676\">Paper</a> | &nbsp&nbsp \ud83d\udcdc <a href=\"https://developer.nvidia.com/blog/hymba-hybrid-head-architecture-boosts-small-language-model-performance/\">Blog</a> &nbsp\n</p>\n\n## Model Overview\n\n\nHymba-1.5B-Instruct is a 1.5B parameter model finetuned from [Hymba-1.5B-Base](https://huggingface.co/nvidia/Hymba-1.5B-Base) using a combination of open source instruction datasets and internally collected synthetic datasets. This model is finetuned with supervised fine-tuning and direct preference optimization.\n\nHymba-1.5B-Instruct is capable of many complex and important tasks like math reasoning, function calling, and role playing.\n\nThis model is ready for commercial use.\n\n**Model Developer:** NVIDIA \n\n**Model Dates:** Hymba-1.5B-Instruct was trained between September 4, 2024 and November 10th, 2024.\n\n**License:**\nThis model is released under the [NVIDIA Open Model License Agreement](https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf).\n\n\n## Model Architecture\n\n> \u26a1\ufe0f We've released a minimal implementation of Hymba on GitHub to help developers understand and implement its design principles in their own models. Check it out! [barebones-hymba](https://github.com/NVlabs/hymba/tree/main/barebones_hymba).\n> \n\nHymba-1.5B-Instruct has a model embedding size of 1600, 25 attention heads, and an MLP intermediate dimension of 5504, with 32 layers in total, 16 SSM states, 3 full attention layers, the rest are sliding window attention. Unlike the standard Transformer, each attention layer in Hymba has a hybrid combination of standard attention heads and Mamba heads in parallel.  Additionally, it uses Grouped-Query Attention (GQA) and Rotary Position Embeddings (RoPE). \n\nFeatures of this architecture:\n\n- Fuse attention heads and SSM heads within the same layer, offering parallel and complementary processing of the same inputs.\n\n<div align=\"center\">\n<img src=\"https://huggingface.co/nvidia/Hymba-1.5B-Instruct/resolve/main/images/module.png\" alt=\"Hymba Module\" width=\"600\">\n</div>\n\n- Introduce meta tokens that are prepended to the input sequences and interact with all subsequent tokens, thus storing important information and alleviating the burden of \"forced-to-attend\" in attention.\n\n- Integrate with cross-layer KV sharing and global-local attention to further boost memory and computation efficiency.\n\n<div align=\"center\">\n<img src=\"https://huggingface.co/nvidia/Hymba-1.5B-Instruct/resolve/main/images/macro_arch.png\" alt=\"Hymba Model\" width=\"600\">\n</div>\n\n\n## Performance Highlights\n\n- Hymba-1.5B-Instruct outperforms popular small language models and achieves the highest average performance across all tasks.\n\n\n<div align=\"center\">\n<img src=\"https://huggingface.co/nvidia/Hymba-1.5B-Instruct/resolve/main/images/instruct_performance.png\" alt=\"Compare with SoTA Small LMs\" width=\"600\">\n</div>\n\n\n## Model Usage\n\n### Step 1: Environment Setup\n\nSince Hymba-1.5B-Instruct employs [FlexAttention](https://pytorch.org/blog/flexattention/), which relies on Pytorch2.5 and other related dependencies, we provide two ways to setup the environment:\n\n- **[Local install]** Install the related packages using our provided `setup.sh` (support CUDA 12.1/12.4):\n\n```\nwget --header=\"Authorization: Bearer YOUR_HF_TOKEN\" https://huggingface.co/nvidia/Hymba-1.5B-Base/resolve/main/setup.sh\nbash setup.sh\n```\n\n- **[Docker]** A docker image is provided with all of Hymba's dependencies installed. You can download our docker image and start a container using the following commands:\n```\ndocker pull ghcr.io/tilmto/hymba:v1\ndocker run --gpus all -v /home/$USER:/home/$USER -it ghcr.io/tilmto/hymba:v1 bash\n```\n\n\n### Step 2: Chat with Hymba-1.5B-Instruct\nAfter setting up the environment, you can use the following script to chat with our Model\n\n```py\nfrom transformers import AutoModelForCausalLM, AutoTokenizer, StopStringCriteria, StoppingCriteriaList\nimport torch\n\n# Load the tokenizer and model\nrepo_name = \"nvidia/Hymba-1.5B-Instruct\"\n\ntokenizer = AutoTokenizer.from_pretrained(repo_name, trust_remote_code=True)\nmodel = AutoModelForCausalLM.from_pretrained(repo_name, trust_remote_code=True)\nmodel = model.cuda().to(torch.bfloat16)\n\n# Chat with Hymba\nprompt = input()\n\nmessages = [\n    {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"}\n]\nmessages.append({\"role\": \"user\", \"content\": prompt})\n\n# Apply chat template\ntokenized_chat = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors=\"pt\").to('cuda')\nstopping_criteria = StoppingCriteriaList([StopStringCriteria(tokenizer=tokenizer, stop_strings=\"</s>\")])\noutputs = model.generate(\n    tokenized_chat, \n    max_new_tokens=256,\n    do_sample=False,\n    temperature=0.7,\n    use_cache=True,\n    stopping_criteria=stopping_criteria\n)\ninput_length = tokenized_chat.shape[1]\nresponse = tokenizer.decode(outputs[0][input_length:], skip_special_tokens=True)\n\nprint(f\"Model response: {response}\")\n\n```\n\nThe prompt template used by Hymba-1.5B-Instruct is as follows, which has been integrated into the tokenizer and can be applied using `tokenizer.apply_chat_template`:\n\n```\n<extra_id_0>System\n{system prompt}\n\n<extra_id_1>User\n<tool> ... </tool>\n<context> ... </context>\n{prompt}\n<extra_id_1>Assistant\n<toolcall> ... </toolcall>\n<extra_id_1>Tool\n{tool response}\n<extra_id_1>Assistant\\n\n```\n\n\n## Finetuning Hymba\n\n\n[LMFlow](https://github.com/OptimalScale/LMFlow) is a complete pipeline for fine-tuning large language models. \nThe following steps provide an example of how to fine-tune the `Hymba-1.5B-Base` models using LMFlow.\n\n1. Using Docker\n\n    ```\n      docker pull ghcr.io/tilmto/hymba:v1\n      docker run --gpus all -v /home/$USER:/home/$USER -it ghcr.io/tilmto/hymba:v1 bash\n    ```\n2. Install LMFlow\n\n    ```\n      git clone https://github.com/OptimalScale/LMFlow.git\n      cd LMFlow\n      conda create -n lmflow python=3.9 -y\n      conda activate lmflow\n      conda install mpi4py\n      pip install -e .\n    ```\n\n3. Fine-tune the model using the following command.\n  \n    ```\n      cd LMFlow\n      bash ./scripts/run_finetune_hymba.sh\n    ```\n\nWith LMFlow, you can also fine-tune the model on your custom dataset. The only thing you need to do is transform your dataset into the [LMFlow data format](https://optimalscale.github.io/LMFlow/examples/DATASETS.html).\nIn addition to full-finetuniing, you can also fine-tune hymba efficiently with [DoRA](https://arxiv.org/html/2402.09353v4), [LoRA](https://github.com/OptimalScale/LMFlow?tab=readme-ov-file#lora), [LISA](https://github.com/OptimalScale/LMFlow?tab=readme-ov-file#lisa), [Flash Attention](https://github.com/OptimalScale/LMFlow/blob/main/readme/flash_attn2.md), and other acceleration techniques.\nFor more details, please refer to the [LMFlow for Hymba](https://github.com/OptimalScale/LMFlow/tree/main/experimental/Hymba) documentation.\n\n## Limitations \nThe model was trained on data that contains toxic language, unsafe content, and societal biases originally crawled from the internet. Therefore, the model may amplify those biases and return toxic responses especially when prompted with toxic prompts. The model may generate answers that may be inaccurate, omit key information, or include irrelevant or redundant text producing socially unacceptable or undesirable text, even if the prompt itself does not include anything explicitly offensive. \n\nThe testing suggests that this model is susceptible to jailbreak attacks. If using this model in a RAG or agentic setting, we recommend strong output validation controls to ensure security and safety risks from user-controlled model outputs are consistent with the intended use cases.\n\n## Ethical Considerations \nNVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal model team to ensure this model meets requirements for the relevant industry and use case and addresses unforeseen product misuse. \nPlease report security vulnerabilities or NVIDIA AI Concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/). \n\n\n## Citation\n```\n@misc{dong2024hymbahybridheadarchitecturesmall,\n      title={Hymba: A Hybrid-head Architecture for Small Language Models}, \n      author={Xin Dong and Yonggan Fu and Shizhe Diao and Wonmin Byeon and Zijia Chen and Ameya Sunil Mahabaleshwarkar and Shih-Yang Liu and Matthijs Van Keirsbilck and Min-Hung Chen and Yoshi Suhara and Yingyan Lin and Jan Kautz and Pavlo Molchanov},\n      year={2024},\n      eprint={2411.13676},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL},\n      url={https://arxiv.org/abs/2411.13676}, \n}\n```",
+  "cardDataParsed": {
+    "base_model": [
+      "nvidia/Hymba-1.5B-Base"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf",
+    "pipeline_tag": "text-generation",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": "modeling_hymba.HymbaForCausalLM",
+    "pipeline_tag": "text-generation",
+    "processor": null
+  }
+}

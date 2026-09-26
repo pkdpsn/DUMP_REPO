@@ -1,0 +1,151 @@
+{
+  "modelId": "microsoft/bitnet-b1.58-2B-4T-bf16",
+  "author": "microsoft",
+  "sha": "276681394656abdadb8e80e5b2c3db5e5d7fcaff",
+  "lastModified": "2025-12-17 18:12:29+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "bitnet",
+    "text-generation",
+    "chat",
+    "large-language-model",
+    "conversational",
+    "custom_code",
+    "en",
+    "arxiv:2504.12285",
+    "license:mit",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 46,
+  "downloads": 4651,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "mit",
+    "license_name": null,
+    "license_link": "https://huggingface.co/microsoft/bitnet-b1.58-2B-4T/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat",
+      "bitnet",
+      "text-generation",
+      "large-language-model"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "BitNetForCausalLM"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_bitnet.BitNetConfig",
+      "AutoModelForCausalLM": "modeling_bitnet.BitNetForCausalLM"
+    },
+    "model_type": "bitnet",
+    "quantization_config": {
+      "quant_method": "bitnet"
+    },
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "chat_template": "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = message['role'] | capitalize + ': '+ message['content'] | trim + '<|eot_id|>' %}{{ content }}{% endfor %}{% if add_generation_prompt %}{{ 'Assistant: ' }}{% endif %}",
+      "eos_token": "<|eot_id|>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 1073,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 8935,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 843,
+      "lfs": null
+    },
+    {
+      "rfilename": "data_summary_card.md",
+      "size": 3861,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 199,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 4825679400,
+      "lfs": {
+        "size": 4825679400,
+        "sha256": "529637ff6dab1f5890767356928693f69ffe61d3b6040a43de9306b37bfd5ae1",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 73,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 9085698,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 50834,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: mit\nlicense_link: https://huggingface.co/microsoft/bitnet-b1.58-2B-4T/blob/main/LICENSE\nlanguage:\n- en\npipeline_tag: text-generation\ntags:\n- chat\n- bitnet\n- text-generation\n- large-language-model\nlibrary_name: transformers\n---\n\n# BitNet b1.58 2B4T - Scaling Native 1-bit LLM\n\nThis repository contains the weights for **BitNet b1.58 2B4T**, the first open-source, native 1-bit Large Language Model (LLM) at the 2-billion parameter scale, developed by Microsoft Research.\n\nTrained on a corpus of 4 trillion tokens, this model demonstrates that native 1-bit LLMs can achieve performance comparable to leading open-weight, full-precision models of similar size, while offering substantial advantages in computational efficiency (memory, energy, latency).\n\n\u27a1\ufe0f **Technical Report:** [BitNet b1.58 2B4T Technical Report](https://arxiv.org/abs/2504.12285)\n\n\u27a1\ufe0f **Official Inference Code:** [microsoft/BitNet (bitnet.cpp)](https://github.com/microsoft/BitNet)\n\n## Model Variants\n\nSeveral versions of the model weights are available on Hugging Face:\n\n* [**`microsoft/bitnet-b1.58-2B-4T`**](https://huggingface.co/microsoft/bitnet-b1.58-2B-4T): Contains the packed 1.58-bit weights optimized for efficient inference. **Use this for deployment.**\n\n* [**`microsoft/bitnet-b1.58-2B-4T-bf16`**](https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-bf16) (This repository): Contains the master weights in BF16 format. **Use this only for training or fine-tuning purposes.**\n\n* [**`microsoft/bitnet-b1.58-2B-4T-gguf`**](https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-gguf): Contains the model weights in GGUF format, compatible with the `bitnet.cpp` library for CPU inference.\n\n## Model Details\n\n* **Architecture:** Transformer-based, modified with `BitLinear` layers (BitNet framework).\n    * Uses Rotary Position Embeddings (RoPE).\n    * Uses squared ReLU (ReLU\u00b2) activation in FFN layers.\n    * Employs [`subln`](https://proceedings.mlr.press/v202/wang23u.html) normalization.\n    * No bias terms in linear or normalization layers.\n* **Quantization:** Native 1.58-bit weights and 8-bit activations (W1.58A8).\n    * Weights are quantized to ternary values {-1, 0, +1} using absmean quantization during the forward pass.\n    * Activations are quantized to 8-bit integers using absmax quantization (per-token).\n    * **Crucially, the model was *trained from scratch* with this quantization scheme, not post-training quantized.**\n* **Parameters:** ~2 Billion\n* **Training Tokens:** 4 Trillion\n*   **Context Length:** Maximum sequence length of **4096 tokens**.\n    *   *Recommendation:* For optimal performance on tasks requiring very long contexts (beyond the pre-training length or for specialized long-reasoning tasks), we recommend performing intermediate long-sequence adaptation/training before the final fine-tuning stage.\n* **Training Stages:**\n    1.  **Pre-training:** Large-scale training on public text/code and synthetic math data using a two-stage learning rate and weight decay schedule.\n    2.  **Supervised Fine-tuning (SFT):** Fine-tuned on instruction-following and conversational datasets using sum loss aggregation and specific hyperparameter tuning.\n    3.  **Direct Preference Optimization (DPO):** Aligned with human preferences using preference pairs.\n* **Tokenizer:** LLaMA 3 Tokenizer (vocab size: 128,256).\n\n## How to Use (with `transformers`)\n\n**VERY IMPORTANT NOTE ON EFFICIENCY**\n\n> Please do NOT expect performance efficiency gains (in terms of speed, latency, or energy consumption) when using this model with the standard transformers library, even with the required fork.\n>\n> The current execution paths within transformers do not contain the specialized, highly optimized computational kernels required to leverage the advantages of the BitNet architecture. Running the model via transformers will likely result in inference speeds and energy usage comparable to, or potentially worse than, standard full-precision models within this framework on both CPU and GPU.\n>\n> While you might observe reduced memory usage due to the quantized weights, the primary computational efficiency benefits are not accessible through this standard transformers usage path.\n>\n> For achieving the efficiency benefits demonstrated in the technical paper, you MUST use the dedicated C++ implementation: [bitnet.cpp](https://github.com/microsoft/BitNet).\n\n### Requirements\n\n```bash\npip install git+https://github.com/huggingface/transformers.git@096f25ae1f501a084d8ff2dcaf25fbc2bd60eba4\n```\n\n### Example\n\n```python\nimport torch\nfrom transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_id = \"microsoft/bitnet-b1.58-2B-4T\"\n\n# Load tokenizer and model\ntokenizer = AutoTokenizer.from_pretrained(model_id)\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_id,\n    torch_dtype=torch.bfloat16\n)\n\n# Apply the chat template\nmessages = [\n    {\"role\": \"system\", \"content\": \"You are a helpful AI assistant.\"},\n    {\"role\": \"user\", \"content\": \"How are you?\"},\n]\nprompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)\nchat_input = tokenizer(prompt, return_tensors=\"pt\").to(model.device)\n\n# Generate response\nchat_outputs = model.generate(**chat_input, max_new_tokens=50)\nresponse = tokenizer.decode(chat_outputs[0][chat_input['input_ids'].shape[-1]:], skip_special_tokens=True) # Decode only the response part\nprint(\"\\nAssistant Response:\", response)\n```\n\n## How to Use (with `bitnet.cpp`)\n\nPlease refer to the [bitnet.cpp](https://github.com/microsoft/BitNet) GitHub repository for detailed compilation steps, usage examples, and command-line options.\n\n## Evaluation\n\nBitNet b1.58 2B4T was evaluated against leading open-weight full-precision LLMs of similar size. Below are the key results (all models are instruction-tuned versions):\n\n| Benchmark             | LLaMA 3.2 1B | Gemma-3 1B | Qwen2.5 1.5B | SmolLM2 1.7B | MiniCPM 2B | **BitNet b1.58 2B** |\n|--------------------------------|--------------|------------|--------------|--------------|------------|---------------------|\n| **Memory (Non-emb)** | 2GB          | 1.4GB      | 2.6GB        | 3.2GB        | 4.8GB      | **0.4GB** |\n| **Latency (CPU Decoding)** | 48ms         | 41ms       | 65ms         | 67ms         | 124ms      | **29ms** |\n| **Energy (Estimated)** | 0.258J       | 0.186J     | 0.347J       | 0.425J       | 0.649J     | **0.028J** |\n| **Training Tokens (Pre-train)**| 9T* | 2T** | 18T          | 11T          | 1.1T       | 4T                  |\n| ARC-Challenge   | 37.80        | 38.40      | 46.67        | 43.52        | 44.80      | **49.91** |\n| ARC-Easy        | 63.17        | 63.13      | **76.01** | 62.92        | 72.14      | 74.79               |\n| OpenbookQA      | 34.80        | 38.80      | 40.80        | **46.00** | 40.20      | 41.60               |\n| BoolQ                | 64.65        | 74.22      | 78.04        | 75.78        | **80.67** | 80.18               |\n| HellaSwag       | 60.80        | 57.69      | 68.28        | **71.71** | 70.81      | 68.44               |\n| PIQA            | 74.21        | 71.93      | 76.12        | 76.12        | 76.66      | **77.09** |\n| WinoGrande           | 59.51        | 58.48      | 62.83        | 68.98        | 61.80      | **71.90** |\n| CommonsenseQA       | 58.48        | 42.10      | **76.41** | 63.55        | 71.74      | 71.58               |\n| TruthfulQA          | 43.80        | 38.66      | **46.67** | 39.90        | 41.41      | 45.31               |\n| TriviaQA              | 37.60        | 23.49      | 38.37        | **45.97** | 34.13      | 33.57               |\n| MMLU                 | 45.58        | 39.91      | **60.25** | 49.24        | 51.82      | 53.17               |\n| HumanEval+        | 31.10        | 37.20      | **50.60** | 28.00        | 43.90      | 38.40               |\n| GSM8K                 | 38.21        | 31.16      | 56.79        | 45.11        | 4.40       | **58.38** |\n| MATH-500              | 23.00        | 42.00      | **53.00** | 17.60        | 14.80      | 43.40               |\n| IFEval   | 62.71        | **66.67** | 50.12        | 57.91        | 36.81      | 53.48               |\n| MT-bench         | 5.43         | 6.40       | 6.12         | 5.50         | **6.57** | 5.85                |\n| **Average** | 44.90        | 43.74      | **55.23** | 48.70        | 42.05      | 54.19               |\n\n*LLaMA 3.2 1B uses pruning & distillation.\n\n**Gemma-3 1B uses distillation.\n\n## License\nThe model weights and code are released under the [MIT License](https://huggingface.co/microsoft/bitnet-b1.58-2B-4T/blob/main/LICENSE).\n\n## Disclaimer\nThis model is intended for research and development purposes. While efforts have been made to align it using SFT and DPO, it may still produce outputs that are unexpected, biased, or inaccurate. Please use responsibly.\n\n## Data Summary\nhttps://huggingface.co/microsoft/bitnet-b1.58-2B-4T-bf16/blob/main/data_summary_card.md",
+  "cardDataParsed": {
+    "license": "mit",
+    "license_link": "https://huggingface.co/microsoft/bitnet-b1.58-2B-4T/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat",
+      "bitnet",
+      "text-generation",
+      "large-language-model"
+    ],
+    "library_name": "transformers",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "license_name": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

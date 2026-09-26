@@ -1,0 +1,139 @@
+{
+  "modelId": "google/t5-xxl-ssm-nq",
+  "author": "google",
+  "sha": "dfc4e9b9aa85e01bb5016e1e092e548de1fe7d53",
+  "lastModified": "2023-01-24 16:52:53+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "tf",
+    "t5",
+    "text2text-generation",
+    "en",
+    "dataset:c4",
+    "dataset:wikipedia",
+    "dataset:natural_questions",
+    "arxiv:2002.08909",
+    "arxiv:1910.10683",
+    "license:apache-2.0",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 1,
+  "downloads": 297,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": [
+      "c4",
+      "wikipedia",
+      "natural_questions"
+    ],
+    "eval_results": null,
+    "language": "en",
+    "library_name": null,
+    "license": "apache-2.0",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text2text-generation",
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "T5ForConditionalGeneration"
+    ],
+    "model_type": "t5",
+    "tokenizer_config": {
+      "eos_token": "</s>",
+      "unk_token": "<unk>",
+      "pad_token": "<pad>"
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 345,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2794,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 631,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 147,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 44541587848,
+      "lfs": {
+        "size": 44541587848,
+        "sha256": "5638a9e21f5c51bcbf3d1a652fa619357f45b449a583697f1856210cc681677a",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 1786,
+      "lfs": null
+    },
+    {
+      "rfilename": "spiece.model",
+      "size": 791656,
+      "lfs": null
+    },
+    {
+      "rfilename": "tf_model.h5",
+      "size": 44542439224,
+      "lfs": {
+        "size": 44542439224,
+        "sha256": "29e4087598681891ab7c38d071f468c411cb523bc65d354a80dc772346b64b47",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1857,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlanguage: en\ndatasets:\n- c4\n- wikipedia\n- natural_questions\npipeline_tag: text2text-generation\nlicense: apache-2.0\n---\n\n[Google's T5](https://ai.googleblog.com/2020/02/exploring-transfer-learning-with-t5.html) for **Closed Book Question Answering**.\n\nThe model was pre-trained using T5's denoising objective on [C4](https://huggingface.co/datasets/c4), subsequently additionally pre-trained using [REALM](https://arxiv.org/pdf/2002.08909.pdf)'s salient span masking objective on [Wikipedia](https://huggingface.co/datasets/wikipedia), and finally fine-tuned on [Natural Questions (NQ)](https://huggingface.co/datasets/natural_questions).\n\n**Note**: The model was fine-tuned on 100% of the train splits of [Natural Questions (NQ)](https://huggingface.co/datasets/natural_questions) for 10k steps.\n\nOther community Checkpoints: [here](https://huggingface.co/models?search=ssm)\n\nPaper: [How Much Knowledge Can You Pack\nInto the Parameters of a Language Model?](https://arxiv.org/abs/1910.10683.pdf)\n\nAuthors: *Adam Roberts, Colin Raffel, Noam Shazeer* \n\n## Results on Natural Questions - Test Set\n\n|Id | link | Exact Match  |\n|---|---|---|\n|T5-small|https://huggingface.co/google/t5-small-ssm-nq|25.5|\n|T5-large|https://huggingface.co/google/t5-large-ssm-nq|30.4|\n|T5-xl|https://huggingface.co/google/t5-xl-ssm-nq|35.6|\n|**T5-xxl**|**https://huggingface.co/google/t5-xxl-ssm-nq**|**37.9**|\n|T5-3b|https://huggingface.co/google/t5-3b-ssm-nq|33.2|\n|T5-11b|https://huggingface.co/google/t5-11b-ssm-nq|36.6|\n\n## Usage\n\nThe model can be used as follows for **closed book question answering**:\n\n```python\nfrom transformers import AutoModelForSeq2SeqLM, AutoTokenizer\n\nt5_qa_model = AutoModelForSeq2SeqLM.from_pretrained(\"google/t5-xxl-ssm-nq\")\nt5_tok = AutoTokenizer.from_pretrained(\"google/t5-xxl-ssm-nq\")\n\ninput_ids = t5_tok(\"When was Franklin D. Roosevelt born?\", return_tensors=\"pt\").input_ids\ngen_output = t5_qa_model.generate(input_ids)[0]\n\nprint(t5_tok.decode(gen_output, skip_special_tokens=True))\n```\n\n## Abstract\n\nIt has recently been observed that neural language models trained on unstructured text can implicitly store and retrieve knowledge using natural language queries. In this short paper, we measure the practical utility of this approach by fine-tuning pre-trained models to answer questions without access to any external context or knowledge. We show that this approach scales with model size and performs competitively with open-domain systems that explicitly retrieve answers from an external knowledge source when answering questions. To facilitate reproducibility and future work, we release our code and trained models at https://goo.gle/t5-cbqa.\n\n![model image](https://raw.githubusercontent.com/patrickvonplaten/scientific_images/master/how_much_know_ledge_image.png)",
+  "cardDataParsed": {
+    "language": "en",
+    "datasets": [
+      "c4",
+      "wikipedia",
+      "natural_questions"
+    ],
+    "pipeline_tag": "text2text-generation",
+    "license": "apache-2.0",
+    "base_model": null,
+    "eval_results": null,
+    "library_name": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "custom_class": null,
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

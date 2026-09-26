@@ -1,0 +1,207 @@
+{
+  "modelId": "nvidia/Llama-3.1-Nemotron-Nano-VL-8B-V1-FP4-QAD",
+  "author": "nvidia",
+  "sha": "aefd101dc9cd08925f82a623562630ce86b24dcb",
+  "lastModified": "2025-10-09 00:07:56+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "Llama_Nemotron_Nano_VL",
+    "feature-extraction",
+    "nvidia",
+    "VLM",
+    "llama3.1",
+    "FP4",
+    "image-text-to-text",
+    "conversational",
+    "custom_code",
+    "license:other",
+    "8-bit",
+    "modelopt",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 15,
+  "downloads": 455,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "nvidia-open-model-license",
+    "license_link": "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "nvidia",
+      "VLM",
+      "llama3.1",
+      "FP4"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Llama_Nemotron_Nano_VL"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration.Llama_Nemotron_Nano_VL_Config",
+      "AutoModel": "modeling.Llama_Nemotron_Nano_VL",
+      "AutoModelForCausalLM": "modeling.Llama_Nemotron_Nano_VL"
+    },
+    "model_type": "Llama_Nemotron_Nano_VL",
+    "quantization_config": {
+      "config_groups": {
+        "group_0": {
+          "weights": {
+            "num_bits": 4
+          },
+          "targets": [
+            "Linear"
+          ]
+        }
+      },
+      "ignore": [
+        "model.layers.language_model.lm_head",
+        "model.layers.mlp1*",
+        "model.layers.vision_model*",
+        "lm_head"
+      ],
+      "quant_method": "modelopt"
+    },
+    "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "eos_token": "<|eot_id|>",
+      "pad_token": "<|eot_id|>"
+    },
+    "chat_template_jinja": "{% if messages[0]['role'] == 'system' %}{% if messages[0]['content'] is string %}{% set system_message = messages[0]['content'] %}{% else %}{% set system_message = messages[0]['content'][0]['text'] %}{% endif %}{% set messages = messages[1:] %}{% else %}{% set system_message = \"Answer the questions.\" %}{% endif %}{{ bos_token }}<|start_header_id|>system<|end_header_id|>\n\n{{ system_message }}<|eot_id|>{% for message in messages %}<|start_header_id|>{{ message['role'] }}<|end_header_id|>\n\n{% if message['content'] is string %}{{ message['content'] }}{% else %}{%- for content in message['content'] -%}{%- if content['type'] == 'image' -%}{{ '<image>\n' }}{%- elif content['type'] == 'text' -%}{{ content['text'] }}{%- endif -%}{%- endfor -%}{% endif %}<|eot_id|>{%- endfor -%}{% if add_generation_prompt %}<|start_header_id|>assistant<|end_header_id|>\n\n{% endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 8610,
+      "lfs": null
+    },
+    {
+      "rfilename": "bias.md",
+      "size": 1351,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 866,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 13981,
+      "lfs": null
+    },
+    {
+      "rfilename": "configuration.py",
+      "size": 2271,
+      "lfs": null
+    },
+    {
+      "rfilename": "explainability.md",
+      "size": 3483,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 129,
+      "lfs": null
+    },
+    {
+      "rfilename": "hf_quant_config.json",
+      "size": 420,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processing.py",
+      "size": 4781,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00002.safetensors",
+      "size": 4979293232,
+      "lfs": {
+        "size": 4979293232,
+        "sha256": "5b1af482915d283be50409fa9da8a95eb7c6b1f350223609d2d060fe05fade5b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00002.safetensors",
+      "size": 2431641304,
+      "lfs": {
+        "size": 2431641304,
+        "sha256": "0ed658566724421117d095dbed06608fc6189ec6a65be61af90c6ed3e8fdbe45",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 135446,
+      "lfs": null
+    },
+    {
+      "rfilename": "modeling.py",
+      "size": 14071,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 660,
+      "lfs": null
+    },
+    {
+      "rfilename": "privacy.md",
+      "size": 1192,
+      "lfs": null
+    },
+    {
+      "rfilename": "safety.md",
+      "size": 1299,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 325,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17211566,
+      "lfs": {
+        "size": 17211566,
+        "sha256": "f5725802f93aea2c6126c605128904b2feaad45cdc0b16240fb153481a229948",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 52110,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling.Llama_Nemotron_Nano_VL",
+    "pipeline_tag": "feature-extraction",
+    "processor": null
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "modelId": "deepseek-ai/deepseek-vl-1.3b-base",
+  "author": "deepseek-ai",
+  "sha": "3729510359afff41411fc11fa4f487fd5b5a610c",
+  "lastModified": "2024-03-15 07:04:27+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "multi_modality",
+    "arxiv:2403.05525",
+    "license:other",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "transformers",
+  "likes": 56,
+  "downloads": 284,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": "other",
+    "license_name": "deepseek",
+    "license_link": "LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "config": {
+    "architectures": [
+      "MultiModalityCausalLM"
+    ],
+    "model_type": "multi_modality",
+    "tokenizer_config": {
+      "bos_token": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+      "eos_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+      "pad_token": null,
+      "unk_token": null,
+      "use_default_system_prompt": false
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4344,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1029,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 3950537560,
+      "lfs": {
+        "size": 3950537560,
+        "sha256": "34a4651408bce5a5f888e519e334540154a33a8d34a85f42f164e0c6f87d6654",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 347,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 210,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 287,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 4610871,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 3244,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: deepseek\nlicense_link: LICENSE\n---\n\n## 1. Introduction\n\nIntroducing DeepSeek-VL, an open-source Vision-Language (VL) Model designed for real-world vision and language understanding applications. DeepSeek-VL possesses general multimodal understanding capabilities, capable of processing logical diagrams, web pages, formula recognition, scientific literature, natural images, and embodied intelligence in complex scenarios.\n\n[DeepSeek-VL: Towards Real-World Vision-Language Understanding](https://arxiv.org/abs/2403.05525)\n\n[**Github Repository**](https://github.com/deepseek-ai/DeepSeek-VL)\n\nHaoyu Lu*, Wen Liu*, Bo Zhang**, Bingxuan Wang, Kai Dong, Bo Liu, Jingxiang Sun, Tongzheng Ren, Zhuoshu Li, Hao Yang, Yaofeng Sun, Chengqi Deng, Hanwei Xu, Zhenda Xie, Chong Ruan (*Equal Contribution, **Project Lead)\n\n![](https://github.com/deepseek-ai/DeepSeek-VL/blob/main/images/sample.jpg)\n\n\n### 2. Model Summary\n\nDeepSeek-VL-1.3b-base is a tiny vision-language model. It uses the [SigLIP-L](https://huggingface.co/timm/ViT-L-16-SigLIP-384) as the vision encoder supporting 384 x 384 image input \nand is constructed based on the DeepSeek-LLM-1.3b-base which is trained on an approximate corpus of 500B text tokens. The whole DeepSeek-VL-1.3b-base model is finally trained around 400B vision-language tokens.\n\n## 3. Quick Start\n\n### Installation\n\nOn the basis of `Python >= 3.8` environment, install the necessary dependencies by running the following command:\n\n\n```shell\ngit clone https://github.com/deepseek-ai/DeepSeek-VL\ncd DeepSeek-VL\n\npip install -e .\n```\n\n### Simple Inference Example\n\n```python\nimport torch\nfrom transformers import AutoModelForCausalLM\n\nfrom deepseek_vl.models import VLChatProcessor, MultiModalityCausalLM\nfrom deepseek_vl.utils.io import load_pil_images\n\n\n# specify the path to the model\nmodel_path = \"deepseek-ai/deepseek-vl-1.3b-base\"\nvl_chat_processor: VLChatProcessor = VLChatProcessor.from_pretrained(model_path)\ntokenizer = vl_chat_processor.tokenizer\n\nvl_gpt: MultiModalityCausalLM = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)\nvl_gpt = vl_gpt.to(torch.bfloat16).cuda().eval()\n\nconversation = [\n    {\n        \"role\": \"User\",\n        \"content\": \"<image_placeholder>Describe each stage of this image.\",\n        \"images\": [\"./images/training_pipelines.png\"]\n    },\n    {\n        \"role\": \"Assistant\",\n        \"content\": \"\"\n    }\n]\n\n# load images and prepare for inputs\npil_images = load_pil_images(conversation)\nprepare_inputs = vl_chat_processor(\n    conversations=conversation,\n    images=pil_images,\n    force_batchify=True\n).to(vl_gpt.device)\n\n# run image encoder to get the image embeddings\ninputs_embeds = vl_gpt.prepare_inputs_embeds(**prepare_inputs)\n\n# run the model to get the response\noutputs = vl_gpt.language_model.generate(\n    inputs_embeds=inputs_embeds,\n    attention_mask=prepare_inputs.attention_mask,\n    pad_token_id=tokenizer.eos_token_id,\n    bos_token_id=tokenizer.bos_token_id,\n    eos_token_id=tokenizer.eos_token_id,\n    max_new_tokens=512,\n    do_sample=False,\n    use_cache=True\n)\n\nanswer = tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True)\nprint(f\"{prepare_inputs['sft_format'][0]}\", answer)\n```\n\n### CLI Chat\n```bash\n\npython cli_chat.py --model_path \"deepseek-ai/deepseek-vl-1.3b-base\"\n\n# or local path\npython cli_chat.py --model_path \"local model path\"\n\n```\n\n## 4. License\n\nThis code repository is licensed under [the MIT License](https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-CODE). The use of DeepSeek-VL Base/Chat models is subject to [DeepSeek Model License](https://github.com/deepseek-ai/DeepSeek-LLM/blob/HEAD/LICENSE-MODEL). DeepSeek-VL series (including Base and Chat) supports commercial use.\n\n## 5. Citation\n\n```\n@misc{lu2024deepseekvl,\n      title={DeepSeek-VL: Towards Real-World Vision-Language Understanding}, \n      author={Haoyu Lu and Wen Liu and Bo Zhang and Bingxuan Wang and Kai Dong and Bo Liu and Jingxiang Sun and Tongzheng Ren and Zhuoshu Li and Yaofeng Sun and Chengqi Deng and Hanwei Xu and Zhenda Xie and Chong Ruan},\n      year={2024},\n      eprint={2403.05525},\n      archivePrefix={arXiv},\n      primaryClass={cs.AI}\n}\n```\n\n## 6. Contact\n\nIf you have any questions, please raise an issue or contact us at [service@deepseek.com](mailto:service@deepseek.com).",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "deepseek",
+    "license_link": "LICENSE",
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": null
+  },
+  "transformersInfo": {
+    "auto_model": "MultiModalityCausalLM",
+    "custom_class": null,
+    "pipeline_tag": null,
+    "processor": null
+  }
+}

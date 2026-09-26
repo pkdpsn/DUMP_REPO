@@ -1,0 +1,454 @@
+{
+  "modelId": "Qwen/Qwen2.5-Math-72B-Instruct",
+  "author": "Qwen",
+  "sha": "8fcf92b1eac8eca48c3d49778ad3dd1b394c9a17",
+  "lastModified": "2024-09-23 06:06:06+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2",
+    "text-generation",
+    "chat",
+    "conversational",
+    "en",
+    "arxiv:2409.12122",
+    "base_model:Qwen/Qwen2.5-Math-72B",
+    "base_model:finetune:Qwen/Qwen2.5-Math-72B",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 31,
+  "downloads": 863,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "Qwen/Qwen2.5-Math-72B",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "qwen",
+    "license_link": "https://huggingface.co/Qwen/Qwen2.5-Math-72B-Instruct/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "chat"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "model_type": "qwen2",
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'Please reason step by step, and put your final answer within \\\\boxed{}.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nPlease reason step by step, and put your final answer within \\\\boxed{}.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 6962,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 4977,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 658,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 161,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00037.safetensors",
+      "size": 3762345336,
+      "lfs": {
+        "size": 3762345336,
+        "sha256": "6f769e30120e4ca25f6fbebb6cf2375ec87887581a82872182e819b7440aa078",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00037.safetensors",
+      "size": 3995200440,
+      "lfs": {
+        "size": 3995200440,
+        "sha256": "11bd5d235e5c9ffd93a52fb414379cf487b1db557192f298712c5a4a8165dc9a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00037.safetensors",
+      "size": 3812769392,
+      "lfs": {
+        "size": 3812769392,
+        "sha256": "d49faa48cfbee1ace386e4c23ba36d732358fb8b52c9a1413eb6a8bd5d39d9cf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00037.safetensors",
+      "size": 3995183944,
+      "lfs": {
+        "size": 3995183944,
+        "sha256": "dab05182bfa5d8f310886dc2c2ace3c490c241518fb00f59ef3b226e5411100a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00037.safetensors",
+      "size": 3995183944,
+      "lfs": {
+        "size": 3995183944,
+        "sha256": "1baa454c7adc550ef993d3d23884fbf2205fc6ec4bc467d9ea4ca4964cd25121",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00037.safetensors",
+      "size": 3995200456,
+      "lfs": {
+        "size": 3995200456,
+        "sha256": "d96acee55070b103d1104188982a68b367139b9968881fb5a546b57cb1c6f27f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "d3b727e7cbd7753cdd4a053754be808d4a199019768a71476e6cbc9596fe177b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "fd1089ddc98c9fb45d756dcbedc64d80b5622f9fc5c5a5713b18b113f633e42d",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "70d1640dac847624d415d45f6768742e2b49e50ba738284f5aefd608625f775f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00037.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "de1547c3e9086ef6e492f337ba10ea1c2e70bcefc60a2e98c3a0eee9aa4142ed",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "4d9451a273a6db884fe7661a7c3ea9a3ceaadfb3495d1fdeca3326526ba1aa07",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "2ddd1a5ea6b88dbac4ea49a5dd3e5bee7b8cf67a68c69451f714aa4ed82c7f59",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "c5788d9a92b142044b7bf04c86531f8d2f0eecded99667bb4e503cc113044507",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00037.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "c334eee8aa65865da70b3d75f75d8bba3f66b8d88d61a9a77eaf297de6a6c439",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "cb84af734b89210128c7ecb9c0b88f2d52f2393086b9c54b57f5fcf5367ea701",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "79f7b716d9f6dc3428de9edea8b00fb4d1df6e0982734da8f004571547c84661",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "3ea5ea321b0700512d4a0e0a967a30ed604da6ccd3c7049b56e604142754eb05",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00037.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "c614195122e349e3fc0d1cf673452ec4f14c5c2a904576451ccda89f36dc31fc",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "a74bdfec9f7fa798d78eba034420a724c368c4911cefb31a375daf2d1422bd05",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "696ccefad420393887700a52136ae9adc8bfa0e9d70bfb728831692dea8abf30",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "d73050b869902f526d9bf1ea3122bffe6895e7d9a5f19adfdcc708f6e4056228",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00037.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "d3aa2e684f92276c3ba26cd837f5a0ed6721910228dcbdf3ee9b97a0ca2b6742",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "27be2a738395d6cc3d37c381d1389947729f72b7f318b878b1f31d98246b1d41",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "8bd8296d30e29f2d23a5da7d55f9623cf3eb07ecf989635db7d3abb19db1a3f5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "980ecea197102bc606b395ab36de235ff7aeb88e79f588be6bea3e1207377c90",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00037.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "fb34d398d8069f48733502160a540f3b1861350e8bc2c25bb04a0d43120e5565",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "826335f3f8b1feb2ed4224e5473eaa22520d5558f66b17c76748b39fee1c4f60",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "fa0461e1654ee3de5e200a52eaf254f545b7f83994d88378796f660e582320b0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "eeffc2bad44ddc7bb3a9c85ad3196c76f2714c7989831d3f478e8bbe43b643e4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00037.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "43093674e39c7aa54139c31dfee2cafd4c6ff065c04382b31652a40b2e16a286",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "4e5857aba8ed3c5527b4010c6f1faf6abe827d91d1f6c12e25bf5e955822807a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "96c59272591b1d96363b328b47b0b27cc99cbad85f3d9634a21811f06ec22a62",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "a1e3e1daed001384c410100e783ac1c70250c089cfea6bc1768f1709adec46b5",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00037.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "be31c44e83974f869d3df0434ca486dd25a9126050fe713e4b3525d8530939d3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00037.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "6d233b983f1f5e041fb627694c7a04cbe1cb2d6ed895706309e05cdf5fc16c96",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00037.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "77381250f5c1e2b5dc81cc651f1faa9c2286942cad0ad0959311ca9c11a71c69",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00037.safetensors",
+      "size": 3460317640,
+      "lfs": {
+        "size": 3460317640,
+        "sha256": "3c065840daf5eed3b58428c0628e4e413ee3eb0d501feb3bbbc35cc22e8f8176",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 79025,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7031645,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 7315,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

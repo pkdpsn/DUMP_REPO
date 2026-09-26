@@ -1,0 +1,494 @@
+{
+  "modelId": "Qwen/QVQ-72B-Preview",
+  "author": "Qwen",
+  "sha": "24425f65e80be6804b75ae0a3dc1e5570e660a25",
+  "lastModified": "2025-01-12 01:54:38+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_vl",
+    "image-text-to-text",
+    "chat",
+    "conversational",
+    "en",
+    "arxiv:2409.12191",
+    "base_model:Qwen/Qwen2-VL-72B",
+    "base_model:finetune:Qwen/Qwen2-VL-72B",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "deploy:sagemaker",
+    "deploy:azure",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 610,
+  "downloads": 603,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": "Qwen/Qwen2-VL-72B",
+    "datasets": null,
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "qwen",
+    "license_link": "https://huggingface.co/Qwen/QVQ-72B-Preview/blob/main/LICENSE",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "chat"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Qwen2VLForConditionalGeneration"
+    ],
+    "model_type": "qwen2_vl",
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1519,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 6961,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 6321,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.json",
+      "size": 1130,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1198,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 245,
+      "lfs": null
+    },
+    {
+      "rfilename": "merges.txt",
+      "size": 1671839,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00038.safetensors",
+      "size": 3890187664,
+      "lfs": {
+        "size": 3890187664,
+        "sha256": "83773da0605b78550a8b38a40614fcdc87cebb9c178733519c96631114773d9f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00038.safetensors",
+      "size": 3812769392,
+      "lfs": {
+        "size": 3812769392,
+        "sha256": "903380c42484315fd8326ec6ac7c164979ca53dae0499b6427edc08b866047e3",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00038.safetensors",
+      "size": 3995183944,
+      "lfs": {
+        "size": 3995183944,
+        "sha256": "015962b4aa22dcea9ca2e709150dbde423f3bc87e75ee34aa14821dc6ad70b2b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00038.safetensors",
+      "size": 3995183944,
+      "lfs": {
+        "size": 3995183944,
+        "sha256": "82ba45a91ca09d04943460a2920afb9d7cad0ccebbc55e3cd6a21585ec0f4ee6",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00038.safetensors",
+      "size": 3995200440,
+      "lfs": {
+        "size": 3995200440,
+        "sha256": "8a15a09944cf8636e0b90a878bb1be5e7a83c5dc336a214be82563403a2d7afe",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00038.safetensors",
+      "size": 3812769400,
+      "lfs": {
+        "size": 3812769400,
+        "sha256": "1ef4d521409655d1f02dad45f62c54a20e9676a1402ac38602d63abd6998f66e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "d9163cfd87bd91c54af2171fb907e6a39603f80417aa72231708a07fa8dc9d42",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "dd72fc6800f8ede9b56a5503e3afe381c87281af49661f257fe11d839db79961",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00038.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "1102e6e61a0605c725c1e6a6392679205cd5bc280c4a73aa75b2c11339db141b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00038.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "65b268f4cd27527a48694fddddd024f8a30f0c52d84b369ea5e3c9ec4aacd917",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "148b586228d3cc26104824db4c24a77d2774a631dfae3d22791d880024e3b543",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00012-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "634567ffde76719ea8960a08eaf60a7345aeb4211813696516e6fc62d7178891",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00013-of-00038.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "abb317fe6f1d9ab6b95ea9b14717e4bfc27ffb4473a477558ef2e0be8108b533",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00014-of-00038.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "c769dc7163ad7b4a1ea1cbf9cbe4b7538b418933a241be83c4712e7a48e1ec40",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00015-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "b8ca572612384591db6671ed5511d7b22f4b65b5d5bd58bc6b345c2de5c7d619",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00016-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "64b78959c371b18fe6a6b305341f7280b3a32fcd11af2ab4b0396c11b6962f86",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00017-of-00038.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "21f9caf94e4297ff08402f4091b875034b3dfae33251556e9b9fff660e4c0bda",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00018-of-00038.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "ac7d0e2da329be937e6941bb737a184c80b2630be7ee8970cc6b25dd4e350207",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00019-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "9510215eaef0abe901e682abcd99bdb6a4660c28eb08c0980ff697b4bbcdb38c",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00020-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "158b82664037a5e02d556129ba3fa076baac71d8be805be5a88175a73b07e9c4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00021-of-00038.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "5749f0d7ec613a5c8507bdd03d220ad2832e5de4b833950216828cc6d7fe8ddd",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00022-of-00038.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "d1a4b4e5170f1ecba9e8ee17ce00a4ab3d585ff1224df0bb830959a8f5935b48",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00023-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "9fa39e8ea74b79b8ae181bf850b773993653056b6e858042407c38ff614dc861",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00024-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "04fda4efe855578d3a5f1696d0b05d37cc5be0990c9b566693eb8479f907acb8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00025-of-00038.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "4c519888e306b6809ed85a811fd2028dfcb7d1a75cf373c1ba417ecf6aa21b0e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00026-of-00038.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "0d0fb0e974e6b2ace65dbbb23bdf17c86279cd208a85d04266bfe4bd2ee97116",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00027-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "64bf6d81b61ef41c72d6eda03eb452cf29223d3f61b20b9783ba82be2beaf9f8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00028-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "32736e81b8541156f54376621819f751ee48f8d11a2e0f48b1bffe1e207f1060",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00029-of-00038.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "9626eaf5ee148ce35a0520b16d50cd44d14c2468fccb7d4a3676aefd14ef4999",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00030-of-00038.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "e83b2d3bc46e48d6afa773a4dcc71ae6872d40229c1aa18e55dc844ff109f842",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00031-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "71876a8cfdd5d7001224c1a7131add9bce2a55da5b27dcca20b3523bb45ecc3a",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00032-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "acdf764cfd2c43852e5e501857c9a7c14e251f6c32398141c1963862ed4cce9b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00033-of-00038.safetensors",
+      "size": 3995200464,
+      "lfs": {
+        "size": 3995200464,
+        "sha256": "e3bcf5a4c34a855bf5c6f84f86e62548093437998e804c30d811df21cc572eef",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00034-of-00038.safetensors",
+      "size": 3812769424,
+      "lfs": {
+        "size": 3812769424,
+        "sha256": "7ac0aa4bb5d06cb890b0874f63aac7c414c2dfb90a78cb2e7f1dbc49da9d4338",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00035-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "3cf986c2377ba1adced8e7de422923f41c276a6c3432a542bad0e760c31f3a39",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00036-of-00038.safetensors",
+      "size": 3995183968,
+      "lfs": {
+        "size": 3995183968,
+        "sha256": "c77b360785ed9b369d4bf20d78c68cbd19a472c6dd8361c92ce641f9c6e081cf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00037-of-00038.safetensors",
+      "size": 2239829584,
+      "lfs": {
+        "size": 2239829584,
+        "sha256": "57bcfedcb93054f31f5b2153012909599d22c771ff086fc1bef549de64ecf666",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00038-of-00038.safetensors",
+      "size": 2491416704,
+      "lfs": {
+        "size": 2491416704,
+        "sha256": "fa6a2bbb1791bff5a39fb5282734ca6994f1d2f7e3efc4daf90f5e2a7675e7ed",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 107743,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 348,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 7031645,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 5781,
+      "lfs": null
+    },
+    {
+      "rfilename": "vocab.json",
+      "size": 2776833,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: qwen\nlicense_link: https://huggingface.co/Qwen/QVQ-72B-Preview/blob/main/LICENSE\nlanguage:\n- en\npipeline_tag: image-text-to-text\nbase_model: Qwen/Qwen2-VL-72B\ntags:\n- chat\nlibrary_name: transformers\n---\n\n\n# QVQ-72B-Preview\n<a href=\"https://chat.qwenlm.ai/\" target=\"_blank\" style=\"margin: 2px;\">\n    <img alt=\"Chat\" src=\"https://img.shields.io/badge/%F0%9F%92%9C%EF%B8%8F%20Qwen%20Chat%20-536af5\" style=\"display: inline-block; vertical-align: middle;\"/>\n</a>\n\n## Introduction\n\n**QVQ-72B-Preview** is an experimental research model developed by the Qwen team, focusing on enhancing visual reasoning capabilities.\n\n## Performance\n\n|                | **QVQ-72B-Preview** | o1-2024-12-17 | gpt-4o-2024-05-13 | Claude3.5 Sonnet-20241022 | Qwen2VL-72B |\n|----------------|-----------------|---------------|-------------------|----------------------------|-------------|\n| MMMU(val)      | 70.3            | 77.3          | 69.1              | 70.4                       | 64.5        |\n| MathVista(mini) | 71.4            | 71.0          | 63.8              | 65.3                       | 70.5        |\n| MathVision(full)   | 35.9            | \u2013             | 30.4              | 35.6                       | 25.9        |\n| OlympiadBench  | 20.4            | \u2013             | 25.9              | \u2013                          | 11.2        |\n\n\n**QVQ-72B-Preview** has achieved remarkable performance on various benchmarks. It scored a remarkable 70.3% on the Multimodal Massive Multi-task Understanding (MMMU) benchmark, showcasing QVQ's powerful ability in multidisciplinary understanding and reasoning. Furthermore, the significant improvements on MathVision highlight the model's progress in mathematical reasoning tasks. OlympiadBench also demonstrates the model's enhanced ability to tackle challenging problems.\n\n***But It's Not All Perfect:  Acknowledging the Limitations***\n\nWhile **QVQ-72B-Preview** exhibits promising performance that surpasses expectations, it\u2019s important to acknowledge several limitations:\n\n1. **Language Mixing and Code-Switching:** The model might occasionally mix different languages or unexpectedly switch between them, potentially affecting the clarity of its responses.\n2. **Recursive Reasoning Loops:**  There's a risk of the model getting caught in recursive reasoning loops, leading to lengthy responses that may not even arrive at a final answer.\n3. **Safety and Ethical Considerations:** Robust safety measures are needed to ensure reliable and safe performance. Users should exercise caution when deploying this model.\n4. **Performance and Benchmark Limitations:** Despite the improvements in visual reasoning, QVQ doesn\u2019t entirely replace the capabilities of Qwen2-VL-72B. During multi-step visual reasoning, the model might gradually lose focus on the image content, leading to hallucinations. Moreover, QVQ doesn\u2019t show significant improvement over Qwen2-VL-72B in basic recognition tasks like identifying people, animals, or plants.\n\nNote: Currently, the model only supports single-round dialogues and image outputs. It does not support video inputs.\n## Quickstart\n\nWe offer a toolkit to help you handle various types of visual input more conveniently. This includes base64, URLs, and interleaved images and videos. You can install it using the following command:\n\n```bash\npip install qwen-vl-utils\n```\n\nHere we show a code snippet to show you how to use the chat model with `transformers` and `qwen_vl_utils`:\n\n```python\nfrom transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor\nfrom qwen_vl_utils import process_vision_info\n\n# default: Load the model on the available device(s)\nmodel = Qwen2VLForConditionalGeneration.from_pretrained(\n    \"Qwen/QVQ-72B-Preview\", torch_dtype=\"auto\", device_map=\"auto\"\n)\n\n# default processer\nprocessor = AutoProcessor.from_pretrained(\"Qwen/QVQ-72B-Preview\")\n\n# The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.\n# min_pixels = 256*28*28\n# max_pixels = 1280*28*28\n# processor = AutoProcessor.from_pretrained(\"Qwen/QVQ-72B-Preview\", min_pixels=min_pixels, max_pixels=max_pixels)\n\nmessages = [\n    {\n        \"role\": \"system\",\n        \"content\": [\n            {\"type\": \"text\", \"text\": \"You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step.\"}\n        ],\n    },\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"image\",\n                \"image\": \"https://qianwen-res.oss-cn-beijing.aliyuncs.com/QVQ/demo.png\",\n            },\n            {\"type\": \"text\", \"text\": \"What value should be filled in the blank space?\"},\n        ],\n    }\n]\n\n# Preparation for inference\ntext = processor.apply_chat_template(\n    messages, tokenize=False, add_generation_prompt=True\n)\nimage_inputs, video_inputs = process_vision_info(messages)\ninputs = processor(\n    text=[text],\n    images=image_inputs,\n    videos=video_inputs,\n    padding=True,\n    return_tensors=\"pt\",\n)\ninputs = inputs.to(\"cuda\")\n\n# Inference: Generation of the output\ngenerated_ids = model.generate(**inputs, max_new_tokens=8192)\ngenerated_ids_trimmed = [\n    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)\n]\noutput_text = processor.batch_decode(\n    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False\n)\nprint(output_text)\n```\n\n## Citation\n\nIf you find our work helpful, feel free to give us a cite.\n\n```\n@misc{qvq-72b-preview,\n    title = {QVQ: To See the World with Wisdom},\n    url = {https://qwenlm.github.io/blog/qvq-72b-preview/},\n    author = {Qwen Team},\n    month = {December},\n    year = {2024}\n}\n\n@article{Qwen2VL,\n  title={Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution},\n  author={Wang, Peng and Bai, Shuai and Tan, Sinan and Wang, Shijie and Fan, Zhihao and Bai, Jinze and Chen, Keqin and Liu, Xuejing and Wang, Jialin and Ge, Wenbin and Fan, Yang and Dang, Kai and Du, Mengfei and Ren, Xuancheng and Men, Rui and Liu, Dayiheng and Zhou, Chang and Zhou, Jingren and Lin, Junyang},\n  journal={arXiv preprint arXiv:2409.12191},\n  year={2024}\n}\n```",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "qwen",
+    "license_link": "https://huggingface.co/Qwen/QVQ-72B-Preview/blob/main/LICENSE",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "image-text-to-text",
+    "base_model": "Qwen/Qwen2-VL-72B",
+    "tags": [
+      "chat"
+    ],
+    "library_name": "transformers",
+    "datasets": null,
+    "eval_results": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "modelId": "nvidia/NV-Reason-CT",
+  "author": "nvidia",
+  "sha": "386b93e034983f6c1fc841a43833a1b6a0cd9c13",
+  "lastModified": "2026-09-25 00:42:18+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_5",
+    "image-text-to-text",
+    "medical-imaging",
+    "ct",
+    "3d-vlm",
+    "vision-language",
+    "nv-reason-ct",
+    "nvidia",
+    "conversational",
+    "custom_code",
+    "en",
+    "dataset:ibrahimhamamci/CT-RATE",
+    "dataset:BodyMaps/CancerVerse",
+    "arxiv:2609.27511",
+    "base_model:Qwen/Qwen3.5-4B",
+    "base_model:finetune:Qwen/Qwen3.5-4B",
+    "license:openmdw-1.1",
+    "region:us"
+  ],
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "likes": 8,
+  "downloads": 341,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen3.5-4B"
+    ],
+    "datasets": [
+      "ibrahimhamamci/CT-RATE",
+      "BodyMaps/CancerVerse"
+    ],
+    "eval_results": null,
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "openmdw-1.1",
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "medical-imaging",
+      "ct",
+      "3d-vlm",
+      "vision-language",
+      "nv-reason-ct",
+      "nvidia"
+    ],
+    "base_model_relation": "finetune"
+  },
+  "config": {
+    "architectures": [
+      "VLM3D_ForConditionalGeneration"
+    ],
+    "auto_map": {
+      "AutoModelForImageTextToText": "model.VLM3D_ForConditionalGeneration"
+    },
+    "model_type": "qwen3_5",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    },
+    "chat_template_jinja": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 213,
+      "lfs": null
+    },
+    {
+      "rfilename": ".gitignore",
+      "size": 34,
+      "lfs": null
+    },
+    {
+      "rfilename": "LICENSE",
+      "size": 2693,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 14990,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/nv_reason_ct_overview.png",
+      "size": 1728390,
+      "lfs": {
+        "size": 1728390,
+        "sha256": "b2c73f817206a661b249d9f5a5a702f3b83b105567b19475f6f2954a16d14293",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 7756,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 3106,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 163,
+      "lfs": null
+    },
+    {
+      "rfilename": "image_processor_3d/preprocessor_config.json",
+      "size": 238,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.py",
+      "size": 10268,
+      "lfs": null
+    },
+    {
+      "rfilename": "model.safetensors",
+      "size": 10644167648,
+      "lfs": {
+        "size": 10644167648,
+        "sha256": "655c15e59dfa1957f7d5f475b1702d689fb7107160f21256028391bb5f6e6ba5",
+        "pointer_size": 136
+      }
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 513,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor.py",
+      "size": 26151,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 1713,
+      "lfs": null
+    },
+    {
+      "rfilename": "requirements.txt",
+      "size": 135,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 19989325,
+      "lfs": {
+        "size": 19989325,
+        "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1339,
+      "lfs": null
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 620,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlibrary_name: transformers\nlicense: openmdw-1.1\nlanguage:\n- en\npipeline_tag: image-text-to-text\nbase_model:\n- Qwen/Qwen3.5-4B\nbase_model_relation: finetune\ndatasets:\n- ibrahimhamamci/CT-RATE\n- BodyMaps/CancerVerse\ntags:\n- medical-imaging\n- ct\n- 3d-vlm\n- vision-language\n- nv-reason-ct\n- nvidia\n---\n\n# NV-Reason-CT\n\n[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-yellow)](https://huggingface.co/nvidia/NV-Reason-CT)\n[![GitHub](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/NVIDIA-Medtech/NV-Reason-CT)\n[![WebDemo](https://img.shields.io/badge/Gradio-Web%20Demo-F97316?logo=gradio&logoColor=white)](https://huggingface.co/spaces/nvidia/nv-reason-ct)\n[![arXiv](https://img.shields.io/badge/arXiv-2609.27511-B31B1B?logo=arxiv&logoColor=white)](https://arxiv.org/abs/2609.27511)\n[![License](https://img.shields.io/badge/License-OpenMDW--1.1-f5de53)](LICENSE)\n\nNV-Reason-CT is a 3D vision-language model (VLM) for CT image analysis. It\ncombines a native 3D vision encoder (3D ViT) with a language model and is\ndesigned for radiology report generation, general question answering, and\nmulti-step reasoning across chest and abdominal CT volumes.\n\nComputed tomography encodes clinically important anatomy across hundreds of\nslices, yet most vision\u2013language systems either operate on 2D images or\ncompress volumetric features before language decoding. The 3D vision encoder\nconverts a 384\u00d7384\u00d7384-mm input volume into a 24\u00d724\u00d724 grid of 13,824 visual\ntokens. All tokens and their corresponding 3D positions are passed to the\nlanguage model without spatial downsampling, while 3D MRoPE preserves their\nspatial relationships within the LLM. Input volumes are automatically cropped\nto the chest or abdomen and resampled to 2-mm isotropic resolution before\nprocessing.\n\nThe model was trained end-to-end using Supervised Fine-Tuning (SFT) and Group\nRelative Policy Optimization (GRPO) on a curated dataset of approximately\n550,000 structured QA examples from 70,111 unique CT volume inputs. The\ntraining corpus integrates standardized reports, abnormality-focused QA,\nmulti-turn interactions, and radiologist-authored reasoning collected through\nrecorded and transcribed expert CT interpretations. These expert annotations\nalso guide the generation of report-grounded synthetic reasoning data for SFT,\nwhile GRPO uses verifiable rewards over chest and abdominal abnormality sets.\n\n![NV-Reason-CT overview](assets/nv_reason_ct_overview.png)\n\n## Installation\n\nPython 3.11+ and a CUDA-capable PyTorch installation are recommended.\n\n```bash\npython -m pip install -r https://huggingface.co/nvidia/NV-Reason-CT/resolve/main/requirements.txt\n```\n\n## Quick Start\n\nThe example below loads the model once and defines a reusable function for\ndeterministic inference on `.nii.gz` volumes. Use `anatomy_region=\"chest\"`\nfor a chest crop or `anatomy_region=\"abdomen\"` for an abdominal crop.\n\n```python\nimport torch\nfrom transformers import AutoModelForImageTextToText, AutoProcessor\n\nmodel_id = \"nvidia/NV-Reason-CT\"\nct_path = \"path/to/volume.nii.gz\"\n\nmodel = AutoModelForImageTextToText.from_pretrained(\n    model_id,\n    trust_remote_code=True,\n    dtype=torch.bfloat16,\n    attn_implementation=\"sdpa\",\n).eval().to(\"cuda\")\n\nprocessor = AutoProcessor.from_pretrained(\n    model_id,\n    trust_remote_code=True,\n)\n\ndef generate_response(\n    ct_path,\n    prompt_text,\n    anatomy_region=\"chest\",\n    enable_thinking=True,\n    max_new_tokens=2048,\n):\n    messages = [\n        {\n            \"role\": \"user\",\n            \"content\": [\n                {\"type\": \"image\"},\n                {\"type\": \"text\", \"text\": prompt_text},\n            ],\n        }\n    ]\n    prompt = processor.apply_chat_template(\n        messages,\n        tokenize=False,\n        add_generation_prompt=True,\n        enable_thinking=enable_thinking,\n    )\n    inputs = processor(\n        text=prompt,\n        images3d=[ct_path],\n        anatomy_region=anatomy_region,\n        return_tensors=\"pt\",\n    ).to(model.device)\n\n    with torch.inference_mode():\n        generated_ids = model.generate(\n            **inputs,\n            max_new_tokens=max_new_tokens,\n            do_sample=False,\n            use_cache=True,\n        )\n\n    new_tokens = generated_ids[:, inputs.input_ids.shape[1]:]\n    return processor.batch_decode(\n        new_tokens,\n        skip_special_tokens=True,\n        clean_up_tokenization_spaces=False,\n    )[0]\n\n\n# Structured report (Chest region)\nprint(generate_response(ct_path, \"Write a structured chest CT report.\", anatomy_region=\"chest\"))\n```\n\nThe same loaded model can be reused with other prompts and anatomy regions.\n\n```python\n# Structured report (Abdominal region)\nprint(generate_response(ct_path, \"Write a structured abdominal CT report.\", anatomy_region=\"abdomen\"))\n\n# Reasoning (Chest region)\nprint(generate_response(ct_path, \"Provide a full reasoning analysis of this chest CT.\", anatomy_region=\"chest\"))\n\n# Reasoning (Abdominal region)\nprint(generate_response(ct_path, \"Provide a full reasoning analysis of this abdominal CT.\", anatomy_region=\"abdomen\"))\n\n# Binary question with reasoning\nprint(generate_response(ct_path, \"Is a pleural effusion present in this CT?\", anatomy_region=\"chest\"))\n\n# Concise Yes/No response without thinking\nprint(generate_response(\n    ct_path,\n    \"Is a pleural effusion present in this CT? Answer only Yes or No.\",\n    anatomy_region=\"chest\",\n    enable_thinking=False,\n))\n```\n\n## Anatomy region cropping\n\n`AutoProcessor` includes anatomy-aware cropping around the chest or abdomen\nusing lung Hounsfield units and a 3D morphology heuristic. Only `\"chest\"` and\n`\"abdomen\"` are supported. This works reasonably well for common CT\ngeometries, such as whole-body CT, chest plus upper abdomen, or lower chest\nplus abdomen and pelvis. You can inspect the exact crop passed to the VLM:\n\n```python\nimport nibabel as nib\nimport numpy as np\nfrom transformers import AutoProcessor\n\nmodel_id = \"nvidia/NV-Reason-CT\"\nct_path = \"path/to/volume.nii.gz\"\nanatomy_region = \"chest\"  # \"chest\" or \"abdomen\"\n\nprocessor = AutoProcessor.from_pretrained(\n    model_id,\n    trust_remote_code=True,\n)\n\n# Run the same 2 mm resampling and anatomy-aware 192 x 192 x 192 crop used\n# for inference. normalize_mode=0 preserves CT Hounsfield units.\ncropped_image = processor.image_processor_3d.load_image(\n    ct_path,\n    normalize_mode=0,\n    anatomy_region=anatomy_region,\n)\n\n# load_image() returns a channel-first tensor in (C, Z, Y, X) order for the\n# model. Convert the spatial axes back to NIfTI (X, Y, Z) order before saving.\ncropped_volume = cropped_image[0].permute(2, 1, 0).detach().cpu().numpy()\naffine = np.diag([-2.0, -2.0, 2.0, 1.0])\ncropped_nifti = nib.Nifti1Image(\n    cropped_volume,\n    affine,\n)\n\n# Inspect the cropped image; this is the input to the VLM.\nnib.save(cropped_nifti, \"path/to/save/for/inspection.nii.gz\")\n```\n\nThis inspection file does not retain the source scan's world-space origin. If\nthe anatomy heuristic does not work reliably for your use case, manually crop\nthe input CT and set `anatomy_region=None`; the processor will then take a\ncentered crop.\n\n## License/Terms of Use\n\nUse of this model is governed by the [OpenMDW-1.1 License](https://github.com/OpenMDW/OpenMDW/blob/main/1.1/LICENSE.OpenMDW-1.1).\n\n### Deployment Geography\n\nGlobal\n\n### Use Case\n\nRadiologists, medical students, and medical researchers would be expected to\nuse this model for chest and abdominal CT report generation, question\nanswering, and reviewable AI-generated reasoning analyses in research and\neducational settings.\n\n**Important Medical AI Considerations:**\nThis model is designed for research and educational purposes only and should\nnot be used for clinical diagnosis or treatment decisions. All outputs should\nbe reviewed by qualified medical professionals. Generated reasoning is\nreviewable model output and is not guaranteed to represent the model's internal\ncomputation. It is intended to support medical education and research, not\nreplace clinical judgment.\n\n## Model Architecture\n\n**Architecture Type:** Transformer (Vision-Language Model)<br>\n**Network Architecture:** Native 3D vision encoder (Primus 3D ViT, initialized from COLIPRI) coupled to a Qwen3.5-4B language model, with 3D MRoPE positional encoding<br>\n**Task:** Vision-Language (report generation, question answering, and reasoning)<br>\n**Base Model:** Qwen3.5-4B<br>\n\nThis model was developed by training end-to-end with Supervised Fine-Tuning (SFT) and Group Relative Policy Optimization (GRPO).\n\n**Number of model parameters:** 4.69B total, including the retained 2D vision\nmodules for checkpoint compatibility; 4.35B in the active CT pathway, excluding\nthe 2D vision encoder and merger.\n\n**Hugging Face integration:**\n\n- 3D input route: `AutoProcessor(...)(images3d=..., anatomy_region=...)`\n- Model and processor classes: `AutoModelForImageTextToText` and `AutoProcessor`\n\n## Input\n\n**Input Type(s):** Image, Text<br>\n**Input Format(s):** NIfTI volume (`.nii` or `.nii.gz`), Text prompts (string)<br>\n**Input Parameters:** Three-Dimensional (3D) CT volumes with accompanying text queries (1D)<br>\n**Other Properties Related to Input:** Accepts 3D CT volumes with voxel intensities in Hounsfield units. Input volumes are automatically cropped to the chest or abdomen and resampled to 2-mm isotropic resolution before processing. Accepts natural language prompts for medical queries, follow-up questions, and reasoning requests.\n\n### Input Specifications\n\n- **Medical Images:** 3D NIfTI CT volumes with voxel intensities in Hounsfield units\n- **Text Prompts:** Natural language requests for radiology reports, answers to questions, or detailed reasoning analyses\n- **Interactive Dialogue:** Support for follow-up questions and clarification requests\n\n## Output\n\n**Output Type(s):** Text<br>\n**Output Format:** String<br>\n**Output Parameters:** One-Dimensional (1D) natural language reports, answers, and reasoning analyses<br>\n**Other Properties Related to Output:** Outputs contain structured reasoning showing step-by-step medical analysis, followed by a concise answer. This format enables transparency in the model's reasoning process and supports educational use cases. Reasoning output can be disabled for concise answers.\n\nOur AI models are designed and/or optimized to run on NVIDIA GPU-accelerated\nsystems. By leveraging NVIDIA's hardware (GPU cores) and software frameworks\n(CUDA libraries), the model achieves faster training and inference times\ncompared to CPU-only solutions.\n\n## Software Integration\n\n**Runtime Engine(s):**\n\n- PyTorch\n- Transformers\n\n**Supported Hardware Microarchitecture Compatibility:**\n\n- NVIDIA Ampere\n- NVIDIA Hopper\n- NVIDIA Lovelace\n\n**Supported Operating System(s):**\n\n- Linux\n\nThe integration of foundation and fine-tuned models into AI systems requires additional testing using use-case-specific data to ensure safe and effective deployment. Following the V-model methodology, iterative testing and validation at both unit and system levels are essential to mitigate risks, meet technical and functional requirements, and ensure compliance with safety and ethical standards before deployment.\n\n## Model Version(s)\n\n0.1 - Initial release version for CT reasoning and interpretation with structured thinking output\n\n## Training and Evaluation Datasets\n\n### Dataset Overview\n\nThe model was trained on approximately 550,000 structured QA examples derived\nfrom 70,111 unique CT volumes drawn from three CT datasets: CT-RATE (public),\nCancerVerse (public), and an internal NIH dataset. Chest and abdomen counts\nbelow are reported per anatomy-specific crop and do not sum to the overall case\ncount.\n\n## Training Dataset\n\n**Data Modality:**\n\n- Image\n- Text\n\n**Image Training Data Size:**\n\n- Less than a Million Images\n\n**Text Training Data Size:**\n\n- Less than a Billion Tokens\n\n**Data Collection Method by dataset:**\n\n- Hybrid: Human, Automatic/Sensors\n\n**Labeling Method by dataset:**\n\n- Hybrid: Human, Synthetic\n\n**Properties:** CT-RATE: 47,149 cases across 24,128 studies from 20,000 patients (46,203 chest, 20,243 abdomen), collected at Istanbul Medipol University Mega Hospital with paired radiology reports and multi-abnormality labels. NIH internal: 15,991 cases from 15,991 patients (12,742 chest, 12,243 abdomen). CancerVerse: 22,720 cases from 13,778 patients (4,668 chest, 4,438 abdomen), spanning 4 contrast phases and 13 malignant tumor types with paired radiologist reports. All source data is de-identified.\n\n## Evaluation Dataset\n\n**Data Modality:**\n\n- Image\n- Text\n\n**Data Collection Method by dataset:**\n\n- Hybrid: Human, Automatic/Sensors\n\n**Labeling Method by dataset:**\n\n- Hybrid: Human, Synthetic\n\n**Properties:** CT-RATE: 3,039 public validation cases (3,002 after correction) across 1,564 studies from 1,304 patients (3,002 chest; abdomen not reported). NIH internal: 5,092 cases from 5,092 patients (3,981 chest, 4,205 abdomen). CancerVerse contributes no evaluation cases. Held out from the same source datasets as training, with the same modalities and annotation types.\n\n## Benchmarks\n\nOn CT-RATE, NV-Reason-CT is compared against 3D contrastive and image-only\npretrained models, a fused 2D/3D generative MLLM, and a slice-based frontier\nmodel.\n\n| Model | Type | Macro-F1 | Macro-AUROC |\n|---|---|---|---|\n| **NV-Reason-CT** | Native 3D generative VLM | **0.614** | **0.871** |\n| VoxelFM | 3D image-only pretraining | 0.581 | 0.870 |\n| Pillar-0 | 3D contrastive | 0.544 | 0.861 |\n| ClinFusion-8B | Fused 2D/3D generative MLLM | 0.442 | n/r |\n| CT-CLIP | 3D contrastive | 0.398 | 0.733 |\n| Merlin | 3D contrastive | 0.358 | 0.662 |\n| MedGemma 1.5 | Up to 85 axial slices | 0.303 | n/r |\n\n*CT-RATE classification results (18 labels, fixed uniform threshold).\nNV-Reason-CT is evaluated using a direct Yes/No prompt, with no classification\nhead or task-specific adaptation. n/r = not reported.*\n\n## Inference\n\n**Acceleration Engine:** PyTorch, Transformers<br>\n**Test Hardware:**\n\n- H100\n- L40S\n\n## Ethical Considerations\n\nNVIDIA believes Trustworthy AI is a shared responsibility and we have\nestablished policies and practices to enable development for a wide array of AI\napplications. When downloaded or used in accordance with our terms of service,\ndevelopers should work with their internal model team to ensure this model\nmeets requirements for the relevant industry and use case and addresses\nunforeseen product misuse.\n\nUsers are responsible for ensuring that CT volumes are properly de-identified\nand handled in accordance with applicable privacy requirements. Please make\nsure you have proper rights and permissions for all input image and video\ncontent; if image or video includes people, personal health information, or\nintellectual property, the image or video generated will not blur or maintain\nproportions of image subjects included.\n\nPlease report model quality, risk, security vulnerabilities or concerns [here](https://www.nvidia.com/en-us/support/submit-security-vulnerability/).\n",
+  "cardDataParsed": {
+    "library_name": "transformers",
+    "license": "openmdw-1.1",
+    "language": [
+      "en"
+    ],
+    "pipeline_tag": "image-text-to-text",
+    "base_model": [
+      "Qwen/Qwen3.5-4B"
+    ],
+    "base_model_relation": "finetune",
+    "datasets": [
+      "ibrahimhamamci/CT-RATE",
+      "BodyMaps/CancerVerse"
+    ],
+    "tags": [
+      "medical-imaging",
+      "ct",
+      "3d-vlm",
+      "vision-language",
+      "nv-reason-ct",
+      "nvidia"
+    ],
+    "eval_results": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForImageTextToText",
+    "custom_class": "model.VLM3D_ForConditionalGeneration",
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  }
+}

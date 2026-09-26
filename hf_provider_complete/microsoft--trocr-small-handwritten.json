@@ -1,0 +1,170 @@
+{
+  "modelId": "microsoft/trocr-small-handwritten",
+  "author": "microsoft",
+  "sha": "b4648cfa171985a6745f37ddd637e98c0da958ac",
+  "lastModified": "2024-05-27 20:11:19+00:00",
+  "tags": [
+    "transformers",
+    "pytorch",
+    "vision-encoder-decoder",
+    "image-text-to-text",
+    "trocr",
+    "image-to-text",
+    "arxiv:2109.10282",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "image-to-text",
+  "library_name": "transformers",
+  "likes": 68,
+  "downloads": 190700,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "trocr",
+      "image-to-text"
+    ],
+    "widget": [
+      {
+        "src": "https://fki.tic.heia-fr.ch/static/img/a01-122-02.jpg",
+        "example_title": "Note 1"
+      },
+      {
+        "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoolxi9yWGAT5SLZShv8vVd0bz47UWRzQC19fDTeE8GmGv_Rn-PCF1pP1rrUx8kOjA4gg&usqp=CAU",
+        "example_title": "Note 2"
+      },
+      {
+        "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNYtTuSBpZPV_nkBYPMFwVVD9asZOPgHww4epu9EqWgDmXW--sE2o8og40ZfDGo87j5w&usqp=CAU",
+        "example_title": "Note 3"
+      }
+    ]
+  },
+  "config": {
+    "architectures": [
+      "VisionEncoderDecoderModel"
+    ],
+    "model_type": "vision-encoder-decoder",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "unk_token": "<unk>",
+      "sep_token": "</s>",
+      "cls_token": "<s>",
+      "pad_token": "<pad>",
+      "mask_token": {
+        "content": "<mask>",
+        "single_word": false,
+        "lstrip": true,
+        "rstrip": false,
+        "normalized": true,
+        "__type": "AddedToken"
+      }
+    }
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1175,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 2832,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 4211,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 190,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 272,
+      "lfs": null
+    },
+    {
+      "rfilename": "pytorch_model.bin",
+      "size": 245933041,
+      "lfs": {
+        "size": 245933041,
+        "sha256": "1b83102cbc1520dee1c3937ac334da83da18cf4683d46ebd1bd4e93ebe584dd7",
+        "pointer_size": 134
+      }
+    },
+    {
+      "rfilename": "sentencepiece.bpe.model",
+      "size": 1356293,
+      "lfs": {
+        "size": 1356293,
+        "sha256": "6f5e2fefcf793761a76a6bfb8ad35489f9c203b25557673284b6d032f41043f4",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 238,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 327,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\ntags:\n- trocr\n- image-to-text\nwidget:\n- src: https://fki.tic.heia-fr.ch/static/img/a01-122-02.jpg\n  example_title: Note 1\n- src: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoolxi9yWGAT5SLZShv8vVd0bz47UWRzQC19fDTeE8GmGv_Rn-PCF1pP1rrUx8kOjA4gg&usqp=CAU\n  example_title: Note 2\n- src: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNYtTuSBpZPV_nkBYPMFwVVD9asZOPgHww4epu9EqWgDmXW--sE2o8og40ZfDGo87j5w&usqp=CAU\n  example_title: Note 3\n---\n\n# TrOCR (small-sized model, fine-tuned on IAM) \n\nTrOCR model fine-tuned on the [IAM dataset](https://fki.tic.heia-fr.ch/databases/iam-handwriting-database). It was introduced in the paper [TrOCR: Transformer-based Optical Character Recognition with Pre-trained Models](https://arxiv.org/abs/2109.10282) by Li et al. and first released in [this repository](https://github.com/microsoft/unilm/tree/master/trocr). \n\n\n## Model description\n\nThe TrOCR model is an encoder-decoder model, consisting of an image Transformer as encoder, and a text Transformer as decoder. The image encoder was initialized from the weights of DeiT, while the text decoder was initialized from the weights of UniLM.\n\nImages are presented to the model as a sequence of fixed-size patches (resolution 16x16), which are linearly embedded. One also adds absolute position embeddings before feeding the sequence to the layers of the Transformer encoder. Next, the Transformer text decoder autoregressively generates tokens.\n\n## Intended uses & limitations\n\nYou can use the raw model for optical character recognition (OCR) on single text-line images. See the [model hub](https://huggingface.co/models?search=microsoft/trocr) to look for fine-tuned versions on a task that interests you.\n\n### How to use\n\nHere is how to use this model in PyTorch:\n\n```python\nfrom transformers import TrOCRProcessor, VisionEncoderDecoderModel\nfrom PIL import Image\nimport requests\n\n# load image from the IAM database\nurl = 'https://fki.tic.heia-fr.ch/static/img/a01-122-02-00.jpg'\nimage = Image.open(requests.get(url, stream=True).raw).convert(\"RGB\")\n\nprocessor = TrOCRProcessor.from_pretrained('microsoft/trocr-small-handwritten')\nmodel = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-small-handwritten')\npixel_values = processor(images=image, return_tensors=\"pt\").pixel_values\n\ngenerated_ids = model.generate(pixel_values)\ngenerated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]\n```\n\n### BibTeX entry and citation info\n\n```bibtex\n@misc{li2021trocr,\n      title={TrOCR: Transformer-based Optical Character Recognition with Pre-trained Models}, \n      author={Minghao Li and Tengchao Lv and Lei Cui and Yijuan Lu and Dinei Florencio and Cha Zhang and Zhoujun Li and Furu Wei},\n      year={2021},\n      eprint={2109.10282},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL}\n}\n```",
+  "cardDataParsed": {
+    "tags": [
+      "trocr",
+      "image-to-text"
+    ],
+    "widget": [
+      {
+        "src": "https://fki.tic.heia-fr.ch/static/img/a01-122-02.jpg",
+        "example_title": "Note 1"
+      },
+      {
+        "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoolxi9yWGAT5SLZShv8vVd0bz47UWRzQC19fDTeE8GmGv_Rn-PCF1pP1rrUx8kOjA4gg&usqp=CAU",
+        "example_title": "Note 2"
+      },
+      {
+        "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNYtTuSBpZPV_nkBYPMFwVVD9asZOPgHww4epu9EqWgDmXW--sE2o8og40ZfDGo87j5w&usqp=CAU",
+        "example_title": "Note 3"
+      }
+    ],
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": null,
+    "license": null,
+    "license_name": null,
+    "license_link": null,
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "custom_class": null,
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoTokenizer"
+  }
+}

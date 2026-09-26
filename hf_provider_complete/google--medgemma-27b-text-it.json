@@ -1,0 +1,270 @@
+{
+  "modelId": "google/medgemma-27b-text-it",
+  "author": "google",
+  "sha": "5b667cf2ddcf064085bc90952edb35a0edbfb79c",
+  "lastModified": "2025-09-16 23:34:17+00:00",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "gemma3_text",
+    "text-generation",
+    "medical",
+    "clinical-reasoning",
+    "thinking",
+    "conversational",
+    "arxiv:2507.05201",
+    "arxiv:2501.19393",
+    "arxiv:2303.15343",
+    "arxiv:2009.13081",
+    "arxiv:2102.09542",
+    "arxiv:2411.15640",
+    "arxiv:2404.05590",
+    "arxiv:2501.18362",
+    "base_model:google/gemma-3-27b-pt",
+    "base_model:finetune:google/gemma-3-27b-pt",
+    "license:other",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "pipeline_tag": "text-generation",
+  "library_name": "transformers",
+  "likes": 474,
+  "downloads": 27917,
+  "private": false,
+  "gated": "auto",
+  "disabled": false,
+  "cardData": {
+    "base_model": "google/gemma-3-27b-pt",
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "transformers",
+    "license": "other",
+    "license_name": "health-ai-developer-foundations",
+    "license_link": "https://developers.google.com/health-ai-developer-foundations/terms",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": "text-generation",
+    "tags": [
+      "medical",
+      "clinical-reasoning",
+      "thinking"
+    ],
+    "extra_gated_heading": "Access MedGemma on Hugging Face",
+    "extra_gated_prompt": "To access MedGemma on Hugging Face, you're required to review and agree to [Health AI Developer Foundation's terms of use](https://developers.google.com/health-ai-developer-foundations/terms). To do this, please ensure you're logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license"
+  },
+  "config": {
+    "architectures": [
+      "Gemma3ForCausalLM"
+    ],
+    "model_type": "gemma3_text",
+    "tokenizer_config": {
+      "bos_token": "<bos>",
+      "chat_template": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n",
+      "eos_token": "<eos>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+    },
+    "chat_template_jinja": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 1570,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 24135,
+      "lfs": null
+    },
+    {
+      "rfilename": "added_tokens.json",
+      "size": 35,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 1532,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 931,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 173,
+      "lfs": null
+    },
+    {
+      "rfilename": "model-00001-of-00011.safetensors",
+      "size": 4833502584,
+      "lfs": {
+        "size": 4833502584,
+        "sha256": "5502d07e095d756a28ca23b084aa08ead7e156176b607c73cfd0bccd1ceeedc0",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00002-of-00011.safetensors",
+      "size": 4954791768,
+      "lfs": {
+        "size": 4954791768,
+        "sha256": "73c84e29811510319cacb288a0626dbca8b8656c94c329b9bf256d0605080ed8",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00003-of-00011.safetensors",
+      "size": 4954791816,
+      "lfs": {
+        "size": 4954791816,
+        "sha256": "ea67918ed79e8400ae5af9117c19b256518dc1bf0820a8dea8c458b6557647bf",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00004-of-00011.safetensors",
+      "size": 4954791848,
+      "lfs": {
+        "size": 4954791848,
+        "sha256": "410695b14a3ebfac32dde918b2e9370410c7b7af1a9e002fdf0ab6de83776519",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00005-of-00011.safetensors",
+      "size": 4954791848,
+      "lfs": {
+        "size": 4954791848,
+        "sha256": "39d87097f798a9a65b1e9f0edefd56ce4f3c29a7f41b30002732da5e36e5a846",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00006-of-00011.safetensors",
+      "size": 4954791848,
+      "lfs": {
+        "size": 4954791848,
+        "sha256": "54e01e1bf45e2d2287caab02c50601810a3ed944e5bd3cb800febf4c6992953f",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00007-of-00011.safetensors",
+      "size": 4954791848,
+      "lfs": {
+        "size": 4954791848,
+        "sha256": "b0b08a9e5a6d28e3664d51f008639bb8729003e735ffb3bc4093a921be244244",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00008-of-00011.safetensors",
+      "size": 4954791848,
+      "lfs": {
+        "size": 4954791848,
+        "sha256": "a234ed761c398ff38b94c6ee2c00fd94a52ba461c9bc33ea7c7336b43e30e93e",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00009-of-00011.safetensors",
+      "size": 4954791848,
+      "lfs": {
+        "size": 4954791848,
+        "sha256": "b059d8cfe26a40995fea6f2da36148bd52ac54f408d3b7961b6777467b378aba",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00010-of-00011.safetensors",
+      "size": 4954791848,
+      "lfs": {
+        "size": 4954791848,
+        "sha256": "5f5ff7500f69448553a190ac0307a8189e863a4d734a19c56d2fb3587a58c3b4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model-00011-of-00011.safetensors",
+      "size": 4591469784,
+      "lfs": {
+        "size": 4591469784,
+        "sha256": "1fbf93f82e76c9b77259bdc72c3a0b7a7f8d86291c17feda93ab078226397b50",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 67904,
+      "lfs": null
+    },
+    {
+      "rfilename": "requirements.txt",
+      "size": 20,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 662,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 33384570,
+      "lfs": {
+        "size": 33384570,
+        "sha256": "7d4046bf0505a327dd5a0abbb427ecd4fc82f99c2ceaa170bc61ecde12809b0c",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer.model",
+      "size": 4689074,
+      "lfs": {
+        "size": 4689074,
+        "sha256": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 1156961,
+      "lfs": null
+    }
+  ],
+  "cardContent": "---\nlicense: other\nlicense_name: health-ai-developer-foundations\nlicense_link: https://developers.google.com/health-ai-developer-foundations/terms\nlibrary_name: transformers\npipeline_tag: text-generation\nextra_gated_heading: Access MedGemma on Hugging Face\nextra_gated_prompt: To access MedGemma on Hugging Face, you're required to review\n  and agree to [Health AI Developer Foundation's terms of use](https://developers.google.com/health-ai-developer-foundations/terms).\n  To do this, please ensure you're logged in to Hugging Face and click below. Requests\n  are processed immediately.\nextra_gated_button_content: Acknowledge license\nbase_model: google/gemma-3-27b-pt\ntags:\n- medical\n- clinical-reasoning\n- thinking\n---\n\n# MedGemma model card\n\n**Model documentation:** [MedGemma](https://developers.google.com/health-ai-developer-foundations/medgemma)\n\n**Resources:**\n\n*   Model on Google Cloud Model Garden: [MedGemma](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/medgemma)\n*   Model on Hugging Face: [MedGemma](https://huggingface.co/collections/google/medgemma-release-680aade845f90bec6a3f60c4)\n*   GitHub repository (supporting code, Colab notebooks, discussions, and\n    issues): [MedGemma](https://github.com/google-health/medgemma)\n*   Quick start notebook: [GitHub](https://github.com/google-health/medgemma/blob/main/notebooks/quick_start_with_hugging_face.ipynb)\n*   Fine-tuning notebook: [GitHub](https://github.com/google-health/medgemma/blob/main/notebooks/fine_tune_with_hugging_face.ipynb)\n*   [Patient Education Demo built using MedGemma](https://huggingface.co/spaces/google/rad_explain)\n*   Support: See [Contact](https://developers.google.com/health-ai-developer-foundations/medgemma/get-started.md#contact)\n*   License: The use of MedGemma is governed by the [Health AI Developer\n    Foundations terms of\n    use](https://developers.google.com/health-ai-developer-foundations/terms).\n\n**Author:** Google\n\n## Model information\n\nThis section describes the MedGemma model and how to use it.\n\n### Description\n\nMedGemma is a collection of [Gemma 3](https://ai.google.dev/gemma/docs/core)\nvariants that are trained for performance on medical text and image\ncomprehension. Developers can use MedGemma to accelerate building\nhealthcare-based AI applications. MedGemma currently comes in two variants: a 4B\nmultimodal version and a 27B text-only version.\n\nMedGemma 27B has been trained exclusively on medical text and optimized for\ninference-time computation. MedGemma 27B is only available as an\ninstruction-tuned model.\n\nMedGemma variants have been evaluated on a range of clinically relevant\nbenchmarks to illustrate their baseline performance. These include both open\nbenchmark datasets and curated datasets. Developers can fine-tune MedGemma\nvariants for improved performance. Consult the Intended Use section below for\nmore details.\n\nA full technical report will be available soon.\n\n### How to use\n\nBelow are some example code snippets to help you quickly get started running the\nmodel locally on GPU. If you want to use the model at scale, we recommend that\nyou create a production version using [Model\nGarden](https://cloud.google.com/model-garden).\n\nFirst, install the Transformers library. Gemma 3 is supported starting from\ntransformers 4.50.0.\n\n```sh\n$ pip install -U transformers\n```\n\n**Run model with the `pipeline` API**\n\n```python\nfrom transformers import pipeline\nimport torch\n\npipe = pipeline(\n    \"text-generation\",\n    model=\"google/medgemma-27b-text-it\",\n    torch_dtype=torch.bfloat16,\n    device=\"cuda\",\n)\n\nmessages = [\n    {\n        \"role\": \"system\",\n        \"content\": \"You are a helpful medical assistant.\"\n    },\n    {\n        \"role\": \"user\",\n        \"content\": \"How do you differentiate bacterial from viral pneumonia?\"\n    }\n]\n\noutput = pipe(text=messages, max_new_tokens=200)\nprint(output[0][\"generated_text\"][-1][\"content\"])\n```\n\n**Run the model directly**\n\n```python\n# pip install accelerate\nfrom transformers import AutoTokenizer, AutoModelForCausalLM\nimport torch\n\nmodel_id = \"google/medgemma-27b-text-it\"\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_id,\n    torch_dtype=torch.bfloat16,\n    device_map=\"auto\",\n)\ntokenizer = AutoTokenizer.from_pretrained(model_id)\n\nmessages = [\n    {\n        \"role\": \"system\",\n        \"content\": \"You are a helpful medical assistant.\"\n    },\n    {\n        \"role\": \"user\",\n        \"content\": \"How do you differentiate bacterial from viral pneumonia?\"\n    }\n]\n\ninputs = tokenizer.apply_chat_template(\n    messages,\n    add_generation_prompt=True,\n    tokenize=True,\n    return_dict=True,\n    return_tensors=\"pt\",\n).to(model.device)\n\ninput_len = inputs[\"input_ids\"].shape[-1]\n\nwith torch.inference_mode():\n    generation = model.generate(**inputs, max_new_tokens=200, do_sample=False)\n    generation = generation[0][input_len:]\n\ndecoded = tokenizer.decode(generation, skip_special_tokens=True)\nprint(decoded)\n```\n\n### Examples\n\nSee the following Colab notebooks for examples of how to use MedGemma:\n\n*   To give the model a quick try, running it locally with weights from Hugging\n    Face, see [Quick start notebook in\n    Colab](https://colab.research.google.com/github/google-health/medgemma/blob/main/notebooks/quick_start_with_hugging_face.ipynb).\n    Note that you will need to use Colab Enterprise to run the 27B model without\n    quantization.\n\n*   For an example of fine-tuning the model, see the [Fine-tuning notebook in\n    Colab](https://colab.research.google.com/github/google-health/medgemma/blob/main/notebooks/fine_tune_with_hugging_face.ipynb).\n\n### Model architecture overview\n\nThe MedGemma model is built based on [Gemma 3](https://ai.google.dev/gemma/) and\nuses the same decoder-only transformer architecture as Gemma 3. To read more\nabout the architecture, consult the Gemma 3 [model\ncard](https://ai.google.dev/gemma/docs/core/model_card_3).\n\n### Technical specifications\n\n*   **Model type**: Decoder-only Transformer architecture, see the [Gemma 3\n    technical\n    report](https://storage.googleapis.com/deepmind-media/gemma/Gemma3Report.pdf)\n*   **Modalities**: **4B**: Text, vision; **27B**: Text only\n*   **Attention mechanism**: Utilizes grouped-query attention (GQA)\n*   **Context length**: Supports long context, at least 128K tokens\n*   **Key publication**: Coming soon\n*   **Model created**: May 20, 2025\n*   **Model version**: 1.0.0\n\n### Citation\n\nWhen using this model, please cite: Sellergren et al. \"MedGemma Technical Report.\" \n*arXiv preprint arXiv:2507.05201* (2025)\n\n\n```none\n@article{sellergren2025medgemma,\n    title = {MedGemma Technical Report}\n    author = {Sellergren, Andrew and Kazemzadeh, Sahar and Jaroensri, Tiam and Kiraly, Atilla and Traverse, Madeleine and Kohlberger, Timo and Xu, Shawn and Jamil, Fayaz and Hughes, C\u00edan and Lau, Charles and others},\n    journal={arXiv preprint arXiv:2507.05201}\n    year = {2025},\n}\n```\n\n### Inputs and outputs\n\n**Input**:\n\n*   Text string, such as a question or prompt\n*   Total input length of 128K tokens\n\n**Output**:\n\n*   Generated text in response to the input, such as an answer to a question,\n    analysis of image content, or a summary of a document\n*   Total output length of 8192 tokens\n\n### Performance and validation\n\nMedGemma was evaluated across a range of different multimodal classification,\nreport generation, visual question answering, and text-based tasks.\n\n### Key performance metrics\n\n#### Text evaluations\n\nMedGemma 4B and text-only MedGemma 27B were evaluated across a range of\ntext-only benchmarks for medical knowledge and reasoning.\n\nThe MedGemma models outperform their respective base Gemma models across all\ntested text-only health benchmarks.\n\n| Metric | MedGemma 27B | Gemma 3 27B | MedGemma 4B | Gemma 3 4B |\n| :---- | :---- | :---- | :---- | :---- |\n| MedQA (4-op) | 89.8 (best-of-5) 87.7 (0-shot) | 74.9 | 64.4 | 50.7 |\n| MedMCQA | 74.2 | 62.6 | 55.7 | 45.4 |\n| PubMedQA | 76.8 | 73.4 | 73.4 | 68.4 |\n| MMLU Med (text only) | 87.0 | 83.3 | 70.0 | 67.2 |\n| MedXpertQA (text only) | 26.7 | 15.7 | 14.2 | 11.6 |\n| AfriMed-QA | 84.0 | 72.0 | 52.0 | 48.0 |\n\nFor all MedGemma 27B results, [test-time\nscaling](https://arxiv.org/abs/2501.19393) is used to improve performance.\n\n### Ethics and safety evaluation\n\n#### Evaluation approach\n\nOur evaluation methods include structured evaluations and internal red-teaming\ntesting of relevant content policies. Red-teaming was conducted by a number of\ndifferent teams, each with different goals and human evaluation metrics. These\nmodels were evaluated against a number of different categories relevant to\nethics and safety, including:\n\n*   **Child safety**: Evaluation of text-to-text and image-to-text prompts\n    covering child safety policies, including child sexual abuse and\n    exploitation.\n*   **Content safety:** Evaluation of text-to-text and image-to-text prompts\n    covering safety policies, including harassment, violence and gore, and hate\n    speech.\n*   **Representational harms**: Evaluation of text-to-text and image-to-text\n    prompts covering safety policies, including bias, stereotyping, and harmful\n    associations or inaccuracies.\n*   **General medical harms:** Evaluation of text-to-text and image-to-text\n    prompts covering safety policies, including information quality and harmful\n    associations or inaccuracies.\n\nIn addition to development level evaluations, we conduct \"assurance evaluations\"\nwhich are our \"arms-length\" internal evaluations for responsibility governance\ndecision making. They are conducted separately from the model development team,\nto inform decision making about release. High-level findings are fed back to the\nmodel team, but prompt sets are held out to prevent overfitting and preserve the\nresults' ability to inform decision making. Notable assurance evaluation results\nare reported to our Responsibility & Safety Council as part of release review.\n\n#### Evaluation results\n\nFor all areas of safety testing, we saw safe levels of performance across the\ncategories of child safety, content safety, and representational harms. All\ntesting was conducted without safety filters to evaluate the model capabilities\nand behaviors. For text-to-text, image-to-text, and audio-to-text, and across\nboth MedGemma model sizes, the model produced minimal policy violations. A\nlimitation of our evaluations was that they included primarily English language\nprompts.\n\n## Data card\n\n### Dataset overview\n\n#### Training\n\nThe base Gemma models are pre-trained on a large corpus of text and code data.\nMedGemma 4B utilizes a [SigLIP](https://arxiv.org/abs/2303.15343) image encoder\nthat has been specifically pre-trained on a variety of de-identified medical\ndata, including radiology images, histopathology images, ophthalmology images,\nand dermatology images. Its LLM component is trained on a diverse set of medical\ndata, including medical text relevant to radiology images, chest-x rays,\nhistopathology patches, ophthalmology images and dermatology images.\n\n#### Evaluation\n\nMedGemma models have been evaluated on a comprehensive set of clinically\nrelevant benchmarks, including over 22 datasets across 5 different tasks and 6\nmedical image modalities. These include both open benchmark datasets and curated\ndatasets, with a focus on expert human evaluations for tasks like CXR report\ngeneration and radiology VQA.\n\n#### Source\n\nMedGemma utilizes a combination of public and private datasets.\n\nThis model was trained on diverse public datasets including MIMIC-CXR (chest\nX-rays and reports), Slake-VQA (multimodal medical images and questions),\nPAD-UFES-20 (skin lesion images and data), SCIN (dermatology images), TCGA\n(cancer genomics data), CAMELYON (lymph node histopathology images), PMC-OA\n(biomedical literature with images), and Mendeley Digital Knee X-Ray (knee\nX-rays).\n\nAdditionally, multiple diverse proprietary datasets were licensed and\nincorporated (described next).\n\n### Data Ownership and Documentation\n\n*   [Mimic-CXR](https://physionet.org/content/mimic-cxr/2.1.0/): MIT Laboratory\n    for Computational Physiology and Beth Israel Deaconess Medical Center\n    (BIDMC).\n*   [Slake-VQA](https://www.med-vqa.com/slake/): The Hong Kong Polytechnic\n    University (PolyU), with collaborators including West China Hospital of\n    Sichuan University and Sichuan Academy of Medical Sciences / Sichuan\n    Provincial People's Hospital.\n*   [PAD-UFES-20](https://pmc.ncbi.nlm.nih.gov/articles/PMC7479321/): Federal\n    University of Esp\u00edrito Santo (UFES), Brazil, through its Dermatological and\n    Surgical Assistance Program (PAD).\n*   [SCIN](https://github.com/google-research-datasets/scin): A collaboration\n    between Google Health and Stanford Medicine.\n*   [TCGA](https://portal.gdc.cancer.gov/) (The Cancer Genome Atlas): A joint\n    effort of National Cancer Institute and National Human Genome Research\n    Institute. Data from TCGA are available via the Genomic Data Commons (GDC)\n*   [CAMELYON](https://camelyon17.grand-challenge.org/Data/): The data was\n    collected from Radboud University Medical Center and University Medical\n    Center Utrecht in the Netherlands.\n*   [PMC-OA (PubMed Central Open Access\n    Subset)](https://catalog.data.gov/dataset/pubmed-central-open-access-subset-pmc-oa):\n    Maintained by the National Library of Medicine (NLM) and National Center for\n    Biotechnology Information (NCBI), which are part of the NIH.\n*   [MedQA](https://arxiv.org/pdf/2009.13081): This dataset was created by a\n    team of researchers led by Di Jin, Eileen Pan, Nassim Oufattole, Wei-Hung\n    Weng, Hanyi Fang, and Peter Szolovits\n*   [Mendeley Digital Knee\n    X-Ray](https://data.mendeley.com/datasets/t9ndx37v5h/1): This dataset is\n    from Rani Channamma University, and is hosted on Mendeley Data.\n*   [AfriMed-QA](https://afrimedqa.com/): This data was developed and led by\n    multiple collaborating organizations and researchers include key\n    contributors: Intron Health, SisonkeBiotik, BioRAMP, Georgia Institute of\n    Technology, and MasakhaneNLP.\n*   [VQA-RAD](https://www.nature.com/articles/sdata2018251): This dataset was\n    created by a research team led by Jason J. Lau, Soumya Gayen, Asma Ben\n    Abacha, and Dina Demner-Fushman and their affiliated institutions (the US\n    National Library of Medicine and National Institutes of Health)\n*   [MedExpQA](https://www.sciencedirect.com/science/article/pii/S0933365724001805):\n    This dataset was created by researchers at the HiTZ Center (Basque Center\n    for Language Technology and Artificial Intelligence).\n*   [MedXpertQA](https://huggingface.co/datasets/TsinghuaC3I/MedXpertQA): This\n    dataset was developed by researchers at Tsinghua University (Beijing, China)\n    and Shanghai Artificial Intelligence Laboratory (Shanghai, China).\n\nIn addition to the public datasets listed above, MedGemma was also trained on\nde-identified datasets licensed for research or collected internally at Google\nfrom consented participants.\n\n*   Radiology dataset 1: De-identified dataset of different CT studies across\n    body parts from a US-based radiology outpatient diagnostic center network.\n*   Ophthalmology dataset 1: De-identified dataset of fundus images from\n    diabetic retinopathy screening.\n*   Dermatology dataset 1: De-identified dataset of teledermatology skin\n    condition images (both clinical and dermatoscopic) from Colombia.\n*   Dermatology dataset 2: De-identified dataset of skin cancer images (both\n    clinical and dermatoscopic) from Australia.\n*   Dermatology dataset 3: De-identified dataset of non-diseased skin images\n    from an internal data collection effort.\n*   Pathology dataset 1: De-identified dataset of histopathology H&E whole slide\n    images created in collaboration with an academic research hospital and\n    biobank in Europe. Comprises de-identified colon, prostate, and lymph nodes.\n*   Pathology dataset 2: De-identified dataset of lung histopathology H&E and\n    IHC whole slide images created by a commercial biobank in the United States.\n*   Pathology dataset 3: De-identified dataset of prostate and lymph node H&E\n    and IHC histopathology whole slide images created by a contract research\n    organization in the United States.\n*   Pathology dataset 4: De-identified dataset of histopathology, predominantly\n    H\\&E whole slide images created in collaboration with a large, tertiary\n    teaching hospital in the United States. Comprises a diverse set of tissue\n    and stain types, predominantly H&E.\n\n### Data citation\n\n*   **MIMIC-CXR** Johnson, A., Pollard, T., Mark, R., Berkowitz, S., & Horng, S.\n    (2024). MIMIC-CXR Database (version 2.1.0). PhysioNet.\n    https://physionet.org/content/mimic-cxr/2.1.0/\n*and* Johnson, Alistair E. W., Tom J. Pollard, Seth J. Berkowitz, Nathaniel R.\n    Greenbaum, Matthew P. Lungren, Chih-Ying Deng, Roger G. Mark, and Steven\n    Horng. 2019. \"MIMIC-CXR, a de-Identified Publicly Available Database of\n    Chest Radiographs with Free-Text Reports.\" *Scientific Data 6* (1): 1\u20138.\n\n*   **SLAKE** Liu, Bo, Li-Ming Zhan, Li Xu, Lin Ma, Yan Yang, and Xiao-Ming Wu.\n    2021.SLAKE: A Semantically-Labeled Knowledge-Enhanced Dataset for Medical\n    Visual Question Answering.\" http://arxiv.org/abs/2102.09542.\n\n*   **PAD-UEFS** Pacheco, A. G. C., Lima, G. R., Salomao, A., Krohling, B.,\n    Biral, I. P., de Angelo, G. G., Alves, F. O. G., Ju X. M., & P. R. C.\n    (2020). PAD-UFES-20: A skin lesion dataset composed of patient data and\n    clinical images collected from smartphones. In *Proceedings of the 2020 IEEE\n    International Conference on Bioinformatics and Biomedicine (BIBM)* (pp.\n    1551-1558). IEEE. https://doi.org/10.1109/BIBM49941.2020.9313241\n\n*   **SCIN** Ward, Abbi, Jimmy Li, Julie Wang, Sriram Lakshminarasimhan, Ashley\n    Carrick, Bilson Campana, Jay Hartford, et al. 2024. \"Creating an Empirical\n    Dermatology Dataset Through Crowdsourcing With Web Search Advertisements.\"\n    *JAMA Network Open 7* (11): e2446615\u2013e2446615.\n\n*   **TCGA** The results shown here are in whole or part based upon data\n    generated by the TCGA Research Network: https://www.cancer.gov/tcga.\n\n*   **CAMELYON16** Ehteshami Bejnordi, Babak, Mitko Veta, Paul Johannes van\n    Diest, Bram van Ginneken, Nico Karssemeijer, Geert Litjens, Jeroen A. W. M.\n    van der Laak, et al. 2017. \"Diagnostic Assessment of Deep Learning\n    Algorithms for Detection of Lymph Node Metastases in Women With Breast\n    Cancer.\" *JAMA 318* (22): 2199\u20132210.\n\n*   **MedQA** Jin, Di, Eileen Pan, Nassim Oufattole, Wei-Hung Weng, Hanyi Fang,\n    and Peter Szolovits. 2020. \"What Disease Does This Patient Have? A\n    Large-Scale Open Domain Question Answering Dataset from Medical Exams.\"\n    http://arxiv.org/abs/2009.13081.\n\n*   **Mendeley Digital Knee X-Ray** Gornale, Shivanand; Patravali, Pooja (2020),\n    \"Digital Knee X-ray Images\", Mendeley Data, V1, doi: 10.17632/t9ndx37v5h.1\n\n*   **AfrimedQA** Olatunji, Tobi, Charles Nimo, Abraham Owodunni, Tassallah\n    Abdullahi, Emmanuel Ayodele, Mardhiyah Sanni, Chinemelu Aka, et al. 2024.\n    \"AfriMed-QA: A Pan-African, Multi-Specialty, Medical Question-Answering\n    Benchmark Dataset.\" http://arxiv.org/abs/2411.15640.\n\n*   **VQA-RAD** Lau, Jason J., Soumya Gayen, Asma Ben Abacha, and Dina\n    Demner-Fushman. 2018. \"A Dataset of Clinically Generated Visual Questions\n    and Answers about Radiology Images.\" *Scientific Data 5* (1): 1\u201310.\n\n*   **MedexpQA** Alonso, I., Oronoz, M., & Agerri, R. (2024). MedExpQA:\n    Multilingual Benchmarking of Large Language Models for Medical Question\n    Answering. *arXiv preprint arXiv:2404.05590*. Retrieved from\n    https://arxiv.org/abs/2404.05590\n\n*   **MedXpertQA** Zuo, Yuxin, Shang Qu, Yifei Li, Zhangren Chen, Xuekai Zhu,\n    Ermo Hua, Kaiyan Zhang, Ning Ding, and Bowen Zhou. 2025. \"MedXpertQA:\n    Benchmarking Expert-Level Medical Reasoning and Understanding.\"\n    http://arxiv.org/abs/2501.18362.\n\n### De-identification/anonymization:\n\nGoogle and partnerships utilize datasets that have been rigorously anonymized or\nde-identified to ensure the protection of individual research participants and\npatient privacy\n\n## Implementation information\n\nDetails about the model internals.\n\n### Software\n\nTraining was done using [JAX](https://github.com/jax-ml/jax).\n\nJAX allows researchers to take advantage of the latest generation of hardware,\nincluding TPUs, for faster and more efficient training of large models.\n\n## Use and limitations\n\n### Intended use\n\nMedGemma is an open multimodal generative AI model intended to be used as a\nstarting point that enables more efficient development of downstream healthcare\napplications involving medical text and images. MedGemma is intended for\ndevelopers in the life sciences and healthcare space. Developers are responsible\nfor training, adapting and making meaningful changes to MedGemma to accomplish\ntheir specific intended use. MedGemma models can be fine-tuned by developers\nusing their own proprietary data for their specific tasks or solutions.\n\nMedGemma is based on Gemma 3 and has been further trained on medical images and\ntext. MedGemma enables further development in any medical context (image and\ntextual), however the model was pre-trained using chest X-ray, pathology,\ndermatology, and fundus images. Examples of tasks within MedGemma's training\ninclude visual question answering pertaining to medical images, such as\nradiographs, or providing answers to textual medical questions. Full details of\nall the tasks MedGemma has been evaluated can be found in an upcoming technical\nreport.\n\n### Benefits\n\n*   Provides strong baseline medical image and text comprehension for models of\n    its size.\n*   This strong performance makes it efficient to adapt for downstream\n    healthcare-based use cases, compared to models of similar size without\n    medical data pre-training.\n*   This adaptation may involve prompt engineering, grounding, agentic\n    orchestration or fine-tuning depending on the use case, baseline validation\n    requirements, and desired performance characteristics.\n\n### Limitations\n\nMedGemma is not intended to be used without appropriate validation, adaptation\nand/or making meaningful modification by developers for their specific use case.\nThe outputs generated by MedGemma are not intended to directly inform clinical\ndiagnosis, patient management decisions, treatment recommendations, or any other\ndirect clinical practice applications. Performance benchmarks highlight baseline\ncapabilities on relevant benchmarks, but even for image and text domains that\nconstitute a substantial portion of training data, inaccurate model output is\npossible. All outputs from MedGemma should be considered preliminary and require\nindependent verification, clinical correlation, and further investigation\nthrough established research and development methodologies.\n\nMedGemma's multimodal capabilities have been primarily evaluated on single-image\ntasks. MedGemma has not been evaluated in use cases that involve comprehension\nof multiple images.\n\nMedGemma has not been evaluated or optimized for multi-turn applications.\n\nMedGemma's training may make it more sensitive to the specific prompt used than\nGemma 3.\n\nWhen adapting MedGemma developer should consider the following:\n\n*   **Bias in validation data:** As with any research, developers should ensure\n    that any downstream application is validated to understand performance using\n    data that is appropriately representative of the intended use setting for\n    the specific application (e.g., age, sex, gender, condition, imaging device,\n    etc).\n*   **Data contamination concerns**: When evaluating the generalization\n    capabilities of a large model like MedGemma in a medical context, there is a\n    risk of data contamination, where the model might have inadvertently seen\n    related medical information during its pre-training, potentially\n    overestimating its true ability to generalize to novel medical concepts.\n    Developers should validate MedGemma on datasets not publicly available or\n    otherwise made available to non-institutional researchers to mitigate this\n    risk.",
+  "cardDataParsed": {
+    "license": "other",
+    "license_name": "health-ai-developer-foundations",
+    "license_link": "https://developers.google.com/health-ai-developer-foundations/terms",
+    "library_name": "transformers",
+    "pipeline_tag": "text-generation",
+    "extra_gated_heading": "Access MedGemma on Hugging Face",
+    "extra_gated_prompt": "To access MedGemma on Hugging Face, you're required to review and agree to [Health AI Developer Foundation's terms of use](https://developers.google.com/health-ai-developer-foundations/terms). To do this, please ensure you're logged in to Hugging Face and click below. Requests are processed immediately.",
+    "extra_gated_button_content": "Acknowledge license",
+    "base_model": "google/gemma-3-27b-pt",
+    "tags": [
+      "medical",
+      "clinical-reasoning",
+      "thinking"
+    ],
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "metrics": null,
+    "model_name": null
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForCausalLM",
+    "custom_class": null,
+    "pipeline_tag": "text-generation",
+    "processor": "AutoTokenizer"
+  }
+}

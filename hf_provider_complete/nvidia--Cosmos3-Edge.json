@@ -1,0 +1,399 @@
+{
+  "modelId": "nvidia/Cosmos3-Edge",
+  "author": "nvidia",
+  "sha": "344d602b128d1bbdacb43b08d0a3626f46343e29",
+  "lastModified": "2026-09-16 18:48:41+00:00",
+  "tags": [
+    "cosmos",
+    "diffusers",
+    "safetensors",
+    "cosmos3_edge",
+    "nvidia",
+    "cosmos3",
+    "license:other",
+    "deploy:azure",
+    "deploy:sagemaker",
+    "region:us"
+  ],
+  "pipeline_tag": null,
+  "library_name": "cosmos",
+  "likes": 213,
+  "downloads": 1380628,
+  "private": false,
+  "gated": false,
+  "disabled": false,
+  "cardData": {
+    "base_model": null,
+    "datasets": null,
+    "eval_results": null,
+    "language": null,
+    "library_name": "cosmos",
+    "license": "other",
+    "license_name": "openmdw1.1-license",
+    "license_link": "https://openmdw.ai/license/1-1/",
+    "metrics": null,
+    "model_name": null,
+    "pipeline_tag": null,
+    "tags": [
+      "nvidia",
+      "cosmos",
+      "cosmos3"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "Cosmos3EdgeForConditionalGeneration"
+    ],
+    "model_type": "cosmos3_edge",
+    "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|im_end|>",
+      "unk_token": "<unk>"
+    },
+    "chat_template_jinja": "\n{% macro render_extra_keys(json_dict, handled_keys) %}\n    {%- if json_dict is mapping %}\n        {%- for json_key in json_dict if json_key not in handled_keys %}\n            {%- if json_dict[json_key] is mapping or (json_dict[json_key] is sequence and json_dict[json_key] is not string) %}\n                {{- '\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | tojson | safe) ~ '</' ~ json_key ~ '>' }}\n            {%- else %}\n                {{-'\n<' ~ json_key ~ '>' ~ (json_dict[json_key] | string) ~ '</' ~ json_key ~ '>' }}\n            {%- endif %}\n        {%- endfor %}\n    {%- endif %}\n{% endmacro %}\n{%- set enable_thinking = enable_thinking if enable_thinking is defined else True %}\n{%- set truncate_history_thinking = truncate_history_thinking if truncate_history_thinking is defined else True %}\n\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- set loop_messages = messages %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n\n{%- if messages[0][\"role\"] == \"system\" %}\n    {%- if messages[0][\"content\"] is string %}\n        {%- set system_message = messages[0][\"content\"] %}\n    {%- else %}\n        {%- set ns = namespace(system_text=\"\") %}\n        {%- for part in messages[0][\"content\"] %}\n            {%- if 'text' in part %}\n                {%- set ns.system_text = ns.system_text + part.text %}\n            {%- endif %}\n        {%- endfor %}\n        {%- set system_message = ns.system_text %}\n    {%- endif %}\n\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = [] %}\n{%- endif %}\n{# Recompute last_user_idx relative to loop_messages after handling system #}\n{%- set ns = namespace(last_user_idx = -1) %}\n{%- for m in loop_messages %}\n  {%- if m[\"role\"] == \"user\" %}\n    {%- set ns.last_user_idx = loop.index0 %}\n  {%- endif %}\n{%- endfor %}\n{%- if system_message is defined %}\n    {{- \"<|im_start|>system\n\" + system_message }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- \"<|im_start|>system\n\" }}\n    {%- endif %}\n{%- endif %}\n{%- if tools is iterable and tools | length > 0 %}\n    {%- if system_message is defined and system_message | length > 0 %}\n        {{- \"\n\n\" }}\n    {%- endif %}\n    {{- \"# Tools\n\nYou have access to the following functions:\n\n\" }}\n    {{- \"<tools>\" }}\n    {%- for tool in tools %}\n        {%- if tool.function is defined %}\n            {%- set tool = tool.function %}\n        {%- endif %}\n        {{- \"\n<function>\n<name>\" ~ tool.name ~ \"</name>\" }}\n        {%- if tool.description is defined %}\n            {{- '\n<description>' ~ (tool.description | trim) ~ '</description>' }}\n        {%- endif %}\n        {{- '\n<parameters>' }}\n        {%- if tool.parameters is defined and tool.parameters is mapping and tool.parameters.properties is defined and tool.parameters.properties is mapping %}\n            {%- for param_name, param_fields in tool.parameters.properties|items %}\n                {{- '\n<parameter>' }}\n                {{- '\n<name>' ~ param_name ~ '</name>' }}\n                {%- if param_fields.type is defined %}\n                    {{- '\n<type>' ~ (param_fields.type | string) ~ '</type>' }}\n                {%- endif %}\n                {%- if param_fields.description is defined %}\n                    {{- '\n<description>' ~ (param_fields.description | trim) ~ '</description>' }}\n                {%- endif %}\n                {%- if param_fields.enum is defined %}\n                    {{- '\n<enum>' ~ (param_fields.enum | tojson | safe) ~ '</enum>' }}\n                {%- endif %}\n                {%- set handled_keys = ['name', 'type', 'description', 'enum'] %}\n                {{- render_extra_keys(param_fields, handled_keys) }}\n                {{- '\n</parameter>' }}\n            {%- endfor %}\n        {%- endif %}\n        {% set handled_keys = ['type', 'properties', 'required'] %}\n        {{- render_extra_keys(tool.parameters, handled_keys) }}\n        {%- if tool.parameters is defined and tool.parameters.required is defined %}\n            {{- '\n<required>' ~ (tool.parameters.required | tojson | safe) ~ '</required>' }}\n        {%- endif %}\n        {{- '\n</parameters>' }}\n        {%- set handled_keys = ['type', 'name', 'description', 'parameters'] %}\n        {{- render_extra_keys(tool, handled_keys) }}\n        {{- '\n</function>' }}\n    {%- endfor %}\n    {{- \"\n</tools>\" }}\n\n    {{- '\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n<parameter=example_parameter_2>\nThis is the value for the second parameter\nthat can span\nmultiple lines\n</parameter>\n</function>\n</tool_call>\n\n<IMPORTANT>\nReminder:\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\n- Required parameters MUST be specified\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\n</IMPORTANT>' }}\n{%- endif %}\n\n\n{%- if system_message is defined %}\n    {{- '<|im_end|>\n' }}\n{%- else %}\n    {%- if tools is iterable and tools | length > 0 %}\n        {{- '<|im_end|>\n' }}\n    {%- endif %}\n{%- endif %}\n\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in loop_messages %}\n    {%- if message.role == \"assistant\" %}\n        {# Add reasoning content in to content field for unified processing below. #}\n        {%- set text_content = namespace(text_content=\"\") -%}\n        {%- if message.content is string %}\n            {%- set text_content.text_content = message.content %}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if 'text' in content %}\n                    {%- set text_content.text_content = content.text %}\n                    {%- break %}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.reasoning_content is defined and message.reasoning_content is string and message.reasoning_content | trim | length > 0 %}\n            {%- set content = \"<think>\n\" ~ message.reasoning_content ~ \"\n</think>\n\" ~ (text_content.text_content | default('', true)) %}\n        {%- else %}\n            {%- set content = text_content.text_content | default('', true) %}\n            {# Allow downstream logic to to take care of broken thought, only handle coherent reasoning here. #}\n            {%- if '<think>' not in content and '</think>' not in content %}\n                {%- set content = \"<think></think>\" ~ content %}\n            {%- else %}\n                {%- set content = content %}\n            {%- endif -%}\n        {%- endif %}\n        {%- if message.tool_calls is defined and message.tool_calls is iterable and message.tool_calls | length > 0 %}\n            {# Assistant message has tool calls. #}\n            {{- '<|im_start|>assistant\n' }}\n                {%- set include_content = not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {%- if content is string and content | trim | length > 0 %}\n                    {%- if include_content %}\n                        {{- (content | trim) ~ '\n' -}}\n                    {%- else %}\n                        {%- set c = (content | string) %}\n                        {%- if '</think>' in c %}\n                            {# Keep only content after the last closing think. Also generation prompt causes this. #}\n                            {%- set c = c.split('</think>')[-1] %}\n                        {%- elif '<think>' in c %}\n                            {# If <think> was opened but never closed, drop the trailing think segment #}\n                            {%- set c = c.split('<think>')[0] %}\n                        {%- endif %}\n                        {%- set c = \"<think></think>\" ~ c | trim %}\n                        {%- if c | length > 0 %}\n                            {{- c ~ '\n' -}}\n                        {%- endif %}\n                    {%- endif %}\n                {%- else %}\n                    {{- \"<think></think>\" -}}\n                {%- endif %}\n                {%- for tool_call in message.tool_calls %}\n                    {%- if tool_call.function is defined %}\n                        {%- set tool_call = tool_call.function %}\n                    {%- endif %}\n                    {{- '<tool_call>\n<function=' ~ tool_call.name ~ '>\n' -}}\n                        {%- if tool_call.arguments is defined %}\n                            {%- for args_name, args_value in tool_call.arguments|items %}\n                                {{- '<parameter=' ~ args_name ~ '>\n' -}}\n                                    {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                                {{- args_value ~ '\n</parameter>\n' -}}\n                            {%- endfor %}\n                        {%- endif %}\n                    {{- '</function>\n</tool_call>\n' -}}\n                {%- endfor %}\n                {{- '<|im_end|>\n' }}\n        {%- else %}\n            {# Assistant message doesn't have tool calls. #}\n            {%- if not (truncate_history_thinking and loop.index0 < ns.last_user_idx) %}\n                {{- '<|im_start|>assistant\n' ~ (content | default('', true) | string | trim) ~ '<|im_end|>\n' }}\n            {%- else %}\n                {%- set c = (content | default('', true) | string) %}\n                {%- if '<think>' in c and '</think>' in c %}\n                    {%- set c = \"<think></think>\" ~ c.split('</think>')[-1] %}\n                {%- endif %}\n                {%- set c = c | trim %}\n                {%- if c | length > 0 %}\n                    {{- '<|im_start|>assistant\n' ~ c ~ '<|im_end|>\n' }}\n                {%- else %}\n                    {{- '<|im_start|>assistant\n<|im_end|>\n' }}\n                {%- endif %}\n            {%- endif %}\n        {%- endif %}\n    {%- elif message.role == \"user\" or message.role == \"system\" %}\n        {{- '<|im_start|>' + message.role + '\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user\n' }}\n        {%- endif %}\n        {{- '<tool_response>\n' }}\n        {{- message.content }}\n        {{- '\n</tool_response>\n' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>\n' }}\n    {%- endif %}\n{%- endfor %}\n\n{%- if add_generation_prompt %}\n    {%- if enable_thinking %}\n        {{- '<|im_start|>assistant\n<think>\n' }}\n    {%- else %}\n        {{- '<|im_start|>assistant\n<think></think>' }}\n    {%- endif %}\n{%- endif %}"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "size": 2896,
+      "lfs": null
+    },
+    {
+      "rfilename": "BIAS.md",
+      "size": 4720,
+      "lfs": null
+    },
+    {
+      "rfilename": "EXPLAINABILITY.md",
+      "size": 3189,
+      "lfs": null
+    },
+    {
+      "rfilename": "PRIVACY.md",
+      "size": 1215,
+      "lfs": null
+    },
+    {
+      "rfilename": "README.md",
+      "size": 53043,
+      "lfs": null
+    },
+    {
+      "rfilename": "SAFETY.md",
+      "size": 3677,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/benchmark-image2video.png",
+      "size": 58518,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/benchmark-overall.png",
+      "size": 81007,
+      "lfs": {
+        "size": 81007,
+        "sha256": "fdc1dbbeda37163b09aab0b69e22c9cae2880eeb53e2287d71eba77e2985a1c1",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "assets/diffusers_outputs/edge_action_fd_diffusers_chunk_00.mp4",
+      "size": 14797,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/diffusers_outputs/edge_action_fd_diffusers_chunk_01.mp4",
+      "size": 13183,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/diffusers_outputs/edge_action_fd_umi_2chunk_diffusers.mp4",
+      "size": 23553,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/diffusers_outputs/edge_action_id_av_inverse_0_diffusers.json",
+      "size": 15925,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/diffusers_outputs/edge_action_id_av_inverse_1_diffusers.json",
+      "size": 15676,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/diffusers_outputs/edge_i2v_diffusers.mp4",
+      "size": 1278049,
+      "lfs": {
+        "size": 1278049,
+        "sha256": "2fe93251039d8640625f660f42514d8fddd0812ae6918a4ea3cf5fc2363e4a16",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/edge_action_fd_umi_2chunk_output.mp4",
+      "size": 32755,
+      "lfs": {
+        "size": 32755,
+        "sha256": "10037bf0c2a20c46f24e616d7b822932babb45f72113833f320e2bb524c8c57b",
+        "pointer_size": 130
+      }
+    },
+    {
+      "rfilename": "assets/edge_action_id_av_0_output.json",
+      "size": 11216,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/edge_action_id_av_0_output.png",
+      "size": 113804,
+      "lfs": {
+        "size": 113804,
+        "sha256": "18b90a143ee04b6be339caa744d5c0debd3d36e90effa20f09c980c0678fec13",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/edge_action_id_av_1_output.json",
+      "size": 10990,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/edge_action_id_av_1_output.png",
+      "size": 102489,
+      "lfs": {
+        "size": 102489,
+        "sha256": "660085cebabd54658a108922a9ae842c57cc7762291bb500035b3f8b01c22992",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/edge_i2v_output.mp4",
+      "size": 8053812,
+      "lfs": {
+        "size": 8053812,
+        "sha256": "d4e87cbc2efe25f40ac31d91a11a872f7b51d262ce764cfd0dde53a7be762998",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/example_action_fd_umi_action_chunks.json",
+      "size": 10350,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/example_action_fd_umi_first_frame.png",
+      "size": 67026,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/example_action_id_av_0_input.mp4",
+      "size": 1125838,
+      "lfs": {
+        "size": 1125838,
+        "sha256": "ff205f86ae169031c0e12c8c6bc8aabe24aeb44b84a16cba977669b29912f5fc",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/example_action_id_av_1_input.mp4",
+      "size": 1639407,
+      "lfs": {
+        "size": 1639407,
+        "sha256": "169e65cee76ef7c6366987a8e4c8e4ec6f803f5e624ba2ef39ba1f0c672925aa",
+        "pointer_size": 132
+      }
+    },
+    {
+      "rfilename": "assets/example_i2v_input.jpg",
+      "size": 860765,
+      "lfs": {
+        "size": 860765,
+        "sha256": "1de51eb5c6d51ec97aa3351a6685717b0253e36073eb9cdd3ef65affa115a4e2",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/example_i2v_prompt.json",
+      "size": 9186,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/example_reasoning_input.png",
+      "size": 230656,
+      "lfs": {
+        "size": 230656,
+        "sha256": "6686b937bdb28e2c9804c435bd63a7ab56ac1531ffc9b482f2b8a75aed8770f5",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "assets/example_reasoning_prompt.json",
+      "size": 151,
+      "lfs": null
+    },
+    {
+      "rfilename": "assets/negative_prompt.json",
+      "size": 17578,
+      "lfs": null
+    },
+    {
+      "rfilename": "chat_template.jinja",
+      "size": 12158,
+      "lfs": null
+    },
+    {
+      "rfilename": "config.json",
+      "size": 1679,
+      "lfs": null
+    },
+    {
+      "rfilename": "generation_config.json",
+      "size": 154,
+      "lfs": null
+    },
+    {
+      "rfilename": "images/benchmark-reasoning.png",
+      "size": 265797,
+      "lfs": {
+        "size": 265797,
+        "sha256": "75974a959d0eb23edb578dfd2b04656748b8f738f9bc19c2dd97f9d60c886fe1",
+        "pointer_size": 131
+      }
+    },
+    {
+      "rfilename": "model.safetensors.index.json",
+      "size": 68564,
+      "lfs": null
+    },
+    {
+      "rfilename": "model_index.json",
+      "size": 555,
+      "lfs": null
+    },
+    {
+      "rfilename": "modular_model_index.json",
+      "size": 1357,
+      "lfs": null
+    },
+    {
+      "rfilename": "preprocessor_config.json",
+      "size": 334,
+      "lfs": null
+    },
+    {
+      "rfilename": "processor_config.json",
+      "size": 875,
+      "lfs": null
+    },
+    {
+      "rfilename": "scheduler/scheduler_config.json",
+      "size": 889,
+      "lfs": null
+    },
+    {
+      "rfilename": "special_tokens_map.json",
+      "size": 563,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/chat_template.jinja",
+      "size": 12158,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/special_tokens_map.json",
+      "size": 563,
+      "lfs": null
+    },
+    {
+      "rfilename": "text_tokenizer/tokenizer.json",
+      "size": 17077500,
+      "lfs": {
+        "size": 17077500,
+        "sha256": "4dc692a99dca6d92a44e9529ffb53541eb79bb260eec7281bc51268c05d7311c",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "text_tokenizer/tokenizer_config.json",
+      "size": 393,
+      "lfs": null
+    },
+    {
+      "rfilename": "tokenizer.json",
+      "size": 17077500,
+      "lfs": {
+        "size": 17077500,
+        "sha256": "4dc692a99dca6d92a44e9529ffb53541eb79bb260eec7281bc51268c05d7311c",
+        "pointer_size": 133
+      }
+    },
+    {
+      "rfilename": "tokenizer_config.json",
+      "size": 177253,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformer/config.json",
+      "size": 1075,
+      "lfs": null
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00001-of-00002.safetensors",
+      "size": 5000040072,
+      "lfs": {
+        "size": 5000040072,
+        "sha256": "116134e5492c514df79a2f07214e577c397aa961387dbe1c5dda488e7994ff6b",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model-00002-of-00002.safetensors",
+      "size": 1739335512,
+      "lfs": {
+        "size": 1739335512,
+        "sha256": "3b4c0aafe2705c900ac7bc743085a8e9e09c906624331bc2baa21e172e5d48e4",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "size": 53623,
+      "lfs": null
+    },
+    {
+      "rfilename": "vae/config.json",
+      "size": 1755,
+      "lfs": null
+    },
+    {
+      "rfilename": "vae/diffusion_pytorch_model.safetensors",
+      "size": 1409400600,
+      "lfs": {
+        "size": 1409400600,
+        "sha256": "230496cb59ff85bc9c040487737c4062480cb61c71e697b197b4c30142f2a0da",
+        "pointer_size": 135
+      }
+    },
+    {
+      "rfilename": "video_preprocessor_config.json",
+      "size": 367,
+      "lfs": null
+    },
+    {
+      "rfilename": "vision_encoder/model.safetensors",
+      "size": 978739880,
+      "lfs": {
+        "size": 978739880,
+        "sha256": "2180ad739ecc96b5c1e9386892d3c5c08bfa42b9cdab9aabc53b028671db89b3",
+        "pointer_size": 134
+      }
+    }
+  ],
+  "cardContent": "",
+  "cardDataParsed": null,
+  "transformersInfo": null
+}
